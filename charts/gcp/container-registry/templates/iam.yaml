@@ -11,8 +11,10 @@ Five Cloud Storage roles are translated to Artifact Registry roles, each
 with a note; any other Cloud Storage role is refused
 (containerRegistry.iam; README.md, "Values").
 */ -}}
+{{- /* The notes go into the IAMPartialPolicy's own document, as comments
+after its "---", so no comment-only document is rendered. */ -}}
 {{- $r := include "containerRegistry.iam" . | fromJson }}
-{{- range $n := $r.notes }}
-# NOTE {{ $n }}
-{{- end }}
-{{- include "kcc.iam" (dict "root" $ "base" .Release.Name "idPrefix" "" "resourceRef" (dict "apiVersion" "artifactregistry.cnrm.cloud.google.com/v1beta1" "kind" "ArtifactRegistryRepository" "name" .Release.Name) "v" (dict "iam" $r.iam)) }}
+{{- $out := include "kcc.iam" (dict "root" $ "base" .Release.Name "idPrefix" "" "resourceRef" (dict "apiVersion" "artifactregistry.cnrm.cloud.google.com/v1beta1" "kind" "ArtifactRegistryRepository" "name" .Release.Name) "v" (dict "iam" $r.iam)) }}
+{{- $notes := "" }}
+{{- range $n := $r.notes }}{{ $notes = printf "%s# NOTE %s\n" $notes $n }}{{ end }}
+{{- regexReplaceAll "^\\s*---\\n" $out (printf "\n---\n%s" $notes) }}

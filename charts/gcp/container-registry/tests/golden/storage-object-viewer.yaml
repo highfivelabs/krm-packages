@@ -1,7 +1,4 @@
 ---
-# Source: container-registry/templates/iam.yaml
-# NOTE container-registry: iam role roles/storage.objectViewer was converted to roles/artifactregistry.reader. gcr.io repositories are legacy, supported for organizations still on gcr.io; new setups should use a native Artifact Registry repository with Artifact Registry roles directly.
----
 # Source: container-registry/templates/main.yaml
 apiVersion: artifactregistry.cnrm.cloud.google.com/v1beta1
 kind: ArtifactRegistryRepository
@@ -22,6 +19,7 @@ spec:
   mode: "STANDARD_REPOSITORY"
 ---
 # Source: container-registry/templates/iam.yaml
+# NOTE container-registry: iam role roles/storage.objectViewer was converted to roles/artifactregistry.reader. gcr.io repositories are legacy, supported for organizations still on gcr.io; new setups should use a native Artifact Registry repository with Artifact Registry roles directly.
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPartialPolicy
 metadata:

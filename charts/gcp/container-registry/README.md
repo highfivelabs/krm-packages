@@ -84,13 +84,13 @@ decision 13). Google gives no role-for-role table; this one is ours.
 Roles that translate to one Artifact Registry role, or to one `iam` also
 lists as is, share one binding, each member once
 (`tests/storage-merge.values.yaml`). Each converted role gives a note,
-written as a `# NOTE` comment into the render (ahead of the
-`IAMPartialPolicy`) and printed by Helm on install (`templates/NOTES.txt`):
+written as a `# NOTE` comment at the top of the rendered
+`IAMPartialPolicy` and printed by Helm on install (`templates/NOTES.txt`):
 it names the role and its translation, says gcr.io repositories are
 legacy, and that new setups should use a native Artifact Registry
-repository with Artifact Registry roles directly. Bundt's plan does not
-show Helm's NOTES.txt, so in a Bundt plan the note is the comment in the
-rendered objects.
+repository with Artifact Registry roles directly. Bundt's renderer drops
+Helm's NOTES.txt, so for Bundt the note is the comment in the rendered
+object.
 
 `legacyBucketOwner` and `storage.admin` to `repoAdmin` is a judgment call:
 `repoAdmin` reads, writes and deletes images in the repository but does
