@@ -15,7 +15,9 @@
 # platform-project set PARENT (folders/<n>, the live-tests folder) and
 # ORG_ID; for platform-project BILLING_ACCOUNT too. ORG_POLICIES=false
 # leaves the folders shape's organization policies (orgpolicy.tf) out, for
-# an account without roles/orgpolicy.policyAdmin. MEMBER is the principal
+# an account without roles/orgpolicy.policyAdmin; FOLDER_FIREWALL=false
+# leaves its hierarchical firewall policy (firewall.tf) out, for an account
+# without compute.globalOperations.get on the organization. MEMBER is the principal
 # the fixtures grant their roles to (default the VM's service account); an
 # organization that restricts members to its own customer
 # (iam.allowedPolicyMemberDomains) refuses a service account from a
@@ -158,8 +160,8 @@ leftovers() {
   "${G[@]}" container clusters list --filter="name~^${RUN}" --format='value(name)' 2>/dev/null
   "${G[@]}" iam service-accounts list --filter="email~^${RUN}" --format='value(email)' 2>/dev/null
   if [[ -n "${PARENT:-}" ]]; then
-    gcloud resource-manager folders list --folder="${PARENT#folders/}" --filter="displayName~^${RUN}" --format='value(name)' 2>/dev/null
-    gcloud projects list --filter="parent.id=${PARENT#folders/} AND name~^${RUN}" --format='value(projectId)' 2>/dev/null
+    gcloud resource-manager folders list --folder="${PARENT#folders/}" --filter="displayName~^${RUN} AND lifecycleState=ACTIVE" --format='value(name)' 2>/dev/null
+    gcloud projects list --filter="parent.id=${PARENT#folders/} AND name~^${RUN} AND lifecycleState=ACTIVE" --format='value(projectId)' 2>/dev/null
   fi
 }
 trap cleanup EXIT
@@ -171,6 +173,10 @@ cp "${FIXTURES}/${SHAPE}"/*.tf "${OUT}/tf/"
 if [[ "${SHAPE}" == folders && "${ORG_POLICIES:-true}" == false ]]; then
   rm -f "${OUT}/tf/orgpolicy.tf"
   row "organization policies" "left out" "ORG_POLICIES=false: orgpolicy.tf (three policies) not applied"
+fi
+if [[ "${SHAPE}" == folders && "${FOLDER_FIREWALL:-true}" == false ]]; then
+  rm -f "${OUT}/tf/firewall.tf"
+  row "hierarchical firewall policy" "left out" "FOLDER_FIREWALL=false: firewall.tf not applied"
 fi
 case "${SHAPE}" in
   shared-vpc)
@@ -196,6 +202,7 @@ EOF
     cat >"${OUT}/tf/terraform.tfvars" <<EOF
 folder_id       = "${PARENT}"
 billing_account = "${BILLING_ACCOUNT:?set BILLING_ACCOUNT}"
+billing_project = "${PROJECT}"
 prefix          = "${RUN}"
 platform_admins = ["${MEMBER}"]
 region          = "${REGION}"

@@ -14,7 +14,7 @@
 #   module.skip_default_network,
 #   .resource_locations,
 #   .require_os_login (orgpolicy.tf)    org-policy//modules/org_policy_v2 7.4.0 charts/gcp/org-policy-v2
-#   module.hierarchical_firewall        network//modules/hierarchical-firewall-policy 18.3.1
+#   module.hierarchical_firewall (firewall.tf) network//modules/hierarchical-firewall-policy 18.3.1
 #                                                                               charts/gcp/hierarchical-firewall-policy
 #
 # The firewall policy's associations are keyed by the folder IDs, unknown
@@ -95,51 +95,4 @@ module "auditor" {
   bindings = {
     "roles/iam.securityReviewer" = [var.auditor]
   }
-}
-
-module "hierarchical_firewall" {
-  source  = "terraform-google-modules/network/google//modules/hierarchical-firewall-policy"
-  version = "18.3.1"
-
-  parent_node = module.root.id
-  policy_name = "${var.prefix}-baseline"
-  description = "offramp fixture: baseline rules for every project below"
-  # Folder numbers: the module writes folders/<n> itself.
-  target_folders = [
-    trimprefix(module.environments.ids["prod"], "folders/"),
-    trimprefix(module.environments.ids["nonprod"], "folders/"),
-  ]
-
-  rules = [
-    {
-      priority  = 1000
-      direction = "INGRESS"
-      action    = "allow"
-      rule_name = "allow-iap"
-      match = {
-        src_ip_ranges  = ["35.235.240.0/20"]
-        layer4_configs = [{ ip_protocol = "tcp", ports = ["22", "3389"] }]
-      }
-    },
-    {
-      priority  = 2000
-      direction = "INGRESS"
-      action    = "goto_next"
-      rule_name = "delegate-internal"
-      match = {
-        src_ip_ranges  = ["10.0.0.0/8"]
-        layer4_configs = [{ ip_protocol = "all" }]
-      }
-    },
-    {
-      priority  = 65000
-      direction = "INGRESS"
-      action    = "deny"
-      rule_name = "deny-rest"
-      match = {
-        src_ip_ranges  = ["0.0.0.0/0"]
-        layer4_configs = [{ ip_protocol = "all" }]
-      }
-    },
-  ]
 }
