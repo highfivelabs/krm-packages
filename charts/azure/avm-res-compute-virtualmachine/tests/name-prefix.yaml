@@ -9,6 +9,7 @@ exempt:
   VirtualMachinesExtension: "named inside the machine, whose name carries the prefix, by the entry's name"
   VirtualMachinesRunCommand: "named inside the machine, whose name carries the prefix, by the entry's name"
   ConfigurationAssignment: "named on the machine it assigns, whose name carries the prefix (the module's <name>-maintenance-configuration-<key>)"
+  VaultsProtectedItem: "named after the machine it backs up (vm;iaasvmcontainerv2;<rg>;<machine>), whose name carries the prefix; Azure fixes the name"
   Schedule: "named after the machine it shuts down (shutdown-computevm-<machine>), whose name carries the prefix"
   RoleAssignment: "its name is a GUID (a stable UUID ASO makes), scoped to the machine, an interface or a disk"
   ManagementLock: "named inside the machine, interface, disk or public IP it locks, whose name carries the prefix"

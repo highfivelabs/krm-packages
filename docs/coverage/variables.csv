@@ -3964,7 +3964,7 @@ azure,avm-res-compute-virtualmachine,admin_ssh_keys,"list(object({public_key, us
 azure,avm-res-compute-virtualmachine,admin_username,string,yes,,
 azure,avm-res-compute-virtualmachine,allow_extension_operations,bool,yes,,
 azure,avm-res-compute-virtualmachine,availability_set_resource_id,string,yes,,
-azure,avm-res-compute-virtualmachine,azure_backup_configurations,"map(object({backup_policy_resource_id, exclude_disk_luns, include_disk_luns, recovery_vault_name, recovery_vault_resource_id, resource_group_name}))",no,Microsoft.RecoveryServices/vaults/backupFabrics/protectionContainers/protectedItems (a protected VM) has no Azure Service Operator or aso-extensions kind,gap
+azure,avm-res-compute-virtualmachine,azure_backup_configurations,"map(object({backup_policy_resource_id, exclude_disk_luns, include_disk_luns, recovery_vault_name, recovery_vault_resource_id, resource_group_name}))",yes,,
 azure,avm-res-compute-virtualmachine,boot_diagnostics,bool,yes,,
 azure,avm-res-compute-virtualmachine,boot_diagnostics_storage_account_uri,string,yes,,
 azure,avm-res-compute-virtualmachine,bypass_platform_safety_checks_on_user_schedule_enabled,bool,yes,,

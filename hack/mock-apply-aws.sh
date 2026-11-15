@@ -351,15 +351,23 @@ for b in s3.list_buckets().get("Buckets", []):
 # the environment's namespace starts (ack-extensions' pkg/operator,
 # cloudcontrol.go); the operator's --fake-aws-endpoint points it at the fake
 # in use. The role is the fake account's (nothing assumes it: the fake keys
-# are the manager's). Waits until Ready, then checks the manager with
-# ack-extensions' guard, as every other AWS client.
+# are the manager's). The context names the Cloud Control kinds the render
+# has (Kind.service, from RENDERED), so the manager serves those alone: one
+# naming none serves every kind in the registry, which a manager at
+# ack-extensions 2cdca6c could not do in its 256Mi (OOMKilled within
+# seconds, every object left at its first reconcile; ack-extensions
+# docs/cloudcontrol.md section 11, RECCC). Waits until Ready, then checks
+# the manager with ack-extensions' guard, as every other AWS client.
 cc_context() {
-  local ns="$1" end
+  local ns="$1" rendered="$2" end kinds
+  # Top-level apiVersion and kind of each document: Kind.service.
+  kinds="$(awk '/^---/ {g=""; k=""} /^apiVersion: [a-z0-9]+\.cloudcontrol\.aws\.hfl\.dev\// {split($2, a, "."); g=a[1]} /^kind: / {k=$2} g != "" && k != "" {print k "." g; g=""; k=""}' "${rendered}" | sort -u | paste -sd, -)"
+  echo "   Cloud Control kinds: ${kinds}"
   kubectl apply -f - >/dev/null <<YAML
 apiVersion: cloudcontrol.aws.hfl.dev/v1alpha1
 kind: CloudControlContext
 metadata: {name: cloudcontrol, namespace: ${ns}}
-spec: {roleARN: "arn:aws:iam::$(account_of "${BACKEND}"):role/catalog-cloudcontrol", region: ${REGION}}
+spec: {roleARN: "arn:aws:iam::$(account_of "${BACKEND}"):role/catalog-cloudcontrol", region: ${REGION}, kinds: [${kinds}]}
 YAML
   end=$(( $(date +%s) + 240 ))
   until [[ "$(kubectl -n "${ns}" get cloudcontrolcontext cloudcontrol -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')" == True ]]; do
@@ -375,6 +383,34 @@ YAML
   "${ROOT}/bin/noaws" verify-deployments <"${work}/deployments.json" >/dev/null \
     || { echo "mock-apply-aws: an AWS client in the cluster could reach real AWS" >&2; exit 1; }
   echo "   CloudControlContext ${ns}/cloudcontrol Ready: a Cloud Control manager serves ${ns}"
+}
+
+# cc_logs NS OUT: the Cloud Control manager serving NS runs in
+# ack-extensions-system and goes with its CloudControlContext, so its logs
+# are kept before the context is deleted: the context, the manager's pods
+# (restarts and the last state: an OOM kill shows there), and the logs of
+# the running container and of the one before it, into
+# OUT/cloudcontrol-manager.log.
+cc_logs() {
+  local ns="$1" out="$2" p
+  local sel="aws.hfl.dev/component=cloudcontrol,aws.hfl.dev/environment=$1"
+  {
+    echo "== CloudControlContext ${ns}/cloudcontrol"
+    kubectl -n "${ns}" get cloudcontrolcontext cloudcontrol -o yaml 2>&1
+    echo "== pods (ack-extensions-system, ${sel})"
+    kubectl -n ack-extensions-system get pods -l "${sel}" -o wide 2>&1
+    kubectl -n ack-extensions-system get pods -l "${sel}" -o json 2>/dev/null \
+      | jq -r '.items[] | .metadata.name as $n | .status.containerStatuses[]? | "\($n) \(.name): restarts=\(.restartCount) state=\(.state | keys | first) last=\(.lastState | tostring)"'
+    for p in $(kubectl -n ack-extensions-system get pods -l "${sel}" -o name 2>/dev/null); do
+      echo "== ${p} (previous container)"
+      kubectl -n ack-extensions-system logs "${p}" --previous --tail=2000 2>&1 || true
+      echo "== ${p}"
+      kubectl -n ack-extensions-system logs "${p}" --tail=5000 2>&1 || true
+    done
+    echo "== events (${ns})"
+    kubectl -n "${ns}" get events --sort-by=.lastTimestamp 2>&1 | tail -100
+  } >"${out}/cloudcontrol-manager.log" 2>&1
+  echo "   the Cloud Control manager's logs: ${out}/cloudcontrol-manager.log"
 }
 
 # run_chart VALUES: apply one chart's case to the fake BACKEND points at,
@@ -421,7 +457,7 @@ run_chart() {
   local cc=no
   if grep -Eq '^apiVersion: [a-z0-9]+\.cloudcontrol\.aws\.hfl\.dev/' "${out}/rendered.yaml"; then
     cc=yes
-    cc_context "${ns}" || echo "   ${chart}: no Cloud Control manager for ${ns}" >&2
+    cc_context "${ns}" "${out}/rendered.yaml" || echo "   ${chart}: no Cloud Control manager for ${ns}" >&2
   fi
   kubectl apply --server-side -n "${ns}" -f "${out}/rendered.yaml" >"${out}/apply.log"
   # Fully qualified (kind.version.group/name), as hack/mock-apply.sh does.
@@ -490,6 +526,7 @@ run_chart() {
     fi
   fi
   if [[ "${cc}" == yes ]]; then
+    cc_logs "${ns}" "${out}"
     kubectl -n "${ns}" delete cloudcontrolcontext cloudcontrol --ignore-not-found --wait=false >/dev/null 2>&1 || true
   fi
   [[ "${outputs_ok}" == yes ]] || chart_failed=$((chart_failed + 1))
