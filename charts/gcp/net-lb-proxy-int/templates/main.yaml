@@ -1,0 +1,242 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/net-lb-proxy-int/main.tf
+(v60.0.0), Copyright 2022 Google LLC, Apache-2.0.
+
+google_compute_forwarding_rule.default: one regional ComputeForwardingRule
+(INTERNAL_MANAGED, TCP) per forwarding_rules_config key, named name for
+the key "" and <name>-<key> otherwise unless the entry has a name, in
+vpc_config's subnetwork;
+google_compute_region_target_tcp_proxy.default: a regional
+ComputeTargetTCPProxy;
+google_compute_network_endpoint_group.default: one zonal
+ComputeNetworkEndpointGroup per gce or hybrid entry of neg_configs;
+google_compute_network_endpoint.default: one ComputeNetworkEndpoint
+(config-connector-extensions, compute.gcp.hfl.dev/v1beta1) per endpoint
+of those, keyed <neg>-<endpoint>;
+google_compute_region_network_endpoint_group.psc and .internet: one
+ComputeRegionNetworkEndpointGroup per psc or internet entry;
+google_compute_region_network_endpoint.internet: one
+ComputeRegionNetworkEndpoint (config-connector-extensions, v1alpha1,
+allow_alpha) per internet endpoint;
+google_compute_service_attachment.default: with service_attachment, one
+ComputeServiceAttachment for the forwarding rule it names.
+*/ -}}
+{{- $v := .Values }}
+{{- include "kcc.names" (list $ (list "backendService" "healthCheck" "targetProxy")) }}
+{{- include "kcc.unsupported" (list $ "context" $v.context "use Bundt expressions (${...}) and valueFrom in the component's inputs instead") }}
+{{- $sa := $v.service_attachment }}
+{{- if not (kindIs "invalid" $sa) }}
+{{- include "kcc.unsupported" (list $ "service_attachment.domain_name" $sa.domain_name "ComputeServiceAttachment has no domainNames field") }}
+{{- if not (kindIs "invalid" $sa.reconcile_connections) }}
+{{- include "kcc.unsupported" (list $ "service_attachment.reconcile_connections" (dict "set" true) "ComputeServiceAttachment has no reconcileConnections field") }}
+{{- end }}
+{{- end }}
+{{- $abandon := include "kcc.abandon" . }}
+{{- $project := $v.project_id }}
+{{- $region := $v.region }}
+{{- $network := include "netlbpi.link" $v.vpc_config.network }}
+{{- $frs := $v.forwarding_rules_config }}
+{{- if kindIs "invalid" $frs }}{{ $frs = dict "" dict }}{{ end }}
+{{- range $k := keys $frs | sortAlpha }}
+{{- $fr := index $frs $k | default dict }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeForwardingRule
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (ternary (include "kcc.name" (list $.Release.Name "fr")) (include "kcc.name" (list $.Release.Name "fr" $k)) (eq $k "")) "id" (printf "forwarding_rule:%s" $k) "project" $project "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "netlbpi.frName" (list $ $k) | quote }}
+  location: {{ $region | quote }}
+  {{- with $fr.description | default $v.description }}
+  description: {{ . | quote }}
+  {{- end }}
+  {{- with $fr.address }}
+  ipAddress:
+    {{- if regexMatch "^[0-9a-fA-F.:]+$" . }}
+    ip: {{ . | quote }}
+    {{- else }}
+    addressRef:
+      external: {{ include "netlbpi.link" . | quote }}
+    {{- end }}
+  {{- else }}
+  ipVersion: {{ ternary "IPV6" "IPV4" (eq (toString $fr.ipv6) "true") }}
+  {{- end }}
+  ipProtocol: TCP
+  loadBalancingScheme: INTERNAL_MANAGED
+  allowGlobalAccess: {{ ne (toString $fr.global_access) "false" }}
+  networkRef:
+    external: {{ $network | quote }}
+  portRange: {{ $fr.port | default 80 | toString | quote }}
+  subnetworkRef:
+    external: {{ include "netlbpi.link" $v.vpc_config.subnetwork | quote }}
+  target:
+    targetTCPProxyRef:
+      name: {{ include "kcc.name" (list $.Release.Name) }}
+{{- end }}
+{{- if not (kindIs "invalid" $sa) }}
+{{- $saKey := $sa.forwarding_rule | default "" }}
+{{- if not (hasKey $frs $saKey) }}
+{{- fail (printf "net-lb-proxy-int: service_attachment.forwarding_rule %q is not a forwarding_rules_config key" $saKey) }}
+{{- end }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeServiceAttachment
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "sa")) "id" "service_attachment" "project" $project "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "kcc.cloudName" (list $ "service attachment" $v.name 63 "letter") | quote }}
+  location: {{ $region | quote }}
+  projectRef:
+    external: {{ $project | quote }}
+  {{- if not (kindIs "invalid" $v.description) }}
+  description: {{ $v.description | quote }}
+  {{- end }}
+  targetServiceRef:
+    name: {{ ternary (include "kcc.name" (list $.Release.Name "fr")) (include "kcc.name" (list $.Release.Name "fr" $saKey)) (eq $saKey "") }}
+  natSubnets:
+    {{- range $sa.nat_subnets }}
+    - external: {{ include "netlbpi.link" . | quote }}
+    {{- end }}
+  connectionPreference: {{ ternary "ACCEPT_AUTOMATIC" "ACCEPT_MANUAL" (eq (toString $sa.automatic_connection) "true") }}
+  {{- with $sa.consumer_accept_lists }}
+  consumerAcceptLists:
+    {{- range $p := keys . | sortAlpha }}
+    - projectRef:
+        external: {{ $p | quote }}
+      connectionLimit: {{ index $sa.consumer_accept_lists $p }}
+    {{- end }}
+  {{- end }}
+  {{- with $sa.consumer_reject_lists }}
+  consumerRejectLists:
+    {{- range . }}
+    - external: {{ . | quote }}
+    {{- end }}
+  {{- end }}
+  enableProxyProtocol: {{ eq (toString $sa.enable_proxy_protocol) "true" }}
+{{- end }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeTargetTCPProxy
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name)) "id" "target_proxy" "project" $project "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "kcc.resourceName" (list $ "targetProxy" "target proxy" $v.name 63 "letter") | quote }}
+  location: {{ $region | quote }}
+  {{- if not (kindIs "invalid" $v.description) }}
+  description: {{ $v.description | quote }}
+  {{- end }}
+  backendServiceRef:
+    name: {{ include "kcc.name" (list $.Release.Name) }}
+{{- range $k := keys ($v.neg_configs | default dict) | sortAlpha }}
+{{- $n := index $v.neg_configs $k }}
+{{- $types := list }}
+{{- range $t := list "gce" "hybrid" "internet" "psc" }}{{ if not (kindIs "invalid" (index $n $t)) }}{{ $types = append $types $t }}{{ end }}{{ end }}
+{{- if ne (len $types) 1 }}
+{{- fail "net-lb-proxy-int: Only one type of neg can be configured at a time." }}
+{{- end }}
+{{- $type := index $types 0 }}
+{{- $negObject := include "kcc.name" (list $.Release.Name "neg" $k) }}
+{{- if or (eq $type "gce") (eq $type "hybrid") }}
+{{- $z := ternary $n.gce $n.hybrid (eq $type "gce") | default dict }}
+{{- $negProject := include "netlbpi.project" (list $ $n) }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeNetworkEndpointGroup
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" $negObject "id" (printf "neg:%s" $k) "project" $negProject "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "netlbpi.negName" (list $ $k) | quote }}
+  location: {{ $z.zone | quote }}
+  {{- if not (kindIs "invalid" $v.description) }}
+  description: {{ $v.description | quote }}
+  {{- end }}
+  networkEndpointType: {{ ternary "GCE_VM_IP_PORT" "NON_GCP_PRIVATE_IP_PORT" (eq $type "gce") }}
+  networkRef:
+    external: {{ include "netlbpi.link" ($z.network | default $v.vpc_config.network) | quote }}
+  {{- if eq $type "gce" }}
+  subnetworkRef:
+    external: {{ include "netlbpi.link" ($z.subnetwork | default $v.vpc_config.subnetwork) | quote }}
+  {{- end }}
+{{- range $ek := keys ($z.endpoints | default dict) | sortAlpha }}
+{{- $e := index $z.endpoints $ek }}
+---
+apiVersion: compute.gcp.hfl.dev/v1beta1
+kind: ComputeNetworkEndpoint
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "ep" $k $ek)) "id" (printf "endpoint:%s-%s" $k $ek) "project" $negProject "abandon" $abandon) | nindent 2 }}
+spec:
+  projectRef:
+    external: {{ $negProject | quote }}
+  networkEndpointGroupRef:
+    name: {{ $negObject }}
+  zone: {{ $z.zone | quote }}
+  ipAddress: {{ $e.ip_address | quote }}
+  {{- with $e.instance }}
+  instanceRef:
+    external: {{ . | quote }}
+  {{- end }}
+  resourceID: {{ $e.port | toString | quote }}
+{{- end }}
+{{- else if eq $type "internet" }}
+{{- $i := $n.internet | default dict }}
+{{- $fqdn := ne (toString $i.use_fqdn) "false" }}
+{{- include "kcc.alpha" (list $ (printf "neg_configs.%s.internet.endpoints" $k) $i.endpoints "ComputeRegionNetworkEndpoint (config-connector-extensions)") }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRegionNetworkEndpointGroup
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" $negObject "id" (printf "internet_neg:%s" $k) "project" $project "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "netlbpi.negName" (list $ $k) | quote }}
+  region: {{ $i.region | quote }}
+  networkEndpointType: {{ ternary "INTERNET_FQDN_PORT" "INTERNET_IP_PORT" $fqdn }}
+  networkRef:
+    external: {{ $network | quote }}
+{{- range $ek := keys ($i.endpoints | default dict) | sortAlpha }}
+{{- $e := index $i.endpoints $ek }}
+---
+apiVersion: compute.gcp.hfl.dev/v1alpha1
+kind: ComputeRegionNetworkEndpoint
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "ep" $k $ek)) "id" (printf "internet_endpoint:%s-%s" $k $ek) "project" $project "abandon" $abandon) | nindent 2 }}
+spec:
+  projectRef:
+    external: {{ $project | quote }}
+  region: {{ $i.region | quote }}
+  regionNetworkEndpointGroupRef:
+    name: {{ $negObject }}
+  {{- if $fqdn }}
+  fqdn: {{ $e.destination | quote }}
+  {{- else }}
+  ipAddress: {{ $e.destination | quote }}
+  {{- end }}
+  port: {{ $e.port }}
+{{- end }}
+{{- else }}
+{{- if not (kindIs "invalid" $n.psc.producer_port) }}
+{{- include "kcc.unsupported" (list $ (printf "neg_configs.%s.psc.producer_port" $k) (dict "set" true) "ComputeRegionNetworkEndpointGroup has no pscData") }}
+{{- end }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRegionNetworkEndpointGroup
+metadata:
+  {{- /* fabric makes PSC NEGs in the chart's project, whatever the entry
+  says. */}}
+  {{- include "kcc.metadata" (dict "root" $ "name" $negObject "id" (printf "psc_neg:%s" $k) "project" $project "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "netlbpi.negName" (list $ $k) | quote }}
+  region: {{ $n.psc.region | quote }}
+  networkEndpointType: PRIVATE_SERVICE_CONNECT
+  pscTargetService: {{ $n.psc.target_service | quote }}
+  {{- with $n.psc.network }}
+  networkRef:
+    external: {{ include "netlbpi.link" . | quote }}
+  {{- end }}
+  {{- with $n.psc.subnetwork }}
+  subnetworkRef:
+    external: {{ include "netlbpi.link" . | quote }}
+  {{- end }}
+{{- end }}
+{{- end }}

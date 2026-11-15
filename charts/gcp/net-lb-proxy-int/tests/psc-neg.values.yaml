@@ -1,0 +1,17 @@
+# fabric's README, "PSC NEG": a backend on a PSC NEG, so no health check.
+name: ilb-test
+project_id: my-project
+region: europe-west1
+backend_service_config:
+  backends:
+    - group: psc
+neg_configs:
+  psc:
+    psc:
+      region: europe-west1
+      target_service: europe-west1-cloudkms.googleapis.com
+      network: projects/my-project/global/networks/my-vpc
+      subnetwork: projects/my-project/regions/europe-west1/subnetworks/my-subnet
+vpc_config:
+  network: projects/my-project/global/networks/my-vpc
+  subnetwork: projects/my-project/regions/europe-west1/subnetworks/my-subnet

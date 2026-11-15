@@ -1,0 +1,20 @@
+# Applied to the fake cloud by hack/mock-apply.sh: a regional forwarding
+# rule in a subnet (tests/mock.needs.yaml makes the network and subnet), a
+# TCP proxy, a backend service on a hybrid NEG with one endpoint, and its
+# regional TCP health check.
+name: catalog-mock-tcpi
+project_id: mock-project
+region: us-central1
+labels: {env: test}
+vpc_config:
+  network: projects/mock-project/global/networks/catalog-mock-tcpi-net
+  subnetwork: projects/mock-project/regions/us-central1/subnetworks/catalog-mock-tcpi-sn
+backend_service_config:
+  backends:
+    - {group: hybrid, balancing_mode: CONNECTION, max_connections: {per_endpoint: 100}}
+neg_configs:
+  hybrid:
+    hybrid:
+      zone: us-central1-b
+      endpoints:
+        e1: {ip_address: 10.25.1.5, port: 443}
