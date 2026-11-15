@@ -1,0 +1,158 @@
+---
+# Source: compute-vm/templates/disks.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeDisk
+metadata:
+  name: names-disk-data
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    disk_name: "data"
+    disk_type: "pd-balanced"
+    environment: "dev"
+    hfl.dev/environment: "dev"
+    hfl.dev/team: "shop"
+    team: "shop"
+  annotations:
+    hfl.dev/id: "disk:data"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "shop-dev-vm-data"
+  location: "europe-west8-b"
+  type: "pd-balanced"
+  size: 10
+---
+# Source: compute-vm/templates/instance.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeInstance
+metadata:
+  name: names
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    environment: "dev"
+    hfl.dev/environment: "dev"
+    hfl.dev/team: "shop"
+    team: "shop"
+  annotations:
+    hfl.dev/id: "instance"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/allow-stopping-for-update: "true"
+spec:
+  resourceID: "shop-dev-vm"
+  zone: "europe-west8-b"
+  machineType: "e2-micro"
+  description: "Managed by the compute-vm Terraform module."
+  canIpForward: false
+  deletionProtection: false
+  enableDisplay: false
+  resourcePolicies:
+    - name: names-schedule
+  attachedDisk:
+    - deviceName: "data"
+      mode: "READ_WRITE"
+      sourceDiskRef:
+        name: names-disk-data
+  bootDisk:
+    autoDelete: true
+    initializeParams:
+      size: 10
+      type: "pd-balanced"
+      sourceImageRef:
+        external: "debian-cloud/debian-13"
+      labels:
+        disk_name: "boot"
+        disk_type: "pd-balanced"
+        environment: "dev"
+        team: "shop"
+  networkInterface:
+    - networkRef:
+        external: "projects/my-project/global/networks/vpc"
+      subnetworkRef:
+        external: "projects/my-project/regions/europe-west8/subnetworks/subnet"
+  scheduling:
+    automaticRestart: true
+    onHostMaintenance: "MIGRATE"
+    preemptible: false
+    provisioningModel: "STANDARD"
+  serviceAccount:
+    serviceAccountRef:
+      name: names-sa
+    scopes: ["https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+---
+# Source: compute-vm/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeInstanceGroup
+metadata:
+  name: names-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    environment: "dev"
+    hfl.dev/environment: "dev"
+    hfl.dev/team: "shop"
+    team: "shop"
+  annotations:
+    hfl.dev/id: "group"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "shop-dev-vm-group"
+  zone: "europe-west8-b"
+  description: "Managed by the compute-vm Terraform module."
+  networkRef:
+    external: "projects/my-project/global/networks/vpc"
+  instances:
+    - name: names
+---
+# Source: compute-vm/templates/resource-policies.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeResourcePolicy
+metadata:
+  name: names-schedule
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    environment: "dev"
+    hfl.dev/environment: "dev"
+    hfl.dev/team: "shop"
+    team: "shop"
+  annotations:
+    hfl.dev/id: "instance_schedule"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "shop-dev-vm-sched"
+  region: "europe-west8"
+  description: "Schedule policy for test."
+  instanceSchedulePolicy:
+    timeZone: "UTC"
+    vmStopSchedule:
+      schedule: "0 20 * * *"
+---
+# Source: compute-vm/templates/main.yaml
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMServiceAccount
+metadata:
+  name: names-sa
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    environment: "dev"
+    hfl.dev/environment: "dev"
+    hfl.dev/team: "shop"
+    team: "shop"
+  annotations:
+    hfl.dev/id: "service_account"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "shop-dev-vm-sa"
+  displayName: "Terraform VM test."

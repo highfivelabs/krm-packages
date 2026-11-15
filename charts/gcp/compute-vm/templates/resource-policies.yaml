@@ -1,0 +1,152 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/compute-vm/resource-policies.tf
+(v60.0.0), Copyright 2023 Google LLC, Apache-2.0.
+
+google_compute_resource_policy.schedule: the instance schedule, a
+ComputeResourcePolicy the instance or template lists.
+google_compute_resource_policy.snapshot: a ComputeResourcePolicy per
+snapshot_schedules entry.
+google_compute_disk_resource_policy_attachment.boot and .attached, and
+google_compute_region_disk_resource_policy_attachment.attached:
+config-connector-extensions' ComputeDiskResourcePolicyAttachment and
+ComputeRegionDiskResourcePolicyAttachment (compute.gcp.hfl.dev/v1beta1),
+one per disk and schedule. A schedule that is a key of snapshot_schedules
+is the chart's policy; any other is the name of an existing one, as
+fabric's try().
+*/ -}}
+{{- $v := .Values }}
+{{- $abandon := include "kcc.abandon" . }}
+{{- $region := include "computeVm.region" . }}
+{{- $tpl := include "computeVm.isTemplate" . }}
+{{- $instance := include "computeVm.instanceName" . }}
+{{- with $v.instance_schedule }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeResourcePolicy
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "schedule")) "id" "instance_schedule" "project" $v.project_id "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "computeVm.sameName" (list $ "instanceSchedule") | quote }}
+  region: {{ $region | quote }}
+  description: {{ .description | default (printf "Schedule policy for %s." $v.name) | quote }}
+  instanceSchedulePolicy:
+    timeZone: {{ .timezone | default "UTC" | quote }}
+    {{- with .expiration_time }}
+    expirationTime: {{ . | quote }}
+    {{- end }}
+    {{- with .start_time }}
+    startTime: {{ . | quote }}
+    {{- end }}
+    {{- with .vm_start }}
+    vmStartSchedule:
+      schedule: {{ . | quote }}
+    {{- end }}
+    {{- with .vm_stop }}
+    vmStopSchedule:
+      schedule: {{ . | quote }}
+    {{- end }}
+{{- end }}
+{{- range $k := keys ($v.snapshot_schedules | default dict) | sortAlpha }}
+{{- $p := index $v.snapshot_schedules $k }}
+{{- $s := $p.schedule }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeResourcePolicy
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "snapshot" $k)) "id" (printf "snapshot_schedule:%s" $k) "project" $v.project_id "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "computeVm.policyName" (list $ $k) | quote }}
+  region: {{ $region | quote }}
+  description: {{ $p.description | default (printf "Schedule policy %s for %s." $k $v.name) | quote }}
+  snapshotSchedulePolicy:
+    schedule:
+      {{- with $s.daily }}
+      dailySchedule:
+        daysInCycle: {{ int64 .days_in_cycle }}
+        startTime: {{ .start_time | quote }}
+      {{- end }}
+      {{- with $s.hourly }}
+      hourlySchedule:
+        hoursInCycle: {{ int64 .hours_in_cycle }}
+        startTime: {{ .start_time | quote }}
+      {{- end }}
+      {{- with $s.weekly }}
+      weeklySchedule:
+        dayOfWeeks:
+          {{- range . }}
+          - day: {{ .day | quote }}
+            startTime: {{ .start_time | quote }}
+          {{- end }}
+      {{- end }}
+    {{- with $p.retention_policy }}
+    retentionPolicy:
+      maxRetentionDays: {{ int64 .max_retention_days }}
+      onSourceDiskDelete: {{ ternary "APPLY_RETENTION_POLICY" "KEEP_AUTO_SNAPSHOTS" (eq (toString .on_source_disk_delete_keep) "false") | quote }}
+    {{- end }}
+    {{- with $p.snapshot_properties }}
+    snapshotProperties:
+      {{- with .labels }}
+      labels: {{ toJson . }}
+      {{- end }}
+      {{- with .storage_locations }}
+      storageLocations: {{ toJson . }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .guest_flush) }}
+      guestFlush: {{ .guest_flush }}
+      {{- end }}
+    {{- end }}
+{{- end }}
+{{- if not $tpl }}
+{{- $policy := dict }}
+{{- range $k := keys ($v.snapshot_schedules | default dict) }}{{ $_ := set $policy $k (include "computeVm.policyName" (list $ $k)) }}{{ end }}
+{{- $boot := $v.boot_disk | default dict }}
+{{- range $sched := ($boot.snapshot_schedule | default list) | uniq | sortAlpha }}
+---
+apiVersion: compute.gcp.hfl.dev/v1beta1
+kind: ComputeDiskResourcePolicyAttachment
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "boot-snapshot" $sched)) "id" (printf "boot_snapshot:%s" $sched) "project" $v.project_id) | nindent 2 }}
+spec:
+  resourceID: {{ get $policy $sched | default $sched | quote }}
+  projectRef:
+    external: {{ $v.project_id | quote }}
+  zone: {{ $v.zone | quote }}
+  diskRef:
+    {{- if kindIs "map" $boot.use_independent_disk }}
+    name: {{ include "kcc.name" (list $.Release.Name "boot") }}
+    {{- else }}
+    {{- /* The boot disk Compute Engine makes with the instance has the
+    instance's name, as fabric's disk = var.name. */}}
+    external: {{ printf "projects/%s/zones/%s/disks/%s" $v.project_id $v.zone $instance | quote }}
+    {{- end }}
+{{- end }}
+{{- range $k := keys ($v.attached_disks | default dict) | sortAlpha }}
+{{- $d := index $v.attached_disks $k }}
+{{- $src := $d.source | default dict }}
+{{- $regional := not (kindIs "invalid" ($d.initialize_params | default dict).replica_zone) }}
+{{- range $sched := ($d.snapshot_schedule | default list) | uniq | sortAlpha }}
+---
+apiVersion: compute.gcp.hfl.dev/v1beta1
+kind: {{ ternary "ComputeRegionDiskResourcePolicyAttachment" "ComputeDiskResourcePolicyAttachment" $regional }}
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "disk" $k "snapshot" $sched)) "id" (printf "disk_snapshot:%s-%s" $k $sched) "project" $v.project_id) | nindent 2 }}
+spec:
+  resourceID: {{ get $policy $sched | default $sched | quote }}
+  projectRef:
+    external: {{ $v.project_id | quote }}
+  {{- if $regional }}
+  region: {{ $region | quote }}
+  {{- else }}
+  zone: {{ $v.zone | quote }}
+  {{- end }}
+  diskRef:
+    {{- if $src.attach }}
+    external: {{ $src.attach | quote }}
+    {{- else }}
+    name: {{ include "kcc.name" (list $.Release.Name "disk" $k) }}
+    {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

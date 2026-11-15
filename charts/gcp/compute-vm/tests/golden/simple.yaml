@@ -1,0 +1,45 @@
+---
+# Source: compute-vm/templates/instance.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeInstance
+metadata:
+  name: simple
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "simple"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "instance"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/allow-stopping-for-update: "true"
+spec:
+  resourceID: "test"
+  zone: "europe-west8-b"
+  machineType: "e2-micro"
+  description: "Managed by the compute-vm Terraform module."
+  canIpForward: false
+  deletionProtection: false
+  enableDisplay: false
+  bootDisk:
+    autoDelete: true
+    initializeParams:
+      size: 10
+      type: "pd-balanced"
+      sourceImageRef:
+        external: "debian-cloud/debian-13"
+      labels:
+        disk_name: "boot"
+        disk_type: "pd-balanced"
+  networkInterface:
+    - networkRef:
+        external: "projects/my-project/global/networks/vpc"
+      subnetworkRef:
+        external: "projects/my-project/regions/europe-west8/subnetworks/subnet"
+  scheduling:
+    automaticRestart: true
+    onHostMaintenance: "MIGRATE"
+    preemptible: false
+    provisioningModel: "STANDARD"
+  serviceAccount:
+    scopes: ["https://www.googleapis.com/auth/devstorage.read_only","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/monitoring.write"]

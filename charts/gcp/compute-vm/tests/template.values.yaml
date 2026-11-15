@@ -1,0 +1,37 @@
+# fabric's README instance template example: a global template with an
+# attached disk (made from an image and an existing one), scratch disks, a
+# network attachment interface, Spot scheduling and a given service account.
+project_id: my-project
+zone: europe-west8-b
+name: test-template
+create_template: {}
+tags: [http-server]
+labels: {env: test}
+metadata: {startup-script: "echo hi"}
+network_interfaces:
+  - network: projects/my-project/global/networks/vpc
+    subnetwork: projects/my-project/regions/europe-west8/subnetworks/subnet
+    nat: true
+network_attached_interfaces:
+  - projects/my-project/regions/europe-west8/networkAttachments/att
+boot_disk:
+  initialize_params: {size: 20, type: hyperdisk-balanced, hyperdisk: {provisioned_iops: 3000}}
+attached_disks:
+  data:
+    initialize_params: {size: 10}
+    source: {image: projects/debian-cloud/global/images/family/debian-12}
+  ro:
+    mode: READ_ONLY
+    source: {attach: projects/my-project/zones/europe-west8-b/disks/shared}
+encryption:
+  kms_key_self_link: projects/my-project/locations/europe-west8/keyRings/kr/cryptoKeys/k
+scratch_disks: {count: 1}
+scheduling_config:
+  provisioning_model: SPOT
+  termination_action: DELETE
+  local_ssd_recovery_timeout: {seconds: 600}
+service_account:
+  email: vm-sa@my-project.iam.gserviceaccount.com
+instance_schedule:
+  vm_stop: "0 20 * * *"
+names: {template: shop-dev-web}

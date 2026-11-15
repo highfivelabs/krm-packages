@@ -1,0 +1,8 @@
+# expect: instance_schedule: Must validate at least one schema
+project_id: my-project
+zone: europe-west8-b
+name: test
+network_interfaces:
+  - network: projects/my-project/global/networks/vpc
+    subnetwork: projects/my-project/regions/europe-west8/subnetworks/subnet
+instance_schedule: {timezone: UTC}

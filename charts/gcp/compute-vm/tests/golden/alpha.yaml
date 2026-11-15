@@ -1,0 +1,87 @@
+---
+# Source: compute-vm/templates/instance.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeInstance
+metadata:
+  name: alpha
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "alpha"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "instance"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/allow-stopping-for-update: "true"
+spec:
+  resourceID: "test"
+  zone: "europe-west8-b"
+  machineType: "e2-micro"
+  description: "Managed by the compute-vm Terraform module."
+  canIpForward: false
+  deletionProtection: false
+  enableDisplay: false
+  bootDisk:
+    autoDelete: true
+    initializeParams:
+      size: 10
+      type: "pd-balanced"
+      sourceImageRef:
+        external: "debian-cloud/debian-13"
+      labels:
+        disk_name: "boot"
+        disk_type: "pd-balanced"
+  networkInterface:
+    - networkRef:
+        external: "projects/my-project/global/networks/vpc"
+      subnetworkRef:
+        external: "projects/my-project/regions/europe-west8/subnetworks/subnet"
+  scheduling:
+    automaticRestart: true
+    onHostMaintenance: "MIGRATE"
+    preemptible: false
+    provisioningModel: "STANDARD"
+---
+# Source: compute-vm/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1alpha1
+kind: IAMMember
+metadata:
+  name: alpha-iap-iam-member-dev
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "alpha"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iap_iam_member:dev"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/iap_tunnel/zones/europe-west8-b/instances/test
+    kind: IAPTunnelInstance
+  role: "roles/iap.tunnelResourceAccessor"
+  member: "group:dev@example.com"
+  condition:
+    title: "expires"
+    expression: "request.time < timestamp(\"2027-01-01T00:00:00Z\")"
+    description: "Until next year."
+---
+# Source: compute-vm/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1alpha1
+kind: IAMMember
+metadata:
+  name: alpha-iap-iam-member-ops
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "alpha"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iap_iam_member:ops"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/iap_tunnel/zones/europe-west8-b/instances/test
+    kind: IAPTunnelInstance
+  role: "roles/iap.tunnelResourceAccessor"
+  member: "user:ops@example.com"

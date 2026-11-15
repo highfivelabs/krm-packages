@@ -1,0 +1,8 @@
+# expect: compute-vm: iap_tunnel_iam_bindings_additive needs the alpha Config Connector kind IAMMember (config-connector-extensions)
+project_id: my-project
+zone: europe-west8-b
+name: test
+network_interfaces:
+  - network: projects/my-project/global/networks/vpc
+    subnetwork: projects/my-project/regions/europe-west8/subnetworks/subnet
+iap_tunnel_iam_bindings_additive: {a: {role: roles/iap.tunnelResourceAccessor, member: user:a@example.com}}

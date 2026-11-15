@@ -611,49 +611,49 @@ gcp,net-lb-app-int,service_directory_registration,"object({namespace, service})"
 gcp,net-lb-app-int,ssl_certificates,"object({certificate_ids, create_configs})",yes,,
 gcp,net-lb-app-int,urlmap_config,"object({default_route_action, default_service, default_url_redirect, description, header_action, host_rules, +2})",yes,,
 gcp,net-lb-app-int,vpc_config,"object({network, subnetwork})",yes,,
-gcp,compute-vm,attached_disks,"map(object({auto_delete, device_name, force_attach, initialize_params, mode, name, +3}))",no,,no-chart
-gcp,compute-vm,boot_disk,"object({architecture, auto_delete, force_attach, initialize_params, snapshot_schedule, source, +1})",no,,no-chart
-gcp,compute-vm,can_ip_forward,bool,no,,no-chart
-gcp,compute-vm,confidential_compute,string,no,,no-chart
-gcp,compute-vm,context,"object({addresses, condition_vars, custom_roles, iam_principals, kms_keys, locations, +5})",no,,no-chart
-gcp,compute-vm,create_template,object({regional}),no,,no-chart
-gcp,compute-vm,description,string,no,,no-chart
-gcp,compute-vm,enable_display,bool,no,,no-chart
-gcp,compute-vm,encryption,"object({disk_encryption_key_raw, encrypt_boot, kms_key_self_link})",no,,no-chart
-gcp,compute-vm,gpu,"object({count, type})",no,,no-chart
-gcp,compute-vm,group,"object({membership, named_ports})",no,,no-chart
-gcp,compute-vm,hostname,string,no,,no-chart
-gcp,compute-vm,iam,map(list(string)),no,,no-chart
-gcp,compute-vm,iap_tunnel_iam,map(list(string)),no,,no-chart
-gcp,compute-vm,iap_tunnel_iam_bindings,"map(object({condition, members, role}))",no,,no-chart
-gcp,compute-vm,iap_tunnel_iam_bindings_additive,"map(object({condition, member, role}))",no,,no-chart
-gcp,compute-vm,instance_schedule,"object({active, description, expiration_time, start_time, timezone, vm_start, +1})",no,,no-chart
-gcp,compute-vm,kms_autokeys,"map(object({location, resource_type_selector}))",no,,no-chart
-gcp,compute-vm,labels,map(string),no,,no-chart
-gcp,compute-vm,lifecycle_config,"object({allow_stopping_for_update, deletion_protection, graceful_shutdown, key_revocation_action_type})",no,,no-chart
-gcp,compute-vm,machine_features_config,"object({enable_nested_virtualization, enable_turbo_mode, enable_uefi_networking, performance_monitoring_unit, threads_per_core, visible_core_count})",no,,no-chart
-gcp,compute-vm,machine_type,string,no,,no-chart
-gcp,compute-vm,metadata,map(string),no,,no-chart
-gcp,compute-vm,metadata_startup_script,string,no,,no-chart
-gcp,compute-vm,min_cpu_platform,string,no,,no-chart
-gcp,compute-vm,name,string,no,,no-chart
-gcp,compute-vm,network_attached_interfaces,list(string),no,,no-chart
-gcp,compute-vm,network_interfaces,"list(object({addresses, alias_ips, external_ipv6, internal_ipv6_prefix_length, nat, network, +5}))",no,,no-chart
-gcp,compute-vm,network_performance_tier,string,no,,no-chart
-gcp,compute-vm,network_tag_bindings,map(string),no,,no-chart
-gcp,compute-vm,project_id,string,no,,no-chart
-gcp,compute-vm,project_number,string,no,,no-chart
-gcp,compute-vm,resource_policies,list(string),no,,no-chart
-gcp,compute-vm,scheduling_config,"object({automatic_restart, local_ssd_recovery_timeout, maintenance_interval, max_run_duration, min_node_cpus, node_affinities, +3})",no,,no-chart
-gcp,compute-vm,scratch_disks,"object({count, interface, size})",no,,no-chart
-gcp,compute-vm,service_account,"object({auto_create, email, scopes})",no,,no-chart
-gcp,compute-vm,shielded_config,"object({enable_integrity_monitoring, enable_secure_boot, enable_vtpm})",no,,no-chart
-gcp,compute-vm,snapshot_schedules,"map(object({description, retention_policy, schedule, snapshot_properties}))",no,,no-chart
-gcp,compute-vm,tag_bindings,map(string),no,,no-chart
-gcp,compute-vm,tag_bindings_immutable,map(string),no,,no-chart
-gcp,compute-vm,tags,list(string),no,,no-chart
-gcp,compute-vm,tpu_config,"object({queued, runtime_version})",no,,no-chart
-gcp,compute-vm,zone,string,no,,no-chart
+gcp,compute-vm,attached_disks,"map(object({auto_delete, device_name, force_attach, initialize_params, mode, name, +3}))",partial,"force_attach (ComputeInstance's attachedDisk has no such field) and hyperdisk.storage_pool (ComputeDisk has none) are refused, and with create_template so are provisioned_throughput and snapshot_schedule",gap
+gcp,compute-vm,boot_disk,"object({architecture, auto_delete, force_attach, initialize_params, snapshot_schedule, source, +1})",partial,"architecture and force_attach are refused (no such fields); the hyperdisk settings need use_independent_disk on an instance (a ComputeDisk takes provisioned_iops and provisioned_throughput, not storage_pool), and a template takes provisioned_iops only",gap
+gcp,compute-vm,can_ip_forward,bool,yes,,
+gcp,compute-vm,confidential_compute,string,yes,,
+gcp,compute-vm,context,"object({addresses, condition_vars, custom_roles, iam_principals, kms_keys, locations, +5})",no,Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs,by-design
+gcp,compute-vm,create_template,object({regional}),partial,"a global template is a ComputeInstanceTemplate; regional: true needs config-connector-extensions' ComputeRegionInstanceTemplate (v1alpha1), not ported yet, even with allow_alpha",alpha
+gcp,compute-vm,description,string,yes,,
+gcp,compute-vm,enable_display,bool,yes,,
+gcp,compute-vm,encryption,"object({disk_encryption_key_raw, encrypt_boot, kms_key_self_link})",partial,"kms_key_self_link is carried; disk_encryption_key_raw is refused: a raw key given here would be in the rendered manifest, and ComputeInstance and ComputeDisk take it from a Kubernetes Secret (valueFrom), which the chart does not take yet (the SECV question)",gap
+gcp,compute-vm,gpu,"object({count, type})",yes,,
+gcp,compute-vm,group,"object({membership, named_ports})",partial,named_ports makes an unmanaged ComputeInstanceGroup; membership (joining an existing group) is refused: ComputeInstanceGroup owns its group's whole instance list and there is no membership kind,gap
+gcp,compute-vm,hostname,string,yes,,
+gcp,compute-vm,iam,map(list(string)),yes,,
+gcp,compute-vm,iap_tunnel_iam,map(list(string)),yes,,
+gcp,compute-vm,iap_tunnel_iam_bindings,"map(object({condition, members, role}))",yes,,
+gcp,compute-vm,iap_tunnel_iam_bindings_additive,"map(object({condition, member, role}))",partial,"each entry is config-connector-extensions' IAMMember, which is v1alpha1: needs allow_alpha: true",alpha
+gcp,compute-vm,instance_schedule,"object({active, description, expiration_time, start_time, timezone, vm_start, +1})",yes,,
+gcp,compute-vm,kms_autokeys,"map(object({location, resource_type_selector}))",no,a key handle's key is known only after apply and neither ComputeInstance nor ComputeDisk can reference a handle (gap 8),gap
+gcp,compute-vm,labels,map(string),yes,,
+gcp,compute-vm,lifecycle_config,"object({allow_stopping_for_update, deletion_protection, graceful_shutdown, key_revocation_action_type})",partial,key_revocation_action_type and graceful_shutdown are refused: ComputeInstance and ComputeInstanceTemplate have no such fields,gap
+gcp,compute-vm,machine_features_config,"object({enable_nested_virtualization, enable_turbo_mode, enable_uefi_networking, performance_monitoring_unit, threads_per_core, visible_core_count})",partial,"enable_turbo_mode, enable_uefi_networking and performance_monitoring_unit are refused: advancedMachineFeatures has no such fields",gap
+gcp,compute-vm,machine_type,string,yes,,
+gcp,compute-vm,metadata,map(string),yes,,
+gcp,compute-vm,metadata_startup_script,string,yes,,
+gcp,compute-vm,min_cpu_platform,string,yes,,
+gcp,compute-vm,name,string,yes,,
+gcp,compute-vm,network_attached_interfaces,list(string),partial,carried on a template (ComputeInstanceTemplate's networkAttachment); refused on an instance: ComputeInstance's networkInterface has no networkAttachment field,gap
+gcp,compute-vm,network_interfaces,"list(object({addresses, alias_ips, external_ipv6, internal_ipv6_prefix_length, nat, network, +5}))",yes,,
+gcp,compute-vm,network_performance_tier,string,yes,,
+gcp,compute-vm,network_tag_bindings,map(string),no,"a VM's tag binding names its numeric ID, known only after apply, and TagsLocationTagBinding cannot reference a ComputeInstance (gap 8)",gap
+gcp,compute-vm,project_id,string,yes,,
+gcp,compute-vm,project_number,string,yes,,
+gcp,compute-vm,resource_policies,list(string),yes,,
+gcp,compute-vm,scheduling_config,"object({automatic_restart, local_ssd_recovery_timeout, maintenance_interval, max_run_duration, min_node_cpus, node_affinities, +3})",yes,,
+gcp,compute-vm,scratch_disks,"object({count, interface, size})",yes,,
+gcp,compute-vm,service_account,"object({auto_create, email, scopes})",yes,,
+gcp,compute-vm,shielded_config,"object({enable_integrity_monitoring, enable_secure_boot, enable_vtpm})",yes,,
+gcp,compute-vm,snapshot_schedules,"map(object({description, retention_policy, schedule, snapshot_properties}))",yes,,
+gcp,compute-vm,tag_bindings,map(string),no,"a VM's and its disks' tag bindings name their numeric IDs, known only after apply, and TagsLocationTagBinding cannot reference a ComputeInstance or ComputeDisk (gap 8)",gap
+gcp,compute-vm,tag_bindings_immutable,map(string),partial,carried on an instance (params and the boot disk's resourceManagerTags); refused with create_template: ComputeInstanceTemplate has no resourceManagerTags field,gap
+gcp,compute-vm,tags,list(string),yes,,
+gcp,compute-vm,tpu_config,"object({queued, runtime_version})",no,"TPUVirtualMachine and TPUQueuedResource are alpha in Config Connector v1.160.0 and not ported yet, even with allow_alpha",alpha
+gcp,compute-vm,zone,string,yes,,
 gcp,compute-mig,all_instances_config,"object({labels, metadata})",no,ComputeInstanceGroupManager has no allInstancesConfig field,gap
 gcp,compute-mig,auto_healing_policies,"object({health_check, initial_delay_sec})",yes,,
 gcp,compute-mig,autoscaler_config,"object({cooldown_period, max_replicas, min_replicas, mode, scaling_control, scaling_signals})",partial,"scaling_control.down beside scaling_control.in: Compute Engine v1, which the autoscaler kinds call, has one scale-in control",gap
