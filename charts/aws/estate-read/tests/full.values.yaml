@@ -1,0 +1,13 @@
+# Both trusts, an external ID, a path, a longer session, tags and labels.
+account_id: "111122223333"
+path: /bundt/
+max_session_duration: 7200
+collector:
+  aws_principal_arns:
+    - arn:aws:iam::444455556666:role/bundt-estate-collector
+    - arn:aws:iam::777788889999:role/bundt-estate-collector
+  external_id: estate-7f3c
+  google_service_account_unique_id: "123456789012345678901"
+  google_audience: bundt-estate-read
+tags: {owner: cloud-ops}
+labels: {team: platform}

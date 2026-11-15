@@ -1,0 +1,12 @@
+# A role one Google service account assumes, with one policy of its own
+# (attached by reference).
+name: gsa-reader
+google_service_account_unique_id: "123456789012345678901"
+audience: gsa-reader
+policies:
+  read:
+    description: Read one bucket
+    statements:
+      - sid: Read
+        actions: ["s3:GetObject", "s3:ListBucket"]
+        resources: ["arn:aws:s3:::example", "arn:aws:s3:::example/*"]

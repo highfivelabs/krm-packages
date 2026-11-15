@@ -1,0 +1,4 @@
+# expect: iam-role.create must stay false
+account_id: "111122223333"
+collector: {aws_principal_arns: ["arn:aws:iam::444455556666:role/c"]}
+iam-role: {create: true, name: x, trust_policy_permissions: {A: {actions: ["sts:AssumeRole"], principals: [{type: AWS, identifiers: ["arn:aws:iam::111122223333:root"]}]}}}

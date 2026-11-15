@@ -28,7 +28,9 @@ tags: {}
 
 # IAM bindings for the registry in {ROLE => [MEMBERS]} format. On Artifact
 # Registry these are Artifact Registry roles (roles/artifactregistry.reader,
-# .writer, .repoAdmin); a Cloud Storage role is refused (README.md, "Values").
+# .writer, .repoAdmin). Five Cloud Storage roles fabric took are translated,
+# each with a note; any other Cloud Storage role is refused (README.md,
+# "Values").
 iam: {}
 # Registry location: US, EU, ASIA or empty, as fabric takes it. Empty is
 # gcr.io, US us.gcr.io, EU eu.gcr.io, ASIA asia.gcr.io.

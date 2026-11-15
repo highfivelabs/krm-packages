@@ -1,0 +1,129 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+The role (iam/Role) one Google service account assumes through IAM's
+built-in Google federation, and its customer managed policies (iam/Policy),
+rendered as the iam-role and iam-policy charts render them. The documents
+are built by the iam-role chart's builder (iamrole.document), as the iam
+module's aws_iam_policy_document builds them. IAM is global: no object
+takes a region.
+*/ -}}
+{{- include "ack.names" (list $ (list "role")) -}}
+{{- $v := .Values -}}
+{{- $chart := .Chart.Name -}}
+{{- if (index $v "iam-role").create }}
+{{- fail (printf "%s: iam-role.create must stay false: the iam-role dependency only lends its document builder; set this chart's own values" $chart) }}
+{{- end }}
+{{- $name := include "ack.resourceName" (list $ "role" "role" ($v.name | default "") 64) }}
+{{- if not $name }}
+{{- fail (printf "%s: name is required: the role's name (or names.role)" $chart) }}
+{{- end }}
+{{- $id := toString ($v.google_service_account_unique_id | default "") }}
+{{- if not (regexMatch "^[0-9]{21}$" $id) }}
+{{- fail (printf "%s: google_service_account_unique_id %q must be the service account's unique ID, 21 digits (gcloud iam service-accounts describe EMAIL --format='value(uniqueId)'); quote it, since YAML reads it as a number otherwise" $chart $id) }}
+{{- end }}
+{{- $aud := toString ($v.audience | default "") }}
+{{- if not $aud }}
+{{- fail (printf "%s: audience is required: the audience (aud) of the Google ID token the service account presents, which the trust policy checks as accounts.google.com:oaud" $chart) }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.max_session_duration) }}
+{{- if or (lt (int64 $v.max_session_duration) 3600) (gt (int64 $v.max_session_duration) 43200) }}
+{{- fail (printf "%s: max_session_duration %v must be 3600 to 43200 seconds" $chart $v.max_session_duration) }}
+{{- end }}
+{{- end }}
+{{- $policies := $v.policies | default dict }}
+{{- $arns := $v.policy_arns | default dict }}
+{{- if gt (add (len $policies) (len $arns)) 10 }}
+{{- fail (printf "%s: %d policies and %d policy_arns: IAM attaches at most 10 managed policies to a role by default; merge policies" $chart (len $policies) (len $arns)) }}
+{{- end }}
+{{- $path := $v.path | default "/" }}
+{{- $trust := include "iamrole.document" (list $ "trust" list (list (dict
+  "sid" $v.trust_sid
+  "actions" (list "sts:AssumeRoleWithWebIdentity")
+  "principals" (list (dict "type" "Federated" "identifiers" (list "accounts.google.com")))
+  "condition" (list
+    (dict "test" "StringEquals" "variable" "accounts.google.com:oaud" "values" (list $aud))
+    (dict "test" "StringEquals" "variable" "accounts.google.com:sub" "values" (list $id))))) list) }}
+{{- $tags := include "ack.tags" (list $ $v.tags) | fromJson }}
+{{- $role := include "ack.name" (list .Release.Name "role") }}
+{{- $policyNames := list }}
+{{- $policyObjects := list }}
+{{- range $k := keys $policies | sortAlpha }}
+{{- $p := index $policies $k | default dict }}
+{{- $pname := include "ack.fit" (list $ "policy" (printf "%s-%s" $name $k) 128) }}
+{{- if gt (len $pname) 128 }}
+{{- fail (printf "%s: policy name %q is %d characters, more than the 128 IAM allows: shorten the role's name or the key" $chart $pname (len $pname)) }}
+{{- end }}
+{{- $doc := include "iamrole.document" (list $ (printf "policies.%s" $k) list ($p.statements | default list) list) }}
+{{- if not $doc }}
+{{- fail (printf "%s: policies.%s has no statement" $chart $k) }}
+{{- end }}
+{{- if gt (len $doc) 6144 }}
+{{- fail (printf "%s: policies.%s's document is %d characters, more than the 6,144 IAM allows a managed policy: split it over more keys" $chart $k (len $doc)) }}
+{{- end }}
+{{- $policyNames = append $policyNames $pname }}
+{{- $policyObjects = append $policyObjects (dict "key" $k "name" $pname "doc" $doc "description" $p.description) }}
+{{- end }}
+{{- if and $policies $arns (not $v.account_id) }}
+{{- fail (printf "%s: account_id is required to attach policies beside policy_arns (ACK's Role takes policy ARNs or references, not both): the chart cannot look it up (values.yaml)" $chart) }}
+{{- end }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $role "id" "role") | nindent 2 }}
+spec:
+  name: {{ $name | quote }}
+  path: {{ $path | quote }}
+{{- with $v.description }}
+  description: {{ . | quote }}
+{{- end }}
+  assumeRolePolicyDocument: {{ $trust | quote }}
+{{- if not (kindIs "invalid" $v.max_session_duration) }}
+  maxSessionDuration: {{ int64 $v.max_session_duration }}
+{{- end }}
+{{- if and $policies $arns }}
+{{- /* ACK takes a role's policies as ARNs or as references, not both: with
+ARNs given, the policies' ARNs are built, as IAM names them. */}}
+  policies:
+{{- range $policyNames }}
+    - {{ printf "arn:%s:iam::%s:policy%s%s" $v.partition (toString $v.account_id) $path . | quote }}
+{{- end }}
+{{- range $k := keys $arns | sortAlpha }}
+    - {{ index $arns $k | quote }}
+{{- end }}
+{{- else if $policies }}
+  policyRefs:
+{{- range $p := $policyObjects }}
+    - from:
+        name: {{ include "ack.name" (list $.Release.Name "policy" $p.key) }}
+{{- end }}
+{{- else if $arns }}
+  policies:
+{{- range $k := keys $arns | sortAlpha }}
+    - {{ index $arns $k | quote }}
+{{- end }}
+{{- end }}
+{{- with $tags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- range $p := $policyObjects }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "policy" $p.key)) "id" (printf "policy:%s" $p.key)) | nindent 2 }}
+spec:
+  name: {{ $p.name | quote }}
+  path: {{ $path | quote }}
+{{- with $p.description }}
+  description: {{ . | quote }}
+{{- end }}
+  policyDocument: {{ $p.doc | quote }}
+{{- with $tags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}

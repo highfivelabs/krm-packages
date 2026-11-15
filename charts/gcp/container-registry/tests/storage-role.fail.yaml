@@ -1,5 +1,6 @@
-# expect: container-registry: iam.roles/storage.objectViewer is not supported
+# expect: container-registry: iam.roles/storage.objectAdmin is not supported
+# A Cloud Storage role outside the five the chart translates is still refused.
 project_id: p
 location: ""
 iam:
-  roles/storage.objectViewer: ["user:a@example.com"]
+  roles/storage.objectAdmin: ["user:a@example.com"]

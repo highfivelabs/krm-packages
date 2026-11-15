@@ -1,0 +1,41 @@
+# fabric's example (modules/project-factory/README.md at v60.0.0, f706bc3b),
+# lines removed and none changed: docs/design.md, "Factories, worked".
+billing_account: 012345-67890A-BCDEF0
+labels:
+ app: app-0
+ team: team-a
+parent: $folder_ids:team-a/app-0
+iam_by_principals:
+  $iam_principals:service_accounts/dev-ta-app0-be/app-0-be:
+    - roles/storage.objectViewer
+service_accounts:
+  app-0-be:
+    display_name: "Backend instances."
+    # assign roles on this project projects
+    iam_self_roles:
+      - roles/logging.logWriter
+      - roles/monitoring.metricWriter
+    # assign roles on this service account
+    iam:
+      roles/iam.serviceAccountUser:
+        - $iam_principals:service_accounts/_self_/app-0-fe
+  app-0-fe:
+    display_name: "Frontend instances."
+    iam_self_roles:
+      - roles/logging.logWriter
+      - roles/monitoring.metricWriter
+buckets:
+  app-0-bucket-a:
+    location: europe-west8
+    iam:
+      roles/storage.objectViewer:
+        - $iam_principals:service_agents/_self_/compute
+  app-0-bucket-b:
+    location: europe-west8
+    logging_config:
+      log_bucket: $storage_buckets:log-bucket
+      log_object_prefix: log-prefix
+services:
+  - compute.googleapis.com
+  - container.googleapis.com
+  - storage.googleapis.com

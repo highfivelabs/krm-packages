@@ -1,0 +1,16 @@
+# Applied to the fake AWS by hack/mock-apply-aws.sh: the role with one
+# policy of its own beside an AWS managed policy (so the policy's ARN is
+# built from the fake's account, tests/mock.set.yaml).
+name: catalog-gsa-role
+account_id: "000000000000"
+google_service_account_unique_id: "123456789012345678901"
+audience: catalog-gsa-role
+policy_arns:
+  readonly: arn:aws:iam::aws:policy/ReadOnlyAccess
+policies:
+  read:
+    statements:
+      - sid: Read
+        actions: ["s3:GetObject"]
+        resources: ["arn:aws:s3:::catalog-test/*"]
+tags: {catalog-test: "true"}

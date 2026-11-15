@@ -91,3 +91,10 @@ README examples, every trust source and both document merges at once, the
 names convention) validated against iam-controller v1.11.3's CRDs, and the
 refusal cases. `tests/mock.values.yaml` is the case the fake-AWS run
 applies (`docs/aws.md`, "Charts").
+
+## Changes
+
+- **0.1.1** (2026-11-15): `values.schema.json` accepts Helm's `global`, which
+  Helm gives a chart used as a dependency (`google-federated-role` and
+  `estate-read` use this chart's document builder). Renders unchanged.
+- **0.1.0** (2026-11-12): the port.

@@ -1,0 +1,6 @@
+# Only AWS managed policies: attached by ARN, no account_id needed.
+name: gsa-viewer
+google_service_account_unique_id: "123456789012345678901"
+audience: gsa-viewer
+policy_arns:
+  view: arn:aws:iam::aws:policy/job-function/ViewOnlyAccess

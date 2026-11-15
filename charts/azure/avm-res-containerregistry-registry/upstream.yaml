@@ -28,9 +28,6 @@ refused:
     reason: "accepted, but a token's passwords are refused: secrets Azure generates and returns once, from the generateCredentials action, which no Azure Service Operator or aso-extensions kind performs; whether a component may hold one is the builder's decision"
     partial: true
     fields: [registry_tokens.passwords]
-  - variable: customer_managed_key
-    kind: gap
-    reason: "ASO's Registry takes the key's URI and the identity's client ID (keyIdentifier, and identity or identityFromConfig, a ConfigMap only an ASO UserAssignedIdentity in the cluster writes); the module looks the client ID up from the identity's resource ID, which a render cannot"
   - variable: resource_types
     kind: by-design
     reason: "ASO's kinds fix the API versions (RegistryCacheRule 2025-11-01)"

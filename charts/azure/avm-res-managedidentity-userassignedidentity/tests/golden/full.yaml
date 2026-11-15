@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: avm-res-managedidentity-userassignedidentity
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "federated_identity_credential:aks"
 spec:
@@ -29,7 +29,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: avm-res-managedidentity-userassignedidentity
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "lock"
 spec:
@@ -48,7 +48,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: avm-res-managedidentity-userassignedidentity
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "outbound_role_assignment:blob"
 spec:
@@ -69,7 +69,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: avm-res-managedidentity-userassignedidentity
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "outbound_role_assignment:kv"
 spec:
@@ -93,7 +93,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: avm-res-managedidentity-userassignedidentity
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "user_assigned_identity"
 spec:
@@ -103,6 +103,11 @@ spec:
     armId: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-app"
   operatorSpec:
     configMapExpressions:
+      # The client ID, for another component's *FromConfig field (a
+      # registry's customer-managed key, identityFromConfig).
+      - name: full-id-outputs
+        key: clientId
+        value: self.status.clientId
       - name: full-id-outputs
         key: principalId
         value: self.status.principalId
