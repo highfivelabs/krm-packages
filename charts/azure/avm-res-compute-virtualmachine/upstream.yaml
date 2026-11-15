@@ -44,9 +44,6 @@ refused:
     kind: gap
     reason: "an unattend file's content can carry a password (AutoLogon) and azurerm treats it as sensitive, but the VirtualMachine takes it only in plain text (no SecretReference), so it would sit in the component's inputs"
   # Kinds and fields ASO and aso-extensions lack.
-  - variable: azure_backup_configurations
-    kind: gap
-    reason: "Microsoft.RecoveryServices/vaults/backupFabrics/protectionContainers/protectedItems (a protected VM) has no Azure Service Operator or aso-extensions kind"
   - variable: extensions
     kind: gap
     partial: true

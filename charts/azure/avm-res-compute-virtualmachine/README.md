@@ -53,7 +53,8 @@ renders the `VirtualMachine` `vm-example` and the `NetworkInterface`
 | `azurerm_role_assignment` (machine, interface, data disk) | one per entry | `RoleAssignment` (`authorization.azure.com/v20220401`) |
 | `azurerm_role_assignment.system_managed_identity` | one per `role_assignments_system_managed_identity` entry | `RoleAssignment` at the entry's scope, `system_managed_identity_role_assignment:<key>`, its principal read from the ConfigMap `<release>-vm-identity` the machine exports (`operatorSpec.configMapExpressions`, `self.status.identity.principalId`) |
 | `azurerm_monitor_diagnostic_setting` (machine, interface) | one per entry | `DiagnosticSetting` (`insights.azure.com/v1api20210501preview`) |
-| `random_password`, `tls_private_key`, `azurerm_key_vault_secret`, `azurerm_backup_protected_vm`, telemetry | never | refused or not ported (below) |
+| `azapi_resource.this_backup_intent` (`main.backup.tf`, formerly `azurerm_backup_protected_vm`) | one per `azure_backup_configurations` entry | aso-extensions `VaultsProtectedItem` (`recoveryservices.azure.hfl.dev/v20260701`), `backup:<key>`, owned by the vault (`recovery_vault_resource_id`), the machine and `backup_policy_resource_id` by ARM ID, `exclude_disk_luns` or `include_disk_luns` as `diskExclusionProperties`; container and item named from the machine as the module names them |
+| `random_password`, `tls_private_key`, `azurerm_key_vault_secret`, telemetry | never | refused or not ported (below) |
 
 ASO's `VirtualMachine` is at ARM API version 2022-03-01, older than
 azurerm's. The chart renders aso-extensions' `VirtualMachine`
@@ -121,8 +122,7 @@ secret), writing one to Key Vault (`account_credentials.key_vault_configuration`
 plain text), an
 extension's `protected_settings` (its `protected_settings_from_key_vault`
 is mapped), and `additional_unattend_contents` (an unattend file can carry
-a password, and the kind takes it only in plain text). Gaps: `azure_backup_configurations` (no kind
-for a Recovery Services protected item), an extension's
+a password, and the kind takes it only in plain text). Gaps: an extension's
 `provision_after_extensions` and a run command's managed identities
 (newer than ASO's `VirtualMachinesExtension` and aso-extensions'
 `VirtualMachinesRunCommand` API version, 2022-03-01). `timeouts` by design. The
@@ -161,6 +161,11 @@ not (fixed in `package.yaml`). Live: the `vm` case of
 
 ## Changes
 
+- **0.6.0** (2026-11-15): `azure_backup_configurations` is mapped: one
+  aso-extensions `VaultsProtectedItem` per entry (backup of the machine in
+  a Recovery Services vault, with the policy and the data disks chosen by
+  `exclude_disk_luns` or `include_disk_luns`), where it was refused; a
+  policy is required.
 - **0.4.0** (2026-11-14): the admin password
   (`account_credentials.admin_credentials.password`, `admin_password`) is
   mapped as a reference to a Kubernetes Secret, `{secretName, key}`
