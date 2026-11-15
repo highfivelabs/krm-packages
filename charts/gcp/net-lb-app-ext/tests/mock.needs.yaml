@@ -1,0 +1,17 @@
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeNetwork
+metadata:
+  name: catalog-mock-glb-net
+  annotations:
+    cnrm.cloud.google.com/project-id: mock-project
+spec:
+  autoCreateSubnetworks: false
+---
+apiVersion: storage.cnrm.cloud.google.com/v1beta1
+kind: StorageBucket
+metadata:
+  name: catalog-mock-glb-bucket
+  annotations:
+    cnrm.cloud.google.com/project-id: mock-project
+spec:
+  location: US

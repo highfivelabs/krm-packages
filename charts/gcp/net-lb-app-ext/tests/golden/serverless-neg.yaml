@@ -1,0 +1,180 @@
+---
+# Source: net-lb-app-ext/templates/backend-service.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeBackendService
+metadata:
+  name: serverless-neg-bs-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "serverless-neg"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "backend_service:default"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-default"
+  location: "global"
+  description: "Terraform managed."
+  loadBalancingScheme: "EXTERNAL"
+  protocol: "HTTP"
+  portName: "http"
+  backend:
+    - balancingMode: "UTILIZATION"
+      capacityScaler: 1
+      description: "Terraform managed."
+      group:
+        networkEndpointGroupRef:
+          external: "projects/my-project/regions/europe-west8/networkEndpointGroups/glb-test-0-run"
+---
+# Source: net-lb-app-ext/templates/backend-service.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeBackendService
+metadata:
+  name: serverless-neg-bs-fn
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "serverless-neg"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "backend_service:fn"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-fn"
+  location: "global"
+  description: "Terraform managed."
+  loadBalancingScheme: "EXTERNAL"
+  protocol: "HTTP"
+  portName: "http"
+  backend:
+    - balancingMode: "UTILIZATION"
+      capacityScaler: 1
+      description: "Terraform managed."
+      group:
+        networkEndpointGroupRef:
+          external: "projects/other-project/regions/europe-west8/networkEndpointGroups/glb-test-0-fn"
+---
+# Source: net-lb-app-ext/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeForwardingRule
+metadata:
+  name: serverless-neg-fr
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "serverless-neg"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "forwarding_rule:"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: global
+  description: "Terraform managed."
+  ipVersion: IPV4
+  ipProtocol: TCP
+  loadBalancingScheme: EXTERNAL
+  portRange: "80"
+  target:
+    targetHTTPProxyRef:
+      name: serverless-neg
+---
+# Source: net-lb-app-ext/templates/negs.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRegionNetworkEndpointGroup
+metadata:
+  name: serverless-neg-neg-fn
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "serverless-neg"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "serverless_neg:fn"
+    cnrm.cloud.google.com/project-id: "other-project"
+spec:
+  resourceID: "glb-test-0-fn"
+  region: "europe-west8"
+  description: "A function."
+  networkEndpointType: SERVERLESS
+  cloudFunction:
+    functionRef:
+      external: "my-function"
+---
+# Source: net-lb-app-ext/templates/negs.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRegionNetworkEndpointGroup
+metadata:
+  name: serverless-neg-neg-run
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "serverless-neg"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "serverless_neg:run"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-run"
+  region: "europe-west8"
+  description: "Terraform managed."
+  networkEndpointType: SERVERLESS
+  cloudRun:
+    serviceRef:
+      external: "my-run-service"
+    tag: "blue"
+---
+# Source: net-lb-app-ext/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeTargetHTTPProxy
+metadata:
+  name: serverless-neg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "serverless-neg"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "target_proxy"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: global
+  description: "Terraform managed."
+  urlMapRef:
+    name: serverless-neg
+---
+# Source: net-lb-app-ext/templates/urlmap.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeURLMap
+metadata:
+  name: serverless-neg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "serverless-neg"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "url_map"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: "global"
+  description: "Terraform managed."
+  defaultService:
+    backendServiceRef:
+      name: serverless-neg-bs-default
+  hostRule:
+    - hosts: ["*"]
+      pathMatcher: "main"
+  pathMatcher:
+    - name: "main"
+      defaultService:
+        backendServiceRef:
+          name: serverless-neg-bs-default
+      pathRule:
+        - paths: ["/fn/*"]
+          service:
+            backendServiceRef:
+              name: serverless-neg-bs-fn

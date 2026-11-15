@@ -1,0 +1,4 @@
+# expect: net-lb-app-ext: urlmap_config.path_matchers.m.path_rules[].custom_error_response_policy is not supported
+name: lb
+project_id: my-project
+urlmap_config: {default_service: default, path_matchers: {m: {default_service: default, path_rules: [{paths: [/a], service: default, custom_error_response_policy: {error_service: x}}]}}}

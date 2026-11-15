@@ -21,7 +21,8 @@ data: {secretName: appgw-tls, key: pfx}
 | `key` | the key in that Secret's `data` that holds the value |
 
 The chart renders it as the controller's own secret reference: Azure
-Service Operator's `SecretReference` (`{name, key}`) on Azure. The
+Service Operator's `SecretReference` (`{name, key}`) on Azure, Config
+Connector's `valueFrom.secretKeyRef` on Google Cloud. The
 controller reads the Secret when it reconciles and sends the value to the
 cloud; the value is never in the chart's values, the rendered objects or
 the component's inputs. A string where a reference is expected (the secret
@@ -131,6 +132,8 @@ elsewhere, or a gateway without an identity.
 | `avm-res-containerservice-managedcluster` (0.3.0) | `windows_profile_password` (with its `_version`), `aad_profile.server_app_secret`, `service_principal_profile.secret` | `ManagedCluster` `windowsProfile.adminPassword`, `aadProfile.serverAppSecret`, `servicePrincipalProfile.secret` |
 | `avm-res-dbforpostgresql-flexibleserver` (0.2.0) | `administrator_password`, or `administrator_password_wo` with its `_version` | `FlexibleServer` `administratorLoginPassword` |
 | `avm-res-sql-server` (0.4.0) | `administrator_login_password`, or `administrator_login_password_wo` with its `_version` | `Server` `administratorLoginPassword` |
+| `net-lb-app-ext`, `net-lb-app-int` (0.1.0) | `ssl_certificates.create_configs.*.private_key` | `ComputeSSLCertificate` `privateKey.valueFrom.secretKeyRef` (Config Connector's own secret reference; the certificate itself is public and sent as given) |
+| | `backend_service_configs.*.iap_config.oauth2_client_secret` | `ComputeBackendService` `iap.oauth2ClientSecret.valueFrom.secretKeyRef` |
 
 A module's `*_version` beside a write-only secret is required with it, as
 in the module, and does nothing: the controller sends the whole body on

@@ -1,0 +1,68 @@
+# Applied to the fake cloud by hack/mock-apply.sh: a classic global
+# forwarding rule, an HTTP proxy and a URL map with a host rule and a path
+# matcher, a backend bucket (tests/mock.needs.yaml makes the bucket and
+# the network), four backend services (a hybrid NEG with one endpoint, an
+# instance group, a serverless NEG, a global internet NEG; the API refuses
+# groups and NEGs in one service), and their health checks.
+name: catalog-mock-glb
+project_id: mock-project
+labels: {env: test}
+group_configs:
+  a: {zone: us-central1-a, named_ports: {http: 80}}
+neg_configs:
+  hybrid:
+    hybrid:
+      network: projects/mock-project/global/networks/catalog-mock-glb-net
+      zone: us-east1-b
+      endpoints:
+        e1: {ip_address: 10.22.2.5, port: 80}
+  run:
+    cloudrun:
+      region: us-central1
+      target_service: {name: hello}
+  web:
+    internet: {use_fqdn: true}
+health_check_configs:
+  default:
+    http: {port_specification: USE_SERVING_PORT, request_path: /healthz}
+  tcp:
+    tcp: {port: 80}
+backend_buckets_config:
+  static:
+    bucket_name: catalog-mock-glb-bucket
+    enable_cdn: true
+backend_service_configs:
+  default:
+    backends:
+      - {group: hybrid, balancing_mode: RATE, max_rate: {per_endpoint: 100}}
+  groups:
+    port_name: http
+    health_checks: [tcp]
+    backends:
+      - {group: a}
+  run:
+    health_checks: []
+    backends:
+      - {group: run}
+  web:
+    health_checks: []
+    protocol: HTTPS
+    backends:
+      - {group: web}
+urlmap_config:
+  default_service: default
+  host_rules:
+    - hosts: ["*"]
+      path_matcher: main
+  path_matchers:
+    main:
+      default_service: default
+      path_rules:
+        - paths: [/groups, /groups/*]
+          service: groups
+        - paths: [/run/*]
+          service: run
+        - paths: [/web/*]
+          service: web
+        - paths: [/static/*]
+          service: static

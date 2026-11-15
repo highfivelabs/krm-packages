@@ -1,0 +1,154 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/net-lb-app-int/main.tf
+(v60.0.0), Copyright 2026 Google LLC, Apache-2.0.
+
+google_compute_forwarding_rule.default: one regional ComputeForwardingRule
+(INTERNAL_MANAGED, TCP), named name, in vpc_config's subnetwork;
+google_compute_region_target_http_proxy.default or
+google_compute_region_target_https_proxy.default: a regional
+ComputeTargetHTTPProxy (protocol HTTP) or ComputeTargetHTTPSProxy (HTTPS);
+google_compute_service_attachment.default: with service_attachment, one
+ComputeServiceAttachment for the forwarding rule, named name. The URL
+map, backend services, health checks, groups, NEGs and SSL certificates
+are the shared _netlbapp.tpl's.
+*/ -}}
+{{- $v := .Values }}
+{{- include "kcc.names" (list $ (list "targetProxy" "urlMap")) }}
+{{- include "kcc.unsupported" (list $ "context" $v.context "use Bundt expressions (${...}) and valueFrom in the component's inputs instead") }}
+{{- if not (kindIs "invalid" $v.service_directory_registration) }}
+{{- include "kcc.unsupported" (list $ "service_directory_registration" (dict "set" true) "ComputeForwardingRule's serviceDirectoryRegistrations takes a service only, not a namespace") }}
+{{- end }}
+{{- $sa := $v.service_attachment }}
+{{- if not (kindIs "invalid" $sa) }}
+{{- include "kcc.unsupported" (list $ "service_attachment.domain_name" $sa.domain_name "ComputeServiceAttachment has no domainNames field") }}
+{{- if not (kindIs "invalid" $sa.reconcile_connections) }}
+{{- include "kcc.unsupported" (list $ "service_attachment.reconcile_connections" (dict "set" true) "ComputeServiceAttachment has no reconcileConnections field") }}
+{{- end }}
+{{- end }}
+{{- if gt (len ($v.ports | default list)) 1 }}
+{{- fail "net-lb-app-int: Application Load Balancer supports at most one port per forwarding rule." }}
+{{- end }}
+{{- $abandon := include "kcc.abandon" . }}
+{{- $project := $v.project_id }}
+{{- $region := $v.region }}
+{{- $https := eq (toString $v.protocol) "HTTPS" }}
+{{- $ports := list (ternary "443" "80" $https) }}
+{{- if $v.ports }}{{ $ports = list }}{{ range $v.ports }}{{ $ports = append $ports (toString .) }}{{ end }}{{ end }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeForwardingRule
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "fr")) "id" "forwarding_rule" "project" $project "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "kcc.cloudName" (list $ "forwarding rule" $v.name 63 "letter") | quote }}
+  location: {{ $region | quote }}
+  {{- if not (kindIs "invalid" $v.description) }}
+  description: {{ $v.description | quote }}
+  {{- end }}
+  {{- with $v.address }}
+  ipAddress:
+    {{- if regexMatch "^[0-9a-fA-F.:]+$" . }}
+    ip: {{ . | quote }}
+    {{- else }}
+    addressRef:
+      external: {{ include "netlbapp.link" . | quote }}
+    {{- end }}
+  {{- end }}
+  ipProtocol: TCP
+  loadBalancingScheme: INTERNAL_MANAGED
+  {{- if not (kindIs "invalid" $v.global_access) }}
+  allowGlobalAccess: {{ $v.global_access }}
+  {{- end }}
+  networkRef:
+    external: {{ include "netlbapp.link" $v.vpc_config.network | quote }}
+  networkTier: {{ ternary "STANDARD" "PREMIUM" (eq (toString $v.network_tier_premium) "false") }}
+  portRange: {{ join "," $ports | quote }}
+  subnetworkRef:
+    external: {{ include "netlbapp.link" $v.vpc_config.subnetwork | quote }}
+  target:
+    {{- if $https }}
+    targetHTTPSProxyRef:
+    {{- else }}
+    targetHTTPProxyRef:
+    {{- end }}
+      name: {{ include "kcc.name" (list $.Release.Name) }}
+{{- if not (kindIs "invalid" $sa) }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeServiceAttachment
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "sa")) "id" "service_attachment" "project" $project "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "kcc.cloudName" (list $ "service attachment" $v.name 63 "letter") | quote }}
+  location: {{ $region | quote }}
+  projectRef:
+    external: {{ $project | quote }}
+  {{- if not (kindIs "invalid" $v.description) }}
+  description: {{ $v.description | quote }}
+  {{- end }}
+  targetServiceRef:
+    name: {{ include "kcc.name" (list $.Release.Name "fr") }}
+  natSubnets:
+    {{- range $sa.nat_subnets }}
+    - external: {{ include "netlbapp.link" . | quote }}
+    {{- end }}
+  connectionPreference: {{ ternary "ACCEPT_AUTOMATIC" "ACCEPT_MANUAL" (eq (toString $sa.automatic_connection) "true") }}
+  {{- with $sa.consumer_accept_lists }}
+  consumerAcceptLists:
+    {{- range $p := keys . | sortAlpha }}
+    - projectRef:
+        external: {{ $p | quote }}
+      connectionLimit: {{ index $sa.consumer_accept_lists $p }}
+    {{- end }}
+  {{- end }}
+  {{- with $sa.consumer_reject_lists }}
+  consumerRejectLists:
+    {{- range . }}
+    - external: {{ . | quote }}
+    {{- end }}
+  {{- end }}
+  enableProxyProtocol: {{ eq (toString $sa.enable_proxy_protocol) "true" }}
+{{- end }}
+{{- if $https }}
+{{- $tp := $v.https_proxy_config | default dict }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeTargetHTTPSProxy
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name)) "id" "target_proxy" "project" $project "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "kcc.resourceName" (list $ "targetProxy" "target proxy" ($tp.name | default $v.name) 63 "letter") | quote }}
+  location: {{ $region | quote }}
+  description: {{ ternary "Terraform managed." $tp.description (kindIs "invalid" $tp.description) | quote }}
+  {{- with $tp.certificate_manager_certificates }}
+  certificateManagerCertificates:
+    {{- range . }}
+    - external: {{ . | quote }}
+    {{- end }}
+  {{- end }}
+  {{- with include "netlbapp.proxyCertificates" $ | trim }}
+  sslCertificates:
+    {{- . | nindent 4 }}
+  {{- end }}
+  {{- with $tp.ssl_policy }}
+  sslPolicyRef:
+    external: {{ include "netlbapp.link" . | quote }}
+  {{- end }}
+  urlMapRef:
+    name: {{ include "kcc.name" (list $.Release.Name) }}
+{{- else }}
+{{- $tp := $v.http_proxy_config | default dict }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeTargetHTTPProxy
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name)) "id" "target_proxy" "project" $project "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "kcc.resourceName" (list $ "targetProxy" "target proxy" ($tp.name | default $v.name) 63 "letter") | quote }}
+  location: {{ $region | quote }}
+  description: {{ ternary "Terraform managed." $tp.description (kindIs "invalid" $tp.description) | quote }}
+  urlMapRef:
+    name: {{ include "kcc.name" (list $.Release.Name) }}
+{{- end }}

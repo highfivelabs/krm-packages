@@ -1,0 +1,20 @@
+# fabric's README, "Health Checks": a regional check, a global one, an
+# existing one.
+name: ilb-test
+project_id: my-project
+region: europe-west1
+backend_service_configs:
+  default:
+    backends:
+      - group: projects/my-project/zones/europe-west1-b/instanceGroups/my-ig
+    health_checks: [regional, global, projects/my-project/regions/europe-west1/healthChecks/other]
+health_check_configs:
+  regional:
+    is_regional: true
+    enable_logging: true
+    http: {port: 8080, request_path: /healthz}
+  global:
+    tcp: {port: 80}
+vpc_config:
+  network: projects/my-project/global/networks/my-vpc
+  subnetwork: projects/my-project/regions/europe-west1/subnetworks/my-subnet

@@ -1,0 +1,15 @@
+# fabric's README, "Private Service Connect NEG creation".
+name: glb-test-0
+project_id: my-project
+use_classic_version: false
+backend_service_configs:
+  default:
+    backends:
+      - group: neg-0
+    health_checks: []
+health_check_configs: {}
+neg_configs:
+  neg-0:
+    psc:
+      region: europe-west8
+      target_service: europe-west8-cloudkms.googleapis.com

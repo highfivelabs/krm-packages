@@ -1,0 +1,135 @@
+---
+# Source: net-lb-app-int/templates/backend-service.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeBackendService
+metadata:
+  name: names-bs-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: net-lb-app-int
+    app.kubernetes.io/version: "0.1.0"
+    cost-center: "web"
+    env: "dev"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "backend_service:default"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-app-default"
+  location: "europe-west1"
+  description: "Terraform managed."
+  loadBalancingScheme: "INTERNAL_MANAGED"
+  protocol: "HTTP"
+  healthChecks:
+    - healthCheckRef:
+        name: names-hc-default
+  backend:
+    - balancingMode: "UTILIZATION"
+      capacityScaler: 1
+      description: "Terraform managed."
+      group:
+        instanceGroupRef:
+          external: "projects/my-project/zones/europe-west1-b/instanceGroups/my-ig"
+---
+# Source: net-lb-app-int/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeForwardingRule
+metadata:
+  name: names-fr
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: net-lb-app-int
+    app.kubernetes.io/version: "0.1.0"
+    cost-center: "web"
+    env: "dev"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "forwarding_rule"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-app"
+  location: "europe-west1"
+  description: "Terraform managed."
+  ipProtocol: TCP
+  loadBalancingScheme: INTERNAL_MANAGED
+  networkRef:
+    external: "projects/my-project/global/networks/my-vpc"
+  networkTier: PREMIUM
+  portRange: "80"
+  subnetworkRef:
+    external: "projects/my-project/regions/europe-west1/subnetworks/my-subnet"
+  target:
+    targetHTTPProxyRef:
+      name: names
+---
+# Source: net-lb-app-int/templates/health-check.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeHealthCheck
+metadata:
+  name: names-hc-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: net-lb-app-int
+    app.kubernetes.io/version: "0.1.0"
+    cost-center: "web"
+    env: "dev"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "health_check:default"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-app-default"
+  location: "global"
+  description: "Terraform managed."
+  httpHealthCheck:
+    portSpecification: USE_SERVING_PORT
+---
+# Source: net-lb-app-int/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeTargetHTTPProxy
+metadata:
+  name: names
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: net-lb-app-int
+    app.kubernetes.io/version: "0.1.0"
+    cost-center: "web"
+    env: "dev"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "target_proxy"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "shop-dev-tp"
+  location: "europe-west1"
+  description: "Terraform managed."
+  urlMapRef:
+    name: names
+---
+# Source: net-lb-app-int/templates/urlmap.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeURLMap
+metadata:
+  name: names
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: net-lb-app-int
+    app.kubernetes.io/version: "0.1.0"
+    cost-center: "web"
+    env: "dev"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "url_map"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "shop-dev-um"
+  location: "europe-west1"
+  description: "Terraform managed."
+  defaultService:
+    backendServiceRef:
+      name: names-bs-default

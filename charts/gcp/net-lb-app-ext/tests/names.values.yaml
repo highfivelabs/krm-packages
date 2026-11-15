@@ -1,0 +1,10 @@
+# Every names key, labels and tags, as Bundt passes them (docs/design.md,
+# "Names, labels and tags").
+name: glb-app
+project_id: my-project
+names: {targetProxy: shop-dev-tp, urlMap: shop-dev-um}
+labels: {hfl.dev/team: shop, env: dev}
+tags: {cost-center: web}
+backend_service_configs:
+  default:
+    backends: [{group: projects/my-project/zones/europe-west1-b/instanceGroups/my-ig}]

@@ -1,0 +1,147 @@
+---
+# Source: net-lb-app-int/templates/backend-service.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeBackendService
+metadata:
+  name: health-check-bs-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "health-check"
+    app.kubernetes.io/name: net-lb-app-int
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "backend_service:default"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-test-default"
+  location: "europe-west1"
+  description: "Terraform managed."
+  loadBalancingScheme: "INTERNAL_MANAGED"
+  protocol: "HTTP"
+  healthChecks:
+    - healthCheckRef:
+        name: health-check-hc-regional
+    - healthCheckRef:
+        name: health-check-hc-global
+    - healthCheckRef:
+        external: "projects/my-project/regions/europe-west1/healthChecks/other"
+  backend:
+    - balancingMode: "UTILIZATION"
+      capacityScaler: 1
+      description: "Terraform managed."
+      group:
+        instanceGroupRef:
+          external: "projects/my-project/zones/europe-west1-b/instanceGroups/my-ig"
+---
+# Source: net-lb-app-int/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeForwardingRule
+metadata:
+  name: health-check-fr
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "health-check"
+    app.kubernetes.io/name: net-lb-app-int
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "forwarding_rule"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-test"
+  location: "europe-west1"
+  description: "Terraform managed."
+  ipProtocol: TCP
+  loadBalancingScheme: INTERNAL_MANAGED
+  networkRef:
+    external: "projects/my-project/global/networks/my-vpc"
+  networkTier: PREMIUM
+  portRange: "80"
+  subnetworkRef:
+    external: "projects/my-project/regions/europe-west1/subnetworks/my-subnet"
+  target:
+    targetHTTPProxyRef:
+      name: health-check
+---
+# Source: net-lb-app-int/templates/health-check.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeHealthCheck
+metadata:
+  name: health-check-hc-global
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "health-check"
+    app.kubernetes.io/name: net-lb-app-int
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "health_check:global"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-test-global"
+  location: "global"
+  description: "Terraform managed."
+  tcpHealthCheck:
+    port: 80
+---
+# Source: net-lb-app-int/templates/health-check.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeHealthCheck
+metadata:
+  name: health-check-hc-regional
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "health-check"
+    app.kubernetes.io/name: net-lb-app-int
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "health_check:regional"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-test-regional"
+  location: "europe-west1"
+  description: "Terraform managed."
+  httpHealthCheck:
+    port: 8080
+    requestPath: /healthz
+  logConfig:
+    enable: true
+---
+# Source: net-lb-app-int/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeTargetHTTPProxy
+metadata:
+  name: health-check
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "health-check"
+    app.kubernetes.io/name: net-lb-app-int
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "target_proxy"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-test"
+  location: "europe-west1"
+  description: "Terraform managed."
+  urlMapRef:
+    name: health-check
+---
+# Source: net-lb-app-int/templates/urlmap.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeURLMap
+metadata:
+  name: health-check
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "health-check"
+    app.kubernetes.io/name: net-lb-app-int
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "url_map"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-test"
+  location: "europe-west1"
+  description: "Terraform managed."
+  defaultService:
+    backendServiceRef:
+      name: health-check-bs-default

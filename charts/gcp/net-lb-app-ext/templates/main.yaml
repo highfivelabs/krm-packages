@@ -1,0 +1,175 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/net-lb-app-ext/main.tf and
+backends.tf (v60.0.0), Copyright 2026 Google LLC, Apache-2.0.
+
+google_compute_global_forwarding_rule.default: one global
+ComputeForwardingRule (TCP, EXTERNAL or, with use_classic_version: false,
+EXTERNAL_MANAGED) per forwarding_rules_config key, named name for the key
+"" and <name>-<key> otherwise, unless the entry has a name;
+google_compute_managed_ssl_certificate.default: one
+ComputeManagedSSLCertificate per ssl_certificates.managed_configs key;
+google_compute_target_http_proxy (protocol HTTP) or
+google_compute_target_https_proxy (HTTPS), default (classic) or new: one
+global ComputeTargetHTTPProxy or ComputeTargetHTTPSProxy;
+google_compute_backend_bucket.default: one ComputeBackendBucket per
+backend_buckets_config key, named <name>-<key> unless it has a name.
+The URL map, backend services, health checks, groups, NEGs and SSL
+certificates are the shared _netlbapp.tpl's.
+*/ -}}
+{{- $v := .Values }}
+{{- include "kcc.names" (list $ (list "targetProxy" "urlMap")) }}
+{{- include "kcc.unsupported" (list $ "context" $v.context "use Bundt expressions (${...}) and valueFrom in the component's inputs instead") }}
+{{- $abandon := include "kcc.abandon" . }}
+{{- $project := $v.project_id }}
+{{- $https := eq (toString $v.protocol) "HTTPS" }}
+{{- $classic := ne (toString $v.use_classic_version) "false" }}
+{{- $frs := $v.forwarding_rules_config }}
+{{- if kindIs "invalid" $frs }}{{ $frs = dict "" dict }}{{ end }}
+{{- range $k := keys $frs | sortAlpha }}
+{{- $fr := index $frs $k | default dict }}
+{{- if gt (len ($fr.ports | default list)) 1 }}
+{{- fail "net-lb-app-ext: Application Load Balancer supports at most one port per forwarding rule." }}
+{{- end }}
+{{- $ports := list (ternary "443" "80" $https) }}
+{{- if $fr.ports }}{{ $ports = list }}{{ range $fr.ports }}{{ $ports = append $ports (toString .) }}{{ end }}{{ end }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeForwardingRule
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (ternary (include "kcc.name" (list $.Release.Name "fr")) (include "kcc.name" (list $.Release.Name "fr" $k)) (eq $k "")) "id" (printf "forwarding_rule:%s" $k) "project" $project "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "kcc.cloudName" (list $ "forwarding rule" ($fr.name | default (ternary $v.name (printf "%s-%s" $v.name $k) (eq $k ""))) 63 "letter") | quote }}
+  location: global
+  description: {{ ternary "Terraform managed." $fr.description (kindIs "invalid" $fr.description) | quote }}
+  {{- with $fr.address }}
+  ipAddress:
+    {{- if regexMatch "^[0-9a-fA-F.:]+$" . }}
+    ip: {{ . | quote }}
+    {{- else }}
+    addressRef:
+      external: {{ include "netlbapp.link" . | quote }}
+    {{- end }}
+  {{- else }}
+  ipVersion: {{ ternary "IPV6" "IPV4" (eq (toString $fr.ipv6) "true") }}
+  {{- end }}
+  ipProtocol: TCP
+  loadBalancingScheme: {{ ternary "EXTERNAL" "EXTERNAL_MANAGED" $classic }}
+  portRange: {{ join "," $ports | quote }}
+  target:
+    {{- if $https }}
+    targetHTTPSProxyRef:
+    {{- else }}
+    targetHTTPProxyRef:
+    {{- end }}
+      name: {{ include "kcc.name" (list $.Release.Name) }}
+{{- end }}
+{{- $sc := $v.ssl_certificates | default dict }}
+{{- range $k := keys ($sc.managed_configs | default dict) | sortAlpha }}
+{{- $m := index $sc.managed_configs $k }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeManagedSSLCertificate
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "managed-cert" $k)) "id" (printf "managed_ssl_certificate:%s" $k) "project" $project "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "kcc.cloudName" (list $ "managed SSL certificate" ($m.name | default (printf "%s-%s" $v.name $k)) 63 "letter") | quote }}
+  projectRef:
+    external: {{ $project | quote }}
+  {{- with $m.description }}
+  description: {{ . | quote }}
+  {{- end }}
+  type: MANAGED
+  managed:
+    domains: {{ toJson $m.domains }}
+{{- end }}
+{{- if $https }}
+{{- $tp := $v.https_proxy_config | default dict }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeTargetHTTPSProxy
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name)) "id" "target_proxy" "project" $project "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "kcc.resourceName" (list $ "targetProxy" "target proxy" ($tp.name | default $v.name) 63 "letter") | quote }}
+  location: global
+  description: {{ ternary "Terraform managed." $tp.description (kindIs "invalid" $tp.description) | quote }}
+  {{- with $tp.certificate_map }}
+  certificateMapRef:
+    external: {{ . | quote }}
+  {{- end }}
+  {{- with $tp.certificate_manager_certificates }}
+  certificateManagerCertificates:
+    {{- range . }}
+    - external: {{ . | quote }}
+    {{- end }}
+  {{- end }}
+  {{- if and (not $classic) (not (kindIs "invalid" $tp.http_keepalive_timeout)) }}
+  httpKeepAliveTimeoutSec: {{ int $tp.http_keepalive_timeout }}
+  {{- end }}
+  {{- with $tp.quic_override }}
+  quicOverride: {{ . | quote }}
+  {{- end }}
+  {{- with $tp.mtls_policy }}
+  serverTlsPolicyRef:
+    external: {{ . | quote }}
+  {{- end }}
+  {{- with include "netlbapp.proxyCertificates" $ | trim }}
+  sslCertificates:
+    {{- . | nindent 4 }}
+  {{- end }}
+  {{- with $tp.ssl_policy }}
+  sslPolicyRef:
+    external: {{ include "netlbapp.link" . | quote }}
+  {{- end }}
+  urlMapRef:
+    name: {{ include "kcc.name" (list $.Release.Name) }}
+{{- else }}
+{{- $tp := $v.http_proxy_config | default dict }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeTargetHTTPProxy
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name)) "id" "target_proxy" "project" $project "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "kcc.resourceName" (list $ "targetProxy" "target proxy" ($tp.name | default $v.name) 63 "letter") | quote }}
+  location: global
+  description: {{ ternary "Terraform managed." $tp.description (kindIs "invalid" $tp.description) | quote }}
+  {{- if and (not $classic) (not (kindIs "invalid" $tp.http_keepalive_timeout)) }}
+  httpKeepAliveTimeoutSec: {{ int $tp.http_keepalive_timeout }}
+  {{- end }}
+  urlMapRef:
+    name: {{ include "kcc.name" (list $.Release.Name) }}
+{{- end }}
+{{- range $k := keys ($v.backend_buckets_config | default dict) | sortAlpha }}
+{{- $b := index $v.backend_buckets_config $k }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeBackendBucket
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "bucket" $k)) "id" (printf "backend_bucket:%s" $k) "project" (include "netlbapp.project" (list $ $b)) "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "netlbapp.bucketName" (list $ $k) | quote }}
+  bucketRef:
+    external: {{ $b.bucket_name | quote }}
+  {{- with $b.compression_mode }}
+  compressionMode: {{ . | quote }}
+  {{- end }}
+  {{- with $b.custom_response_headers }}
+  customResponseHeaders: {{ toJson . }}
+  {{- end }}
+  {{- with $b.description }}
+  description: {{ . | quote }}
+  {{- end }}
+  {{- with $b.edge_security_policy }}
+  edgeSecurityPolicy: {{ include "netlbapp.link" . | quote }}
+  {{- end }}
+  {{- if not (kindIs "invalid" $b.enable_cdn) }}
+  enableCdn: {{ $b.enable_cdn }}
+  {{- end }}
+  {{- with $b.cdn_policy }}
+  cdnPolicy:
+    {{- include "netlbapp.cdnPolicy" . | trim | nindent 4 }}
+  {{- end }}
+{{- end }}

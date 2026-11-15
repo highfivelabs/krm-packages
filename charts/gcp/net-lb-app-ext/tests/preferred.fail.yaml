@@ -1,0 +1,4 @@
+# expect: net-lb-app-ext: backend_service_configs.default.backends[].preferred is not supported
+name: lb
+project_id: my-project
+backend_service_configs: {default: {backends: [{group: projects/my-project/zones/europe-west1-b/instanceGroups/a, preferred: true}]}}
