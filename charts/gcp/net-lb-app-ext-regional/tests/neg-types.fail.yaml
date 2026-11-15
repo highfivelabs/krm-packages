@@ -1,0 +1,6 @@
+# expect: net-lb-app-ext-regional: Only one type of NEG can be configured at a time.
+name: lb
+project_id: my-project
+region: europe-west1
+vpc_config: {network: projects/my-project/global/networks/my-vpc}
+neg_configs: {a: {cloudrun: {region: europe-west1, target_urlmask: /x}, psc: {region: europe-west1, target_service: x}}}

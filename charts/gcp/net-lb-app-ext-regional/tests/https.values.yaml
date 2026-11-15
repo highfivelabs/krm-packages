@@ -1,0 +1,32 @@
+# fabric's README, "HTTPS load balancer": an existing certificate and one
+# made from a PEM whose private key is a Kubernetes Secret
+# (docs/secrets.md), premium tier, on a reserved address.
+name: glb-test-0
+project_id: my-project
+region: europe-west8
+protocol: HTTPS
+network_tier_standard: false
+address: projects/my-project/regions/europe-west8/addresses/rlb
+backend_service_configs:
+  default:
+    backends:
+      - group: projects/my-project/zones/europe-west8-b/instanceGroups/my-ig-b
+    protocol: HTTP
+https_proxy_config:
+  http_keepalive_timeout: "610"
+  server_tls_policy: projects/my-project/locations/europe-west8/serverTlsPolicies/mtls
+  ssl_policy: projects/my-project/regions/europe-west8/sslPolicies/modern
+  certificate_manager_certificates:
+    - projects/my-project/locations/europe-west8/certificates/cm
+ssl_certificates:
+  certificate_ids:
+    - projects/my-project/regions/europe-west8/sslCertificates/my-cert
+  create_configs:
+    default:
+      certificate: |
+        -----BEGIN CERTIFICATE-----
+        MIIBPUBLICCERTIFICATEONLY
+        -----END CERTIFICATE-----
+      private_key: {secretName: rlb-tls, key: tls.key}
+vpc_config:
+  network: projects/my-project/global/networks/my-vpc

@@ -1,0 +1,65 @@
+# fabric's README, NEG examples: zonal, hybrid, Cloud Run, Cloud
+# Functions, PSC, and internet NEGs by domain name and by address with
+# their endpoints (alpha).
+name: glb-test-0
+project_id: my-project
+region: europe-west8
+allow_alpha: true
+backend_service_configs:
+  default:
+    backends:
+      - {group: zonal, balancing_mode: RATE, max_rate: {per_endpoint: 10}}
+  hybrid:
+    backends:
+      - {group: hybrid, balancing_mode: RATE, max_connections: {per_endpoint: 10}}
+  run:
+    backends: [{group: run}, {group: fn}]
+    health_checks: []
+  psc:
+    backends: [{group: psc}]
+    health_checks: []
+  web:
+    backends: [{group: web}, {group: ip}]
+    health_checks: []
+neg_configs:
+  zonal:
+    gce:
+      network: projects/my-project/global/networks/my-vpc
+      subnetwork: projects/my-project/regions/europe-west8/subnetworks/my-subnet
+      zone: europe-west8-b
+      endpoints:
+        e-0: {instance: my-vm, ip_address: 10.0.0.10, port: 80}
+  hybrid:
+    hybrid:
+      zone: europe-west8-b
+      network: projects/my-project/global/networks/my-vpc
+      endpoints:
+        e-0: {ip_address: 192.168.0.3, port: 80}
+  run:
+    project_id: other-project
+    cloudrun:
+      region: europe-west8
+      target_service: {name: my-run-service, tag: blue}
+  fn:
+    description: A function.
+    cloudfunction:
+      region: europe-west8
+      target_function: my-function
+  psc:
+    psc:
+      region: europe-west8
+      target_service: europe-west8-cloudkms.googleapis.com
+  web:
+    internet:
+      region: europe-west8
+      network: projects/my-project/global/networks/my-vpc
+      endpoints:
+        e-0: {fqdn: www.example.org, port: 443}
+  ip:
+    internet:
+      region: europe-west8
+      network: projects/my-project/global/networks/my-vpc
+      endpoints:
+        e-0: {ip_address: 203.0.113.10, port: 80}
+vpc_config:
+  network: projects/my-project/global/networks/my-vpc

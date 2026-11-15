@@ -1,0 +1,6 @@
+# expect: ports: Array must have at most 1 items
+name: lb
+project_id: my-project
+region: europe-west1
+vpc_config: {network: projects/my-project/global/networks/my-vpc}
+ports: ["80", "8080"]

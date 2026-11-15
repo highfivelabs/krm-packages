@@ -1,0 +1,205 @@
+---
+# Source: net-lb-proxy-int/templates/backend-service.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeBackendService
+metadata:
+  name: forwarding-rules
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "forwarding-rules"
+    app.kubernetes.io/name: net-lb-proxy-int
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "backend_service"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-test-bs"
+  location: "europe-west1"
+  description: "The backend."
+  loadBalancingScheme: INTERNAL_MANAGED
+  protocol: TCP
+  healthChecks:
+    - healthCheckRef:
+        external: "projects/my-project/regions/europe-west1/healthChecks/existing"
+  affinityCookieTtlSec: 60
+  connectionDrainingTimeoutSec: 10
+  portName: "tcp"
+  sessionAffinity: "CLIENT_IP"
+  timeoutSec: 30
+  backend:
+    - balancingMode: "CONNECTION"
+      capacityScaler: 1
+      description: "Terraform managed."
+      group:
+        instanceGroupRef:
+          name: forwarding-rules-group-ig
+      maxConnectionsPerInstance: 100
+  logConfig:
+    enable: true
+    sampleRate: 0.5
+---
+# Source: net-lb-proxy-int/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeForwardingRule
+metadata:
+  name: forwarding-rules-fr
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "forwarding-rules"
+    app.kubernetes.io/name: net-lb-proxy-int
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "forwarding_rule:"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-test"
+  location: "europe-west1"
+  description: "A TCP proxy."
+  ipVersion: IPV4
+  ipProtocol: TCP
+  loadBalancingScheme: INTERNAL_MANAGED
+  allowGlobalAccess: true
+  networkRef:
+    external: "projects/my-project/global/networks/my-vpc"
+  portRange: "443"
+  subnetworkRef:
+    external: "projects/my-project/regions/europe-west1/subnetworks/my-subnet"
+  target:
+    targetTCPProxyRef:
+      name: forwarding-rules
+---
+# Source: net-lb-proxy-int/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeForwardingRule
+metadata:
+  name: forwarding-rules-fr-reserved
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "forwarding-rules"
+    app.kubernetes.io/name: net-lb-proxy-int
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "forwarding_rule:reserved"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-reserved"
+  location: "europe-west1"
+  description: "A TCP proxy."
+  ipAddress:
+    ip: "10.0.0.20"
+  ipProtocol: TCP
+  loadBalancingScheme: INTERNAL_MANAGED
+  allowGlobalAccess: true
+  networkRef:
+    external: "projects/my-project/global/networks/my-vpc"
+  portRange: "80"
+  subnetworkRef:
+    external: "projects/my-project/regions/europe-west1/subnetworks/my-subnet"
+  target:
+    targetTCPProxyRef:
+      name: forwarding-rules
+---
+# Source: net-lb-proxy-int/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeForwardingRule
+metadata:
+  name: forwarding-rules-fr-v6
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "forwarding-rules"
+    app.kubernetes.io/name: net-lb-proxy-int
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "forwarding_rule:v6"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-test-v6"
+  location: "europe-west1"
+  description: "IPv6."
+  ipVersion: IPV6
+  ipProtocol: TCP
+  loadBalancingScheme: INTERNAL_MANAGED
+  allowGlobalAccess: false
+  networkRef:
+    external: "projects/my-project/global/networks/my-vpc"
+  portRange: "8443"
+  subnetworkRef:
+    external: "projects/my-project/regions/europe-west1/subnetworks/my-subnet"
+  target:
+    targetTCPProxyRef:
+      name: forwarding-rules
+---
+# Source: net-lb-proxy-int/templates/groups.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeInstanceGroup
+metadata:
+  name: forwarding-rules-group-ig
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "forwarding-rules"
+    app.kubernetes.io/name: net-lb-proxy-int
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "group:ig"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-test-ig"
+  zone: "europe-west1-b"
+  description: "Terraform managed."
+  instances:
+    - external: "projects/my-project/zones/europe-west1-b/instances/vm-a"
+  namedPort:
+    - name: "tcp"
+      port: 443
+---
+# Source: net-lb-proxy-int/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeServiceAttachment
+metadata:
+  name: forwarding-rules-sa
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "forwarding-rules"
+    app.kubernetes.io/name: net-lb-proxy-int
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "service_attachment"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-test"
+  location: "europe-west1"
+  projectRef:
+    external: "my-project"
+  description: "A TCP proxy."
+  targetServiceRef:
+    name: forwarding-rules-fr-v6
+  natSubnets:
+    - external: "projects/my-project/regions/europe-west1/subnetworks/psc-nat"
+  connectionPreference: ACCEPT_AUTOMATIC
+  consumerAcceptLists:
+    - projectRef:
+        external: "other-project"
+      connectionLimit: 10
+  consumerRejectLists:
+    - external: "bad-project"
+  enableProxyProtocol: false
+---
+# Source: net-lb-proxy-int/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeTargetTCPProxy
+metadata:
+  name: forwarding-rules
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "forwarding-rules"
+    app.kubernetes.io/name: net-lb-proxy-int
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "target_proxy"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-test"
+  location: "europe-west1"
+  description: "A TCP proxy."
+  backendServiceRef:
+    name: forwarding-rules

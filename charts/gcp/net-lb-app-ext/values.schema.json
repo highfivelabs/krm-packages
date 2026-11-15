@@ -2232,6 +2232,12 @@
                     "string",
                     "null"
                   ]
+                },
+                "path_template": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               }
             },
@@ -2757,6 +2763,12 @@
                               ]
                             },
                             "path_prefix": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "path_template": {
                               "type": [
                                 "string",
                                 "null"
@@ -3874,6 +3886,12 @@
                         ]
                       },
                       "path_prefix": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "path_template": {
                         "type": [
                           "string",
                           "null"

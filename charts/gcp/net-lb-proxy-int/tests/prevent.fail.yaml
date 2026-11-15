@@ -1,0 +1,6 @@
+# expect: net-lb-proxy-int: deletion_policy PREVENT has no Config Connector equivalent
+name: lb
+project_id: my-project
+region: europe-west1
+vpc_config: {network: projects/my-project/global/networks/my-vpc, subnetwork: projects/my-project/regions/europe-west1/subnetworks/my-subnet}
+deletion_policy: PREVENT

@@ -20,6 +20,13 @@ What differs between the charts comes from the chart's own
   negEntryDesc   true: a NEG's description is its entry's, else the
                  chart's (net-lb-app-ext); false: the chart's
   pscDesc        true: PSC NEGs take a description
+  hcRegional     true: every health check is regional
+                 (net-lb-app-ext-regional); else one is regional when
+                 its entry sets is_regional
+  internetByEndpoint true: an internet NEG is INTERNET_FQDN_PORT when an
+                 endpoint has an fqdn (or it has none), its endpoints
+                 {fqdn, ip_address, port} (net-lb-app-ext-regional); else
+                 use_fqdn decides, its endpoints {destination, port}
 */ -}}
 
 {{- /* netlbapp.c: the chart's configuration as a dict. */ -}}
@@ -308,7 +315,7 @@ metadata:
   {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "hc" $k)) "id" (printf "health_check:%s" $k) "project" (include "netlbapp.project" (list $ $hc)) "abandon" (include "kcc.abandon" $)) | nindent 2 }}
 spec:
   resourceID: {{ include "kcc.cloudName" (list $ "health check" ($hc.name | default (printf "%s-%s" $v.name $k)) 63 "letter") | quote }}
-  location: {{ ternary $c.region "global" (and (eq (toString $hc.is_regional) "true") (not (empty $c.region))) | quote }}
+  location: {{ ternary $c.region "global" (and (or $c.hcRegional (eq (toString $hc.is_regional) "true")) (not (empty $c.region))) | quote }}
   description: {{ ternary "Terraform managed." $hc.description (kindIs "invalid" $hc.description) | quote }}
   {{- range $f := list (list "check_interval_sec" "checkIntervalSec") (list "healthy_threshold" "healthyThreshold") (list "timeout_sec" "timeoutSec") (list "unhealthy_threshold" "unhealthyThreshold") }}
   {{- if not (kindIs "invalid" (index $hc (index $f 0))) }}
@@ -804,6 +811,15 @@ spec:
 {{- $i := $n.internet | default dict }}
 {{- $negProject := include "netlbapp.negProject" (list $ $n "internet") }}
 {{- $fqdn := ne (toString $i.use_fqdn) "false" }}
+{{- if $c.internetByEndpoint }}
+{{- $fqdn = empty $i.endpoints }}
+{{- range $e := $i.endpoints | default dict }}
+{{- if $e.fqdn }}{{ $fqdn = true }}{{ end }}
+{{- if and (not $e.fqdn) (not $e.ip_address) }}
+{{- fail (printf "%s: Internet NEG endpoints must specify either fqdn or ip_address." $.Chart.Name) }}
+{{- end }}
+{{- end }}
+{{- end }}
 {{- include "kcc.alpha" (list $ (printf "neg_configs.%s.internet.endpoints" $k) $i.endpoints (ternary "ComputeRegionNetworkEndpoint (config-connector-extensions)" "ComputeGlobalNetworkEndpoint" (not (empty $c.region)))) }}
 {{- if $c.region }}
 ---
@@ -817,7 +833,7 @@ spec:
   description: {{ $n.description | default $v.description | quote }}
   networkEndpointType: {{ ternary "INTERNET_FQDN_PORT" "INTERNET_IP_PORT" $fqdn }}
   networkRef:
-    external: {{ include "netlbapp.link" $vpc.network | quote }}
+    external: {{ include "netlbapp.link" ($i.network | default $vpc.network) | quote }}
 {{- range $ek := keys ($i.endpoints | default dict) | sortAlpha }}
 {{- $e := index $i.endpoints $ek }}
 ---
@@ -832,9 +848,9 @@ spec:
   regionNetworkEndpointGroupRef:
     name: {{ $negObject }}
   {{- if $fqdn }}
-  fqdn: {{ $e.destination | quote }}
+  fqdn: {{ $e.destination | default $e.fqdn | quote }}
   {{- else }}
-  ipAddress: {{ $e.destination | quote }}
+  ipAddress: {{ $e.destination | default $e.ip_address | quote }}
   {{- end }}
   port: {{ $e.port }}
 {{- end }}

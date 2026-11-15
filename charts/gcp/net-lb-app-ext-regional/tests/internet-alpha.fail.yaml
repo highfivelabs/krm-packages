@@ -1,0 +1,6 @@
+# expect: net-lb-app-ext-regional: neg_configs.a.internet.endpoints needs the alpha Config Connector kind ComputeRegionNetworkEndpoint (config-connector-extensions): set allow_alpha: true
+name: lb
+project_id: my-project
+region: europe-west1
+vpc_config: {network: projects/my-project/global/networks/my-vpc}
+neg_configs: {a: {internet: {region: europe-west1, network: projects/my-project/global/networks/my-vpc, endpoints: {e: {fqdn: example.com, port: 443}}}}}

@@ -1,0 +1,6 @@
+# expect: net-lb-proxy-int: backend_service_config.log_config.optional_mode is not supported
+name: lb
+project_id: my-project
+region: europe-west1
+vpc_config: {network: projects/my-project/global/networks/my-vpc, subnetwork: projects/my-project/regions/europe-west1/subnetworks/my-subnet}
+backend_service_config: {log_config: {enable: true, optional_mode: CUSTOM}}

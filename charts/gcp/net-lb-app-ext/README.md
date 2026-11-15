@@ -22,7 +22,7 @@ v1.160.0 (`ComputeForwardingRule`, `ComputeTargetHTTPProxy`,
 
 The URL map, backend services, health checks, groups, NEGs and SSL
 certificates are rendered by `templates/_netlbapp.tpl`, which
-`net-lb-app-int` carries an identical copy of; each chart's
+`net-lb-app-int` and `net-lb-app-ext-regional` carry identical copies of; each chart's
 `netlbapp.cfg` says what differs (global or regional, the scheme).
 
 ## Example
