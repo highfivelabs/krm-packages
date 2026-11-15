@@ -1,0 +1,5 @@
+# expect: targets.0.strategy must be one of the following: "STANDARD", "CANARY"
+project_id: my-project
+region: europe-west1
+name: p
+targets: [{name: t, strategy: BLUE_GREEN}]

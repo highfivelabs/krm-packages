@@ -1,0 +1,67 @@
+# Every variable: an enterprise pool publishing PEM, a root CA with every
+# field, a KMS-backed CA, a subordinate CA (made, waiting for activation),
+# and IAM on the pool.
+project_id: my-project
+location: europe-west1
+allow_alpha: true
+deletion_policy: ABANDON
+ca_pool_config:
+  create_pool:
+    name: pki
+    enterprise_tier: true
+    publishing_options:
+      encoding_format: PEM
+      publish_ca_cert: true
+      publish_crl: false
+ca_configs:
+  root:
+    deletion_protection: false
+    is_ca: true
+    is_self_signed: true
+    lifetime: 31536000s
+    ignore_active_certificates_on_deletion: true
+    skip_grace_period: true
+    labels: {purpose: root}
+    gcs_bucket: my-ca-bucket
+    key_spec: {algorithm: EC_P384_SHA384}
+    key_usage:
+      cert_sign: true
+      crl_sign: true
+      digital_signature: true
+      key_encipherment: false
+      server_auth: false
+      client_auth: true
+    subject:
+      common_name: root.example.com
+      organization: Example
+      country_code: US
+      locality: Springfield
+      organizational_unit: Security
+      postal_code: "12345"
+      province: IL
+      street_address: 1 Main St
+    subject_alt_name:
+      dns_names: [root.example.com]
+      email_addresses: [pki@example.com]
+      ip_addresses: [10.0.0.1]
+      uris: ["spiffe://example.com/root"]
+  kms:
+    key_spec:
+      kms_key_id: projects/my-project/locations/europe-west1/keyRings/pki/cryptoKeys/ca/cryptoKeyVersions/1
+  sub:
+    is_self_signed: false
+iam:
+  roles/privateca.certificateManager: ["group:pki-admins@example.com"]
+iam_by_principals:
+  "group:auditors@example.com": [roles/privateca.auditor]
+iam_bindings:
+  requesters:
+    role: roles/privateca.certificateRequester
+    members: ["serviceAccount:issuer@my-project.iam.gserviceaccount.com"]
+    condition:
+      title: until-2030
+      expression: request.time < timestamp('2030-01-01T00:00:00Z')
+iam_bindings_additive:
+  reader:
+    role: roles/privateca.auditor
+    member: "user:ada@example.com"

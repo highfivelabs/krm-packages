@@ -1,0 +1,151 @@
+---
+# Source: ecr/templates/registry.yaml
+apiVersion: ecr.services.k8s.aws/v1alpha1
+kind: PullThroughCacheRule
+metadata:
+  name: full-cache-dockerhub
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: ecr
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "pull_through_cache_rule:dockerhub"
+    services.k8s.aws/region: "us-east-1"
+    services.k8s.aws/deletion-policy: retain
+spec:
+  ecrRepositoryPrefix: "dockerhub"
+  upstreamRegistryURL: "registry-1.docker.io"
+  credentialARN: "arn:aws:secretsmanager:us-east-1:111122223333:secret:ecr-pullthroughcache/dockerhub"
+  upstreamRepositoryPrefix: "library"
+---
+# Source: ecr/templates/registry.yaml
+apiVersion: ecr.services.k8s.aws/v1alpha1
+kind: PullThroughCacheRule
+metadata:
+  name: full-cache-pub
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: ecr
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "pull_through_cache_rule:pub"
+    services.k8s.aws/region: "eu-west-1"
+    services.k8s.aws/deletion-policy: retain
+spec:
+  ecrRepositoryPrefix: "ecr-public"
+  upstreamRegistryURL: "public.ecr.aws"
+---
+# Source: ecr/templates/registry.yaml
+apiVersion: ecr.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: RegistryPolicy
+metadata:
+  name: full-registry-policy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: ecr
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "registry_policy"
+    services.k8s.aws/region: "eu-west-1"
+    services.k8s.aws/deletion-policy: retain
+spec:
+  policyText:
+    Statement:
+    - Action:
+      - ecr:ReplicateImage
+      Effect: Allow
+      Principal:
+        AWS: arn:aws:iam::111122223333:root
+      Resource: arn:aws:ecr:eu-west-1:111122223333:repository/*
+      Sid: Replicate
+    Version: "2012-10-17"
+---
+# Source: ecr/templates/registry.yaml
+apiVersion: ecr.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: RegistryScanningConfiguration
+metadata:
+  name: full-registry-scanning
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: ecr
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "registry_scanning_configuration"
+    services.k8s.aws/region: "eu-west-1"
+    services.k8s.aws/deletion-policy: retain
+spec:
+  scanType: "ENHANCED"
+  rules:
+    - scanFrequency: "SCAN_ON_PUSH"
+      repositoryFilters:
+        - filter: "shop/*"
+          filterType: "WILDCARD"
+    - scanFrequency: "CONTINUOUS_SCAN"
+      repositoryFilters:
+        - filter: "*"
+          filterType: "WILDCARD"
+---
+# Source: ecr/templates/registry.yaml
+apiVersion: ecr.aws.hfl.dev/v1alpha1
+kind: ReplicationConfiguration
+metadata:
+  name: full-registry-replication
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: ecr
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "registry_replication_configuration"
+    services.k8s.aws/region: "eu-west-1"
+    services.k8s.aws/deletion-policy: retain
+spec:
+  replicationConfiguration:
+    rules:
+      - destinations:
+          - region: "us-east-1"
+            registryID: "111122223333"
+        repositoryFilters:
+          - filter: "shop"
+            filterType: "PREFIX_MATCH"
+---
+# Source: ecr/templates/repository.yaml
+apiVersion: ecr.services.k8s.aws/v1alpha1
+kind: Repository
+metadata:
+  name: full-repository
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: ecr
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "repository"
+    services.k8s.aws/region: "eu-west-1"
+    services.k8s.aws/deletion-policy: retain
+spec:
+  name: "shop/api"
+  encryptionConfiguration:
+    encryptionType: "KMS"
+    kmsKey: "arn:aws:kms:eu-west-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+  imageScanningConfiguration:
+    scanOnPush: false
+  imageTagMutability: "IMMUTABLE_WITH_EXCLUSION"
+  imageTagMutabilityExclusionFilters:
+    - filter: "latest*"
+      filterType: "WILDCARD"
+  lifecyclePolicy: "{\"rules\":[{\"rulePriority\":1,\"selection\":{\"tagStatus\":\"untagged\",\"countType\":\"sinceImagePushed\",\"countUnit\":\"days\",\"countNumber\":14},\"action\":{\"type\":\"expire\"}}]}"
+  policy: "{\"Statement\":[{\"Action\":[\"ecr:GetAuthorizationToken\",\"ecr:BatchCheckLayerAvailability\",\"ecr:BatchGetImage\",\"ecr:DescribeImageScanFindings\",\"ecr:DescribeImages\",\"ecr:DescribeRepositories\",\"ecr:GetDownloadUrlForLayer\",\"ecr:GetLifecyclePolicy\",\"ecr:GetLifecyclePolicyPreview\",\"ecr:GetRepositoryPolicy\",\"ecr:ListImages\",\"ecr:ListTagsForResource\"],\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam::111122223333:role/reader\",\"arn:aws:iam::111122223333:role/ci\"]},\"Sid\":\"PrivateReadOnly\"},{\"Action\":[\"ecr:BatchGetImage\",\"ecr:GetDownloadUrlForLayer\"],\"Condition\":{\"StringLike\":{\"aws:sourceArn\":[\"arn:aws:lambda:eu-west-1:111122223333:function:*\"]}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"lambda.amazonaws.com\"]},\"Sid\":\"PrivateLambdaReadOnly\"},{\"Action\":[\"ecr:PutImage\",\"ecr:InitiateLayerUpload\",\"ecr:UploadLayerPart\",\"ecr:CompleteLayerUpload\"],\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam::111122223333:role/ci\"]},\"Sid\":\"ReadWrite\"},{\"Action\":[\"ecr:BatchGetImage\"],\"Condition\":{\"StringEquals\":{\"aws:PrincipalOrgID\":[\"o-abc123\"]}},\"Effect\":\"Allow\",\"Principal\":\"*\",\"Sid\":\"OrgPull\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "team"
+      value: "shop"

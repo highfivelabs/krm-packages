@@ -1,0 +1,239 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "dataform-repository values (fabric dataform-repository v60.0.0)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_id",
+    "region",
+    "name"
+  ],
+  "definitions": {
+    "condition": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "expression",
+        "title"
+      ],
+      "properties": {
+        "expression": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  },
+  "properties": {
+    "names": {
+      "description": "The repository's name in full (not a Terraform variable; docs/design.md, \"Names, labels and tags\"). A name set here takes no prefix.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      }
+    },
+    "namePrefix": {
+      "description": "Optional convenience (not a Terraform variable): <namePrefix>- in front of the repository's name (unless set under names). A DNS label. Empty changes nothing.",
+      "type": "string",
+      "pattern": "^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+    },
+    "labels": {
+      "description": "Kubernetes labels on every object (not a Terraform variable); an unprefixed one also becomes a Google Cloud label where the resource takes labels.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 63
+      }
+    },
+    "tags": {
+      "description": "Cloud labels (not a Terraform variable; Google Cloud labels: lower-case letters, digits, _ and -).",
+      "type": [
+        "object",
+        "null"
+      ],
+      "propertyNames": {
+        "pattern": "^[a-z]([a-z0-9_-]{0,61}[a-z0-9])?$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^([a-z0-9]([a-z0-9_-]{0,61}[a-z0-9])?)?$"
+      }
+    },
+    "allow_alpha": {
+      "description": "Accept v1alpha1 kinds (IAMMember, for iam_bindings_additive). Not a Terraform variable.",
+      "type": "boolean"
+    },
+    "deletion_policy": {
+      "description": "DELETE (default) or ABANDON (not a fabric variable).",
+      "enum": [
+        "DELETE",
+        "ABANDON",
+        "PREVENT",
+        null
+      ]
+    },
+    "iam": {
+      "description": "IAM bindings in {ROLE => [MEMBERS]} format.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "iam_bindings": {
+      "description": "Authoritative IAM bindings in {KEY => {role = ROLE, members = [], condition = {}}}. Keys are arbitrary.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "members",
+          "role"
+        ],
+        "properties": {
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "role": {
+            "type": "string"
+          },
+          "condition": {
+            "$ref": "#/definitions/condition"
+          }
+        }
+      }
+    },
+    "iam_bindings_additive": {
+      "description": "Individual additive IAM bindings. Keys are arbitrary. IAMMember is v1alpha1: needs allow_alpha.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "member",
+          "role"
+        ],
+        "properties": {
+          "member": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "condition": {
+            "$ref": "#/definitions/condition"
+          }
+        }
+      }
+    },
+    "iam_by_principals": {
+      "description": "Authoritative IAM binding in {PRINCIPAL => [ROLES]} format. Merged internally with the iam variable.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "name": {
+      "description": "Name of the dataform repository.",
+      "type": "string",
+      "minLength": 1
+    },
+    "project_id": {
+      "description": "Id of the project where resources will be created.",
+      "type": "string",
+      "minLength": 1
+    },
+    "region": {
+      "description": "The repository's region.",
+      "type": "string",
+      "minLength": 1
+    },
+    "remote_repository_settings": {
+      "description": "Remote settings required to attach the repository to a remote repository. token is refused.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "branch": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "secret_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "secret_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "token": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "service_account": {
+      "description": "Service account used to execute the dataform workflow.",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

@@ -1,0 +1,40 @@
+---
+# Source: dataform-repository/templates/main.yaml
+apiVersion: dataform.cnrm.cloud.google.com/v1beta1
+kind: DataformRepository
+metadata:
+  name: basic
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: dataform-repository
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "repository"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  region: "europe-west1"
+  resourceID: "my-repository"
+---
+# Source: dataform-repository/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: basic-iam-roles-dataform-editor-7952fe80
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: dataform-repository
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam:roles/dataform.editor"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/repositories/my-repository
+    kind: DataformRepository
+  role: "roles/dataform.editor"
+  members:
+    - "group:data-eng@example.com"

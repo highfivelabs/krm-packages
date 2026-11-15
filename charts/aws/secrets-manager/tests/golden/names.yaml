@@ -1,0 +1,20 @@
+---
+# Source: secrets-manager/templates/secret.yaml
+apiVersion: secretsmanager.services.k8s.aws/v1alpha1
+kind: Secret
+metadata:
+  name: names-secret
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: secrets-manager
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "secret"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "shop-dev/api-key"
+  tags:
+    - key: "team"
+      value: "shop"

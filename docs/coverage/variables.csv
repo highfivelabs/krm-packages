@@ -951,15 +951,15 @@ gcp,binauthz,attestors_config,"map(object({iam, note_reference, pgp_public_keys,
 gcp,binauthz,cluster_admission_rules,"map(object({attestors, enforcement_mode, evaluation_mode}))",yes,,
 gcp,binauthz,default_admission_rule,"object({attestors, enforcement_mode, evaluation_mode})",yes,,
 gcp,binauthz,project_id,string,yes,,
-gcp,certificate-authority-service,ca_configs,"map(object({deletion_protection, gcs_bucket, ignore_active_certificates_on_deletion, is_ca, is_self_signed, key_spec, +8}))",no,,no-chart
-gcp,certificate-authority-service,ca_pool_config,"object({create_pool, use_pool})",no,,no-chart
-gcp,certificate-authority-service,context,"object({ca_ids, ca_pools, condition_vars, custom_roles, iam_principals, kms_keys, +3})",no,,no-chart
-gcp,certificate-authority-service,iam,map(list(string)),no,,no-chart
-gcp,certificate-authority-service,iam_bindings,"map(object({condition, members, role}))",no,,no-chart
-gcp,certificate-authority-service,iam_bindings_additive,"map(object({condition, member, role}))",no,,no-chart
-gcp,certificate-authority-service,iam_by_principals,map(list(string)),no,,no-chart
-gcp,certificate-authority-service,location,string,no,,no-chart
-gcp,certificate-authority-service,project_id,string,no,,no-chart
+gcp,certificate-authority-service,ca_configs,"map(object({deletion_protection, gcs_bucket, ignore_active_certificates_on_deletion, is_ca, is_self_signed, key_spec, +8}))",partial,"pem_ca_certificate and subordinate_config are refused: PrivateCACertificateAuthority has no pemCaCertificate or subordinateConfig field (a subordinate CA is made, and waits for activation, without them); deletion_protection, ignore_active_certificates_on_deletion and skip_grace_period are accepted and have no effect: they are Terraform's own delete options, and Config Connector has none",gap
+gcp,certificate-authority-service,ca_pool_config,"object({create_pool, use_pool})",partial,"create_pool.publishing_options.encoding_format DER is refused: PrivateCACAPool's publishingOptions has no encodingFormat, so the pool publishes PEM (the API's default)",gap
+gcp,certificate-authority-service,context,"object({ca_ids, ca_pools, condition_vars, custom_roles, iam_principals, kms_keys, +3})",no,Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs,by-design
+gcp,certificate-authority-service,iam,map(list(string)),yes,,
+gcp,certificate-authority-service,iam_bindings,"map(object({condition, members, role}))",yes,,
+gcp,certificate-authority-service,iam_bindings_additive,"map(object({condition, member, role}))",partial,config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true,alpha
+gcp,certificate-authority-service,iam_by_principals,map(list(string)),yes,,
+gcp,certificate-authority-service,location,string,yes,,
+gcp,certificate-authority-service,project_id,string,yes,,
 gcp,backup-dr,backup_plans,"map(object({backup_rules, description, resource_type}))",yes,,
 gcp,backup-dr,location,string,yes,,
 gcp,backup-dr,management_server_config,"object({name, network_config, type})",yes,,
@@ -967,20 +967,20 @@ gcp,backup-dr,name,string,yes,,
 gcp,backup-dr,project_id,string,yes,,
 gcp,backup-dr,vault_config,"object({access_restriction, allow_missing, annotations, backup_minimum_enforced_retention_duration, backup_retention_inheritance, description, +4})",partial,"accepted; backup_retention_inheritance, and force_update, ignore_backup_plan_references and allow_missing set to true, are refused: BackupDRBackupVault has no backupRetentionInheritance field, and Config Connector sends none of the three request flags",gap
 gcp,backup-dr,vault_reuse,object({vault_id}),yes,,
-gcp,cloud-deploy,annotations,map(string),no,,no-chart
-gcp,cloud-deploy,automations,"map(object({advance_rollout_rule, annotations, description, labels, project_id, promote_release_rule, +6}))",no,,no-chart
-gcp,cloud-deploy,deploy_policies,"map(object({annotations, description, labels, project_id, region, rollout_restrictions, +2}))",no,,no-chart
-gcp,cloud-deploy,description,string,no,,no-chart
-gcp,cloud-deploy,iam,map(list(string)),no,,no-chart
-gcp,cloud-deploy,iam_bindings,"map(object({condition, members, role}))",no,,no-chart
-gcp,cloud-deploy,iam_bindings_additive,"map(object({condition, member, role}))",no,,no-chart
-gcp,cloud-deploy,iam_by_principals,map(list(string)),no,,no-chart
-gcp,cloud-deploy,labels,map(string),no,,no-chart
-gcp,cloud-deploy,name,string,no,,no-chart
-gcp,cloud-deploy,project_id,string,no,,no-chart
-gcp,cloud-deploy,region,string,no,,no-chart
-gcp,cloud-deploy,suspended,bool,no,,no-chart
-gcp,cloud-deploy,targets,"list(object({annotations, cloud_run_configs, create_target, custom_canary_phase_configs, delivery_pipeline_deploy_parameters, deployment_percentages, +20}))",no,,no-chart
+gcp,cloud-deploy,annotations,map(string),yes,,
+gcp,cloud-deploy,automations,"map(object({advance_rollout_rule, annotations, description, labels, project_id, promote_release_rule, +6}))",partial,"an automation without service_account is refused: fabric then reads the project's Compute Engine default service account, whose email needs the project number, which a render does not have; set service_account",gap
+gcp,cloud-deploy,deploy_policies,"map(object({annotations, description, labels, project_id, region, rollout_restrictions, +2}))",yes,,
+gcp,cloud-deploy,description,string,yes,,
+gcp,cloud-deploy,iam,map(list(string)),yes,,
+gcp,cloud-deploy,iam_bindings,"map(object({condition, members, role}))",yes,,
+gcp,cloud-deploy,iam_bindings_additive,"map(object({condition, member, role}))",partial,config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true,alpha
+gcp,cloud-deploy,iam_by_principals,map(list(string)),yes,,
+gcp,cloud-deploy,labels,map(string),yes,,
+gcp,cloud-deploy,name,string,yes,,
+gcp,cloud-deploy,project_id,string,yes,,
+gcp,cloud-deploy,region,string,yes,,
+gcp,cloud-deploy,suspended,bool,yes,,
+gcp,cloud-deploy,targets,"list(object({annotations, cloud_run_configs, create_target, custom_canary_phase_configs, delivery_pipeline_deploy_parameters, deployment_percentages, +20}))",partial,"accepted; a target's iam_bindings_additive renders config-connector-extensions' IAMMember, which is v1alpha1: set allow_alpha: true",alpha
 gcp,cloud-build-v2-connection,annotations,map(string),yes,,
 gcp,cloud-build-v2-connection,connection_config,"object({bitbucket_cloud, bitbucket_data_center, github, github_enterprise, gitlab})",partial,"github_enterprise is refused: config-connector-extensions' CloudBuildConnection requires githubEnterpriseConfig.apiKey, which the module's variable has no field for",gap
 gcp,cloud-build-v2-connection,connection_create,bool,yes,,
@@ -1012,44 +1012,44 @@ gcp,source-repository,iam_by_principals,map(list(string)),yes,,
 gcp,source-repository,name,string,yes,,
 gcp,source-repository,project_id,string,yes,,
 gcp,source-repository,triggers,"map(object({filename, included_files, service_account, substitutions, template}))",partial,"CloudBuildTrigger's triggerTemplate has no projectId, so a trigger builds a repository of its own project only",gap
-gcp,bigquery-connection,connection_config,"object({aws, azure, cloud_resource, cloud_spanner, cloud_sql, spark})",no,,no-chart
-gcp,bigquery-connection,connection_id,string,no,,no-chart
-gcp,bigquery-connection,context,object({iam_principals}),no,,no-chart
-gcp,bigquery-connection,description,string,no,,no-chart
-gcp,bigquery-connection,encryption_key,string,no,,no-chart
-gcp,bigquery-connection,friendly_name,string,no,,no-chart
-gcp,bigquery-connection,iam,map(list(string)),no,,no-chart
-gcp,bigquery-connection,iam_bindings,"map(object({condition, members, role}))",no,,no-chart
-gcp,bigquery-connection,iam_bindings_additive,"map(object({condition, member, role}))",no,,no-chart
-gcp,bigquery-connection,iam_by_principals,map(list(string)),no,,no-chart
-gcp,bigquery-connection,location,string,no,,no-chart
-gcp,bigquery-connection,project_id,string,no,,no-chart
-gcp,analytics-hub,description,string,no,,no-chart
-gcp,analytics-hub,documentation,string,no,,no-chart
-gcp,analytics-hub,factories_config,object({listings}),no,,no-chart
-gcp,analytics-hub,iam,map(list(string)),no,,no-chart
-gcp,analytics-hub,iam_bindings,"map(object({members, role}))",no,,no-chart
-gcp,analytics-hub,iam_bindings_additive,"map(object({member, role}))",no,,no-chart
-gcp,analytics-hub,iam_by_principals,map(list(string)),no,,no-chart
-gcp,analytics-hub,icon,string,no,,no-chart
-gcp,analytics-hub,listings,"map(object({bigquery_dataset, categories, data_provider, description, documentation, iam, +5}))",no,,no-chart
-gcp,analytics-hub,name,string,no,,no-chart
-gcp,analytics-hub,prefix,string,no,,no-chart
-gcp,analytics-hub,primary_contact,string,no,,no-chart
-gcp,analytics-hub,project_id,string,no,,no-chart
-gcp,analytics-hub,region,string,no,,no-chart
+gcp,bigquery-connection,connection_config,"object({aws, azure, cloud_resource, cloud_spanner, cloud_sql, spark})",partial,"cloud_sql.credential's username and password are refused: they would be in the rendered manifest; BigQueryConnectionConnection takes them from a Kubernetes Secret (cloudSQL.credential.secretRef), which the chart takes as cloud_sql.credential.secret_name instead",gap
+gcp,bigquery-connection,connection_id,string,yes,,
+gcp,bigquery-connection,context,object({iam_principals}),no,Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs,by-design
+gcp,bigquery-connection,description,string,yes,,
+gcp,bigquery-connection,encryption_key,string,no,BigQueryConnectionConnection has no kmsKeyName field,gap
+gcp,bigquery-connection,friendly_name,string,yes,,
+gcp,bigquery-connection,iam,map(list(string)),yes,,
+gcp,bigquery-connection,iam_bindings,"map(object({condition, members, role}))",yes,,
+gcp,bigquery-connection,iam_bindings_additive,"map(object({condition, member, role}))",partial,config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true,alpha
+gcp,bigquery-connection,iam_by_principals,map(list(string)),yes,,
+gcp,bigquery-connection,location,string,yes,,
+gcp,bigquery-connection,project_id,string,yes,,
+gcp,analytics-hub,description,string,yes,,
+gcp,analytics-hub,documentation,string,yes,,
+gcp,analytics-hub,factories_config,object({listings}),no,"fabric reads listings from YAML files on disk; a component has no files, so its listings go in listings",by-design
+gcp,analytics-hub,iam,map(list(string)),yes,,
+gcp,analytics-hub,iam_bindings,"map(object({members, role}))",yes,,
+gcp,analytics-hub,iam_bindings_additive,"map(object({member, role}))",partial,config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true,alpha
+gcp,analytics-hub,iam_by_principals,map(list(string)),yes,,
+gcp,analytics-hub,icon,string,no,BigQueryAnalyticsHubDataExchange has no icon field,gap
+gcp,analytics-hub,listings,"map(object({bigquery_dataset, categories, data_provider, description, documentation, iam, +5}))",partial,icon is refused: BigQueryAnalyticsHubListing has no icon field,gap
+gcp,analytics-hub,name,string,yes,,
+gcp,analytics-hub,prefix,string,yes,,
+gcp,analytics-hub,primary_contact,string,yes,,
+gcp,analytics-hub,project_id,string,yes,,
+gcp,analytics-hub,region,string,yes,,
 gcp,biglake-catalog,databases,"map(object({hive_options, tables, type}))",yes,,
 gcp,biglake-catalog,location,string,yes,,
 gcp,biglake-catalog,name,string,yes,,
 gcp,biglake-catalog,project_id,string,yes,,
-gcp,dataform-repository,iam,map(list(string)),no,,no-chart
-gcp,dataform-repository,iam_bindings,"map(object({condition, members, role}))",no,,no-chart
-gcp,dataform-repository,iam_bindings_additive,"map(object({condition, member, role}))",no,,no-chart
-gcp,dataform-repository,name,string,no,,no-chart
-gcp,dataform-repository,project_id,string,no,,no-chart
-gcp,dataform-repository,region,string,no,,no-chart
-gcp,dataform-repository,remote_repository_settings,"object({branch, secret_name, secret_version, token, url})",no,,no-chart
-gcp,dataform-repository,service_account,string,no,,no-chart
+gcp,dataform-repository,iam,map(list(string)),yes,,
+gcp,dataform-repository,iam_bindings,"map(object({condition, members, role}))",yes,,
+gcp,dataform-repository,iam_bindings_additive,"map(object({condition, member, role}))",partial,config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true,alpha
+gcp,dataform-repository,name,string,yes,,
+gcp,dataform-repository,project_id,string,yes,,
+gcp,dataform-repository,region,string,yes,,
+gcp,dataform-repository,remote_repository_settings,"object({branch, secret_name, secret_version, token, url})",partial,token is refused: a token given here would be in the rendered manifest (fabric's module does not send it either); the repository reads its token from the Secret Manager secret version secret_version names,gap
+gcp,dataform-repository,service_account,string,yes,,
 gcp,dataproc,dataproc_config,"object({cluster_config, graceful_decommission_timeout, virtual_cluster_config})",partial,"DataprocCluster has no graceful decommission timeout (it is a parameter of the update call, not of the cluster)",gap
 gcp,dataproc,iam,map(list(string)),yes,,
 gcp,dataproc,iam_bindings,"map(object({condition, members, role}))",yes,,
@@ -1268,9 +1268,9 @@ gcp,secops-rules,project_id,string,yes,,
 gcp,secops-rules,reference_lists_config,"map(object({description, type}))",yes,,
 gcp,secops-rules,rules_config,"map(object({alerting, archived, enabled, run_frequency}))",partial,accepted; each rule's deployment is config-connector-extensions' v1alpha1 ChronicleRuleDeployment: set allow_alpha: true,alpha
 gcp,secops-rules,tenant_config,"object({customer_id, region})",yes,,
-gcp,container-registry,iam,map(list(string)),no,,no-chart
-gcp,container-registry,location,string,no,,no-chart
-gcp,container-registry,project_id,string,no,,no-chart
+gcp,container-registry,iam,map(list(string)),partial,"the registry is an Artifact Registry repository, not a Cloud Storage bucket: a Cloud Storage role (roles/storage.*) is refused with the Artifact Registry role to use",by-design
+gcp,container-registry,location,string,yes,,
+gcp,container-registry,project_id,string,yes,,
 gcp,projects-data-source,ignore_folders,list(string),no,,no-chart
 gcp,projects-data-source,ignore_projects,list(string),no,,no-chart
 gcp,projects-data-source,include_projects,list(string),no,,no-chart
@@ -2819,35 +2819,35 @@ aws,autoscaling,vpc_zone_identifier,list(string),no,,no-chart
 aws,autoscaling,wait_for_capacity_timeout,string,no,,no-chart
 aws,autoscaling,wait_for_elb_capacity,number,no,,no-chart
 aws,autoscaling,warm_pool,"object({instance_reuse_policy, max_group_prepared_capacity, min_size, pool_state})",no,,no-chart
-aws,secrets-manager,block_public_policy,bool,no,,no-chart
-aws,secrets-manager,create,bool,no,,no-chart
-aws,secrets-manager,create_policy,bool,no,,no-chart
-aws,secrets-manager,create_random_password,bool,no,,no-chart
-aws,secrets-manager,create_secret_version,bool,no,,no-chart
-aws,secrets-manager,description,string,no,,no-chart
-aws,secrets-manager,enable_rotation,bool,no,,no-chart
-aws,secrets-manager,force_overwrite_replica_secret,bool,no,,no-chart
-aws,secrets-manager,ignore_secret_changes,bool,no,,no-chart
-aws,secrets-manager,kms_key_id,string,no,,no-chart
-aws,secrets-manager,name,string,no,,no-chart
-aws,secrets-manager,name_prefix,string,no,,no-chart
-aws,secrets-manager,override_policy_documents,list(string),no,,no-chart
-aws,secrets-manager,policy_statements,"map(object({actions, condition, effect, not_actions, not_principals, not_resources, +3}))",no,,no-chart
-aws,secrets-manager,random_password_length,number,no,,no-chart
-aws,secrets-manager,random_password_override_special,string,no,,no-chart
-aws,secrets-manager,recovery_window_in_days,number,no,,no-chart
-aws,secrets-manager,region,string,no,,no-chart
-aws,secrets-manager,replica,"map(object({kms_key_id, region}))",no,,no-chart
-aws,secrets-manager,rotate_immediately,bool,no,,no-chart
-aws,secrets-manager,rotation_lambda_arn,string,no,,no-chart
-aws,secrets-manager,rotation_rules,"object({automatically_after_days, duration, schedule_expression})",no,,no-chart
-aws,secrets-manager,secret_binary,string,no,,no-chart
-aws,secrets-manager,secret_string,string,no,,no-chart
-aws,secrets-manager,secret_string_wo,string,no,,no-chart
-aws,secrets-manager,secret_string_wo_version,string,no,,no-chart
-aws,secrets-manager,source_policy_documents,list(string),no,,no-chart
-aws,secrets-manager,tags,map(string),no,,no-chart
-aws,secrets-manager,version_stages,list(string),no,,no-chart
+aws,secrets-manager,block_public_policy,bool,yes,,
+aws,secrets-manager,create,bool,yes,,
+aws,secrets-manager,create_policy,bool,yes,,
+aws,secrets-manager,create_random_password,bool,no,"a chart cannot make a random value without writing it into the rendered objects, and ACK's Secret has no field that generates one; generate the password into a Kubernetes Secret and set secret_string_ref",gap
+aws,secrets-manager,create_secret_version,bool,yes,,
+aws,secrets-manager,description,string,yes,,
+aws,secrets-manager,enable_rotation,bool,no,"rotation (aws_secretsmanager_secret_rotation) has no ACK field or kind: ACK's Secret has none (secretsmanager-controller v1.8.2), and ack-extensions has no rotation kind at the catalog's ACKX_COMMIT",gap
+aws,secrets-manager,force_overwrite_replica_secret,bool,yes,,
+aws,secrets-manager,ignore_secret_changes,bool,no,ACK's Secret has no way to leave a value changed outside it alone: it writes the value of the Kubernetes Secret secret_string_ref names,gap
+aws,secrets-manager,kms_key_id,string,yes,,
+aws,secrets-manager,name,string,yes,,
+aws,secrets-manager,name_prefix,string,no,a secret name with Terraform's random suffix (name_prefix) would change between renders; set name (the namePrefix value keeps two Instances' secrets apart),gap
+aws,secrets-manager,override_policy_documents,list(string),yes,,
+aws,secrets-manager,policy_statements,"map(object({actions, condition, effect, not_actions, not_principals, not_resources, +3}))",yes,,
+aws,secrets-manager,random_password_length,number,no,"a chart cannot make a random value without writing it into the rendered objects, and ACK's Secret has no field that generates one; generate the password into a Kubernetes Secret and set secret_string_ref",gap
+aws,secrets-manager,random_password_override_special,string,no,"a chart cannot make a random value without writing it into the rendered objects, and ACK's Secret has no field that generates one; generate the password into a Kubernetes Secret and set secret_string_ref",gap
+aws,secrets-manager,recovery_window_in_days,number,yes,,
+aws,secrets-manager,region,string,yes,,
+aws,secrets-manager,replica,"map(object({kms_key_id, region}))",yes,,
+aws,secrets-manager,rotate_immediately,bool,no,"rotation (aws_secretsmanager_secret_rotation) has no ACK field or kind: ACK's Secret has none (secretsmanager-controller v1.8.2), and ack-extensions has no rotation kind at the catalog's ACKX_COMMIT",gap
+aws,secrets-manager,rotation_lambda_arn,string,no,"rotation (aws_secretsmanager_secret_rotation) has no ACK field or kind: ACK's Secret has none (secretsmanager-controller v1.8.2), and ack-extensions has no rotation kind at the catalog's ACKX_COMMIT",gap
+aws,secrets-manager,rotation_rules,"object({automatically_after_days, duration, schedule_expression})",no,"rotation (aws_secretsmanager_secret_rotation) has no ACK field or kind: ACK's Secret has none (secretsmanager-controller v1.8.2), and ack-extensions has no rotation kind at the catalog's ACKX_COMMIT",gap
+aws,secrets-manager,secret_binary,string,no,"a secret's value in values would be written into the rendered objects, and ACK's Secret has no binary value field (secretsmanager-controller v1.8.2); store it base64-encoded in the Kubernetes Secret secret_string_ref names",gap
+aws,secrets-manager,secret_string,string,no,"a secret's value in values would be written into the rendered objects; ACK's Secret takes its value from a Kubernetes Secret: set secret_string_ref (name, key) to one the team provides",gap
+aws,secrets-manager,secret_string_wo,string,no,"a secret's value in values would be written into the rendered objects; ACK's Secret takes its value from a Kubernetes Secret: set secret_string_ref (name, key) to one the team provides",gap
+aws,secrets-manager,secret_string_wo_version,string,no,"it triggers an update of secret_string_wo, which is refused; ACK's Secret rereads the Kubernetes Secret secret_string_ref names",gap
+aws,secrets-manager,source_policy_documents,list(string),yes,,
+aws,secrets-manager,tags,map(string),yes,,
+aws,secrets-manager,version_stages,list(string),no,ACK's Secret has no field for a version's staging labels (secretsmanager-controller v1.8.2); its value always gets AWSCURRENT,gap
 aws,cloudfront,aliases,list(string),no,,no-chart
 aws,cloudfront,anycast_ip_list_id,string,no,,no-chart
 aws,cloudfront,cache_policies,"map(object({comment, default_ttl, max_ttl, min_ttl, name, parameters_in_cache_key_and_forwarded_to_origin}))",no,,no-chart
@@ -2971,36 +2971,36 @@ aws,eks-pod-identity,velero_kms_arns,list(string),no,"the module's preset polici
 aws,eks-pod-identity,velero_policy_name,string,no,"the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns",not-ported
 aws,eks-pod-identity,velero_s3_bucket_arns,list(string),no,"the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns",not-ported
 aws,eks-pod-identity,velero_s3_bucket_path_arns,list(string),no,"the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns",not-ported
-aws,ecr,attach_repository_policy,bool,no,,no-chart
-aws,ecr,create,bool,no,,no-chart
-aws,ecr,create_lifecycle_policy,bool,no,,no-chart
-aws,ecr,create_registry_policy,bool,no,,no-chart
-aws,ecr,create_registry_replication_configuration,bool,no,,no-chart
-aws,ecr,create_repository,bool,no,,no-chart
-aws,ecr,create_repository_policy,bool,no,,no-chart
-aws,ecr,manage_registry_scanning_configuration,bool,no,,no-chart
-aws,ecr,public_repository_catalog_data,"object({about_text, architectures, description, logo_image_blob, operating_systems, usage_text})",no,,no-chart
-aws,ecr,region,string,no,,no-chart
-aws,ecr,registry_policy,string,no,,no-chart
-aws,ecr,registry_pull_through_cache_rules,"map(object({credential_arn, custom_role_arn, ecr_repository_prefix, region, upstream_registry_url, upstream_repository_prefix}))",no,,no-chart
-aws,ecr,registry_replication_rules,"list(object({destinations, repository_filters}))",no,,no-chart
-aws,ecr,registry_scan_rules,"list(object({filter, scan_frequency}))",no,,no-chart
-aws,ecr,registry_scan_type,string,no,,no-chart
-aws,ecr,repository_encryption_type,string,no,,no-chart
-aws,ecr,repository_force_delete,bool,no,,no-chart
-aws,ecr,repository_image_scan_on_push,bool,no,,no-chart
-aws,ecr,repository_image_tag_mutability,string,no,,no-chart
-aws,ecr,repository_image_tag_mutability_exclusion_filter,"list(object({filter, filter_type}))",no,,no-chart
-aws,ecr,repository_kms_key,string,no,,no-chart
-aws,ecr,repository_lambda_read_access_arns,list(string),no,,no-chart
-aws,ecr,repository_lifecycle_policy,string,no,,no-chart
-aws,ecr,repository_name,string,no,,no-chart
-aws,ecr,repository_policy,string,no,,no-chart
-aws,ecr,repository_policy_statements,"map(object({actions, conditions, effect, not_actions, not_principals, not_resources, +3}))",no,,no-chart
-aws,ecr,repository_read_access_arns,list(string),no,,no-chart
-aws,ecr,repository_read_write_access_arns,list(string),no,,no-chart
-aws,ecr,repository_type,string,no,,no-chart
-aws,ecr,tags,map(string),no,,no-chart
+aws,ecr,attach_repository_policy,bool,yes,,
+aws,ecr,create,bool,yes,,
+aws,ecr,create_lifecycle_policy,bool,yes,,
+aws,ecr,create_registry_policy,bool,yes,,
+aws,ecr,create_registry_replication_configuration,bool,yes,,
+aws,ecr,create_repository,bool,yes,,
+aws,ecr,create_repository_policy,bool,yes,,
+aws,ecr,manage_registry_scanning_configuration,bool,yes,,
+aws,ecr,public_repository_catalog_data,"object({about_text, architectures, description, logo_image_blob, operating_systems, usage_text})",no,"a public repository (ECR Public) is refused: ACK's ecrpublic Repository (ecrpublic-controller v1.7.0) has no policy or catalog data field, and the module always attaches a policy to a public repository",gap
+aws,ecr,region,string,yes,,
+aws,ecr,registry_policy,string,yes,,
+aws,ecr,registry_pull_through_cache_rules,"map(object({credential_arn, custom_role_arn, ecr_repository_prefix, region, upstream_registry_url, upstream_repository_prefix}))",yes,,
+aws,ecr,registry_replication_rules,"list(object({destinations, repository_filters}))",yes,,
+aws,ecr,registry_scan_rules,"list(object({filter, scan_frequency}))",yes,,
+aws,ecr,registry_scan_type,string,yes,,
+aws,ecr,repository_encryption_type,string,yes,,
+aws,ecr,repository_force_delete,bool,no,ACK's Repository has no field to delete a repository that still holds images (ecr-controller v1.11.1),gap
+aws,ecr,repository_image_scan_on_push,bool,yes,,
+aws,ecr,repository_image_tag_mutability,string,yes,,
+aws,ecr,repository_image_tag_mutability_exclusion_filter,"list(object({filter, filter_type}))",yes,,
+aws,ecr,repository_kms_key,string,yes,,
+aws,ecr,repository_lambda_read_access_arns,list(string),yes,,
+aws,ecr,repository_lifecycle_policy,string,yes,,
+aws,ecr,repository_name,string,yes,,
+aws,ecr,repository_policy,string,yes,,
+aws,ecr,repository_policy_statements,"map(object({actions, conditions, effect, not_actions, not_principals, not_resources, +3}))",yes,,
+aws,ecr,repository_read_access_arns,list(string),yes,,
+aws,ecr,repository_read_write_access_arns,list(string),yes,,
+aws,ecr,repository_type,string,no,"a public repository (ECR Public) is refused: ACK's ecrpublic Repository (ecrpublic-controller v1.7.0) has no policy or catalog data field, and the module always attaches a policy to a public repository",gap
+aws,ecr,tags,map(string),yes,,
 aws,sns,application_feedback,"object({failure_role_arn, success_role_arn, success_sample_rate})",yes,,
 aws,sns,archive_policy,string,no,ACK's Topic (sns-controller v1.13.0) has no archive policy field (a FIFO topic's message archive),gap
 aws,sns,content_based_deduplication,bool,yes,,

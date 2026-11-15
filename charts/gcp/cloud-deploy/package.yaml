@@ -1,0 +1,32 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (see iam-service-account/package.yaml).
+# Outputs are fabric's declared outputs, selected (docs/design.md,
+# "Outputs"), from the rendered objects: the pipeline's ID, and the
+# targets', automations' and deploy policies' IDs as sorted lists (fabric's
+# are lists of the resources' IDs, in key order).
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: gcp-cloud-deploy
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [kcc]
+  outputs:
+    pipeline_id: >-
+      'projects/' + resources.pipeline.spec.projectRef.external + '/locations/' + resources.pipeline.spec.location
+        + '/deliveryPipelines/' + resources.pipeline.spec.resourceID
+    target_ids: >-
+      resources.filter(k, resources[k].kind == 'CloudDeployTarget')
+        .map(k, 'projects/' + resources[k].spec.projectRef.external + '/locations/' + resources[k].spec.location
+          + '/targets/' + resources[k].spec.resourceID).sort()
+    automation_ids: >-
+      resources.filter(k, resources[k].kind == 'CloudDeployAutomation')
+        .map(k, 'projects/' + resources[k].spec.projectRef.external + '/locations/' + resources[k].spec.location
+          + '/deliveryPipelines/' + resources[k].spec.deliveryPipeline + '/automations/' + resources[k].spec.resourceID).sort()
+    deploy_policy_ids: >-
+      resources.filter(k, resources[k].kind == 'CloudDeployDeployPolicy')
+        .map(k, 'projects/' + resources[k].spec.projectRef.external + '/locations/' + resources[k].spec.location
+          + '/deployPolicies/' + resources[k].spec.resourceID).sort()

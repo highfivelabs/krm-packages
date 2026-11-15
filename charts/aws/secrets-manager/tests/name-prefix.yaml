@@ -1,0 +1,10 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The namePrefix convention (docs/design.md, "Names, labels and tags"): a
+# secret's name, unique in its account and Region, carries the namePrefix.
+# Its name is spec.name. The resource policy names the secret it is on.
+exempt:
+  ResourcePolicy: "it is the secret's own policy, named by the secret's name; it has no name"
+nameFields:
+  Secret: name

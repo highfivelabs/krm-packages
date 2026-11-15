@@ -1,0 +1,4 @@
+# expect: ecr: repository_force_delete is not supported
+repository_name: x
+account_id: "111122223333"
+repository_force_delete: true

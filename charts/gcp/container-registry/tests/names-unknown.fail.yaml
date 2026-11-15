@@ -1,0 +1,4 @@
+# expect: names: Additional property registry is not allowed
+project_id: p
+location: ""
+names: {registry: x}

@@ -1,0 +1,28 @@
+# Applied to the fake cloud by hack/mock-apply.sh: a pipeline, a Cloud Run
+# target, an automation and a deploy policy, and a role on the pipeline and
+# on the target (IAMBinding; config-connector-extensions' fake cloud serves
+# any getIamPolicy path).
+project_id: mock-project
+region: us-central1
+name: catalog-mock-pipeline
+labels: {env: test}
+targets:
+  - name: catalog-mock-dev
+    cloud_run_configs: {}
+    iam:
+      roles/clouddeploy.operator: ["group:operators@example.com"]
+iam:
+  roles/clouddeploy.releaser: ["group:releasers@example.com"]
+automations:
+  catalog-mock-promote:
+    service_account: deployer@mock-project.iam.gserviceaccount.com
+    promote_release_rule: {destination_target_id: "@next"}
+deploy_policies:
+  catalog-mock-freeze:
+    rollout_restrictions:
+      weekends:
+        time_zone: America/New_York
+        weekly_windows:
+          - days_of_week: [SATURDAY, SUNDAY]
+            start_time: {hours: "0"}
+            end_time: {hours: "23", minutes: "59"}

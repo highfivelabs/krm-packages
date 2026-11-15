@@ -1,0 +1,3 @@
+# expect: location: Does not match pattern
+project_id: p
+location: us-central1

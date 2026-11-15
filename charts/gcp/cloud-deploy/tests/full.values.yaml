@@ -1,0 +1,134 @@
+# Every variable: a canary target with custom phases, a canary target with
+# percentages, a multi-target, an existing target, automations with every
+# rule, a deploy policy with both window kinds, and IAM on the pipeline and
+# a target.
+project_id: my-project
+region: europe-west1
+name: full
+description: Every variable.
+annotations: {owner: platform}
+labels: {team: platform}
+suspended: false
+allow_alpha: true
+deletion_policy: ABANDON
+targets:
+  - name: dev
+    profiles: [dev]
+    strategy: CANARY
+    deployment_percentages: [10, 50]
+    verify: true
+    predeploy_actions: [lint]
+    postdeploy_actions: [smoke]
+    execution_configs_usages: [RENDER, DEPLOY]
+    execution_configs_timeout: 3600s
+    target_deploy_parameters: {env: dev}
+    labels: {tier: dev}
+    annotations: {note: dev}
+    cloud_run_configs:
+      project_id: run-project
+      region: us-central1
+      automatic_traffic_control: false
+      canary_revision_tags: [canary]
+      prior_revision_tags: [prior]
+      stable_revision_tags: [stable]
+    delivery_pipeline_deploy_parameters:
+      - values: {replicas: "1"}
+        matching_target_labels: {tier: dev}
+    iam:
+      roles/clouddeploy.operator: ["group:dev-ops@example.com"]
+    iam_by_principals:
+      "group:dev-admins@example.com": [roles/clouddeploy.admin]
+    iam_bindings:
+      viewers:
+        role: roles/clouddeploy.viewer
+        members: ["group:viewers@example.com"]
+    iam_bindings_additive:
+      runner:
+        role: roles/clouddeploy.jobRunner
+        member: "serviceAccount:runner@my-project.iam.gserviceaccount.com"
+  - name: staging
+    project_id: staging-project
+    region: us-east1
+    strategy: CANARY
+    custom_canary_phase_configs:
+      phase1: {deployment_percentage: "25", predeploy_actions: [pre]}
+      phase2: {deployment_percentage: "75", postdeploy_actions: [post]}
+    cloud_run_configs: {}
+  - name: prod
+    require_approval: true
+    multi_target_target_ids: [prod-eu, prod-us]
+  - name: legacy
+    create_target: false
+    exclude_from_pipeline: false
+  - name: hidden
+    exclude_from_pipeline: true
+    cloud_run_configs: {}
+iam:
+  roles/clouddeploy.releaser: ["group:releasers@example.com"]
+iam_by_principals:
+  "group:approvers@example.com": [roles/clouddeploy.approver]
+iam_bindings:
+  conditional:
+    role: roles/clouddeploy.viewer
+    members: ["user:ada@example.com"]
+    condition:
+      title: until-2030
+      expression: request.time < timestamp('2030-01-01T00:00:00Z')
+iam_bindings_additive:
+  bob:
+    role: roles/clouddeploy.viewer
+    member: "user:bob@example.com"
+automations:
+  promote:
+    description: Promote and advance.
+    service_account: deployer@my-project.iam.gserviceaccount.com
+    labels: {kind: promote}
+    annotations: {owner: platform}
+    suspended: true
+    advance_rollout_rule: {source_phases: [canary-25], wait: 600s}
+    promote_release_rule: {wait: 3600s, destination_target_id: "@next", destination_phase: stable}
+    selector:
+      - id: dev
+      - labels: {tier: dev}
+  repair:
+    service_account: deployer@my-project.iam.gserviceaccount.com
+    project_id: other-project
+    region: us-central1
+    repair_rollout_rule:
+      phases: [stable]
+      jobs: [deploy]
+      retry: {attempts: "3", wait: 60s, backoff_mode: BACKOFF_MODE_EXPONENTIAL}
+      rollback: {destination_phase: stable, disable_rollback_if_rollout_pending: false}
+  nightly:
+    service_account: deployer@my-project.iam.gserviceaccount.com
+    timed_promote_release_rule:
+      schedule: "0 2 * * *"
+      time_zone: America/New_York
+      destination_target_id: prod
+deploy_policies:
+  freeze:
+    description: Holiday freeze.
+    labels: {kind: freeze}
+    annotations: {owner: platform}
+    suspended: false
+    rollout_restrictions:
+      weekends:
+        actions: [CREATE]
+        invokers: [USER]
+        time_zone: America/New_York
+        weekly_windows:
+          - days_of_week: [SATURDAY, SUNDAY]
+            start_time: {hours: "0", minutes: "0"}
+            end_time: {hours: "23", minutes: "59"}
+      holidays:
+        time_zone: America/New_York
+        one_time_windows:
+          - start_date: {year: "2026", month: "12", day: "24"}
+            start_time: {hours: "0"}
+            end_date: {year: "2026", month: "12", day: "26"}
+            end_time: {hours: "23", minutes: "59"}
+    selectors:
+      - id: full
+        type: DELIVERY_PIPELINE
+      - type: target
+        labels: {tier: prod}

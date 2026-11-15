@@ -1,0 +1,2 @@
+# expect: secrets-manager: name is required
+tags: {a: b}

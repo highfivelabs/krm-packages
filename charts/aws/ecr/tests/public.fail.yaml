@@ -1,0 +1,3 @@
+# expect: ecr: repository_type is not supported
+repository_name: x
+repository_type: public

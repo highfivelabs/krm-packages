@@ -1,0 +1,24 @@
+# Every variable.
+project_id: my-project
+name: full
+region: us-central1
+service_account: dataform@my-project.iam.gserviceaccount.com
+allow_alpha: true
+deletion_policy: ABANDON
+remote_repository_settings:
+  url: https://gitlab.example.com/data/dataform.git
+  branch: develop
+  secret_version: projects/my-project/secrets/token/versions/3
+iam:
+  roles/dataform.viewer: ["group:readers@example.com"]
+iam_bindings:
+  editors:
+    role: roles/dataform.editor
+    members: ["user:ada@example.com"]
+    condition:
+      title: until-2030
+      expression: request.time < timestamp('2030-01-01T00:00:00Z')
+iam_bindings_additive:
+  runner:
+    role: roles/dataform.editor
+    member: "serviceAccount:runner@my-project.iam.gserviceaccount.com"

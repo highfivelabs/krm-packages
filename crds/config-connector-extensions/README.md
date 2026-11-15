@@ -61,6 +61,9 @@ validate Config Connector's own kinds against its CRDs.
 | `compute.gcp.hfl.dev_computeautoscalers.yaml` | `ComputeAutoscaler` (`compute.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `35833eb8c7594675ea5237c11373665cd806658e` (2026-11-12) |
 | `compute.gcp.hfl.dev_computeregionperinstanceconfigs.yaml` | `ComputeRegionPerInstanceConfig` (`compute.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `35833eb8c7594675ea5237c11373665cd806658e` (2026-11-12) |
 | `compute.gcp.hfl.dev_computediskresourcepolicyattachments.yaml` | `ComputeDiskResourcePolicyAttachment` (`compute.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `384d07c01932defd747c17038a833ca3b591fa7a` (2026-11-14, the pin) |
+| `clouddeploy.gcp.hfl.dev_clouddeploytargets.yaml` | `CloudDeployTarget` (`clouddeploy.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `384d07c01932defd747c17038a833ca3b591fa7a` (2026-11-15, the pin) |
+| `clouddeploy.gcp.hfl.dev_clouddeployautomations.yaml` | `CloudDeployAutomation` (`clouddeploy.gcp.hfl.dev/v1beta1`) | `config/crds/` at `384d07c01932defd747c17038a833ca3b591fa7a` (2026-11-15, the pin) |
+| `clouddeploy.gcp.hfl.dev_clouddeploydeploypolicies.yaml` | `CloudDeployDeployPolicy` (`clouddeploy.gcp.hfl.dev/v1beta1`) | `config/crds/` at `384d07c01932defd747c17038a833ca3b591fa7a` (2026-11-15, the pin) |
 
 `Taskfile.yml`'s `CCE_COMMIT`, which the fake-cloud and live runs use, is
 `384d07c01932defd747c17038a833ca3b591fa7a` (2026-11-14), at or after every

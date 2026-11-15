@@ -1,0 +1,5 @@
+# expect: dataform-repository: iam_bindings_additive needs the alpha Config Connector kind IAMMember
+project_id: my-project
+name: r
+region: europe-west1
+iam_bindings_additive: {u: {role: roles/dataform.viewer, member: "user:a@example.com"}}

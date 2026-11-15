@@ -1,0 +1,5 @@
+# expect: listings: Property name of "x-y" does not match
+project_id: my-project
+region: europe-west1
+name: x
+listings: {x-y: {bigquery_dataset: projects/p/datasets/d}}

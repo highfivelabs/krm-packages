@@ -41,8 +41,9 @@ module "scratch" {
   location   = "EU"
 }
 
-module "registry" {
-  source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/container-registry?ref=v60.0.0"
+module "looker" {
+  source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/looker-core?ref=v60.0.0"
   project_id = var.project_id
-  location   = "EU"
+  region     = "europe-west1"
+  name       = "looker"
 }

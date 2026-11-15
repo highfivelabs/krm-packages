@@ -1,0 +1,64 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf: the private repository (aws_ecr_repository.this, ecr/Repository).
+ACK's Repository carries the module's standalone policies inline: the
+repository policy (aws_ecr_repository_policy.this -> policy) and the
+lifecycle policy (aws_ecr_lifecycle_policy.this -> lifecyclePolicy). A
+public repository is refused (refusals.yaml).
+*/ -}}
+{{- include "ack.names" (list $ (list "repository")) -}}
+{{- $v := .Values -}}
+{{- include "ack.unchanged" (list $ "repository_type" $v.repository_type "\"private\"" "a public repository (ECR Public) is refused: ACK's ecrpublic Repository (ecrpublic-controller v1.7.0) has no policy or catalog data field, and the module always attaches a policy to a public repository") }}
+{{- if and $v.create $v.create_repository }}
+{{- $name := include "ecr.name" $ }}
+{{- if not $name }}
+{{- fail "ecr: repository_name is required (or names.repository): an ECR repository needs a name" }}
+{{- end }}
+{{- $tags := include "ack.tags" (list $ $v.tags) | fromJson }}
+{{- $policy := "" }}
+{{- if $v.attach_repository_policy }}
+{{- if $v.create_repository_policy }}
+{{- $policy = include "ecr.policy" $ }}
+{{- else if $v.repository_policy }}
+{{- $policy = $v.repository_policy }}
+{{- else }}
+{{- fail "ecr: attach_repository_policy with create_repository_policy false needs repository_policy (the JSON policy to attach)" }}
+{{- end }}
+{{- end }}
+---
+apiVersion: ecr.services.k8s.aws/v1alpha1
+kind: Repository
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "repository")) "id" "repository" "region" ($v.region | default "")) | nindent 2 }}
+spec:
+  name: {{ $name | quote }}
+{{- if or $v.repository_encryption_type $v.repository_kms_key }}
+  encryptionConfiguration:
+    encryptionType: {{ $v.repository_encryption_type | default "AES256" | quote }}
+{{- with $v.repository_kms_key }}
+    kmsKey: {{ . | quote }}
+{{- end }}
+{{- end }}
+  imageScanningConfiguration:
+    scanOnPush: {{ $v.repository_image_scan_on_push }}
+  imageTagMutability: {{ $v.repository_image_tag_mutability | quote }}
+{{- with $v.repository_image_tag_mutability_exclusion_filter }}
+  imageTagMutabilityExclusionFilters:
+{{- range . }}
+    - filter: {{ .filter | quote }}
+      filterType: {{ .filter_type | quote }}
+{{- end }}
+{{- end }}
+{{- if and $v.create_lifecycle_policy $v.repository_lifecycle_policy }}
+  lifecyclePolicy: {{ $v.repository_lifecycle_policy | quote }}
+{{- end }}
+{{- with $policy }}
+  policy: {{ . | quote }}
+{{- end }}
+{{- with $tags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
