@@ -1,0 +1,13 @@
+# fabric's "Simple example": the cluster, one configuration and one
+# workstation with a label.
+project_id: my-project
+id: my-workstation-cluster
+location: europe-west1
+network_config:
+  network: projects/my-project/global/networks/vpc
+  subnetwork: projects/my-project/regions/europe-west1/subnetworks/subnet
+workstation_configs:
+  my-workstation-config:
+    workstations:
+      my-workstation:
+        labels: {team: my-team}

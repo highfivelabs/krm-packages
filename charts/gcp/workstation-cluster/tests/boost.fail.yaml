@@ -1,0 +1,8 @@
+# expect: workstation-cluster: workstation_configs.dev.gce_instance.boost_configs is not supported
+project_id: my-project
+id: my-workstation-cluster
+location: europe-west1
+network_config:
+  network: projects/my-project/global/networks/vpc
+  subnetwork: projects/my-project/regions/europe-west1/subnetworks/subnet
+workstation_configs: {dev: {gce_instance: {boost_configs: {boost-1: {machine_type: n1-standard-2}}}}}

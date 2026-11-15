@@ -1,0 +1,8 @@
+# expect: workstation-cluster: workstation_configs.dev.container.run_as_user "root" must be a user ID
+project_id: my-project
+id: my-workstation-cluster
+location: europe-west1
+network_config:
+  network: projects/my-project/global/networks/vpc
+  subnetwork: projects/my-project/regions/europe-west1/subnetworks/subnet
+workstation_configs: {dev: {container: {run_as_user: root}}}

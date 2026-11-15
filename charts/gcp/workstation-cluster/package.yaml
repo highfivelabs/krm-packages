@@ -1,0 +1,28 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (see iam-service-account/package.yaml).
+# Outputs are fabric's declared outputs, selected (docs/design.md,
+# "Outputs"): the cluster's ID from the rendered object, and, for a private
+# cluster, its hostname and service attachment URI from its status. Not
+# outputs: fabric's whole objects (workstation_configs, workstations).
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: gcp-workstation-cluster
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [kcc]
+  outputs:
+    cluster_hostname: >-
+      inputs.private_cluster_config != null
+        && has(resources.cluster.status) && has(resources.cluster.status.observedState)
+        && has(resources.cluster.status.observedState.clusterHostname)
+      ? dyn(resources.cluster.status.observedState.clusterHostname) : null
+    id: resources.cluster.spec.resourceID
+    service_attachment_uri: >-
+      inputs.private_cluster_config != null
+        && has(resources.cluster.status) && has(resources.cluster.status.observedState)
+        && has(resources.cluster.status.observedState.serviceAttachmentUri)
+      ? dyn(resources.cluster.status.observedState.serviceAttachmentUri) : null

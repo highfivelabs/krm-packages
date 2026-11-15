@@ -1,0 +1,658 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "workstation-cluster values (fabric workstation-cluster v60.0.0)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "location",
+    "network_config",
+    "project_id"
+  ],
+  "properties": {
+    "allow_alpha": {
+      "description": "Accept v1alpha1 kinds (IAMMember, for iam_bindings_additive). Not a Terraform variable.",
+      "type": "boolean"
+    },
+    "deletion_policy": {
+      "description": "DELETE (default) or ABANDON (not a fabric variable).",
+      "enum": [
+        "DELETE",
+        "ABANDON",
+        "PREVENT",
+        null
+      ]
+    },
+    "labels": {
+      "description": "Kubernetes labels on every object; an unprefixed key also becomes a Google Cloud label. fabric's labels.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 63
+      }
+    },
+    "namePrefix": {
+      "description": "Optional convenience (not a Terraform variable): <namePrefix>- in front of every derived name, never a name set under names. A DNS label. Empty changes nothing.",
+      "type": "string",
+      "pattern": "^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+    },
+    "names": {
+      "description": "Cloud names in full (not Terraform variables; docs/design.md, \"Names, labels and tags\"). A name set here takes no prefix.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cluster": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63,
+          "pattern": "^[a-z][-a-z0-9]*[a-z0-9]$"
+        }
+      }
+    },
+    "tags": {
+      "description": "Cloud labels on every resource (Google Cloud labels: lower-case letters, digits, _ and -).",
+      "type": [
+        "object",
+        "null"
+      ],
+      "propertyNames": {
+        "pattern": "^[a-z]([a-z0-9_-]{0,61}[a-z0-9])?$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^([a-z0-9]([a-z0-9_-]{0,61}[a-z0-9])?)?$"
+      }
+    },
+    "annotations": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Workstation cluster annotations."
+    },
+    "context": {
+      "description": "fabric's context interpolations; refused when set.",
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "display_name": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Display name."
+    },
+    "domain": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Domain. Refused when set."
+    },
+    "factories_config": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "workstation_configs": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "Path to folder with YAML resource description data files. Refused when set."
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Workstation cluster ID."
+    },
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Location."
+    },
+    "network_config": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "network": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subnetwork": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "network",
+        "subnetwork"
+      ],
+      "description": "Network configuration."
+    },
+    "private_cluster_config": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "enable_private_endpoint": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "allowed_projects": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Private cluster config."
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Cluster ID."
+    },
+    "workstation_configs": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "annotations": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "display_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "enable_audit_agent": {
+            "description": "Refused when set (no Config Connector field)."
+          },
+          "labels": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "max_workstations": {
+            "description": "Refused when set (no Config Connector field)."
+          },
+          "replica_zones": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "container": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "args": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              },
+              "command": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              },
+              "env": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "image": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "run_as_user": {
+                "type": [
+                  "string",
+                  "integer",
+                  "null"
+                ]
+              },
+              "working_dir": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "encryption_key": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kms_key": {
+                "type": "string"
+              },
+              "kms_key_service_account": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kms_key",
+              "kms_key_service_account"
+            ]
+          },
+          "gce_instance": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "boot_disk_size_gb": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "disable_public_ip_addresses": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "enable_confidential_compute": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "enable_nested_virtualization": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "machine_type": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "pool_size": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "service_account": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "service_account_scopes": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              },
+              "tags": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              },
+              "accelerators": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "description": "Refused when set (no Config Connector field)."
+              },
+              "boost_configs": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "description": "Refused when set (no Config Connector field)."
+              },
+              "shielded_instance_config": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "enable_secure_boot": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "enable_vtpm": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "enable_integrity_monitoring": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "iam": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "iam_bindings": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "role": {
+                  "type": "string"
+                },
+                "members": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "role",
+                "members"
+              ]
+            }
+          },
+          "iam_bindings_additive": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "role": {
+                  "type": "string"
+                },
+                "member": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "role",
+                "member"
+              ]
+            }
+          },
+          "persistent_directories": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "mount_path": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "gce_pd": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "size_gb": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "fs_type": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "disk_type": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "source_snapshot": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "reclaim_policy": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "timeouts": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "idle": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "running": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          },
+          "workstations": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "annotations": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                },
+                "display_name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "env": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "description": "Refused when set (no Config Connector field)."
+                },
+                "iam": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "iam_bindings": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "role": {
+                        "type": "string"
+                      },
+                      "members": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "role",
+                      "members"
+                    ]
+                  }
+                },
+                "iam_bindings_additive": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "role": {
+                        "type": "string"
+                      },
+                      "member": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "role",
+                      "member"
+                    ]
+                  }
+                },
+                "labels": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "propertyNames": {
+              "pattern": "^[a-z]([-a-z0-9]*[a-z0-9])?$",
+              "maxLength": 63
+            }
+          }
+        }
+      },
+      "propertyNames": {
+        "pattern": "^[a-z]([-a-z0-9]*[a-z0-9])?$",
+        "maxLength": 63
+      },
+      "description": "Workstation configurations."
+    }
+  }
+}

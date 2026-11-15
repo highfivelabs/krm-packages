@@ -1,0 +1,8 @@
+# expect: workstation-cluster: deletion_policy PREVENT has no Config Connector equivalent
+project_id: my-project
+id: my-workstation-cluster
+location: europe-west1
+network_config:
+  network: projects/my-project/global/networks/vpc
+  subnetwork: projects/my-project/regions/europe-west1/subnetworks/subnet
+deletion_policy: PREVENT

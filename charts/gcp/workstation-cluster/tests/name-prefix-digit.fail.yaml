@@ -1,0 +1,8 @@
+# expect: workstation-cluster: workstation cluster name "1shop-my-workstation-cluster" must start with a lower-case letter
+project_id: my-project
+id: my-workstation-cluster
+location: europe-west1
+network_config:
+  network: projects/my-project/global/networks/vpc
+  subnetwork: projects/my-project/regions/europe-west1/subnetworks/subnet
+namePrefix: 1shop

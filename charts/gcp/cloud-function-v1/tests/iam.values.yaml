@@ -1,0 +1,10 @@
+# fabric's "Controlling HTTP access" example, plus a second role: one
+# IAMPartialPolicy on the function, a binding per role.
+project_id: my-project
+region: europe-west1
+name: test-cf-http
+bucket_name: my-bucket
+bundle_config: {path: "gs://my-bucket/bundles/function.zip"}
+iam:
+  roles/cloudfunctions.invoker: ["allUsers"]
+  roles/cloudfunctions.viewer: ["group:viewers@example.org"]

@@ -1,0 +1,16 @@
+# fabric's "Private cluster" example.
+project_id: my-project
+id: my-workstation-cluster
+location: europe-west1
+network_config:
+  network: projects/my-project/global/networks/vpc
+  subnetwork: projects/my-project/regions/europe-west1/subnetworks/subnet
+private_cluster_config:
+  enable_private_endpoint: true
+workstation_configs:
+  my-workstation-config:
+    gce_instance:
+      disable_public_ip_addresses: true
+    workstations:
+      my-workstation:
+        labels: {team: my-team}
