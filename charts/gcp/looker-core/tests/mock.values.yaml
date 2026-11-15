@@ -1,0 +1,18 @@
+# For the fake cloud (hack/mock-apply.sh): a public instance whose OAuth
+# client secret comes from the Secret below, which hack/test-secret.sh
+# makes in the test's namespace before the apply (docs/secrets.md);
+# config-connector-extensions' LookerInstance reads it.
+# secret: catalog-mock-looker random
+allow_alpha: true
+project_id: mock-project
+region: us-central1
+prefix: catalog
+name: mock-looker
+labels: {env: test}
+network_config:
+  public: true
+oauth_config:
+  client_id: catalog-mock.apps.googleusercontent.com
+  client_secret: {secretName: catalog-mock-looker, key: value}
+platform_edition: LOOKER_CORE_STANDARD_ANNUAL
+gemini_enabled: true

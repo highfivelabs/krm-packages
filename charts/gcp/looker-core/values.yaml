@@ -1,0 +1,73 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values mirror the Terraform variables of fabric's looker-core module
+# (v60.0.0): same names, types and defaults, so a module block's arguments
+# become this file one to one (README.md, "From Terraform"), except
+# oauth_config.client_secret, which is a reference to a Kubernetes Secret.
+# values.schema.json carries the types.
+
+# Names, labels and tags (docs/design.md, "Names, labels and tags"). Not
+# Terraform variables: Bundt supplies names from a team's naming convention
+# and stamps its identity labels; the chart takes them and computes none.
+#
+# names.instance sets the instance's ID in full (else "<prefix>-<name>").
+names: {}
+# An optional convenience: "<namePrefix>-" in front of the instance's ID
+# when names.instance is not set. Empty (the default) changes nothing.
+namePrefix: ""
+# Kubernetes labels on the object. A Looker instance takes no Google Cloud
+# labels.
+labels: {}
+# Cloud labels: a Looker instance takes none, so they stay on the object's
+# metadata.labels.
+tags: {}
+
+# Looker Core admins settings: {allowed_email_domains = [...]}.
+admin_settings: null
+# Controlled egress configuration: {enabled (default true),
+# marketplace_enabled, egress_fqdns}.
+controlled_egress: null
+# Looker core instance custom domain.
+custom_domain: null
+# Set encryption configuration: {kms_key_name}. KMS name format:
+# 'projects/[PROJECT]/locations/[REGION]/keyRings/[RING]/cryptoKeys/[KEY_NAME]'.
+encryption_config: null
+# FIPS 140-2 Encryption enablement for Looker (Google Cloud Core).
+fips_enabled: null
+# Gemini enablement for Looker (Google Cloud Core).
+gemini_enabled: null
+# Set maintenance window configuration and maintenance deny period (up to
+# 90 days): {maintenance_window = {day, start_time}, deny_maintenance_period
+# = {start_date, end_date, start_time}}.
+maintenance_config: {}
+# Name of the looker core instance.
+name: ""
+# Network configuration for cluster and instance. Exactly one of psa_config
+# ({network, allocated_ip_range, enable_public_ip, enable_private_ip}),
+# psc_config ({allowed_vpcs, service_attachments}) or public: true.
+network_config: {}
+# Looker Core Oauth config: {client_id, client_secret}. client_secret is a
+# reference to a Kubernetes Secret in the component's namespace,
+# {secretName, key}, never the secret itself (docs/secrets.md).
+oauth_config: null
+# Configuration for periodic export: {kms_key, gcs_uri, start_time}.
+periodic_export_config: null
+# Platform editions for a Looker instance. Each edition maps to a set of
+# instance features, like its size.
+platform_edition: LOOKER_CORE_TRIAL
+# Optional prefix used to generate instance names.
+prefix: null
+# The ID of the project where this instances will be created.
+project_id: ""
+# Region for the Looker core instance.
+region: ""
+
+# Not a fabric variable: the chart's only kind, config-connector-extensions'
+# LookerInstance, is v1alpha1; set true to accept that its schema may
+# change (docs/design.md, "Alpha kinds"). Required.
+allow_alpha: false
+# Not a fabric variable: DELETE (the default) or ABANDON, which keeps the
+# instance when the component is deleted. PREVENT has no Config Connector
+# equivalent.
+deletion_policy: null

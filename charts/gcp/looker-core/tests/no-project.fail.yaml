@@ -1,0 +1,9 @@
+# expect: project_id: String length must be greater than or equal to 1
+allow_alpha: true
+region: europe-west1
+name: looker
+network_config:
+  public: true
+oauth_config:
+  client_id: xxxxxxxxx
+  client_secret: {secretName: looker-oauth, key: client-secret}

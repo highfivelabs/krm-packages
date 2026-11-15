@@ -1,0 +1,12 @@
+# expect: looker-core: Maintenance window day must be between 1 and 7
+allow_alpha: true
+maintenance_config:
+  maintenance_window: {day: SUNDAY, start_time: {hours: 2, minutes: 30}}
+project_id: my-project
+region: europe-west1
+name: looker
+network_config:
+  public: true
+oauth_config:
+  client_id: xxxxxxxxx
+  client_secret: {secretName: looker-oauth, key: client-secret}

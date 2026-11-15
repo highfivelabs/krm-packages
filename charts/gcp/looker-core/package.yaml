@@ -1,0 +1,49 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (see iam-service-account/package.yaml).
+# Outputs are fabric's declared outputs, selected (docs/design.md,
+# "Outputs"). id and instance_id are the instance's status.externalRef
+# (projects/<p>/locations/<region>/instances/<name>, Terraform's id);
+# instance_name is its resourceID; the IPs, looker_uri and looker_version
+# are the API's read-only fields (status.observedState); each null until
+# reported. Not outputs: instance (fabric's whole object),
+# egress_service_attachments and looker_service_attachment (the API's
+# read-only fields inside pscConfig, which config-connector-extensions'
+# LookerInstance does not report).
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: gcp-looker-core
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [kcc]
+  outputs:
+    id: >-
+      has(resources.instance.status) && has(resources.instance.status.externalRef)
+      ? dyn(resources.instance.status.externalRef) : null
+    instance_id: >-
+      has(resources.instance.status) && has(resources.instance.status.externalRef)
+      ? dyn(resources.instance.status.externalRef) : null
+    instance_name: resources.instance.spec.resourceID
+    egress_public_ip: >-
+      has(resources.instance.status) && has(resources.instance.status.observedState)
+        && has(resources.instance.status.observedState.egressPublicIp)
+      ? dyn(resources.instance.status.observedState.egressPublicIp) : null
+    ingress_private_ip: >-
+      has(resources.instance.status) && has(resources.instance.status.observedState)
+        && has(resources.instance.status.observedState.ingressPrivateIp)
+      ? dyn(resources.instance.status.observedState.ingressPrivateIp) : null
+    ingress_public_ip: >-
+      has(resources.instance.status) && has(resources.instance.status.observedState)
+        && has(resources.instance.status.observedState.ingressPublicIp)
+      ? dyn(resources.instance.status.observedState.ingressPublicIp) : null
+    looker_uri: >-
+      has(resources.instance.status) && has(resources.instance.status.observedState)
+        && has(resources.instance.status.observedState.lookerUri)
+      ? dyn(resources.instance.status.observedState.lookerUri) : null
+    looker_version: >-
+      has(resources.instance.status) && has(resources.instance.status.observedState)
+        && has(resources.instance.status.observedState.lookerVersion)
+      ? dyn(resources.instance.status.observedState.lookerVersion) : null

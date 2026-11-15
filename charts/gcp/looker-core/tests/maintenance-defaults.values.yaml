@@ -1,0 +1,12 @@
+# An empty maintenance window takes fabric's defaults: Sunday at 23:00.
+allow_alpha: true
+project_id: my-project
+region: europe-west1
+name: looker
+network_config:
+  public: true
+oauth_config:
+  client_id: xxxxxxxxx
+  client_secret: {secretName: looker-oauth, key: client-secret}
+maintenance_config:
+  maintenance_window: {}

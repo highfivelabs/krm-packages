@@ -1,0 +1,14 @@
+# Names in full, labels and tags, as Bundt passes them from a team's naming
+# convention (docs/design.md, "Names, labels and tags").
+allow_alpha: true
+project_id: my-project
+region: europe-west1
+name: looker
+names: {instance: shop-dev-looker}
+labels: {hfl.dev/team: shop, hfl.dev/environment: dev}
+tags: {team: shop, environment: dev}
+network_config:
+  public: true
+oauth_config:
+  client_id: xxxxxxxxx
+  client_secret: {secretName: looker-oauth, key: client-secret}

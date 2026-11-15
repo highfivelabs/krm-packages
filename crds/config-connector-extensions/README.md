@@ -64,10 +64,18 @@ validate Config Connector's own kinds against its CRDs.
 | `clouddeploy.gcp.hfl.dev_clouddeploytargets.yaml` | `CloudDeployTarget` (`clouddeploy.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `384d07c01932defd747c17038a833ca3b591fa7a` (2026-11-15, the pin) |
 | `clouddeploy.gcp.hfl.dev_clouddeployautomations.yaml` | `CloudDeployAutomation` (`clouddeploy.gcp.hfl.dev/v1beta1`) | `config/crds/` at `384d07c01932defd747c17038a833ca3b591fa7a` (2026-11-15, the pin) |
 | `clouddeploy.gcp.hfl.dev_clouddeploydeploypolicies.yaml` | `CloudDeployDeployPolicy` (`clouddeploy.gcp.hfl.dev/v1beta1`) | `config/crds/` at `384d07c01932defd747c17038a833ca3b591fa7a` (2026-11-15, the pin) |
+| `looker.gcp.hfl.dev_lookerinstances.yaml` | `LookerInstance` (`looker.gcp.hfl.dev/v1alpha1`: a chart renders it only with `allow_alpha`; `oauthConfig.clientSecret` takes `valueFrom.secretKeyRef`) | `config/crds/` at `069e4211eff74013929015dbb4b0707bcba42b0c` (2026-11-15, the pin) |
 
 `Taskfile.yml`'s `CCE_COMMIT`, which the fake-cloud and live runs use, is
-`384d07c01932defd747c17038a833ca3b591fa7a` (2026-11-14), at or after every
-copy above, so the fake cloud serves each of these kinds (each file is the
-same at the pin). A CRD copied from a later commit needs the pin moved
+`069e4211eff74013929015dbb4b0707bcba42b0c` (2026-11-15), at or after every
+copy above, so the fake cloud serves each of these kinds. Seven files are
+not the same at that pin: config-connector-extensions #131 and #132 moved
+`ComputeRegionNetworkEndpoint`, `ComputeRegionNetworkFirewallPolicy`,
+`ComputeRegionNetworkFirewallPolicyAssociation`,
+`ComputeRegionNetworkFirewallPolicyRule`, `ComputeRouterRoutePolicy`,
+`IAMMember` and `StorageBucketObject` from `v1alpha1` to `v1beta1`, and the
+copies here and the charts that render them still say `v1alpha1` (only
+behind `allow_alpha`, which no fake-cloud case sets); moving them is its
+own change. A CRD copied from a later commit needs the pin moved
 first, in its own change, before a fake-cloud case renders the kind; until
 then the chart's README says which of its objects are only render-tested.

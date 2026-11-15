@@ -1,0 +1,11 @@
+# expect: looker-core: Looker instance name "shop-dev-
+allow_alpha: true
+namePrefix: shop-dev
+project_id: my-project
+region: europe-west1
+name: a-looker-instance-with-a-name-long-enough-to-pass-the-limit-x
+network_config:
+  public: true
+oauth_config:
+  client_id: xxxxxxxxx
+  client_secret: {secretName: looker-oauth, key: client-secret}

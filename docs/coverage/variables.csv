@@ -1181,21 +1181,21 @@ gcp,gcve-private-cloud,project_id,string,no,,no-chart
 gcp,gcve-private-cloud,vmw_network_config,"object({create, description, name, network_policies})",no,,no-chart
 gcp,gcve-private-cloud,vmw_network_peerings,"map(object({description, peer_network, peer_to_vmware_engine_network, routes_config}))",no,,no-chart
 gcp,gcve-private-cloud,vmw_private_cloud_configs,"map(object({additional_cluster_configs, cidr, description, management_cluster_config, zone}))",no,,no-chart
-gcp,looker-core,admin_settings,object({allowed_email_domains}),no,,no-chart
-gcp,looker-core,controlled_egress,"object({egress_fqdns, enabled, marketplace_enabled})",no,,no-chart
-gcp,looker-core,custom_domain,string,no,,no-chart
-gcp,looker-core,encryption_config,object({kms_key_name}),no,,no-chart
-gcp,looker-core,fips_enabled,bool,no,,no-chart
-gcp,looker-core,gemini_enabled,bool,no,,no-chart
-gcp,looker-core,maintenance_config,"object({deny_maintenance_period, maintenance_window})",no,,no-chart
-gcp,looker-core,name,string,no,,no-chart
-gcp,looker-core,network_config,"object({psa_config, psc_config, public})",no,,no-chart
-gcp,looker-core,oauth_config,"object({client_id, client_secret})",no,,no-chart
-gcp,looker-core,periodic_export_config,"object({gcs_uri, kms_key, start_time})",no,,no-chart
-gcp,looker-core,platform_edition,string,no,,no-chart
-gcp,looker-core,prefix,string,no,,no-chart
-gcp,looker-core,project_id,string,no,,no-chart
-gcp,looker-core,region,string,no,,no-chart
+gcp,looker-core,admin_settings,object({allowed_email_domains}),yes,,
+gcp,looker-core,controlled_egress,"object({egress_fqdns, enabled, marketplace_enabled})",yes,,
+gcp,looker-core,custom_domain,string,yes,,
+gcp,looker-core,encryption_config,object({kms_key_name}),yes,,
+gcp,looker-core,fips_enabled,bool,yes,,
+gcp,looker-core,gemini_enabled,bool,yes,,
+gcp,looker-core,maintenance_config,"object({deny_maintenance_period, maintenance_window})",yes,,
+gcp,looker-core,name,string,yes,,
+gcp,looker-core,network_config,"object({psa_config, psc_config, public})",yes,,
+gcp,looker-core,oauth_config,"object({client_id, client_secret})",partial,"client_secret is a reference to a Kubernetes Secret, {secretName, key}, rendered as LookerInstance's oauthConfig.clientSecret.valueFrom.secretKeyRef (docs/secrets.md); the secret itself, a string, is refused: it would be in the rendered manifest",by-design
+gcp,looker-core,periodic_export_config,"object({gcs_uri, kms_key, start_time})",yes,,
+gcp,looker-core,platform_edition,string,yes,,
+gcp,looker-core,prefix,string,yes,,
+gcp,looker-core,project_id,string,yes,,
+gcp,looker-core,region,string,yes,,
 gcp,ai-applications,chat_agent_security_configs,"object({audio_export_settings, dlp_deidentify_template, dlp_inspect_template, enable_insights_export, location, purge_data_types, +3})",no,,no-chart
 gcp,ai-applications,context,"object({kms_keys, locations, project_ids})",no,,no-chart
 gcp,ai-applications,data_stores_configs,"map(object({advanced_site_search_config, content_config, create_advanced_site_search, display_name, document_processing_config, industry_vertical, +6}))",no,,no-chart

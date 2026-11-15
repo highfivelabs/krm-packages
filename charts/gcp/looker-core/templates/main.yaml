@@ -1,0 +1,131 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/looker-core/main.tf
+(v60.0.0), Copyright 2026 Google LLC, Apache-2.0.
+
+google_looker_instance.looker: one LookerInstance (config-connector-extensions,
+looker.gcp.hfl.dev/v1alpha1: the chart renders only with allow_alpha).
+oauth_config.client_secret is a reference to a Kubernetes Secret,
+{secretName, key}, rendered as the kind's
+oauthConfig.clientSecret.valueFrom.secretKeyRef, never the secret itself
+(docs/secrets.md; config-connector-extensions decision 33).
+*/ -}}
+{{- $v := .Values }}
+{{- include "kcc.names" (list $ (list "instance")) }}
+{{- include "kcc.alpha" (list $ "name" $v.name "LookerInstance (config-connector-extensions)") }}
+{{- $nc := $v.network_config | default dict }}
+{{- $psa := $nc.psa_config }}
+{{- $psc := $nc.psc_config }}
+{{- /* fabric's validations, with its messages. */}}
+{{- if ne (add (ternary 1 0 (eq (toString $nc.public) "true")) (ternary 0 1 (kindIs "invalid" $psa)) (ternary 0 1 (kindIs "invalid" $psc))) 1 }}
+{{- fail "looker-core: Please specify exactly one of psa_config, psc_config or public." }}
+{{- end }}
+{{- if not (has (toString $v.platform_edition) (list "LOOKER_CORE_TRIAL" "LOOKER_CORE_STANDARD" "LOOKER_CORE_STANDARD_ANNUAL" "LOOKER_CORE_ENTERPRISE_ANNUAL" "LOOKER_CORE_EMBED_ANNUAL")) }}
+{{- fail "looker-core: Platform Edition type must one of 'LOOKER_CORE_TRIAL', 'LOOKER_CORE_STANDARD', 'LOOKER_CORE_STANDARD_ANNUAL', 'LOOKER_CORE_ENTERPRISE_ANNUAL', 'LOOKER_CORE_EMBED_ANNUAL'." }}
+{{- end }}
+{{- if eq (toString $v.prefix) "" }}{{ if not (kindIs "invalid" $v.prefix) }}
+{{- fail "looker-core: Prefix cannot be empty, please use null instead." }}
+{{- end }}{{ end }}
+{{- $mc := $v.maintenance_config | default dict }}
+{{- $mw := $mc.maintenance_window }}
+{{- if not (kindIs "invalid" $mw) }}
+{{- $st := $mw.start_time | default dict }}
+{{- $h := ternary 23 $st.hours (kindIs "invalid" $st.hours) | int }}
+{{- if or (lt $h 0) (gt $h 23) (ne (ternary 0 $st.minutes (kindIs "invalid" $st.minutes) | int) 0) (ne (ternary 0 $st.seconds (kindIs "invalid" $st.seconds) | int) 0) (ne (ternary 0 $st.nanos (kindIs "invalid" $st.nanos) | int) 0) (not (has (toString ($mw.day | default "SUNDAY")) (list "MONDAY" "TUESDAY" "WEDNESDAY" "THURSDAY" "FRIDAY" "SATURDAY" "SUNDAY"))) }}
+{{- fail "looker-core: Maintenance window day must be between 1 and 7, maintenance window hour must be between 0 and 23 and maintenance window update_track must be 'stable' or 'canary'." }}
+{{- end }}
+{{- end }}
+{{- /* oauth_config is required, as in fabric; the secret is a reference. */}}
+{{- $oc := $v.oauth_config }}
+{{- if or (kindIs "invalid" $oc) (not $oc.client_id) (kindIs "invalid" $oc.client_secret) }}
+{{- fail "looker-core: oauth_config is required: client_id, and client_secret as a reference to a Kubernetes Secret, {secretName, key} (docs/secrets.md)" }}
+{{- end }}
+{{- $secret := include "kcc.secretRef" (list $ "oauth_config.client_secret" $oc.client_secret) }}
+---
+apiVersion: looker.gcp.hfl.dev/v1alpha1
+kind: LookerInstance
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" .Release.Name "id" "instance" "project" $v.project_id "abandon" (include "kcc.abandon" .)) | nindent 2 }}
+spec:
+  projectRef:
+    external: {{ $v.project_id | quote }}
+  location: {{ $v.region | quote }}
+  resourceID: {{ include "lookerCore.name" . | quote }}
+  platformEdition: {{ $v.platform_edition | quote }}
+  {{- with $psa }}
+  consumerNetwork: {{ .network | quote }}
+  privateIpEnabled: {{ ternary true .enable_private_ip (kindIs "invalid" .enable_private_ip) }}
+  {{- with .allocated_ip_range }}
+  reservedRange: {{ . | quote }}
+  {{- end }}
+  {{- end }}
+  publicIpEnabled: {{ or (eq (toString $nc.public) "true") (and (not (kindIs "invalid" $psa)) (eq (toString ($psa | default dict).enable_public_ip) "true")) }}
+  pscEnabled: {{ not (kindIs "invalid" $psc) }}
+  {{- with $psc }}
+  pscConfig:
+    allowedVpcs: {{ .allowed_vpcs | default list | toJson }}
+    {{- with .service_attachments }}
+    serviceAttachments:
+      {{- range . }}
+      - localFqdn: {{ .local_fqdn | quote }}
+        targetServiceAttachmentUri: {{ .target_service_attachment_uri | quote }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  {{- if not (kindIs "invalid" $v.fips_enabled) }}
+  fipsEnabled: {{ $v.fips_enabled }}
+  {{- end }}
+  {{- if not (kindIs "invalid" $v.gemini_enabled) }}
+  geminiEnabled: {{ $v.gemini_enabled }}
+  {{- end }}
+  oauthConfig:
+    clientId: {{ $oc.client_id | quote }}
+    clientSecret: {{ $secret }}
+  {{- with $v.admin_settings }}
+  adminSettings:
+    allowedEmailDomains: {{ .allowed_email_domains | default list | toJson }}
+  {{- end }}
+  {{- with $v.custom_domain }}
+  customDomain:
+    domain: {{ . | quote }}
+  {{- end }}
+  {{- with $v.controlled_egress }}
+  controlledEgressEnabled: {{ ternary true .enabled (kindIs "invalid" .enabled) }}
+  {{- if or (not (kindIs "invalid" .marketplace_enabled)) .egress_fqdns }}
+  controlledEgressConfig:
+    {{- if not (kindIs "invalid" .marketplace_enabled) }}
+    marketplaceEnabled: {{ .marketplace_enabled }}
+    {{- end }}
+    {{- with .egress_fqdns }}
+    egressFqdns: {{ toJson . }}
+    {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- with $v.periodic_export_config }}
+  periodicExportConfig:
+    kmsKey: {{ .kms_key | quote }}
+    gcsUri: {{ .gcs_uri | quote }}
+    startTime:
+      {{- include "lookerCore.time" .start_time | nindent 6 }}
+  {{- end }}
+  {{- with $mc.deny_maintenance_period }}
+  denyMaintenancePeriod:
+    startDate:
+      {{- include "lookerCore.date" .start_date | nindent 6 }}
+    endDate:
+      {{- include "lookerCore.date" .end_date | nindent 6 }}
+    time:
+      {{- include "lookerCore.time" .start_time | nindent 6 }}
+  {{- end }}
+  {{- with $v.encryption_config }}
+  encryptionConfig:
+    kmsKeyName: {{ .kms_key_name | quote }}
+  {{- end }}
+  {{- if not (kindIs "invalid" $mw) }}
+  {{- /* An empty window is fabric's defaults, Sunday 23:00. */}}
+  maintenanceWindow:
+    dayOfWeek: {{ $mw.day | default "SUNDAY" | quote }}
+    startTime:
+      {{- include "lookerCore.time" $mw.start_time | nindent 6 }}
+  {{- end }}

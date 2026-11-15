@@ -115,6 +115,17 @@ The decisions of 2026-11-09, applied in the sections below.
     native Artifact Registry repository with Artifact Registry roles; the
     chart's README carries the same deprecation line. Any other
     `roles/storage.*` role is still refused.
+14. **A Looker instance's OAuth client secret comes from a Kubernetes
+    Secret** (the builder, 2026-11-15, RECLOOK: "RECLOOK: as recommended
+    (Yes. Add a secretKeyRef for oauthConfig.clientSecret, then the chart
+    takes client_secret from a Kubernetes Secret, as bigquery-connection
+    does.)"). config-connector-extensions' `LookerInstance` takes
+    `oauthConfig.clientSecret` as Config Connector's secret shape, `value`
+    or `valueFrom.secretKeyRef` (its decision 33), and the `looker-core`
+    chart takes `oauth_config.client_secret` as `{secretName, key}`
+    (`docs/secrets.md`), rendered as the `valueFrom.secretKeyRef`; the
+    secret itself, a string, stops the render
+    (`charts/gcp/looker-core/README.md`).
 
 ## Summary
 
