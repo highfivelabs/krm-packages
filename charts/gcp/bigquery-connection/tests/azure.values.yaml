@@ -1,0 +1,8 @@
+# A BigQuery Omni connection to Azure.
+project_id: my-project
+location: azure-eastus2
+connection_id: azure
+connection_config:
+  azure:
+    customer_tenant_id: 00000000-0000-0000-0000-000000000000
+    federated_application_client_id: 11111111-1111-1111-1111-111111111111

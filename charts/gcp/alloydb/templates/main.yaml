@@ -10,7 +10,8 @@ google_alloydb_instance.read_pool_primary: one READ_POOL AlloyDBInstance
 per entry of read_pool; with cross_region_replication.enabled,
 google_alloydb_cluster.secondary, google_alloydb_instance.secondary and
 .read_pool_secondary in its region; google_alloydb_user.users: one
-AlloyDBUser per IAM user.
+AlloyDBUser per user (a built-in user's password and the initial
+user's are references to a Kubernetes Secret: docs/secrets.md).
 */ -}}
 {{- $v := .Values }}
 {{- $chart := .Chart.Name }}
@@ -65,17 +66,25 @@ AlloyDBUser per IAM user.
 {{- include "kcc.unsupported" (list $ (printf "cross_region_replication.read_pool.%s.client_connection_config" $k) $p.client_connection_config "AlloyDBInstance has no clientConnectionConfig (connectors, SSL mode)") }}
 {{- end }}
 {{- include "kcc.unsupported" (list $ "network_config.psc_config" $nc.psc_config "AlloyDBCluster has no pscConfig and AlloyDBInstance no pscInstanceConfig, so Private Service Connect cannot be set up") }}
-{{- $iu := dict }}
-{{- range $k, $u := ($v.initial_user | default dict) }}{{ if $u }}{{ $_ := set $iu $k $u }}{{ end }}{{ end }}
-{{- include "kcc.unsupported" (list $ "initial_user" $iu "a password given here would be in the rendered manifest; AlloyDBCluster takes the initial user's password from a Kubernetes Secret (initialUser.password.valueFrom), which the chart does not take yet (README.md, \"Values\")") }}
+{{- $iuPassword := "" }}
+{{- with $v.initial_user }}
+{{- if kindIs "invalid" .password }}
+{{- fail "alloydb: initial_user.password is required (AlloyDBCluster's initialUser.password): a reference to a Kubernetes Secret, {secretName, key} (docs/secrets.md)" }}
+{{- end }}
+{{- $iuPassword = include "kcc.secretRef" (list $ "initial_user.password" .password) }}
+{{- end }}
 {{- if eq (toString $v.subscription_type) "TRIAL" }}
 {{- include "kcc.unsupported" (list $ "subscription_type" "TRIAL" "AlloyDBCluster has no subscriptionType field; clusters are STANDARD") }}
 {{- end }}
 {{- range $k, $u := $v.users }}
 {{- if eq ($u.type | default "ALLOYDB_BUILT_IN") "ALLOYDB_BUILT_IN" }}
-{{- include "kcc.unsupported" (list $ (printf "users.%s (type ALLOYDB_BUILT_IN)" $k) true "a built-in user's password would be in the rendered manifest or made by Terraform's random_password; AlloyDBUser takes it from a Kubernetes Secret, which the chart does not take yet (README.md, \"Values\")") }}
+{{- if kindIs "invalid" $u.password }}
+{{- fail (printf "alloydb: users.%s is an ALLOYDB_BUILT_IN user without a password: fabric would generate one (random_password), and the catalog never generates a secret; give users.%s.password as a reference to a Kubernetes Secret, {secretName, key} (docs/secrets.md)" $k $k) }}
 {{- end }}
+{{- $_ := include "kcc.secretRef" (list $ (printf "users.%s.password" $k) $u.password) }}
+{{- else }}
 {{- include "kcc.unsupported" (list $ (printf "users.%s.password" $k) $u.password "an IAM user has no password") }}
+{{- end }}
 {{- end }}
 {{- include "kcc.names" (list $ (list "cluster" "instance" "secondaryCluster" "secondaryInstance")) }}
 {{- $dp := upper (toString ($v.deletion_policy | default "")) }}
@@ -115,6 +124,15 @@ spec:
   {{- end }}
   displayName: {{ $v.cluster_display_name | default $clusterID | quote }}
   {{- include "alloydb.clusterSpec" (list $ "primary") | trim | nindent 2 }}
+  {{- with $iuPassword }}
+  initialUser:
+    {{- with $v.initial_user.user }}
+    user: {{ . | quote }}
+    {{- else }}
+    user: "postgres"
+    {{- end }}
+    password: {{ . }}
+  {{- end }}
   {{- if $x.switchover_mode }}
   secondaryConfig:
     primaryClusterNameRef:
@@ -227,6 +245,9 @@ spec:
   resourceID: {{ $key | quote }}
   clusterRef:
     external: {{ $clusterExt | quote }}
-  userType: {{ $u.type }}
+  userType: {{ $u.type | default "ALLOYDB_BUILT_IN" }}
+  {{- with $u.password }}
+  password: {{ include "kcc.secretRef" (list $ (printf "users.%s.password" $key) .) }}
+  {{- end }}
   databaseRoles: {{ toJson (ternary (list "alloydbsuperuser") $u.roles (kindIs "invalid" $u.roles)) }}
 {{- end }}

@@ -1,0 +1,81 @@
+---
+# Source: secrets-manager/templates/secret.yaml
+apiVersion: secretsmanager.services.k8s.aws/v1alpha1
+kind: Secret
+metadata:
+  name: full-secret
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: secrets-manager
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "secret"
+    services.k8s.aws/region: "eu-west-1"
+    services.k8s.aws/deletion-policy: retain
+spec:
+  name: "shop/db/password"
+  description: "The shop database's password"
+  forceOverwriteReplicaSecret: true
+  kmsKeyID: "arn:aws:kms:eu-west-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+  recoveryWindowInDays: 7
+  replicaRegions:
+    - region: "eu-central-1"
+      kmsKeyID: "alias/shop"
+    - region: "us-east-1"
+  secretString:
+    name: "shop-db"
+    key: "password"
+    namespace: "shop-secrets"
+  tags:
+    - key: "team"
+      value: "shop"
+---
+# Source: secrets-manager/templates/policy.yaml
+apiVersion: secretsmanager.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: ResourcePolicy
+metadata:
+  name: full-policy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: secrets-manager
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "policy"
+    services.k8s.aws/region: "eu-west-1"
+    services.k8s.aws/deletion-policy: retain
+spec:
+  secretId: "shop/db/password"
+  resourcePolicy:
+    Statement:
+    - Action: secretsmanager:*
+      Effect: Allow
+      Principal:
+        AWS: arn:aws:iam::111122223333:role/admin
+      Resource: '*'
+      Sid: Source
+    - Action:
+      - secretsmanager:DeleteSecret
+      Condition:
+        StringNotEquals:
+          aws:PrincipalAccount:
+          - "111122223333"
+      Effect: Deny
+      Principal: '*'
+      Resource:
+      - '*'
+      Sid: deny
+    - Action:
+      - secretsmanager:GetSecretValue
+      Effect: Allow
+      Principal:
+        AWS:
+        - arn:aws:iam::111122223333:root
+      Resource:
+      - '*'
+      Sid: AllowAccountRead
+    Version: "2012-10-17"
+  blockPublicPolicy: true

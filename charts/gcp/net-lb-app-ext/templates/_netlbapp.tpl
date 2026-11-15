@@ -121,21 +121,6 @@ key, else the value as given. (list $ service) */ -}}
 {{- end -}}
 {{- end -}}
 
-{{- /* netlbapp.secret: secret material as a reference to a Kubernetes
-Secret, {secretName, key} (docs/secrets.md), rendered as Config
-Connector's valueFrom.secretKeyRef; a value in its place stops the render.
-(list $ variable value) */ -}}
-{{- define "netlbapp.secret" -}}
-{{- $root := index . 0 -}}{{- $name := index . 1 -}}{{- $s := index . 2 -}}
-{{- if not (and (kindIs "map" $s) $s.secretName $s.key) -}}
-{{- fail (printf "%s: %s takes a reference to a Kubernetes Secret, {secretName, key}, never the secret's value (docs/secrets.md)" $root.Chart.Name $name) -}}
-{{- end -}}
-valueFrom:
-  secretKeyRef:
-    name: {{ $s.secretName | quote }}
-    key: {{ $s.key | quote }}
-{{- end -}}
-
 {{- /* netlbapp.duration: {seconds, nanos} as Config Connector's duration
 (seconds is a string in ComputeURLMap). (list duration secondsAsString) */ -}}
 {{- define "netlbapp.duration" -}}
@@ -618,8 +603,7 @@ spec:
     oauth2ClientId: {{ . | quote }}
     {{- end }}
     {{- if not (kindIs "invalid" .oauth2_client_secret) }}
-    oauth2ClientSecret:
-      {{- include "netlbapp.secret" (list $ (printf "backend_service_configs.%s.iap_config.oauth2_client_secret" $k) .oauth2_client_secret) | nindent 6 }}
+    oauth2ClientSecret: {{ include "kcc.secretRef" (list $ (printf "backend_service_configs.%s.iap_config.oauth2_client_secret" $k) .oauth2_client_secret) }}
     {{- end }}
     {{- with .oauth2_client_secret_sha256 }}
     oauth2ClientSecretSha256: {{ . | quote }}
@@ -1123,7 +1107,7 @@ google_compute_region_ssl_certificate.default): one ComputeSSLCertificate
 per ssl_certificates.create_configs key, named <name>-<key> (or the
 entry's name). The certificate (public) is sent as given; the private key
 is a reference to a Kubernetes Secret, {secretName, key}
-(docs/secrets.md), never in the manifest. */ -}}
+(docs/secrets.md, kcc.secretRef), never in the manifest. */ -}}
 {{- define "netlbapp.sslCertificates" -}}
 {{- $v := .Values }}
 {{- range $k := keys (($v.ssl_certificates | default dict).create_configs | default dict) | sortAlpha }}
@@ -1138,8 +1122,7 @@ spec:
   location: {{ include "netlbapp.location" $ | quote }}
   certificate:
     value: {{ trim $s.certificate | quote }}
-  privateKey:
-    {{- include "netlbapp.secret" (list $ (printf "ssl_certificates.create_configs.%s.private_key" $k) $s.private_key) | nindent 4 }}
+  privateKey: {{ include "kcc.secretRef" (list $ (printf "ssl_certificates.create_configs.%s.private_key" $k) $s.private_key) }}
 {{- end }}
 {{- end -}}
 

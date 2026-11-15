@@ -1,0 +1,93 @@
+---
+# Source: analytics-hub/templates/main.yaml
+apiVersion: bigqueryanalyticshub.cnrm.cloud.google.com/v1beta1
+kind: BigQueryAnalyticsHubDataExchange
+metadata:
+  name: mock
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: analytics-hub
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "data_exchange"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  projectRef:
+    external: "mock-project"
+  location: "us"
+  resourceID: "catalog_mock_exchange"
+  displayName: "catalog_mock_exchange"
+  description: "catalog mock"
+---
+# Source: analytics-hub/templates/main.yaml
+apiVersion: bigqueryanalyticshub.cnrm.cloud.google.com/v1beta1
+kind: BigQueryAnalyticsHubListing
+metadata:
+  name: mock-listing-catalog-mock-listing-8c7d9310
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: analytics-hub
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "listing:catalog_mock_listing"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  projectRef:
+    external: "mock-project"
+  location: "us"
+  dataExchangeRef:
+    name: mock
+  resourceID: "catalog_mock_listing"
+  displayName: "catalog_mock_listing"
+  source:
+    bigQueryDatasetSource:
+      datasetRef:
+        external: "projects/mock-project/datasets/catalog_mock_ah"
+---
+# Source: analytics-hub/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: mock-iam-roles-analyticshub-viewer-9bd2f604
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: analytics-hub
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "iam:roles/analyticshub.viewer"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  resourceRef:
+    external: projects/mock-project/locations/us/dataExchanges/catalog_mock_exchange
+    kind: BigQueryAnalyticsHubDataExchange
+  role: "roles/analyticshub.viewer"
+  members:
+    - "group:viewers@example.com"
+---
+# Source: analytics-hub/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: mock-listing-catalog-mock-listing-iam-roles-analyticsh-d270bd61
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: analytics-hub
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "listing:catalog_mock_listing:iam:roles/analyticshub.subscriber"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  resourceRef:
+    external: projects/mock-project/locations/us/dataExchanges/catalog_mock_exchange/listings/catalog_mock_listing
+    kind: BigQueryAnalyticsHubListing
+  role: "roles/analyticshub.subscriber"
+  members:
+    - "group:subscribers@example.com"

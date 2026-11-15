@@ -1,0 +1,89 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/analytics-hub/main.tf (v60.0.0),
+Copyright 2024 Google LLC, Apache-2.0.
+
+google_bigquery_analytics_hub_data_exchange.data_exchange: one
+BigQueryAnalyticsHubDataExchange (Config Connector, v1beta1), its ID and
+display name <prefix>_<name> as fabric makes them.
+google_bigquery_analytics_hub_listing.listing: one
+BigQueryAnalyticsHubListing (Config Connector, v1beta1) per key of
+listings, its ID and display name the key, sharing bigquery_dataset.
+data_provider and publisher are accepted and not sent, as fabric does.
+factories_config (listings read from files) is refused. IAM is in iam.yaml.
+*/ -}}
+{{- $v := .Values }}
+{{- include "kcc.unsupported" (list $ "factories_config" $v.factories_config "fabric reads listings from YAML files on disk, and a component has no files: put the listings in listings") }}
+{{- include "kcc.unsupported" (list $ "icon" $v.icon "BigQueryAnalyticsHubDataExchange has no icon field") }}
+{{- include "kcc.names" (list $ (list "data_exchange")) }}
+{{- $abandon := include "kcc.abandon" . }}
+{{- $ex := include "analyticsHub.exchange" . }}
+---
+apiVersion: bigqueryanalyticshub.cnrm.cloud.google.com/v1beta1
+kind: BigQueryAnalyticsHubDataExchange
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" .Release.Name "id" "data_exchange" "project" $v.project_id "abandon" $abandon) | nindent 2 }}
+spec:
+  projectRef:
+    external: {{ $v.project_id | quote }}
+  location: {{ $v.region | quote }}
+  resourceID: {{ $ex | quote }}
+  displayName: {{ $ex | quote }}
+  {{- with $v.description }}
+  description: {{ . | quote }}
+  {{- end }}
+  {{- with $v.primary_contact }}
+  primaryContact: {{ . | quote }}
+  {{- end }}
+  {{- with $v.documentation }}
+  documentation: {{ . | quote }}
+  {{- end }}
+{{- range $key := keys ($v.listings | default dict) | sortAlpha }}
+{{- $l := index $v.listings $key }}
+{{- include "kcc.unsupported" (list $ (printf "listings.%s.icon" $key) $l.icon "BigQueryAnalyticsHubListing has no icon field") }}
+---
+apiVersion: bigqueryanalyticshub.cnrm.cloud.google.com/v1beta1
+kind: BigQueryAnalyticsHubListing
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "listing" $key)) "id" (printf "listing:%s" $key) "project" $v.project_id "abandon" $abandon) | nindent 2 }}
+spec:
+  projectRef:
+    external: {{ $v.project_id | quote }}
+  location: {{ $v.region | quote }}
+  dataExchangeRef:
+    name: {{ $.Release.Name }}
+  resourceID: {{ $key | quote }}
+  displayName: {{ $key | quote }}
+  {{- with $l.description }}
+  description: {{ . | quote }}
+  {{- end }}
+  {{- with $l.primary_contact }}
+  primaryContact: {{ . | quote }}
+  {{- end }}
+  {{- with $l.documentation }}
+  documentation: {{ . | quote }}
+  {{- end }}
+  {{- with $l.request_access }}
+  requestAccess: {{ . | quote }}
+  {{- end }}
+  {{- with $l.categories }}
+  categories:
+    {{- range . }}
+    - {{ . | quote }}
+    {{- end }}
+  {{- end }}
+  source:
+    bigQueryDatasetSource:
+      datasetRef:
+        external: {{ $l.bigquery_dataset | quote }}
+      {{- with $l.restricted_export_config }}
+      restrictedExportPolicy:
+        {{- if not (kindIs "invalid" .enabled) }}
+        enabled: {{ .enabled }}
+        {{- end }}
+        {{- if not (kindIs "invalid" .restrict_query_result) }}
+        restrictQueryResult: {{ .restrict_query_result }}
+        {{- end }}
+      {{- end }}
+{{- end }}

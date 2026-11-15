@@ -1,0 +1,12 @@
+# Applied to the fake cloud by hack/mock-apply.sh: a Cloud resource
+# connection and a role on it (IAMBinding; config-connector-extensions'
+# fake cloud serves any getIamPolicy path).
+project_id: mock-project
+location: us
+connection_id: catalog_mock_bqconn
+friendly_name: catalog mock
+labels: {env: test}
+connection_config:
+  cloud_resource: {}
+iam:
+  roles/bigquery.connectionUser: ["group:viewers@example.com"]

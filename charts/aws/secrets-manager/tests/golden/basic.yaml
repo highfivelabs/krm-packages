@@ -1,0 +1,27 @@
+---
+# Source: secrets-manager/templates/secret.yaml
+apiVersion: secretsmanager.services.k8s.aws/v1alpha1
+kind: Secret
+metadata:
+  name: basic-secret
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: secrets-manager
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "secret"
+spec:
+  name: "example"
+  description: "Example Secrets Manager secret"
+  recoveryWindowInDays: 0
+  replicaRegions:
+    - region: "us-west-2"
+  secretString:
+    name: "example-secret"
+    key: "value"
+  tags:
+    - key: "Environment"
+      value: "Development"
+    - key: "Project"
+      value: "Example"

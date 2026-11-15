@@ -1,0 +1,26 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/container-registry/main.tf
+(v60.0.0), Copyright 2022 Google LLC, Apache-2.0.
+
+google_container_registry.registry: Container Registry is shut down, so the
+registry host becomes the Artifact Registry repository Google defines for it
+(config-connector-extensions docs/design.md, decision 30): a DOCKER
+ArtifactRegistryRepository whose name is the host and whose location is the
+host's multi-region. location "" is gcr.io in us, US us.gcr.io in us, EU
+eu.gcr.io in europe, ASIA asia.gcr.io in asia
+(https://cloud.google.com/artifact-registry/docs/transition/setup-gcr-repo).
+*/ -}}
+{{- $v := .Values }}
+{{- $repo := include "containerRegistry.repository" . | fromJson }}
+---
+apiVersion: artifactregistry.cnrm.cloud.google.com/v1beta1
+kind: ArtifactRegistryRepository
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" .Release.Name "id" "registry" "project" $v.project_id "abandon" (include "kcc.abandon" .)) | nindent 2 }}
+spec:
+  resourceID: {{ $repo.name | quote }}
+  location: {{ $repo.location | quote }}
+  format: "DOCKER"
+  mode: "STANDARD_REPOSITORY"

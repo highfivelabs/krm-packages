@@ -623,7 +623,7 @@ gcp,geap-workbench,google_workbench_instance_iam_binding,extensions,IAMBinding (
 gcp,secops-rules,google_chronicle_reference_list,extensions,ChronicleReferenceList (chronicle.gcp.hfl.dev/v1beta1)
 gcp,secops-rules,google_chronicle_rule,extensions,ChronicleRule (chronicle.gcp.hfl.dev/v1beta1)
 gcp,secops-rules,google_chronicle_rule_deployment,extensions,ChronicleRuleDeployment (chronicle.gcp.hfl.dev/v1alpha1)
-gcp,container-registry,google_container_registry,none,
+gcp,container-registry,google_container_registry,stable,"ArtifactRegistryRepository (a gcr.io repository; Container Registry is shut down, decision 30)"
 gcp,container-registry,google_storage_bucket_iam_binding,stable,IAMPartialPolicy -> StorageBucket
 aws,iam,aws_iam_access_key,extensions,iam.aws.hfl.dev/AccessKey
 aws,iam,aws_iam_account_alias,extensions,iam.aws.hfl.dev/AccountAlias

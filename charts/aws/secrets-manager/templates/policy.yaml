@@ -1,0 +1,32 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf: the resource policy (aws_secretsmanager_secret_policy.this), as
+ack-extensions' Cloud Control ResourcePolicy
+(secretsmanager.cloudcontrol.aws.hfl.dev, AWS::SecretsManager::ResourcePolicy),
+behind allow_alpha. It names the secret by name (secretId takes a name or
+an ARN; the kind has no reference field), so Cloud Control retries it until
+the Secret beside it exists. The policy document is built as the module
+builds it (_sm.tpl, sm.policy).
+*/ -}}
+{{- $v := .Values -}}
+{{- if and $v.create $v.create_policy }}
+{{- include "ack.alpha" (list $ "create_policy" $v.create_policy "ResourcePolicy (ack-extensions, Cloud Control)") }}
+{{- $policy := include "sm.policy" (list $v.source_policy_documents $v.policy_statements $v.override_policy_documents) }}
+{{- if not $policy }}
+{{- fail "secrets-manager: create_policy needs a statement: policy_statements, source_policy_documents or override_policy_documents (an empty policy document is refused by AWS)" }}
+{{- end }}
+---
+apiVersion: secretsmanager.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: ResourcePolicy
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "policy")) "id" "policy" "region" ($v.region | default "")) | nindent 2 }}
+spec:
+  secretId: {{ include "sm.name" $ | quote }}
+  resourcePolicy:
+{{- $policy | fromJson | toYaml | nindent 4 }}
+{{- if not (kindIs "invalid" $v.block_public_policy) }}
+  blockPublicPolicy: {{ $v.block_public_policy }}
+{{- end }}
+{{- end }}

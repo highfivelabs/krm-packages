@@ -1,0 +1,1 @@
+note: module.container_registry: a component name is an RFC 1123 label: using "container-registry"

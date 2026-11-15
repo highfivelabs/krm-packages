@@ -90,12 +90,18 @@ ssl: {}
 replicas: {}
 # Databases to create on the primary.
 databases: null
-# Users, {NAME: {type}}: CLOUD_IAM_USER or CLOUD_IAM_SERVICE_ACCOUNT
-# (BUILT_IN users are refused: README.md, "Values").
+# Users, {NAME: {password, password_version, type, database_roles}}: type
+# BUILT_IN (the default), CLOUD_IAM_USER or CLOUD_IAM_SERVICE_ACCOUNT. A
+# BUILT_IN user's password is a reference to a Kubernetes Secret,
+# {secretName, key} (docs/secrets.md), and is required: the catalog never
+# generates one. On MySQL a BUILT_IN user's key is NAME or NAME@HOST.
 users: {}
+# The root password, {password: {secretName, key}}: a reference to a
+# Kubernetes Secret (docs/secrets.md). SQL Server needs one.
+# random_password: true is refused: the catalog never generates a secret.
+root_password: {}
 
 # Refused when set (README.md, "Values").
-root_password: {}
 managed_connection_pooling_config: {}
 data_api_access: null
 enable_dataplex_integration: null

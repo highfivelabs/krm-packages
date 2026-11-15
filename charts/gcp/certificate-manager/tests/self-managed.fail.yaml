@@ -1,4 +1,4 @@
-# expect: certificate-manager: certificates.c.self_managed is not supported
+# expect: certificate-manager: certificates.c.self_managed.pem_private_key takes a reference to a Kubernetes Secret, {secretName, key}, never the secret's value
 project_id: p
 certificates:
   c: {self_managed: {pem_certificate: "x", pem_private_key: "k"}}

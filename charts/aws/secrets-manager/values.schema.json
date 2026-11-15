@@ -1,0 +1,463 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "secrets-manager values (terraform-aws-modules secrets-manager v2.2.0)",
+  "type": "object",
+  "additionalProperties": false,
+  "definitions": {
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "test",
+        "variable",
+        "values"
+      ],
+      "properties": {
+        "test": {
+          "type": "string"
+        },
+        "variable": {
+          "type": "string"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ]
+          }
+        }
+      }
+    },
+    "statement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sid": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "actions": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "not_actions": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "effect": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "Allow",
+            "Deny",
+            null
+          ]
+        },
+        "resources": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "not_resources": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "principals": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "identifiers"
+            ],
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "identifiers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "not_principals": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "identifiers"
+            ],
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "identifiers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "condition": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/condition"
+          }
+        },
+        "conditions": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/condition"
+          }
+        }
+      }
+    }
+  },
+  "properties": {
+    "names": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "secret": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^[A-Za-z0-9/_+=.@-]+$"
+        }
+      }
+    },
+    "namePrefix": {
+      "type": "string",
+      "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?)?$",
+      "maxLength": 63
+    },
+    "labels": {
+      "type": "object",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean",
+          "null"
+        ]
+      }
+    },
+    "deletion_policy": {
+      "type": "string",
+      "enum": [
+        "DELETE",
+        "ABANDON",
+        "PREVENT"
+      ]
+    },
+    "allow_alpha": {
+      "type": "boolean"
+    },
+    "secret_string_ref": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "key"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "namespace": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "A key of a Kubernetes Secret ACK copies into the secret's value (not a Terraform variable)"
+    },
+    "block_public_policy": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Makes an optional API call to Zelkova to validate the Resource Policy to prevent broad access to your secret"
+    },
+    "create": {
+      "type": "boolean",
+      "description": "Determines whether resources will be created (affects all resources)"
+    },
+    "create_policy": {
+      "type": "boolean",
+      "description": "Determines whether a policy will be created"
+    },
+    "create_random_password": {
+      "type": "boolean",
+      "description": "Not supported (gap): a random value would be written into the render; use secret_string_ref"
+    },
+    "create_secret_version": {
+      "type": "boolean",
+      "description": "Determines whether a secret version is created"
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "A description of the secret"
+    },
+    "enable_rotation": {
+      "type": "boolean",
+      "description": "Not supported (gap): rotation has no ACK field or kind"
+    },
+    "force_overwrite_replica_secret": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Accepts boolean value to specify whether to overwrite a secret with the same name in the destination Region"
+    },
+    "ignore_secret_changes": {
+      "type": "boolean",
+      "description": "Not supported (gap): ACK writes the Kubernetes Secret's value"
+    },
+    "kms_key_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ARN or Id of the AWS KMS key to be used to encrypt the secret values in the versions stored in this secret"
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Za-z0-9/_+=.@-]+$",
+      "maxLength": 512,
+      "description": "Friendly name of the new secret"
+    },
+    "name_prefix": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Not supported (gap): a random suffix would change between renders; set name"
+    },
+    "override_policy_documents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of IAM policy documents that are merged together into the exported document. In merging, statements with non-blank `sid`s will override statements with the same `sid`"
+    },
+    "policy_statements": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "$ref": "#/definitions/statement"
+      },
+      "description": "A map of IAM policy statements for custom permission usage"
+    },
+    "random_password_length": {
+      "type": "integer",
+      "description": "Not supported (gap): see create_random_password"
+    },
+    "random_password_override_special": {
+      "type": "string",
+      "description": "Not supported (gap): see create_random_password"
+    },
+    "recovery_window_in_days": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 30,
+      "description": "Number of days that AWS Secrets Manager waits before it can delete the secret. 0, or 7 to 30"
+    },
+    "region": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Region where the resource(s) will be managed"
+    },
+    "replica": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kms_key_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "region": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "description": "Configuration block to support secret replication"
+    },
+    "rotate_immediately": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Not supported (gap): see enable_rotation"
+    },
+    "rotation_lambda_arn": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Not supported (gap): see enable_rotation"
+    },
+    "rotation_rules": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "automatically_after_days": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "duration": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "schedule_expression": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "Not supported (gap): see enable_rotation"
+    },
+    "secret_binary": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Not supported (gap): use secret_string_ref"
+    },
+    "secret_string": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Not supported (gap): use secret_string_ref"
+    },
+    "secret_string_wo": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Not supported (gap): use secret_string_ref"
+    },
+    "secret_string_wo_version": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ],
+      "description": "Not supported (gap): as secret_string_wo"
+    },
+    "source_policy_documents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of IAM policy documents that are merged together into the exported document. Statements must have unique `sid`s"
+    },
+    "tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean"
+        ]
+      },
+      "description": "A map of tags to add to all resources"
+    },
+    "version_stages": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "description": "Not supported (gap): ACK's Secret has no staging labels field"
+    }
+  }
+}

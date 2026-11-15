@@ -1,5 +1,6 @@
 # An existing gateway and router: no gateway and no router are made; the
-# route policies (allow_alpha) go on the router router_config names.
+# route policies (allow_alpha) and a tunnel's interface and peer go on the
+# router router_config names, the tunnel on the gateway vpn_gateway names.
 allow_alpha: true
 project_id: my-project
 region: europe-west1
@@ -14,3 +15,9 @@ router_config:
     import:
       type: IMPORT
       terms: [{priority: 1, match: {expression: "true"}, actions: []}]
+tunnels:
+  remote-0:
+    bgp_peer: {address: 169.254.1.1, asn: 64513}
+    bgp_session_range: 169.254.1.2/30
+    vpn_gateway_interface: 0
+    shared_secret: {secretName: vpn-existing, key: shared-secret}

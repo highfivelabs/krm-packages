@@ -1,5 +1,51 @@
 ---
 # Source: net-ipsec-over-interconnect/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterInterface
+metadata:
+  name: existing-interface-remote-0
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing"
+    app.kubernetes.io/name: net-ipsec-over-interconnect
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "router_interface:remote-0"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "vpn-ipsec-remote-0"
+  region: "europe-west8"
+  routerRef:
+    external: projects/my-project/regions/europe-west8/routers/existing-router
+  ipRange: "169.254.1.1/30"
+  vpnTunnelRef:
+    name: existing-tunnel-remote-0
+---
+# Source: net-ipsec-over-interconnect/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterPeer
+metadata:
+  name: existing-bgp-peer-remote-0
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing"
+    app.kubernetes.io/name: net-ipsec-over-interconnect
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "bgp_peer:remote-0"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "vpn-ipsec-remote-0"
+  region: "europe-west8"
+  routerRef: {"external":"existing-router"}
+  routerInterfaceRef:
+    name: existing-interface-remote-0
+  peerIpAddress: "169.254.1.2"
+  peerAsn: 64513
+  advertisedRoutePriority: 1000
+  advertiseMode: DEFAULT
+---
+# Source: net-ipsec-over-interconnect/templates/main.yaml
 apiVersion: compute.gcp.hfl.dev/v1alpha1
 kind: ComputeRouterRoutePolicy
 metadata:
@@ -8,7 +54,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "existing"
     app.kubernetes.io/name: net-ipsec-over-interconnect
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "route_policy:export"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -34,7 +80,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "existing"
     app.kubernetes.io/name: net-ipsec-over-interconnect
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "gateway"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -50,3 +96,29 @@ spec:
     - id: 1
       interconnectAttachmentRef:
         external: "vlan-b"
+---
+# Source: net-ipsec-over-interconnect/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeVPNTunnel
+metadata:
+  name: existing-tunnel-remote-0
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing"
+    app.kubernetes.io/name: net-ipsec-over-interconnect
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "tunnel:remote-0"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "vpn-ipsec-remote-0"
+  region: "europe-west8"
+  vpnGatewayRef:
+    name: existing
+  vpnGatewayInterface: 0
+  peerExternalGatewayRef:
+    external: "projects/my-project/global/externalVpnGateways/onprem"
+  ikeVersion: 1
+  routerRef:
+    external: projects/my-project/regions/europe-west8/routers/existing-router
+  sharedSecret: {"valueFrom":{"secretKeyRef":{"key":"shared-secret","name":"vpn-ipsec"}}}

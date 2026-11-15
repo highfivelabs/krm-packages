@@ -1,0 +1,5 @@
+# expect: names: Additional property target is not allowed
+project_id: my-project
+region: europe-west1
+name: p
+names: {target: x}

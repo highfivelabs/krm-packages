@@ -17,13 +17,21 @@ region: europe-west1
 network: projects/my-project/global/networks/my-network
 name: gateway-1
 router_config: {asn: 64514}
+tunnels:
+  remote-1:
+    bgp_peer: {address: 169.254.139.134, asn: 64513}
+    bgp_session_range: 169.254.139.133/30
+    peer_ip: 1.1.1.1
+    shared_secret: {secretName: gateway-1-vpn, key: remote-1}
 ```
 
 renders the `ComputeTargetVPNGateway` `gateway-1`, the `ComputeAddress`
 `vpn-gateway-1`, the `ComputeForwardingRule`s `vpn-gateway-1-esp`,
-`-udp-500` and `-udp-4500` and the `ComputeRouter` `vpn-gateway-1`
-(`tests/golden/basic.yaml`): the module README's example without its
-tunnel.
+`-udp-500` and `-udp-4500`, the `ComputeRouter` `vpn-gateway-1`, and the
+`ComputeVPNTunnel`, `ComputeRouterInterface` and `ComputeRouterPeer`
+`gateway-1-remote-1`, the tunnel's shared secret read from key `remote-1`
+of the Kubernetes Secret `gateway-1-vpn` (`tests/golden/basic.yaml`): the
+module README's example.
 
 ## Values
 
@@ -39,7 +47,7 @@ The module's variables, with the same names, types and defaults.
 | `gateway_address_create`, `gateway_address` | the `ComputeAddress` the forwarding rules use (true, the default), or the given address (false) |
 | `router_config` | required, as in fabric. `create` (default true) makes the `ComputeRouter`, `name` or `vpn-<name>`, with `asn` (required, as in fabric), `keepalive` and `custom_advertise` (a `CUSTOM` advertise mode with `ALL_SUBNETS` and the ranges); `create: false` reuses the router `name` names. `route_policies` need `allow_alpha` (below) |
 | `route_policies` in `router_config` | one config-connector-extensions `ComputeRouterRoutePolicy` (`compute.gcp.hfl.dev/v1alpha1`) per key, named by it, on the router: `IMPORT` or `EXPORT`, its terms with their match and actions; fabric's checks (priority range, unique priorities, the type) |
-| `tunnels` | refused, not ported yet: a tunnel needs a shared secret, and one given here would be in the rendered manifest while fabric's generated one (`random_id`) has no Config Connector equivalent. `ComputeVPNTunnel` takes its secret from a Kubernetes Secret (`sharedSecret.valueFrom`), which the chart does not take yet: the builder's open SECV question, as for net-vpn-static. Fabric makes one router interface and one BGP peer per tunnel, so there are none of those either. Gaps that would remain: `ComputeVPNTunnel` has no `cipherSuite`, and `ComputeRouterPeer` has no `importPolicies` or `exportPolicies` |
+| `tunnels` | a `ComputeVPNTunnel` per tunnel, `<name>-<key>`, on the gateway, to `peer_ip`, with `ike_version` (2 by default) and the router (the tunnel's `router`, else the chart's); `shared_secret`, required, a reference to a Kubernetes Secret, `{secretName, key}` ([secrets](../../../docs/secrets.md)), as `sharedSecret.valueFrom.secretKeyRef`: a string is refused, and so is none (fabric would generate one; the catalog never generates a secret). Per tunnel, as fabric: a `ComputeRouterInterface` (`<name>-<key>`, `bgp_session_range` its IP range, none when `""`) and a `ComputeRouterPeer` (`<name>-<key>`) on the same router with the peer's address, ASN, `route_priority` (1000) and `custom_advertise` (`all_subnets`, `all_vpc_subnets`, `all_peer_vpc_subnets`, `ip_ranges`). Refused (gaps): `cipher_suite` (`ComputeVPNTunnel` has no `cipherSuite`), `bgp_peer`'s `export_policies` and `import_policies` (`ComputeRouterPeer` has no such fields) |
 | `deletion_policy` | not a fabric variable; `ABANDON` keeps the cloud resources |
 
 ## Outputs
@@ -47,15 +55,16 @@ The module's variables, with the same names, types and defaults.
 `address` (the created address, else `gateway_address`), `id`, `name` and
 `self_link` of the gateway, `router_name` (the new router's, else
 `router_config.name`) and `route_policies` (each policy's ID, keyed as
-fabric keys them). Not outputs: `random_secret` (the chart makes no
-secret), `tunnel_names` and `tunnel_self_links` (no tunnels), and fabric's
-whole objects (`gateway`, `router`, `tunnels`; `docs/design.md`,
+fabric keys them), `tunnel_names` and `tunnel_self_links` (keyed by
+tunnel). Not outputs: `random_secret` (the chart makes no
+secret), and fabric's whole objects (`gateway`, `router`, `tunnels`; `docs/design.md`,
 "Outputs").
 
 ## From Terraform
 
 A `module "x" { source = ".../modules/net-vpn-dynamic" ... }` block's
-arguments become the values unchanged, but for `tunnels`. To adopt an
+arguments become the values unchanged, but a tunnel's `shared_secret`,
+which becomes a reference to the Kubernetes Secret that holds it. To adopt an
 existing gateway, keep its names: Config Connector acquires the resources
 of those names (`docs/design.md`, "From Terraform").
 
@@ -79,8 +88,9 @@ with every other module the catalog tracks. To take a newer release, see
 ## Tests
 
 `task test CHART=net-vpn-dynamic`: render cases `basic` (fabric's README
-example without its tunnel), `full` (every value the chart carries),
-`existing-router`, `names` and `mock`, validated against Config Connector
+example), `full` (every value the chart carries but tunnels),
+`existing-router` (with a tunnel on it and one on another router, every
+BGP advertisement), `names` and `mock`, validated against Config Connector
 v1.160.0's CRD schemas and config-connector-extensions'
 (`ComputeRouterRoutePolicy`), and the refusals in `tests/*.fail.yaml`.
 
@@ -89,9 +99,13 @@ MOCK_CHARTS=net-vpn-dynamic`, run `off-catalog-1113152746-28240`, at
 config-connector-extensions `d54a2075`, whose fake cloud runs its
 `ComputeRouterRoutePolicy` controller): the gateway, its address, its three forwarding rules, the router and an export route policy (`allow_alpha`) on a network from `tests/mock.needs.yaml`: all 7 objects Ready, the outputs evaluated, all deleted.
 
+mockgcp (Config Connector `672414b8`) has no VPN tunnels, so tunnels, their
+router interfaces and BGP peers are render-tested only.
+
 Not applied live: live runs are pending KEYLIVE.
 
 ## Changes
 
+- **0.2.0** (2026-11-15): `tunnels`: the tunnels, their router interfaces and BGP peers; a tunnel's shared secret is a reference to a Kubernetes Secret. `tunnel_names` and `tunnel_self_links` outputs.
 - **0.1.0** (2026-11-13): the port: the gateway, its address and
   forwarding rules, the router and its route policies.

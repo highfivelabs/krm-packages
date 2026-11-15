@@ -1,0 +1,121 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/certificate-authority-service/main.tf
+(v60.0.0), Copyright 2024 Google LLC, Apache-2.0.
+
+google_privateca_ca_pool.default: one PrivateCACAPool (Config Connector,
+v1beta1) unless ca_pool_config.use_pool.id names an existing pool, tier
+ENTERPRISE with enterprise_tier, else DEVOPS.
+google_privateca_certificate_authority.default: one
+PrivateCACertificateAuthority (Config Connector, v1beta1) per key of
+ca_configs, its ID the key, in the pool: SELF_SIGNED when is_self_signed
+and no subordinate_config, else SUBORDINATE (made, and waiting for
+activation). Every default is fabric's. lifetime, which fabric leaves to
+the provider, is the provider's default, 315360000s (ten years): the kind
+requires it. IAM, on the pool, is in iam.yaml.
+*/ -}}
+{{- $v := .Values }}
+{{- include "kcc.unsupported" (list $ "context" $v.context "use Bundt expressions (${...}) and valueFrom in the component's inputs instead") }}
+{{- include "kcc.names" (list $ (list "ca_pool")) }}
+{{- $abandon := include "kcc.abandon" . }}
+{{- $create := include "cas.create" . }}
+{{- $pool := include "cas.poolName" . }}
+{{- if $create }}
+{{- $cp := $v.ca_pool_config.create_pool }}
+{{- $po := $cp.publishing_options }}
+---
+apiVersion: privateca.cnrm.cloud.google.com/v1beta1
+kind: PrivateCACAPool
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" .Release.Name "id" "ca_pool" "project" $v.project_id "abandon" $abandon) | nindent 2 }}
+spec:
+  projectRef:
+    external: {{ $v.project_id | quote }}
+  location: {{ $v.location | quote }}
+  resourceID: {{ $pool | quote }}
+  tier: {{ ternary "ENTERPRISE" "DEVOPS" (and (kindIs "bool" $cp.enterprise_tier) $cp.enterprise_tier) | quote }}
+  {{- if not (kindIs "invalid" $po) }}
+  {{- if eq (toString ($po.encoding_format | default "PEM")) "DER" }}
+  {{- fail (printf "%s: ca_pool_config.create_pool.publishing_options.encoding_format DER is not supported: PrivateCACAPool's publishingOptions has no encodingFormat, so the pool publishes PEM (docs/gcp-inventory.md, \"Gaps\")" $.Chart.Name) }}
+  {{- end }}
+  publishingOptions:
+    publishCaCert: {{ $po.publish_ca_cert }}
+    publishCrl: {{ $po.publish_crl }}
+  {{- end }}
+{{- end }}
+{{- $cas := $v.ca_configs }}
+{{- if kindIs "invalid" $cas }}{{ $cas = dict "test-ca" dict }}{{ end }}
+{{- range $key := keys $cas | sortAlpha }}
+{{- $c := index $cas $key | default dict }}
+{{- include "kcc.unsupported" (list $ (printf "ca_configs.%s.pem_ca_certificate" $key) $c.pem_ca_certificate "PrivateCACertificateAuthority has no pemCaCertificate field") }}
+{{- include "kcc.unsupported" (list $ (printf "ca_configs.%s.subordinate_config" $key) $c.subordinate_config "PrivateCACertificateAuthority has no subordinateConfig field: a CA with is_self_signed false is made as SUBORDINATE and waits for activation") }}
+{{- $ks := $c.key_spec | default dict }}
+{{- $ku := $c.key_usage | default dict }}
+{{- $sub := $c.subject | default (dict "common_name" "test.example.com" "organization" "Test Example") }}
+{{- $selfSigned := and (or (not (kindIs "bool" $c.is_self_signed)) $c.is_self_signed) (kindIs "invalid" $c.subordinate_config) }}
+{{- $kuDefaults := dict "cert_sign" true "crl_sign" true "key_encipherment" true "server_auth" true }}
+---
+apiVersion: privateca.cnrm.cloud.google.com/v1beta1
+kind: PrivateCACertificateAuthority
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "ca" $key)) "id" (printf "ca:%s" $key) "project" $v.project_id "abandon" $abandon "labels" ($c.labels | default dict)) | nindent 2 }}
+spec:
+  projectRef:
+    external: {{ $v.project_id | quote }}
+  location: {{ $v.location | quote }}
+  resourceID: {{ $key | quote }}
+  caPoolRef:
+    {{- if $create }}
+    name: {{ $.Release.Name }}
+    {{- else }}
+    external: {{ include "cas.poolId" $ | quote }}
+    {{- end }}
+  type: {{ ternary "SELF_SIGNED" "SUBORDINATE" $selfSigned | quote }}
+  lifetime: {{ $c.lifetime | default "315360000s" | quote }}
+  {{- with $c.gcs_bucket }}
+  gcsBucketRef:
+    external: {{ . | quote }}
+  {{- end }}
+  keySpec:
+    {{- if $ks.kms_key_id }}
+    cloudKmsKeyVersionRef:
+      external: {{ $ks.kms_key_id | quote }}
+    {{- else }}
+    algorithm: {{ $ks.algorithm | default "RSA_PKCS1_2048_SHA256" | quote }}
+    {{- end }}
+  config:
+    subjectConfig:
+      subject:
+        commonName: {{ $sub.common_name | quote }}
+        organization: {{ $sub.organization | quote }}
+        {{- range $f, $k := dict "country_code" "countryCode" "locality" "locality" "organizational_unit" "organizationalUnit" "postal_code" "postalCode" "province" "province" "street_address" "streetAddress" }}
+        {{- with index $sub $f }}
+        {{ $k }}: {{ . | quote }}
+        {{- end }}
+        {{- end }}
+      {{- with $c.subject_alt_name }}
+      {{- $san := . }}
+      subjectAltName:
+        {{- range $f, $k := dict "dns_names" "dnsNames" "email_addresses" "emailAddresses" "ip_addresses" "ipAddresses" "uris" "uris" }}
+        {{- with index $san $f }}
+        {{ $k }}:
+          {{- range . }}
+          - {{ . | quote }}
+          {{- end }}
+        {{- end }}
+        {{- end }}
+      {{- end }}
+    x509Config:
+      caOptions:
+        isCa: {{ or (not (kindIs "bool" $c.is_ca)) $c.is_ca }}
+      keyUsage:
+        baseKeyUsage:
+          {{- range $f, $k := dict "cert_sign" "certSign" "content_commitment" "contentCommitment" "crl_sign" "crlSign" "data_encipherment" "dataEncipherment" "decipher_only" "decipherOnly" "digital_signature" "digitalSignature" "encipher_only" "encipherOnly" "key_agreement" "keyAgreement" "key_encipherment" "keyEncipherment" }}
+          {{ $k }}: {{ include "cas.bool" (list $ku $kuDefaults $f) }}
+          {{- end }}
+        extendedKeyUsage:
+          {{- range $f, $k := dict "client_auth" "clientAuth" "code_signing" "codeSigning" "email_protection" "emailProtection" "ocsp_signing" "ocspSigning" "server_auth" "serverAuth" "time_stamping" "timeStamping" }}
+          {{ $k }}: {{ include "cas.bool" (list $ku $kuDefaults $f) }}
+          {{- end }}
+{{- end }}

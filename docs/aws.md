@@ -626,6 +626,8 @@ Config Connector. What differs:
 | `charts/aws/rds` | `terraform-aws-rds` v7.2.2 | partial: the DB instance with its subnet and parameter groups (by reference), log groups, enhanced monitoring role, managed master password and final snapshot (ACK's annotations); the option group and role associations through ack-extensions (`allow_alpha`); secret rotation, a password in values, point-in-time and S3 restores, blue/green updates and fields ACK's `DBInstance` lacks are refused |
 | `charts/aws/step-functions` | `terraform-aws-step-functions` v5.1.1 | partial: the state machine (logging, X-Ray, publish), its role with the module's 41 service integration policies carried as data, the JSON, statement and logs policies and policy ARNs, and its log group; the log group's ARN is built from `account_id` and `region` (`StateMachine` takes it by ARN only); `encryption_configuration` is refused (no field on ACK's `StateMachine`), as are Terraform's timeouts. Passed on AWS Emulator, moto unused (`off-catalog-1113025827-6910`) |
 | `charts/aws/eks-pod-identity` | `terraform-aws-eks-pod-identity` v2.10.0 | partial: the role trusting EKS Pod Identity, the custom policy (source, statements, override merged by Sid), policy ARNs, and the pod identity associations (`roleRef`); the module's preset policies (63 variables) are not ported yet. Passed on AWS Emulator, moto unused (`off-catalog-1113030542-23849`; the associations untested there: they need an EKS cluster) |
+| `charts/aws/secrets-manager` | `terraform-aws-secrets-manager` v2.2.0 | partial: the secret with its replicas, KMS key and recovery window; its value from a Kubernetes Secret (`secret_string_ref`, ACK's `secretString`), never from values: `secret_string`, `secret_string_wo`, `secret_binary` and the random password are refused, as are version stages and `ignore_secret_changes`; the resource policy (built as the module builds it, merged by `Sid`) through ack-extensions' Cloud Control `ResourcePolicy` (`allow_alpha`, the secret by name); rotation is a gap (no ACK field, no ack-extensions kind at `ACKX_COMMIT`). Fake-AWS (`off-catalog-1115093833-20939`): the `Secret` synced with its value from the case's Kubernetes Secret, outputs evaluated and deleted on AWS Emulator and on moto; the `ResourcePolicy` never became Ready on either (the Cloud Control open question below) |
+| `charts/aws/ecr` | `terraform-aws-ecr` v3.2.0 | partial: the private repository with its policy (the module's read-only, Lambda and read/write statements and `repository_policy_statements`, or `repository_policy`) and lifecycle policy inline, pull through cache rules; the registry policy and scanning configuration through ack-extensions' Cloud Control kinds and the replication configuration through its `ReplicationConfiguration` (`allow_alpha`); `account_id` is needed for the default policy; ECR Public (no policy or catalog data on ACK's ecrpublic `Repository`) and `repository_force_delete` are refused. Passed on AWS Emulator, moto unused (`off-catalog-1115093833-20939`; the registry settings render-tested only) |
 
 **notify-slack has no chart** (2026-11-12). The module is a Lambda
 function (its `functions/notify_slack.py`, packaged by terraform-aws-lambda
@@ -741,6 +743,16 @@ determine if desired resource state matches latest observed state" and was
 not deleted. The run keeps no log of the Cloud Control manager (it runs in
 `ack-extensions-system`), so the cause is open: an ack-extensions question.
 Until it is settled these three features are proven by render tests only.
+
+The secrets-manager chart's `ResourcePolicy` (Cloud Control, ack-extensions
+`2cdca6c`) did the same on 2026-11-15 (`off-catalog-1115093833-20939`): with
+the CloudControlContext Ready and the secret it names synced, it stayed "Unable
+to determine if desired resource state matches latest observed state" on AWS
+Emulator and was not deleted there; on moto it never became Ready. The same
+run fixed `hack/mock-apply-aws.sh`, which waited for a per-service
+ack-extensions manager for every group in `crds/ack-extensions`, Cloud
+Control's among them: a Cloud Control kind of a service with no generated
+kind (`secretsmanager`) stopped the run (`off-catalog-1115092456-11622`).
 
 Gaps the charts found, for ack-extensions (beyond section 5):
 

@@ -1,0 +1,1238 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "cloud-deploy values (fabric cloud-deploy v60.0.0)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_id",
+    "region",
+    "name"
+  ],
+  "definitions": {
+    "condition": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "expression",
+        "title"
+      ],
+      "properties": {
+        "expression": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  },
+  "properties": {
+    "names": {
+      "description": "The delivery pipeline's name in full (not a Terraform variable; docs/design.md, \"Names, labels and tags\"). A name set here takes no prefix.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pipeline": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63,
+          "pattern": "^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$"
+        }
+      }
+    },
+    "namePrefix": {
+      "description": "Optional convenience (not a Terraform variable): <namePrefix>- in front of the pipeline's name (unless set under names) and every target and deploy policy the chart makes. A DNS label. Empty changes nothing.",
+      "type": "string",
+      "pattern": "^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+    },
+    "labels": {
+      "description": "Cloud Deploy Delivery Pipeline resource labels (fabric's variable), with the catalog's meaning: labels on every object; an unprefixed one is a Google Cloud label too.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 63
+      }
+    },
+    "tags": {
+      "description": "Cloud labels (not a Terraform variable; Google Cloud labels: lower-case letters, digits, _ and -).",
+      "type": [
+        "object",
+        "null"
+      ],
+      "propertyNames": {
+        "pattern": "^[a-z]([a-z0-9_-]{0,61}[a-z0-9])?$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^([a-z0-9]([a-z0-9_-]{0,61}[a-z0-9])?)?$"
+      }
+    },
+    "allow_alpha": {
+      "description": "Accept v1alpha1 kinds (IAMMember, for iam_bindings_additive and each target's). Not a Terraform variable.",
+      "type": "boolean"
+    },
+    "deletion_policy": {
+      "description": "DELETE (default) or ABANDON (not a fabric variable).",
+      "enum": [
+        "DELETE",
+        "ABANDON",
+        "PREVENT",
+        null
+      ]
+    },
+    "iam": {
+      "description": "IAM bindings in {ROLE => [MEMBERS]} format.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "iam_bindings": {
+      "description": "Authoritative IAM bindings in {KEY => {role = ROLE, members = [], condition = {}}}. Keys are arbitrary.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "members",
+          "role"
+        ],
+        "properties": {
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "role": {
+            "type": "string"
+          },
+          "condition": {
+            "$ref": "#/definitions/condition"
+          }
+        }
+      }
+    },
+    "iam_bindings_additive": {
+      "description": "Individual additive IAM bindings. Keys are arbitrary. IAMMember is v1alpha1: needs allow_alpha.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "member",
+          "role"
+        ],
+        "properties": {
+          "member": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "condition": {
+            "$ref": "#/definitions/condition"
+          }
+        }
+      }
+    },
+    "iam_by_principals": {
+      "description": "Authoritative IAM binding in {PRINCIPAL => [ROLES]} format. Merged internally with the iam variable.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "annotations": {
+      "description": "Resource annotations.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "automations": {
+      "description": "Configuration for automations associated with the deployment pipeline in a name => attributes format.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "project_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "region": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "annotations": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "labels": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "service_account": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "suspended": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "advance_rollout_rule": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "source_phases": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              },
+              "wait": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "promote_release_rule": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "wait": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "destination_target_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "destination_phase": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "repair_rollout_rule": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "phases": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              },
+              "jobs": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              },
+              "retry": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "attempts": {
+                    "type": [
+                      "string",
+                      "integer",
+                      "null"
+                    ],
+                    "pattern": "^[0-9]+$"
+                  },
+                  "wait": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "backoff_mode": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                }
+              },
+              "rollback": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "destination_phase": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "disable_rollback_if_rollout_pending": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "timed_promote_release_rule": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "destination_target_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "schedule": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "time_zone": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "destination_phase": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "selector": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "labels": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "deploy_policies": {
+      "description": "Configurations for Deployment Policies in a name => attributes format.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "rollout_restrictions"
+        ],
+        "properties": {
+          "project_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "region": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "annotations": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "labels": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "suspended": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "rollout_restrictions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "actions": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "invokers": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "time_zone": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "weekly_windows": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "days_of_week": {
+                        "type": [
+                          "array",
+                          "null"
+                        ],
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "start_time": {
+                        "type": [
+                          "object",
+                          "null"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "hours": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          },
+                          "minutes": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          },
+                          "seconds": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          },
+                          "nanos": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          }
+                        }
+                      },
+                      "end_time": {
+                        "type": [
+                          "object",
+                          "null"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "hours": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          },
+                          "minutes": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          },
+                          "seconds": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          },
+                          "nanos": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "one_time_windows": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "start_date": {
+                        "type": [
+                          "object",
+                          "null"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "day": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          },
+                          "month": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          },
+                          "year": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          }
+                        }
+                      },
+                      "start_time": {
+                        "type": [
+                          "object",
+                          "null"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "hours": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          },
+                          "minutes": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          },
+                          "seconds": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          },
+                          "nanos": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          }
+                        }
+                      },
+                      "end_date": {
+                        "type": [
+                          "object",
+                          "null"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "day": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          },
+                          "month": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          },
+                          "year": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          }
+                        }
+                      },
+                      "end_time": {
+                        "type": [
+                          "object",
+                          "null"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "hours": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          },
+                          "minutes": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          },
+                          "seconds": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          },
+                          "nanos": {
+                            "type": [
+                              "string",
+                              "integer",
+                              "null"
+                            ],
+                            "pattern": "^[0-9]+$"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selectors": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "type": {
+                  "description": "Selector type should either be \"DELIVERY_PIPELINE\" or \"TARGET.\"",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "pattern": "^([Dd][Ee][Ll][Ii][Vv][Ee][Rr][Yy]_[Pp][Ii][Pp][Ee][Ll][Ii][Nn][Ee]|[Tt][Aa][Rr][Gg][Ee][Tt])$"
+                },
+                "labels": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "description": {
+      "description": "Cloud Deploy Delivery Pipeline description. Description cannot be longer than 255 characters.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 255
+    },
+    "name": {
+      "description": "Cloud Deploy Delivery Pipeline name. Delivery pipeline name must be between 1 and 63 characters and match the regular expression [a-z]([a-z0-9-]{0,61}[a-z0-9])?.",
+      "type": "string",
+      "pattern": "^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$"
+    },
+    "project_id": {
+      "description": "Project id used for resources, if not explicitly specified.",
+      "type": "string",
+      "minLength": 1
+    },
+    "region": {
+      "description": "Region used for resources, if not explicitly specified.",
+      "type": "string",
+      "minLength": 1
+    },
+    "suspended": {
+      "description": "Configuration to suspend a delivery pipeline.",
+      "type": "boolean"
+    },
+    "targets": {
+      "description": "Configuration for new targets associated with the delivery pipeline in a list format. Order of the targets are defined by the order within the list.",
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "project_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "region": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$"
+          },
+          "create_target": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "exclude_from_pipeline": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "annotations": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "deployment_percentages": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "integer"
+            }
+          },
+          "execution_configs_usages": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "execution_configs_timeout": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "labels": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "multi_target_target_ids": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "profiles": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "predeploy_actions": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "postdeploy_actions": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "require_approval": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "strategy": {
+            "description": "The strategy for a target must be either 'STANDARD' or 'CANARY'.",
+            "enum": [
+              "STANDARD",
+              "CANARY",
+              null
+            ]
+          },
+          "target_deploy_parameters": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "verify": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "cloud_run_configs": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "project_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "region": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "automatic_traffic_control": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "canary_revision_tags": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              },
+              "prior_revision_tags": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              },
+              "stable_revision_tags": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "custom_canary_phase_configs": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "deployment_percentage"
+              ],
+              "properties": {
+                "deployment_percentage": {
+                  "type": [
+                    "string",
+                    "integer"
+                  ],
+                  "pattern": "^[0-9]+$"
+                },
+                "predeploy_actions": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "postdeploy_actions": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "delivery_pipeline_deploy_parameters": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "values": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                },
+                "matching_target_labels": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "iam": {
+            "description": "IAM bindings in {ROLE => [MEMBERS]} format.",
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "iam_bindings": {
+            "description": "Authoritative IAM bindings in {KEY => {role = ROLE, members = [], condition = {}}}. Keys are arbitrary.",
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "members",
+                "role"
+              ],
+              "properties": {
+                "members": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "role": {
+                  "type": "string"
+                },
+                "condition": {
+                  "$ref": "#/definitions/condition"
+                }
+              }
+            }
+          },
+          "iam_bindings_additive": {
+            "description": "Individual additive IAM bindings. Keys are arbitrary. IAMMember is v1alpha1: needs allow_alpha.",
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "member",
+                "role"
+              ],
+              "properties": {
+                "member": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string"
+                },
+                "condition": {
+                  "$ref": "#/definitions/condition"
+                }
+              }
+            }
+          },
+          "iam_by_principals": {
+            "description": "Authoritative IAM binding in {PRINCIPAL => [ROLES]} format. Merged internally with the iam variable.",
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

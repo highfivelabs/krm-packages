@@ -1,0 +1,3 @@
+# expect: secrets-manager: random_password_length is not supported
+name: x
+random_password_length: 16

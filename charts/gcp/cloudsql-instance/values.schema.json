@@ -8,7 +8,13 @@
     "stringOrNull": {"type": ["string", "null"]},
     "boolOrNull": {"type": ["boolean", "null"]},
     "numberOrNull": {"type": ["number", "null"]},
-    "stringList": {"type": ["array", "null"], "items": {"type": "string"}}
+    "stringList": {"type": ["array", "null"], "items": {"type": "string"}},
+    "secretRef": {
+      "description": "A reference to a Kubernetes Secret in the component's namespace (docs/secrets.md); a string, the secret itself, is refused",
+      "type": ["object", "string", "null"],
+      "additionalProperties": false,
+      "properties": {"secretName": {"type": "string"}, "key": {"type": "string"}}
+    }
   },
   "properties": {
     "names": {
@@ -215,16 +221,21 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "password": {"description": "Not supported (README.md, \"Values\").", "$ref": "#/definitions/stringOrNull"},
-          "password_version": {"description": "Not supported.", "$ref": "#/definitions/numberOrNull"},
+          "password": {"description": "A BUILT_IN user's password, required for one: a reference to a Kubernetes Secret, {secretName, key} (docs/secrets.md). An IAM user has none.", "$ref": "#/definitions/secretRef"},
+          "password_version": {"description": "Accepted and ignored: fabric's module does not use it either.", "$ref": "#/definitions/numberOrNull"},
           "type": {"type": ["string", "null"], "enum": ["BUILT_IN", "CLOUD_IAM_USER", "CLOUD_IAM_SERVICE_ACCOUNT", null]},
           "database_roles": {"description": "Not supported: SQLUser has no database roles.", "$ref": "#/definitions/stringList"}
         }
       }
     },
     "root_password": {
-      "description": "Not supported (README.md, \"Values\"): {password, random_password}.",
-      "type": "object"
+      "description": "Root password of the instance (SQL Server needs one): {password}, a reference to a Kubernetes Secret, {secretName, key} (docs/secrets.md). random_password: true is refused: the catalog never generates a secret.",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "password": {"$ref": "#/definitions/secretRef"},
+        "random_password": {"$ref": "#/definitions/boolOrNull"}
+      }
     },
     "data_api_access": {"description": "Not supported: SQLInstance has no Data API access field.", "type": ["string", "null"], "enum": ["ALLOW_DATA_API", "DISALLOW_DATA_API", null]},
     "enable_dataplex_integration": {"description": "Not supported: SQLInstance has no Dataplex integration field.", "$ref": "#/definitions/boolOrNull"},

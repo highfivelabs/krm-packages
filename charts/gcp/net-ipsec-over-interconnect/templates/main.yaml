@@ -13,14 +13,20 @@ peer-vpn-gw-<name>. google_compute_router.default (router_config.create):
 a ComputeRouter, router_config.name or router-<name>.
 google_compute_router_route_policy.default: a config-connector-extensions
 ComputeRouterRoutePolicy per policy (v1alpha1: allow_alpha).
-google_compute_vpn_tunnel.default, google_compute_router_interface.default
-and google_compute_router_peer.default are not rendered: tunnels is
-refused (README.md), and fabric makes one interface and one peer per
-tunnel.
+google_compute_vpn_tunnel.default: a ComputeVPNTunnel per tunnel, its
+shared secret a reference to a Kubernetes Secret (docs/secrets.md), to the
+peer gateway; google_compute_router_interface.default and
+google_compute_router_peer.default: a ComputeRouterInterface and a
+ComputeRouterPeer per tunnel (router.tunnelBgp), on the chart's router (a
+tunnel's router and peer_gateway_id are ignored, as fabric ignores them).
 */ -}}
 {{- $v := .Values }}
 {{- include "kcc.names" (list $ (list "gateway" "peer_gateway" "router")) }}
-{{- include "kcc.unsupported" (list $ "tunnels" $v.tunnels "a tunnel's shared secret would be in the rendered manifest, and the chart does not take one from a Kubernetes Secret yet (README.md, \"Values\"); ComputeRouterPeer has no md5AuthenticationKey, importPolicies or exportPolicies") }}
+{{- range $k, $t := $v.tunnels }}
+{{- if kindIs "invalid" $t.shared_secret }}
+{{- fail (printf "net-ipsec-over-interconnect: tunnels.%s.shared_secret is required: fabric would generate one (random_id), and the catalog never generates a secret; give a reference to a Kubernetes Secret, {secretName, key} (docs/secrets.md)" $k) }}
+{{- end }}
+{{- end }}
 {{- $abandon := include "kcc.abandon" . }}
 {{- $api := "https://www.googleapis.com/compute/v1/" }}
 {{- $network := trimPrefix $api $v.network }}
@@ -93,3 +99,33 @@ spec:
     {{- include "router.bgp" $rc | nindent 4 }}
 {{- end }}
 {{- include "router.policies" (dict "root" $ "policies" ($rc.route_policies | default dict) "router" $router "abandon" $abandon) }}
+{{- range $key := keys ($v.tunnels | default dict) | sortAlpha }}
+{{- $t := index $v.tunnels $key }}
+{{- $tunnel := include "kcc.name" (list $.Release.Name "tunnel" $key) }}
+{{- $name := printf "%s-%s" $v.name $key }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeVPNTunnel
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" $tunnel "id" (printf "tunnel:%s" $key) "project" $v.project_id "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "kcc.cloudName" (list $ "VPN tunnel" $name 63 "letter") | quote }}
+  region: {{ $v.region | quote }}
+  vpnGatewayRef:
+    name: {{ include "kcc.name" (list $.Release.Name) }}
+  vpnGatewayInterface: {{ int64 $t.vpn_gateway_interface }}
+  peerExternalGatewayRef:
+    {{- if $pgCreate }}
+    name: {{ include "kcc.name" (list $.Release.Name "peer") }}
+    {{- else }}
+    external: {{ trimPrefix $api $pg.id | quote }}
+    {{- end }}
+  {{- if not (kindIs "invalid" $t.peer_external_gateway_interface) }}
+  peerExternalGatewayInterface: {{ int64 $t.peer_external_gateway_interface }}
+  {{- end }}
+  ikeVersion: {{ ternary 2 $t.ike_version (kindIs "invalid" $t.ike_version) | int64 }}
+  routerRef:
+    {{- toYaml $router | nindent 4 }}
+  sharedSecret: {{ include "kcc.secretRef" (list $ (printf "tunnels.%s.shared_secret" $key) $t.shared_secret) }}
+{{- include "router.tunnelBgp" (dict "root" $ "key" $key "t" $t "ifaceName" (include "kcc.cloudName" (list $ "router interface" $name 63 "letter")) "peerName" (include "kcc.cloudName" (list $ "BGP peer" $name 63 "letter")) "tunnel" $tunnel "router" $router "peerRouter" (include "router.peerRouter" (dict "router" $router "other" nil)) "abandon" $abandon) }}
+{{- end }}

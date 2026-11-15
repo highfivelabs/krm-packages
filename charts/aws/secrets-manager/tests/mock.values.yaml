@@ -1,0 +1,17 @@
+# Applied to the fake AWS (hack/mock-apply-aws.sh): a secret whose value is
+# the Kubernetes Secret tests/mock.needs.yaml makes (secret_string_ref), with
+# no recovery window so the fake deletes it at once, and its resource policy
+# (allow_alpha: ack-extensions' Cloud Control ResourcePolicy).
+name: catalog-test/secret
+region: us-east-1
+description: catalog fake-AWS test
+recovery_window_in_days: 0
+secret_string_ref: {name: catalog-test-secret, key: value}
+allow_alpha: true
+create_policy: true
+policy_statements:
+  read:
+    principals: [{type: AWS, identifiers: ["*"]}]
+    actions: ["secretsmanager:GetSecretValue"]
+    resources: ["*"]
+tags: {catalog-test: "true"}

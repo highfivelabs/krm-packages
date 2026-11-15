@@ -1,0 +1,10 @@
+# fabric's README "remote repository" example, with the secret version's
+# full name written out (fabric reads it from a secret-manager module).
+project_id: my-project
+name: my-remote
+region: europe-west1
+service_account: dataform@my-project.iam.gserviceaccount.com
+remote_repository_settings:
+  url: https://github.com/example/dataform.git
+  secret_name: my-token
+  secret_version: projects/my-project/secrets/my-token/versions/1

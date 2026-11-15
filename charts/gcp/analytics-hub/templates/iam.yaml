@@ -1,0 +1,40 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/analytics-hub/iam.tf (v60.0.0),
+Copyright 2024 Google LLC, Apache-2.0.
+
+Config Connector's IAM kinds cannot reference Analytics Hub resources, so
+these are config-connector-extensions' (_iam.tpl), by the resources' full
+names, so they can be deleted after the exchange's and listings' objects
+are gone:
+google_bigquery_analytics_hub_data_exchange_iam_binding.exchange_iam_bindings:
+one IAMBinding (iam.gcp.hfl.dev/v1beta1) per role of iam,
+iam_by_principals and iam_bindings, merged by role as fabric's
+local.exchange_iam merges them (an iam_bindings key does not make a
+binding of its own).
+google_bigquery_analytics_hub_data_exchange_iam_member.exchange_iam_members:
+one IAMMember (iam.gcp.hfl.dev/v1alpha1, so allow_alpha) per entry of
+iam_bindings_additive.
+google_bigquery_analytics_hub_listing_iam_binding.listing_iam_bindings: one
+IAMBinding per role of each listing's iam.
+*/ -}}
+{{- $v := .Values }}
+{{- $exchange := include "analyticsHub.id" . }}
+{{- $iam := dict }}
+{{- range $role, $members := ($v.iam | default dict) }}
+{{- $_ := set $iam $role (concat (get $iam $role | default list) $members) }}
+{{- end }}
+{{- range $key := keys ($v.iam_bindings | default dict) | sortAlpha }}
+{{- $b := index $v.iam_bindings $key }}
+{{- $_ := set $iam $b.role (concat (get $iam $b.role | default list) $b.members) }}
+{{- end }}
+{{- $exv := dict "iam" $iam "iam_by_principals" $v.iam_by_principals "iam_bindings_additive" $v.iam_bindings_additive }}
+{{- include "analyticsHub.iam" (dict "root" $ "ref" (dict "kind" "BigQueryAnalyticsHubDataExchange" "external" $exchange) "project" $v.project_id "v" $exv "conditions" false) }}
+{{- range $key := keys ($v.listings | default dict) | sortAlpha }}
+{{- $l := index $v.listings $key }}
+{{- with $l.iam }}
+{{- $ref := dict "kind" "BigQueryAnalyticsHubListing" "external" (printf "%s/listings/%s" $exchange $key) }}
+{{- include "analyticsHub.iam" (dict "root" $ "ref" $ref "project" $v.project_id "v" (dict "iam" .) "base" (printf "listing-%s" $key) "idPrefix" (printf "listing:%s:" $key) "what" (printf "listings.%s." $key)) }}
+{{- end }}
+{{- end }}

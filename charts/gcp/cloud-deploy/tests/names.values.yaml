@@ -1,0 +1,11 @@
+# Names in full, labels and tags, as Bundt passes them from a team's naming
+# convention (docs/design.md, "Names, labels and tags").
+project_id: my-project
+region: europe-west1
+name: shop
+names: {pipeline: shop-dev-pipeline}
+labels: {hfl.dev/team: shop, hfl.dev/environment: dev}
+tags: {team: shop, environment: dev}
+targets:
+  - name: dev
+    cloud_run_configs: {}

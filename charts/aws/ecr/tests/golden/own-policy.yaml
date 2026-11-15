@@ -1,0 +1,19 @@
+---
+# Source: ecr/templates/repository.yaml
+apiVersion: ecr.services.k8s.aws/v1alpha1
+kind: Repository
+metadata:
+  name: own-policy-repository
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "own-policy"
+    app.kubernetes.io/name: ecr
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "repository"
+spec:
+  name: "own-policy"
+  imageScanningConfiguration:
+    scanOnPush: true
+  imageTagMutability: "IMMUTABLE"
+  policy: "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"All\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::111122223333:root\"},\"Action\":\"ecr:*\"}]}"

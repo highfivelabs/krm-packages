@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloudsql-instance
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     cost-center: "devops"
   annotations:
     hfl.dev/id: "database:orders"
@@ -28,7 +28,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloudsql-instance
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     cost-center: "devops"
   annotations:
     hfl.dev/id: "database:payments"
@@ -48,7 +48,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloudsql-instance
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     cost-center: "devops"
   annotations:
     hfl.dev/id: "instance"
@@ -131,7 +131,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloudsql-instance
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     cost-center: "devops"
   annotations:
     hfl.dev/id: "replica:orders-replica-1"
@@ -182,7 +182,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloudsql-instance
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     cost-center: "devops"
   annotations:
     hfl.dev/id: "replica:orders-replica-2"
@@ -234,7 +234,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloudsql-instance
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     cost-center: "devops"
   annotations:
     hfl.dev/id: "client-certificate:app-client"
@@ -254,7 +254,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloudsql-instance
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     cost-center: "devops"
   annotations:
     hfl.dev/id: "user:app@myproject.iam.gserviceaccount.com"
@@ -275,7 +275,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloudsql-instance
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     cost-center: "devops"
   annotations:
     hfl.dev/id: "user:dev@example.com"

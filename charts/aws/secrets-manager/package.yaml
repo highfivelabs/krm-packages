@@ -1,0 +1,29 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (docs/design.md, "Outputs"): the module's
+# secret outputs, from the live Secret (resources.secret). Terraform's id of
+# a secret is its ARN. Not provided: secret_string and secret_binary (a
+# secret's value never enters a Package's outputs; the value is the
+# Kubernetes Secret secret_string_ref names).
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: aws-secrets-manager
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [ack]
+  outputs:
+    secret_arn: >-
+      'secret' in resources ? resources.secret.status.ackResourceMetadata.arn : null
+    secret_id: >-
+      'secret' in resources ? resources.secret.status.ackResourceMetadata.arn : null
+    secret_name: >-
+      'secret' in resources ? resources.secret.spec.name : null
+    secret_replica: >-
+      'secret' in resources && has(resources.secret.status.replicationStatus)
+      ? resources.secret.status.replicationStatus : null
+    secret_version_id: >-
+      'secret' in resources && has(resources.secret.status.versionID)
+      ? resources.secret.status.versionID : null

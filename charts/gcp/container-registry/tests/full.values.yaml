@@ -1,0 +1,10 @@
+# Every variable: an EU registry with IAM of several roles, labels, tags and
+# ABANDON.
+project_id: my-project
+location: EU
+iam:
+  roles/artifactregistry.reader: ["group:devs@example.com", "user:foo@example.com"]
+  roles/artifactregistry.writer: ["serviceAccount:ci@my-project.iam.gserviceaccount.com"]
+labels: {hfl.dev/team: shop}
+tags: {team: shop, environment: dev}
+deletion_policy: ABANDON

@@ -1,0 +1,408 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "bigquery-connection values (fabric bigquery-connection v60.0.0)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_id",
+    "location",
+    "connection_id"
+  ],
+  "definitions": {
+    "condition": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "expression",
+        "title"
+      ],
+      "properties": {
+        "expression": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  },
+  "properties": {
+    "names": {
+      "description": "The connection's ID in full (not a Terraform variable; docs/design.md, \"Names, labels and tags\"). A name set here takes no prefix.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "connection": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      }
+    },
+    "namePrefix": {
+      "description": "Optional convenience (not a Terraform variable): <namePrefix>- in front of the connection's ID (unless set under names). A DNS label. Empty changes nothing.",
+      "type": "string",
+      "pattern": "^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+    },
+    "labels": {
+      "description": "Kubernetes labels on every object (not a Terraform variable); an unprefixed one also becomes a Google Cloud label where the resource takes labels.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 63
+      }
+    },
+    "tags": {
+      "description": "Cloud labels (not a Terraform variable; Google Cloud labels: lower-case letters, digits, _ and -).",
+      "type": [
+        "object",
+        "null"
+      ],
+      "propertyNames": {
+        "pattern": "^[a-z]([a-z0-9_-]{0,61}[a-z0-9])?$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^([a-z0-9]([a-z0-9_-]{0,61}[a-z0-9])?)?$"
+      }
+    },
+    "context": {
+      "description": "Context-specific interpolations. Refused when set (use Bundt expressions).",
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "allow_alpha": {
+      "description": "Accept v1alpha1 kinds (IAMMember, for iam_bindings_additive). Not a Terraform variable.",
+      "type": "boolean"
+    },
+    "deletion_policy": {
+      "description": "DELETE (default) or ABANDON (not a fabric variable).",
+      "enum": [
+        "DELETE",
+        "ABANDON",
+        "PREVENT",
+        null
+      ]
+    },
+    "iam": {
+      "description": "IAM bindings in {ROLE => [MEMBERS]} format.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "iam_bindings": {
+      "description": "Authoritative IAM bindings in {KEY => {role = ROLE, members = [], condition = {}}}. Keys are arbitrary.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "members",
+          "role"
+        ],
+        "properties": {
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "role": {
+            "type": "string"
+          },
+          "condition": {
+            "$ref": "#/definitions/condition"
+          }
+        }
+      }
+    },
+    "iam_bindings_additive": {
+      "description": "Individual additive IAM bindings. Keys are arbitrary. IAMMember is v1alpha1: needs allow_alpha.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "member",
+          "role"
+        ],
+        "properties": {
+          "member": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "condition": {
+            "$ref": "#/definitions/condition"
+          }
+        }
+      }
+    },
+    "iam_by_principals": {
+      "description": "Authoritative IAM binding in {PRINCIPAL => [ROLES]} format. Merged internally with the iam variable.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "connection_config": {
+      "description": "Connection properties.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "cloud_sql": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "instance_id",
+            "database",
+            "type",
+            "credential"
+          ],
+          "properties": {
+            "instance_id": {
+              "type": "string"
+            },
+            "database": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "credential": {
+              "description": "fabric's {username, password}, refused: a password would be in the rendered manifest. secret_name (not a fabric field) names a Kubernetes Secret of type kubernetes.io/basic-auth holding username and password, in the component's namespace.",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "username": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "password": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "secret_name": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        "aws": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "access_role"
+          ],
+          "properties": {
+            "access_role": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "iam_role_id"
+              ],
+              "properties": {
+                "iam_role_id": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "azure": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "customer_tenant_id"
+          ],
+          "properties": {
+            "customer_tenant_id": {
+              "type": "string"
+            },
+            "federated_application_client_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "cloud_spanner": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "database"
+          ],
+          "properties": {
+            "database": {
+              "type": "string"
+            },
+            "use_parallelism": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "use_data_boost": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "max_parallelism": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "database_role": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "cloud_resource": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "properties": {}
+        },
+        "spark": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "metastore_service_config": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": false,
+              "required": [
+                "metastore_service"
+              ],
+              "properties": {
+                "metastore_service": {
+                  "type": "string"
+                }
+              }
+            },
+            "spark_history_server_config": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": false,
+              "required": [
+                "dataproc_cluster"
+              ],
+              "properties": {
+                "dataproc_cluster": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "connection_id": {
+      "description": "The ID of the connection.",
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "description": "A description of the connection.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "encryption_key": {
+      "description": "The name of the KMS key used for encryption. Refused when set (BigQueryConnectionConnection has no kmsKeyName).",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "friendly_name": {
+      "description": "A descriptive name for the connection.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "location": {
+      "description": "The geographic location where the connection should reside.",
+      "type": "string",
+      "minLength": 1
+    },
+    "project_id": {
+      "description": "The ID of the project in which the resource belongs.",
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

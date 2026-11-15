@@ -1,0 +1,5 @@
+# expect: ca_configs.r.key_spec.algorithm must be one of the following
+project_id: my-project
+location: europe-west1
+ca_pool_config: {create_pool: {name: p}}
+ca_configs: {r: {key_spec: {algorithm: RSA_1024}}}

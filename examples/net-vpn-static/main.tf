@@ -1,7 +1,8 @@
 # A net-vpn-static module call as a team has it today, after the example in
 # modules/net-vpn-static/README.md of Cloud Foundation Fabric (Apache-2.0,
 # Copyright Google LLC), pinned the way a team pins it. Its tunnels are left
-# out: the chart refuses them (charts/gcp/net-vpn-static/README.md).
+# out: a tunnel's shared secret is a Terraform string, and the chart takes
+# it only as a reference to a Kubernetes Secret (docs/secrets.md).
 
 variable "project_id" {
   type = string

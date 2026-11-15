@@ -1,0 +1,17 @@
+# fabric's README example: an exchange with IAM and one listing sharing a
+# dataset, with IAM on the listing.
+project_id: my-project
+region: europe-west1
+prefix: test
+name: exchange
+primary_contact: exchange-owner-group@domain.com
+description: Test Data Exchange
+iam:
+  roles/analyticshub.viewer: ["group:viewer@domain.com"]
+  roles/analyticshub.publisher: ["group:publisher@domain.com"]
+listings:
+  listing_id:
+    bigquery_dataset: projects/my-project/datasets/my_dataset
+    iam:
+      roles/analyticshub.subscriber: ["group:subscriber@domain.com"]
+      roles/analyticshub.subscriptionOwner: ["group:subscription-owner@domain.com"]

@@ -1,0 +1,12 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The namePrefix convention (docs/design.md, "Names, labels and tags"): every object this
+# chart renders carries the namePrefix in its cloud-side name
+# (spec.resourceID), except the kinds listed here, each with the reason it
+# cannot collide with another Instance's. A kind added to the chart and not
+# listed fails `task test` until it is prefixed or listed.
+exempt:
+  ArtifactRegistryRepository: "a gcr.io repository is named by its Container Registry host (gcr.io, us.gcr.io, eu.gcr.io, asia.gcr.io), which Google fixes: there is one per host per project, so it has no name a namePrefix could apply to"
+  IAMPartialPolicy: "binds members on the repository; it has no name of its own"
+noCloudNames: "a gcr.io repository's name is its host, which Google fixes from the module's location; the chart names nothing"

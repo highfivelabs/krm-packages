@@ -1,0 +1,54 @@
+# Every variable the chart carries: KMS encryption, tag mutability
+# exclusions, the built policy with read, Lambda and read/write access and
+# a statement, the lifecycle policy, pull through cache rules (one in its
+# own Region), and the registry policy, scanning and replication
+# configurations (allow_alpha: ack-extensions).
+repository_name: shop/api
+region: eu-west-1
+repository_encryption_type: KMS
+repository_kms_key: arn:aws:kms:eu-west-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+repository_image_tag_mutability: IMMUTABLE_WITH_EXCLUSION
+repository_image_tag_mutability_exclusion_filter:
+  - {filter: "latest*", filter_type: WILDCARD}
+repository_image_scan_on_push: false
+repository_read_access_arns: ["arn:aws:iam::111122223333:role/reader"]
+repository_lambda_read_access_arns: ["arn:aws:lambda:eu-west-1:111122223333:function:*"]
+repository_read_write_access_arns: ["arn:aws:iam::111122223333:role/ci"]
+repository_policy_statements:
+  org:
+    sid: OrgPull
+    principals: [{type: "*", identifiers: ["*"]}]
+    actions: ["ecr:BatchGetImage"]
+    conditions:
+      - {test: StringEquals, variable: "aws:PrincipalOrgID", values: ["o-abc123"]}
+create_lifecycle_policy: true
+repository_lifecycle_policy: '{"rules":[{"rulePriority":1,"selection":{"tagStatus":"untagged","countType":"sinceImagePushed","countUnit":"days","countNumber":14},"action":{"type":"expire"}}]}'
+registry_pull_through_cache_rules:
+  pub:
+    ecr_repository_prefix: ecr-public
+    upstream_registry_url: public.ecr.aws
+  dockerhub:
+    ecr_repository_prefix: dockerhub
+    upstream_registry_url: registry-1.docker.io
+    credential_arn: arn:aws:secretsmanager:us-east-1:111122223333:secret:ecr-pullthroughcache/dockerhub
+    upstream_repository_prefix: library
+    region: us-east-1
+allow_alpha: true
+create_registry_policy: true
+registry_policy: '{"Version":"2012-10-17","Statement":[{"Sid":"Replicate","Effect":"Allow","Principal":{"AWS":"arn:aws:iam::111122223333:root"},"Action":["ecr:ReplicateImage"],"Resource":"arn:aws:ecr:eu-west-1:111122223333:repository/*"}]}'
+manage_registry_scanning_configuration: true
+registry_scan_type: ENHANCED
+registry_scan_rules:
+  - scan_frequency: SCAN_ON_PUSH
+    filter: [{filter: "shop/*"}]
+  - scan_frequency: CONTINUOUS_SCAN
+    filter: [{filter: "*", filter_type: WILDCARD}]
+create_registry_replication_configuration: true
+registry_replication_rules:
+  - destinations:
+      - {region: us-east-1, registry_id: "111122223333"}
+    repository_filters:
+      - {filter: shop, filter_type: PREFIX_MATCH}
+labels: {hfl.dev/team: shop}
+tags: {team: shop}
+deletion_policy: ABANDON

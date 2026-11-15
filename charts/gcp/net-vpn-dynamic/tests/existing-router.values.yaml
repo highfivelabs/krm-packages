@@ -1,5 +1,6 @@
 # An existing router: none is made, and the route policies (allow_alpha)
-# go on the router router_config names.
+# and tunnel a's interface and peer go on the router router_config names;
+# tunnel b names its own router, with every BGP advertisement.
 allow_alpha: true
 project_id: my-project
 region: europe-west1
@@ -13,3 +14,19 @@ router_config:
     import:
       type: IMPORT
       terms: [{priority: 1, match: {expression: "true"}, actions: []}]
+tunnels:
+  a:
+    bgp_peer: {address: 169.254.1.1, asn: 64513, route_priority: 200}
+    bgp_session_range: 169.254.1.2/30
+    peer_ip: 1.1.1.1
+    ike_version: 1
+    shared_secret: {secretName: vpn-existing, key: a}
+  b:
+    router: other-router
+    bgp_peer:
+      address: 169.254.2.1
+      asn: 64513
+      custom_advertise: {all_subnets: false, all_vpc_subnets: true, all_peer_vpc_subnets: true, ip_ranges: {10.0.0.0/8: corp}}
+    bgp_session_range: 169.254.2.2/30
+    peer_ip: 1.1.1.2
+    shared_secret: {secretName: vpn-existing, key: b}
