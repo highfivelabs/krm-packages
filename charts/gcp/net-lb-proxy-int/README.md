@@ -142,7 +142,9 @@ config-connector-extensions' CRDs; the refusals are in
 `tests/*.fail.yaml`.
 
 Fake cloud (`task test-mock`, `tests/mock.values.yaml`, with the network
-and subnet from `tests/mock.needs.yaml`): see "Changes" for the run. The
+and subnet from `tests/mock.needs.yaml`). On 2026-11-15 (offload VM `off-catalog-1115102556-2238`,
+config-connector-extensions `384d07c0`) all 6 objects became Ready, the
+outputs evaluated and all 6 were deleted. The
 PSC and internet NEGs and the service attachment are only render-tested.
 
 ## Changes

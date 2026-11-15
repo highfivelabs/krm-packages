@@ -159,7 +159,9 @@ Config Connector v1.160.0's CRD schemas and config-connector-extensions'
 CRDs; the refusals are in `tests/*.fail.yaml`.
 
 Fake cloud (`task test-mock`, `tests/mock.values.yaml`, with the network
-from `tests/mock.needs.yaml`): see "Changes" for the run. The HTTPS proxy
+from `tests/mock.needs.yaml`). On 2026-11-15 (offload VM `off-catalog-1115102556-2238`,
+config-connector-extensions `384d07c0`) all 12 objects became Ready, the
+outputs evaluated and all 12 were deleted. The HTTPS proxy
 and its certificates, the PSC and internet NEGs are only render-tested.
 
 ## Changes
