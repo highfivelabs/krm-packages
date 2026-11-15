@@ -188,7 +188,7 @@ EOF
     ;;
   platform-project)
     cat >"${OUT}/tf/terraform.tfvars" <<EOF
-folder_id       = "${PARENT#folders/}"
+folder_id       = "${PARENT}"
 billing_account = "${BILLING_ACCOUNT:?set BILLING_ACCOUNT}"
 prefix          = "${RUN}"
 platform_admins = ["serviceAccount:${RUNNER}"]
