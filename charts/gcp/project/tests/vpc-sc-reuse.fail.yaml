@@ -1,0 +1,4 @@
+# expect: vpc_sc on a reused project needs project_reuse.attributes.number
+name: existing-project
+project_reuse: {}
+vpc_sc: {perimeter_name: accessPolicies/1/servicePerimeters/p}

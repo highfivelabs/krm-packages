@@ -78,3 +78,24 @@ iam_bindings_additive). */}}
 {{- end -}}
 {{- include "kcc.iam" (dict "root" $root "base" .base "idPrefix" .idPrefix "resourceRef" .ref "v" (dict "iam" (.v.iam | default dict) "iam_bindings" (.v.iam_bindings | default dict) "iam_bindings_additive" (.v.iam_bindings_additive | default dict))) -}}
 {{- end -}}
+
+{{/* project.reuseNumber: project_reuse.attributes.number, or "" when the
+chart makes the project or the number is not given. A number written
+unquoted in YAML reaches the chart as a float: print it whole, never as
+1.23456789012e+11. */}}
+{{- define "project.reuseNumber" -}}
+{{- if not (kindIs "invalid" .Values.project_reuse) -}}
+{{- $n := ((.Values.project_reuse | default dict).attributes | default dict).number -}}
+{{- if kindIs "float64" $n -}}{{- printf "%.0f" $n -}}
+{{- else -}}{{- $n | default "" | toString -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/* project.context: refuses a fabric $context lookup in a value. */}}
+{{- define "project.context" -}}
+{{- $root := index . 0 -}}{{- $where := index . 1 -}}{{- $value := index . 2 -}}
+{{- if hasPrefix "$" (toString $value) -}}
+{{- include "kcc.unsupported" (list $root "context" "x" (printf "%s %q is a fabric $context lookup; Bundt replaces them with ${...} expressions and valueFrom in the component's inputs" $where $value)) -}}
+{{- end -}}
+{{- end -}}

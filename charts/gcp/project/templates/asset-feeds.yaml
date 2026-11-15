@@ -1,0 +1,73 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/project/assets.tf (v60.0.0),
+Copyright 2025 Google LLC, Apache-2.0.
+
+google_cloud_asset_project_feed.default: one AssetFeed (v1beta1) per entry
+of asset_feeds on the project, its ID the key, publishing to the Pub/Sub
+topic (projects/<project>/topics/<topic>), with its content type, asset
+types and names and condition, as the organization chart renders them.
+billing_project is not carried: AssetFeed has no field for it, and Config
+Connector bills the call to the project its controller is configured with
+(README.md, "Differences from the module"). The project is an external
+reference by its number, so asset_feeds needs project_reuse with
+attributes.number: Google Cloud names a feed projects/<number>/feeds/<id>,
+and Config Connector's AssetFeed compares that with its projectRef on every
+reconcile after the create, failing for a project ID or a Project object
+(README.md, "Config Connector bugs").
+*/ -}}
+{{- $v := .Values }}
+{{- $abandon := include "kcc.abandon" . }}
+{{- $feeds := $v.asset_feeds | default dict }}
+{{- $number := include "project.reuseNumber" . }}
+{{- if and $feeds (not $number) }}
+{{- fail "project: asset_feeds needs an existing project (project_reuse with attributes.number): Config Connector's AssetFeed must name the project by its number, which is known only after a new project is made" }}
+{{- end }}
+{{- range $key := keys $feeds | sortAlpha }}
+{{- $f := index $feeds $key }}
+{{- if and $f.content_type (not (has $f.content_type (list "RESOURCE" "IAM_POLICY" "ORG_POLICY" "ACCESS_POLICY" "OS_INVENTORY" "RELATIONSHIP"))) }}
+{{- fail "project: Content type must be one of RESOURCE, IAM_POLICY, ORG_POLICY, ACCESS_POLICY, OS_INVENTORY, RELATIONSHIP." }}
+{{- end }}
+{{- $topic := toString ((($f.feed_output_config | default dict).pubsub_destination | default dict).topic | default "") }}
+{{- if not $topic }}
+{{- fail (printf "project: asset_feeds.%s.feed_output_config.pubsub_destination.topic is required" $key) }}
+{{- end }}
+{{- include "project.context" (list $ (printf "asset_feeds.%s.feed_output_config.pubsub_destination.topic" $key) $topic) }}
+{{- include "project.context" (list $ (printf "asset_feeds.%s.billing_project" $key) $f.billing_project) }}
+---
+apiVersion: asset.cnrm.cloud.google.com/v1beta1
+kind: AssetFeed
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "feed" $key)) "id" (printf "asset-feed:%s" $key) "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "kcc.cloudName" (list $ "asset feed" $key 100) | quote }}
+  projectRef:
+    external: {{ $number | quote }}
+  {{- with $f.content_type }}
+  contentType: {{ . | quote }}
+  {{- end }}
+  {{- with $f.asset_types }}
+  assetTypes: {{ toJson . }}
+  {{- end }}
+  {{- with $f.asset_names }}
+  assetNames: {{ toJson . }}
+  {{- end }}
+  feedOutputConfig:
+    pubsubDestination:
+      topicRef:
+        external: {{ $topic | quote }}
+  {{- with $f.condition }}
+  condition:
+    expression: {{ .expression | quote }}
+    {{- with .title }}
+    title: {{ . | quote }}
+    {{- end }}
+    {{- with .description }}
+    description: {{ . | quote }}
+    {{- end }}
+    {{- with .location }}
+    location: {{ . | quote }}
+    {{- end }}
+  {{- end }}
+{{- end }}
