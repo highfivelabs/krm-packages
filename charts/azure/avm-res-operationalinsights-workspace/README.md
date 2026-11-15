@@ -101,8 +101,8 @@ Every module variable is a value of the same name, type and default
 
 | Variable | Why |
 | --- | --- |
-| `monitor_private_link_scoped_resource.<key>.exclusions` | they update an existing scope's access mode settings, which the module reads first; the chart does not own that scope (not ported) |
-| `private_endpoint_extensions.<key>.monitor_private_link_scope_exclusion`, when it changes the access modes of the chart's scope for the endpoint (the default exclusion, `PrivateOnly` for both, on a scope with an `Open` mode) | the module names the exclusion by the scope's private endpoint connection, which Azure names and reads back; a render cannot. Set `exclude: false`, or the scope's own access modes (not ported) |
+| `monitor_private_link_scoped_resource.<key>.exclusions` | they update an existing scope's access mode settings, which the module reads first; the chart does not own that scope, and no kind updates part of one (a gap) |
+| `private_endpoint_extensions.<key>.monitor_private_link_scope_exclusion`, when it changes the access modes of the chart's scope for the endpoint (the default exclusion, `PrivateOnly` for both, on a scope with an `Open` mode) | the module names the exclusion by the scope's private endpoint connection, which Azure names and reads back; a render cannot. Set `exclude: false`, or the scope's own access modes (a gap) |
 | `log_analytics_workspace_timeouts` | ASO has no per-request timeouts; Bundt sets a component's time limit |
 
 The children that point at the workspace from elsewhere (a scoped

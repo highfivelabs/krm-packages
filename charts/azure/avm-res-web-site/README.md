@@ -100,16 +100,16 @@ module's `ignore_null_property`.
 | --- | --- | --- |
 | `retry`, `timeouts`, `ignore_body_changes`, `resource_types` | by-design | the azapi provider's mechanics: ASO retries itself and owns every field; Bundt sets a component's time limit; the API versions are the kinds' |
 | `zip_deploy_file` | by-design | uploads application code, which a Package does not carry |
-| `application_insights_connection_string`, `application_insights_key`, `storage_account_access_key`, `slot_sensitive_app_settings` | not-ported | secret values the module marks sensitive: how a component supplies one is the builder's decision |
-| `connection_strings` | not-ported | a connection string's value is a secret (ASO takes it in plain text) |
-| `kind` (in part) | not-ported | `logicapp` is refused: the module writes the storage account key into an app setting |
-| `logic_app_node_version`, `logic_app_runtime_version`, `bundle_version`, `use_extension_bundle`, `storage_account_share_name` | not-ported | only a Logic App reads them; accepted at their defaults |
+| `application_insights_connection_string`, `application_insights_key`, `storage_account_access_key`, `slot_sensitive_app_settings` | gap | secret values the module marks sensitive and writes into app settings: ASO's `Site` and aso-extensions' `SitesSlot` take app settings only in plain text, and aso-extensions (8d7f8c2) has no `Microsoft.Web/sites/config` (`appsettings`) kind that takes a Secret reference (`docs/secrets.md`) |
+| `connection_strings` | gap | a connection string's value is a secret: the kinds take it only in plain text, and there is no `connectionstrings` kind that takes a Secret reference |
+| `kind` (in part) | gap | `logicapp` is refused: the module always writes the storage account key into an app setting (the gap above) |
+| `logic_app_node_version`, `logic_app_runtime_version`, `bundle_version`, `use_extension_bundle`, `storage_account_share_name` | gap | only a Logic App reads them; accepted at their defaults |
 | `auth_settings`, `backup` | gap | `Microsoft.Web/sites/config` (`authsettings`, `backup`) has no ASO or aso-extensions kind (each has a PUT and no GET; aso-extensions `docs/plan.md` §8 Q13). The module writes `auth_settings` only without `auth_settings_v2`, which is mapped |
 | `app_service_active_slot` | gap | a slot swap is an action (`slotsswap`), not a resource |
 | `delete_empty_service_plan` (in part) | gap | `false` is refused: ASO sends no `deleteEmptyServerFarm` |
-| `site_config` (in part) | not-ported | `application_insights_connection_string`, `application_insights_key`: secret values |
-| `deployment_slots` (in part) | not-ported | a slot must set `ftp_publish_basic_authentication_enabled` and `webdeploy_publish_basic_authentication_enabled` to `true` (a slot's publishing policies have no kind; aso-extensions' are the site's); its `connection_strings`, `zip_deploy_file`, `site_config.application_insights_*` and `custom_domains.*.certificate_key` are refused |
-| `custom_domains` (in part) | not-ported | `certificate_key`: the binding takes the thumbprint Azure computes for the certificate, which a render cannot read; set `thumbprint` |
+| `site_config` (in part) | gap | `application_insights_connection_string`, `application_insights_key`: secret values written into app settings (the gap above) |
+| `deployment_slots` (in part) | gap | a slot must set `ftp_publish_basic_authentication_enabled` and `webdeploy_publish_basic_authentication_enabled` to `true` (a slot's publishing policies have no kind; aso-extensions' are the site's); its `connection_strings`, `zip_deploy_file`, `site_config.application_insights_*` and `custom_domains.*.certificate_key` are refused |
+| `custom_domains` (in part) | gap | `certificate_key`: the binding takes the thumbprint Azure computes for the certificate and has no field that reads it from the certificate object, so a render cannot wire it; set `thumbprint` |
 
 Coverage: 81 of the module's 99 variables are accepted (6 of them in
 part), 18 refused; 13 of its 14 outputs.

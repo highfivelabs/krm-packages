@@ -23,12 +23,12 @@ synced: 2026-11-12
 # exists, the chart does not map it yet) or by-design.
 refused:
   - variable: monitor_private_link_scoped_resource
-    kind: not-ported
-    reason: "accepted, but an entry's exclusions are refused: they update the access mode settings of an existing scope, which the module reads first and the chart does not own"
+    kind: gap
+    reason: "accepted, but an entry's exclusions are refused: they update the access mode settings of an existing scope, which the module reads first and the chart does not own; aso-extensions' PrivateLinkScope owns the whole scope, and no kind updates part of one"
     partial: true
     fields: [exclusions]
   - variable: private_endpoint_extensions
-    kind: not-ported
+    kind: gap
     reason: "accepted, but monitor_private_link_scope_exclusion is refused when it would change the scope's access modes for the endpoint: the module names the exclusion by the scope's private endpoint connection, which Azure names and a render cannot read"
     partial: true
     fields: [monitor_private_link_scope_exclusion]
