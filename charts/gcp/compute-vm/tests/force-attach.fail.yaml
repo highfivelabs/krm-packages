@@ -1,0 +1,8 @@
+# expect: compute-vm: attached_disks.data.force_attach is not supported
+project_id: my-project
+zone: europe-west8-b
+name: test
+network_interfaces:
+  - network: projects/my-project/global/networks/vpc
+    subnetwork: projects/my-project/regions/europe-west8/subnetworks/subnet
+attached_disks: {data: {force_attach: true}}

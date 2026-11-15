@@ -1,0 +1,106 @@
+# Every field the chart carries on an instance: an independent boot disk,
+# three attached disks (made zonal, made regional, an existing one),
+# snapshot and instance schedules, an unmanaged group, a created service
+# account, instance and IAP tunnel IAM, Spot scheduling, a GPU, scratch
+# disks and the rest.
+project_id: my-project
+zone: europe-west8-b
+name: full
+description: A test VM.
+hostname: full.example.internal
+machine_type: n1-standard-4
+min_cpu_platform: Intel Cascade Lake
+can_ip_forward: true
+enable_display: true
+confidential_compute: SEV
+labels: {env: test, hfl.dev/team: shop}
+tags: [ssh, http-server]
+metadata: {enable-oslogin: "TRUE", serial-port-enable: "1"}
+metadata_startup_script: "#!/bin/bash\necho hello"
+network_interfaces:
+  - network: projects/my-project/global/networks/vpc
+    subnetwork: projects/my-project/regions/europe-west8/subnetworks/subnet
+    nat: true
+    network_tier: PREMIUM
+    nic_type: GVNIC
+    stack_type: IPV4_IPV6
+    queue_count: 2
+    external_ipv6: true
+    alias_ips: {pods: 10.16.0.0/24}
+    addresses: {internal: 10.0.0.10, external: 34.1.2.3}
+  - network: projects/my-project/global/networks/vpc-2
+    subnetwork: projects/my-project/regions/europe-west8/subnetworks/subnet-2
+network_performance_tier: TIER_1
+boot_disk:
+  initialize_params:
+    size: 50
+    type: hyperdisk-balanced
+    hyperdisk: {provisioned_iops: 3000, provisioned_throughput: 140}
+  source: {image: projects/debian-cloud/global/images/family/debian-12}
+  use_independent_disk: {}
+  snapshot_schedule: [daily]
+attached_disks:
+  data:
+    initialize_params: {size: 100, type: pd-ssd}
+    snapshot_schedule: [daily, external-policy]
+  repd:
+    name: full-repd
+    mode: READ_ONLY
+    position: "0"
+    initialize_params: {size: 200, type: pd-balanced, replica_zone: europe-west8-c}
+    source: {snapshot: projects/my-project/global/snapshots/snap-1}
+    snapshot_schedule: [daily]
+  old:
+    device_name: legacy
+    source: {attach: projects/my-project/zones/europe-west8-b/disks/legacy-disk}
+encryption:
+  kms_key_self_link: projects/my-project/locations/europe-west8/keyRings/kr/cryptoKeys/k
+gpu: {type: nvidia-tesla-t4, count: 1}
+scratch_disks: {count: 2, interface: NVME, size: 375}
+shielded_config: {enable_secure_boot: false}
+machine_features_config: {enable_nested_virtualization: true, threads_per_core: 1, visible_core_count: 2}
+scheduling_config:
+  provisioning_model: SPOT
+  min_node_cpus: 2
+  max_run_duration: {seconds: 3600}
+  local_ssd_recovery_timeout: {seconds: 600, nanos: 0}
+  node_affinities:
+    compute.googleapis.com/node-group-name: {values: [group-1]}
+    workload: {values: [batch], in: false}
+lifecycle_config:
+  allow_stopping_for_update: false
+  deletion_protection: true
+resource_policies: [projects/my-project/regions/europe-west8/resourcePolicies/placement]
+instance_schedule:
+  vm_start: "0 8 * * *"
+  vm_stop: "0 18 * * *"
+  timezone: Europe/Rome
+snapshot_schedules:
+  daily:
+    schedule:
+      daily: {days_in_cycle: 1, start_time: "03:00"}
+    retention_policy: {max_retention_days: 7, on_source_disk_delete_keep: false}
+    snapshot_properties: {labels: {kind: daily}, storage_locations: [eu], guest_flush: true}
+  weekly:
+    description: Weekly snapshots.
+    schedule:
+      weekly:
+        - {day: MONDAY, start_time: "04:00"}
+        - {day: THURSDAY, start_time: "04:00"}
+group:
+  named_ports: {http: 80, https: 443}
+service_account:
+  auto_create: true
+iam:
+  roles/compute.instanceAdmin.v1: [group:admins@example.com]
+iap_tunnel_iam:
+  roles/iap.tunnelResourceAccessor: [group:ops@example.com]
+iap_tunnel_iam_bindings:
+  dev:
+    role: roles/iap.tunnelResourceAccessor
+    members: [group:dev@example.com]
+    condition:
+      title: office-hours
+      expression: request.time.getHours("Europe/Rome") < 18
+tag_bindings_immutable:
+  tagKeys/1234: tagValues/5678

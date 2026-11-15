@@ -1,0 +1,8 @@
+# expect: names: Additional property disk is not allowed
+project_id: my-project
+zone: europe-west8-b
+name: test
+network_interfaces:
+  - network: projects/my-project/global/networks/vpc
+    subnetwork: projects/my-project/regions/europe-west8/subnetworks/subnet
+names: {disk: x}

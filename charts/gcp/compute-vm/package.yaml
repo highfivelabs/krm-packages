@@ -1,0 +1,70 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (see ../iam-service-account/package.yaml).
+# Outputs are fabric's declared outputs, selected from the live objects
+# (resources.instance, resources.template, resources.service_account) and
+# the inputs (docs/design.md, "Outputs"). id is the provider's id,
+# projects/<project>/zones/<zone>/instances/<name>; self_link the
+# instance's status.selfLink; internal_ip(s) and external_ip the addresses
+# Config Connector writes back into the instance's networkInterface (null,
+# or empty, until it has); service_account_email the created account's
+# email, the one given, or null for the Compute Engine default account, as
+# fabric's. The instance outputs are null with create_template, and
+# template_name is null without it. Not outputs: fabric's group, instance,
+# service_account and template, which are whole Terraform objects; and
+# fabric's TPU branches of id and internal_ip(s), as TPUs are refused.
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: gcp-compute-vm
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [kcc]
+  outputs:
+    id: >-
+      'instance' in resources
+      ? dyn('projects/' + inputs.project_id + '/zones/' + resources.instance.spec.zone + '/instances/' + resources.instance.spec.resourceID)
+      : null
+    self_link: >-
+      'instance' in resources && has(resources.instance.status.selfLink)
+      ? resources.instance.status.selfLink
+      : null
+    internal_ip: >-
+      'instance' in resources && has(resources.instance.spec.networkInterface)
+      && size(resources.instance.spec.networkInterface) > 0
+      && has(resources.instance.spec.networkInterface[0].networkIp)
+      ? resources.instance.spec.networkInterface[0].networkIp
+      : null
+    internal_ips: >-
+      'instance' in resources && has(resources.instance.spec.networkInterface)
+      ? resources.instance.spec.networkInterface.filter(n, has(n.networkIp)).map(n, n.networkIp)
+      : []
+    external_ip: >-
+      inputs.network_interfaces.size() > 0 && has(inputs.network_interfaces[0].nat) && inputs.network_interfaces[0].nat == true
+      && 'instance' in resources && has(resources.instance.spec.networkInterface)
+      && size(resources.instance.spec.networkInterface) > 0
+      && has(resources.instance.spec.networkInterface[0].accessConfig)
+      && size(resources.instance.spec.networkInterface[0].accessConfig) > 0
+      && has(resources.instance.spec.networkInterface[0].accessConfig[0].natIpRef)
+      && has(resources.instance.spec.networkInterface[0].accessConfig[0].natIpRef.external)
+      ? resources.instance.spec.networkInterface[0].accessConfig[0].natIpRef.external
+      : null
+    login_command: >-
+      'gcloud compute ssh --project ' + inputs.project_id + ' --zone ' + inputs.zone + ' '
+      + ('instance' in resources ? resources.instance.spec.resourceID : inputs.name)
+    service_account_email: >-
+      !has(inputs.service_account) || inputs.service_account == null
+      ? null
+      : ('service_account' in resources
+        ? dyn(resources.service_account.spec.resourceID + '@' + inputs.project_id + '.iam.gserviceaccount.com')
+        : (has(inputs.service_account.email) ? inputs.service_account.email : null))
+    service_account_iam_email: >-
+      !has(inputs.service_account) || inputs.service_account == null
+      ? null
+      : ('service_account' in resources
+        ? dyn('serviceAccount:' + resources.service_account.spec.resourceID + '@' + inputs.project_id + '.iam.gserviceaccount.com')
+        : (has(inputs.service_account.email) && inputs.service_account.email != null ? dyn('serviceAccount:' + inputs.service_account.email) : null))
+    template_name: >-
+      'template' in resources ? dyn(resources.template.spec.resourceID) : null
