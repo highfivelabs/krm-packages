@@ -351,15 +351,23 @@ for b in s3.list_buckets().get("Buckets", []):
 # the environment's namespace starts (ack-extensions' pkg/operator,
 # cloudcontrol.go); the operator's --fake-aws-endpoint points it at the fake
 # in use. The role is the fake account's (nothing assumes it: the fake keys
-# are the manager's). Waits until Ready, then checks the manager with
-# ack-extensions' guard, as every other AWS client.
+# are the manager's). The context names the Cloud Control kinds the render
+# has (Kind.service, from RENDERED), so the manager serves those alone: one
+# naming none serves every kind in the registry, which a manager at
+# ack-extensions 2cdca6c could not do in its 256Mi (OOMKilled within
+# seconds, every object left at its first reconcile; ack-extensions
+# docs/cloudcontrol.md section 11, RECCC). Waits until Ready, then checks
+# the manager with ack-extensions' guard, as every other AWS client.
 cc_context() {
-  local ns="$1" end
+  local ns="$1" rendered="$2" end kinds
+  # Top-level apiVersion and kind of each document: Kind.service.
+  kinds="$(awk '/^---/ {g=""; k=""} /^apiVersion: [a-z0-9]+\.cloudcontrol\.aws\.hfl\.dev\// {split($2, a, "."); g=a[1]} /^kind: / {k=$2} g != "" && k != "" {print k "." g; g=""; k=""}' "${rendered}" | sort -u | paste -sd, -)"
+  echo "   Cloud Control kinds: ${kinds}"
   kubectl apply -f - >/dev/null <<YAML
 apiVersion: cloudcontrol.aws.hfl.dev/v1alpha1
 kind: CloudControlContext
 metadata: {name: cloudcontrol, namespace: ${ns}}
-spec: {roleARN: "arn:aws:iam::$(account_of "${BACKEND}"):role/catalog-cloudcontrol", region: ${REGION}}
+spec: {roleARN: "arn:aws:iam::$(account_of "${BACKEND}"):role/catalog-cloudcontrol", region: ${REGION}, kinds: [${kinds}]}
 YAML
   end=$(( $(date +%s) + 240 ))
   until [[ "$(kubectl -n "${ns}" get cloudcontrolcontext cloudcontrol -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')" == True ]]; do
@@ -449,7 +457,7 @@ run_chart() {
   local cc=no
   if grep -Eq '^apiVersion: [a-z0-9]+\.cloudcontrol\.aws\.hfl\.dev/' "${out}/rendered.yaml"; then
     cc=yes
-    cc_context "${ns}" || echo "   ${chart}: no Cloud Control manager for ${ns}" >&2
+    cc_context "${ns}" "${out}/rendered.yaml" || echo "   ${chart}: no Cloud Control manager for ${ns}" >&2
   fi
   kubectl apply --server-side -n "${ns}" -f "${out}/rendered.yaml" >"${out}/apply.log"
   # Fully qualified (kind.version.group/name), as hack/mock-apply.sh does.
