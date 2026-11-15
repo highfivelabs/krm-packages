@@ -1,0 +1,4 @@
+# expect: namePrefix: Does not match pattern
+project_id: p
+location: ""
+namePrefix: Shop_Dev

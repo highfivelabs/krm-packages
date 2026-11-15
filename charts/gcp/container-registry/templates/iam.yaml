@@ -1,0 +1,20 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/container-registry/main.tf
+(v60.0.0), Copyright 2022 Google LLC, Apache-2.0.
+
+google_storage_bucket_iam_binding.bindings: fabric binds iam on the
+registry's Cloud Storage bucket. The registry is now an Artifact Registry
+repository, so iam is one IAMPartialPolicy on it (docs/design.md, "IAM").
+A Cloud Storage role cannot be granted on a repository: it is refused,
+naming the Artifact Registry roles to use instead. The chart does not
+translate roles itself (README.md, "Values").
+*/ -}}
+{{- $v := .Values }}
+{{- range $role := keys ($v.iam | default dict) | sortAlpha }}
+{{- if hasPrefix "roles/storage." $role }}
+{{- include "kcc.unsupported" (list $ (printf "iam.%s" $role) "set" "the registry is an Artifact Registry repository, not a Cloud Storage bucket: grant an Artifact Registry role instead (roles/artifactregistry.reader to pull, roles/artifactregistry.writer to push, roles/artifactregistry.repoAdmin to also delete)") }}
+{{- end }}
+{{- end }}
+{{- include "kcc.iam" (dict "root" $ "base" .Release.Name "idPrefix" "" "resourceRef" (dict "apiVersion" "artifactregistry.cnrm.cloud.google.com/v1beta1" "kind" "ArtifactRegistryRepository" "name" .Release.Name) "v" (dict "iam" $v.iam)) }}

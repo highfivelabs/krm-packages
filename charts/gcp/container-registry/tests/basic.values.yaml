@@ -1,0 +1,5 @@
+# The registry in the gcr.io host, with IAM, after the module README's example.
+project_id: my-project
+location: ""
+iam:
+  roles/artifactregistry.reader: ["user:foo@example.com"]

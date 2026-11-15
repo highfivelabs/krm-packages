@@ -160,7 +160,7 @@ compute-vm,google_service_account,1,stable,IAMServiceAccount
 compute-vm,google_tags_location_tag_binding,5,stable,TagsLocationTagBinding
 compute-vm,google_tpu_v2_queued_resource,1,alpha,TPUQueuedResource
 compute-vm,google_tpu_v2_vm,1,alpha,TPUVirtualMachine
-container-registry,google_container_registry,1,none,
+container-registry,google_container_registry,1,stable,"ArtifactRegistryRepository (a gcr.io repository; Container Registry is shut down, decision 30)"
 container-registry,google_storage_bucket_iam_binding,1,stable,IAMPartialPolicy -> StorageBucket
 data-catalog-policy-tag,google_data_catalog_policy_tag,1,stable,DataCatalogPolicyTag
 data-catalog-policy-tag,google_data_catalog_policy_tag_iam_binding,2,stable,IAMPartialPolicy -> DataCatalogPolicyTag
