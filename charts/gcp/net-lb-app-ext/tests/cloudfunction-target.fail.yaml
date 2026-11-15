@@ -1,0 +1,4 @@
+# expect: net-lb-app-ext: Cloud Function NEGs need either target function or target urlmask defined.
+name: lb
+project_id: my-project
+neg_configs: {a: {cloudfunction: {region: europe-west1}}}

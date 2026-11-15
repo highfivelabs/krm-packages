@@ -1,0 +1,6 @@
+# expect: net-lb-app-ext-regional: Cloud Function NEGs need either target function or target urlmask defined.
+name: lb
+project_id: my-project
+region: europe-west1
+vpc_config: {network: projects/my-project/global/networks/my-vpc}
+neg_configs: {a: {cloudfunction: {region: europe-west1}}}

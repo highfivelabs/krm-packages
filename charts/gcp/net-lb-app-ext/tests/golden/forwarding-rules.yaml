@@ -1,0 +1,196 @@
+---
+# Source: net-lb-app-ext/templates/backend-service.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeBackendService
+metadata:
+  name: forwarding-rules-bs-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "forwarding-rules"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "backend_service:default"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-default"
+  location: "global"
+  description: "Terraform managed."
+  loadBalancingScheme: "EXTERNAL_MANAGED"
+  protocol: "HTTP"
+  healthChecks:
+    - healthCheckRef:
+        name: forwarding-rules-hc-default
+  portName: "http"
+  backend:
+    - balancingMode: "UTILIZATION"
+      capacityScaler: 1
+      description: "Terraform managed."
+      group:
+        instanceGroupRef:
+          external: "projects/my-project/zones/europe-west8-b/instanceGroups/my-ig-b"
+---
+# Source: net-lb-app-ext/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeForwardingRule
+metadata:
+  name: forwarding-rules-fr
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "forwarding-rules"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "forwarding_rule:"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: global
+  description: "Terraform managed."
+  ipVersion: IPV4
+  ipProtocol: TCP
+  loadBalancingScheme: EXTERNAL_MANAGED
+  portRange: "8080"
+  target:
+    targetHTTPProxyRef:
+      name: forwarding-rules
+---
+# Source: net-lb-app-ext/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeForwardingRule
+metadata:
+  name: forwarding-rules-fr-ip
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "forwarding-rules"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "forwarding_rule:ip"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-ip"
+  location: global
+  description: "Terraform managed."
+  ipAddress:
+    ip: "203.0.113.20"
+  ipProtocol: TCP
+  loadBalancingScheme: EXTERNAL_MANAGED
+  portRange: "80"
+  target:
+    targetHTTPProxyRef:
+      name: forwarding-rules
+---
+# Source: net-lb-app-ext/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeForwardingRule
+metadata:
+  name: forwarding-rules-fr-ipv6
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "forwarding-rules"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "forwarding_rule:ipv6"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-ipv6"
+  location: global
+  description: "IPv6."
+  ipVersion: IPV6
+  ipProtocol: TCP
+  loadBalancingScheme: EXTERNAL_MANAGED
+  portRange: "80"
+  target:
+    targetHTTPProxyRef:
+      name: forwarding-rules
+---
+# Source: net-lb-app-ext/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeForwardingRule
+metadata:
+  name: forwarding-rules-fr-reserved
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "forwarding-rules"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "forwarding_rule:reserved"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-reserved"
+  location: global
+  description: "Terraform managed."
+  ipAddress:
+    addressRef:
+      external: "projects/my-project/global/addresses/glb-ip"
+  ipProtocol: TCP
+  loadBalancingScheme: EXTERNAL_MANAGED
+  portRange: "80"
+  target:
+    targetHTTPProxyRef:
+      name: forwarding-rules
+---
+# Source: net-lb-app-ext/templates/health-check.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeHealthCheck
+metadata:
+  name: forwarding-rules-hc-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "forwarding-rules"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "health_check:default"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-default"
+  location: "global"
+  description: "Terraform managed."
+  httpHealthCheck:
+    portSpecification: USE_SERVING_PORT
+---
+# Source: net-lb-app-ext/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeTargetHTTPProxy
+metadata:
+  name: forwarding-rules
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "forwarding-rules"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "target_proxy"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-proxy"
+  location: global
+  description: "The proxy."
+  httpKeepAliveTimeoutSec: 300
+  urlMapRef:
+    name: forwarding-rules
+---
+# Source: net-lb-app-ext/templates/urlmap.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeURLMap
+metadata:
+  name: forwarding-rules
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "forwarding-rules"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "url_map"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: "global"
+  description: "Terraform managed."
+  defaultService:
+    backendServiceRef:
+      name: forwarding-rules-bs-default

@@ -1,0 +1,489 @@
+---
+# Source: net-lb-app-ext-regional/templates/backend-service.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeBackendService
+metadata:
+  name: negs-bs-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "negs"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "backend_service:default"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-default"
+  location: "europe-west8"
+  description: "Terraform managed."
+  loadBalancingScheme: "EXTERNAL_MANAGED"
+  protocol: "HTTP"
+  healthChecks:
+    - healthCheckRef:
+        name: negs-hc-default
+  portName: "http"
+  backend:
+    - balancingMode: "RATE"
+      capacityScaler: 1
+      description: "Terraform managed."
+      group:
+        networkEndpointGroupRef:
+          name: negs-neg-zonal
+      maxRatePerEndpoint: 10
+---
+# Source: net-lb-app-ext-regional/templates/backend-service.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeBackendService
+metadata:
+  name: negs-bs-hybrid
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "negs"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "backend_service:hybrid"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-hybrid"
+  location: "europe-west8"
+  description: "Terraform managed."
+  loadBalancingScheme: "EXTERNAL_MANAGED"
+  protocol: "HTTP"
+  healthChecks:
+    - healthCheckRef:
+        name: negs-hc-default
+  portName: "http"
+  backend:
+    - balancingMode: "RATE"
+      capacityScaler: 1
+      description: "Terraform managed."
+      group:
+        networkEndpointGroupRef:
+          name: negs-neg-hybrid
+      maxConnectionsPerEndpoint: 10
+---
+# Source: net-lb-app-ext-regional/templates/backend-service.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeBackendService
+metadata:
+  name: negs-bs-psc
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "negs"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "backend_service:psc"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-psc"
+  location: "europe-west8"
+  description: "Terraform managed."
+  loadBalancingScheme: "EXTERNAL_MANAGED"
+  protocol: "HTTP"
+  portName: "http"
+  backend:
+    - balancingMode: "UTILIZATION"
+      capacityScaler: 1
+      description: "Terraform managed."
+      group:
+        networkEndpointGroupRef:
+          external: "projects/my-project/regions/europe-west8/networkEndpointGroups/glb-test-0-psc"
+---
+# Source: net-lb-app-ext-regional/templates/backend-service.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeBackendService
+metadata:
+  name: negs-bs-run
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "negs"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "backend_service:run"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-run"
+  location: "europe-west8"
+  description: "Terraform managed."
+  loadBalancingScheme: "EXTERNAL_MANAGED"
+  protocol: "HTTP"
+  portName: "http"
+  backend:
+    - balancingMode: "UTILIZATION"
+      capacityScaler: 1
+      description: "Terraform managed."
+      group:
+        networkEndpointGroupRef:
+          external: "projects/other-project/regions/europe-west8/networkEndpointGroups/glb-test-0-run"
+    - balancingMode: "UTILIZATION"
+      capacityScaler: 1
+      description: "Terraform managed."
+      group:
+        networkEndpointGroupRef:
+          external: "projects/my-project/regions/europe-west8/networkEndpointGroups/glb-test-0-fn"
+---
+# Source: net-lb-app-ext-regional/templates/backend-service.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeBackendService
+metadata:
+  name: negs-bs-web
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "negs"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "backend_service:web"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-web"
+  location: "europe-west8"
+  description: "Terraform managed."
+  loadBalancingScheme: "EXTERNAL_MANAGED"
+  protocol: "HTTP"
+  portName: "http"
+  backend:
+    - balancingMode: "UTILIZATION"
+      capacityScaler: 1
+      description: "Terraform managed."
+      group:
+        networkEndpointGroupRef:
+          external: "projects/my-project/regions/europe-west8/networkEndpointGroups/glb-test-0-web"
+    - balancingMode: "UTILIZATION"
+      capacityScaler: 1
+      description: "Terraform managed."
+      group:
+        networkEndpointGroupRef:
+          external: "projects/my-project/regions/europe-west8/networkEndpointGroups/glb-test-0-ip"
+---
+# Source: net-lb-app-ext-regional/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeForwardingRule
+metadata:
+  name: negs-fr
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "negs"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "forwarding_rule"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: "europe-west8"
+  description: "Terraform managed."
+  ipProtocol: TCP
+  loadBalancingScheme: EXTERNAL_MANAGED
+  networkRef:
+    external: "projects/my-project/global/networks/my-vpc"
+  networkTier: STANDARD
+  portRange: "80"
+  target:
+    targetHTTPProxyRef:
+      name: negs
+---
+# Source: net-lb-app-ext-regional/templates/health-check.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeHealthCheck
+metadata:
+  name: negs-hc-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "negs"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "health_check:default"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-default"
+  location: "europe-west8"
+  description: "Terraform managed."
+  httpHealthCheck:
+    portSpecification: USE_SERVING_PORT
+---
+# Source: net-lb-app-ext-regional/templates/negs.yaml
+apiVersion: compute.gcp.hfl.dev/v1beta1
+kind: ComputeNetworkEndpoint
+metadata:
+  name: negs-ep-hybrid-e-0
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "negs"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "endpoint:hybrid-e-0"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  networkEndpointGroupRef:
+    name: negs-neg-hybrid
+  zone: "europe-west8-b"
+  ipAddress: "192.168.0.3"
+  resourceID: "80"
+---
+# Source: net-lb-app-ext-regional/templates/negs.yaml
+apiVersion: compute.gcp.hfl.dev/v1beta1
+kind: ComputeNetworkEndpoint
+metadata:
+  name: negs-ep-zonal-e-0
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "negs"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "endpoint:zonal-e-0"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  networkEndpointGroupRef:
+    name: negs-neg-zonal
+  zone: "europe-west8-b"
+  ipAddress: "10.0.0.10"
+  instanceRef:
+    external: "my-vm"
+  resourceID: "80"
+---
+# Source: net-lb-app-ext-regional/templates/negs.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeNetworkEndpointGroup
+metadata:
+  name: negs-neg-hybrid
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "negs"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "neg:hybrid"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-hybrid"
+  location: "europe-west8-b"
+  description: "Terraform managed."
+  networkEndpointType: NON_GCP_PRIVATE_IP_PORT
+  networkRef:
+    external: "projects/my-project/global/networks/my-vpc"
+---
+# Source: net-lb-app-ext-regional/templates/negs.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeNetworkEndpointGroup
+metadata:
+  name: negs-neg-zonal
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "negs"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "neg:zonal"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-zonal"
+  location: "europe-west8-b"
+  description: "Terraform managed."
+  networkEndpointType: GCE_VM_IP_PORT
+  networkRef:
+    external: "projects/my-project/global/networks/my-vpc"
+  subnetworkRef:
+    external: "projects/my-project/regions/europe-west8/subnetworks/my-subnet"
+---
+# Source: net-lb-app-ext-regional/templates/negs.yaml
+apiVersion: compute.gcp.hfl.dev/v1alpha1
+kind: ComputeRegionNetworkEndpoint
+metadata:
+  name: negs-ep-ip-e-0
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "negs"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "internet_endpoint:ip-e-0"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  region: "europe-west8"
+  regionNetworkEndpointGroupRef:
+    name: negs-neg-ip
+  ipAddress: "203.0.113.10"
+  port: 80
+---
+# Source: net-lb-app-ext-regional/templates/negs.yaml
+apiVersion: compute.gcp.hfl.dev/v1alpha1
+kind: ComputeRegionNetworkEndpoint
+metadata:
+  name: negs-ep-web-e-0
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "negs"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "internet_endpoint:web-e-0"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  region: "europe-west8"
+  regionNetworkEndpointGroupRef:
+    name: negs-neg-web
+  fqdn: "www.example.org"
+  port: 443
+---
+# Source: net-lb-app-ext-regional/templates/negs.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRegionNetworkEndpointGroup
+metadata:
+  name: negs-neg-fn
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "negs"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "serverless_neg:fn"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-fn"
+  region: "europe-west8"
+  description: "A function."
+  networkEndpointType: SERVERLESS
+  cloudFunction:
+    functionRef:
+      external: "my-function"
+---
+# Source: net-lb-app-ext-regional/templates/negs.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRegionNetworkEndpointGroup
+metadata:
+  name: negs-neg-ip
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "negs"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "internet_neg:ip"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-ip"
+  region: "europe-west8"
+  description: "Terraform managed."
+  networkEndpointType: INTERNET_IP_PORT
+  networkRef:
+    external: "projects/my-project/global/networks/my-vpc"
+---
+# Source: net-lb-app-ext-regional/templates/negs.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRegionNetworkEndpointGroup
+metadata:
+  name: negs-neg-psc
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "negs"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "psc_neg:psc"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-psc"
+  region: "europe-west8"
+  description: "Terraform managed."
+  networkEndpointType: PRIVATE_SERVICE_CONNECT
+  pscTargetService: "europe-west8-cloudkms.googleapis.com"
+---
+# Source: net-lb-app-ext-regional/templates/negs.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRegionNetworkEndpointGroup
+metadata:
+  name: negs-neg-run
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "negs"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "serverless_neg:run"
+    cnrm.cloud.google.com/project-id: "other-project"
+spec:
+  resourceID: "glb-test-0-run"
+  region: "europe-west8"
+  description: "Terraform managed."
+  networkEndpointType: SERVERLESS
+  cloudRun:
+    serviceRef:
+      external: "my-run-service"
+    tag: "blue"
+---
+# Source: net-lb-app-ext-regional/templates/negs.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRegionNetworkEndpointGroup
+metadata:
+  name: negs-neg-web
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "negs"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "internet_neg:web"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-web"
+  region: "europe-west8"
+  description: "Terraform managed."
+  networkEndpointType: INTERNET_FQDN_PORT
+  networkRef:
+    external: "projects/my-project/global/networks/my-vpc"
+---
+# Source: net-lb-app-ext-regional/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeTargetHTTPProxy
+metadata:
+  name: negs
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "negs"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "target_proxy"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: "europe-west8"
+  description: "Terraform managed."
+  urlMapRef:
+    name: negs
+---
+# Source: net-lb-app-ext-regional/templates/urlmap.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeURLMap
+metadata:
+  name: negs
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "negs"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "url_map"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: "europe-west8"
+  description: "Terraform managed."
+  defaultService:
+    backendServiceRef:
+      name: negs-bs-default

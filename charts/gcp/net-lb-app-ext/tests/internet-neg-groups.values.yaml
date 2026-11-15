@@ -1,0 +1,11 @@
+# Internet NEGs without endpoints need no alpha kind.
+name: glb-test-0
+project_id: my-project
+backend_service_configs:
+  default:
+    backends: [{group: neg-0}]
+    health_checks: []
+health_check_configs: {}
+neg_configs:
+  neg-0:
+    internet: {}

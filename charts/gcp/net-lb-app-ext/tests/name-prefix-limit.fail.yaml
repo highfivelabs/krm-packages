@@ -1,0 +1,5 @@
+# expect: net-lb-app-ext: forwarding rule name "shop-dev-
+name: lb
+project_id: my-project
+namePrefix: shop-dev
+forwarding_rules_config: {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: {}}

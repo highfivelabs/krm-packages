@@ -2031,7 +2031,59 @@
       "type": [
         "object",
         "null"
-      ]
+      ],
+      "description": "By run_commands key. run_as_password is a reference to a Kubernetes Secret (docs/secrets.md); protected_parameters are refused (the kind takes them only in plain text)",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "protected_parameters": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "value"
+              ]
+            }
+          },
+          "run_as_password": {
+            "description": "A reference to a Kubernetes Secret in the component's namespace (docs/secrets.md); a string, the secret itself, is refused",
+            "type": [
+              "object",
+              "string",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "secretName": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              }
+            }
+          },
+          "run_as_user": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
     },
     "shutdown_schedules": {
       "type": "object",

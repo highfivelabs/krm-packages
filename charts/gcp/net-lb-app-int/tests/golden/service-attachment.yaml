@@ -1,0 +1,152 @@
+---
+# Source: net-lb-app-int/templates/backend-service.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeBackendService
+metadata:
+  name: service-attachment-bs-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "service-attachment"
+    app.kubernetes.io/name: net-lb-app-int
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "backend_service:default"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-test-default"
+  location: "europe-west1"
+  description: "Terraform managed."
+  loadBalancingScheme: "INTERNAL_MANAGED"
+  protocol: "HTTP"
+  healthChecks:
+    - healthCheckRef:
+        name: service-attachment-hc-default
+  backend:
+    - balancingMode: "UTILIZATION"
+      capacityScaler: 1
+      description: "Terraform managed."
+      group:
+        instanceGroupRef:
+          external: "projects/my-project/zones/europe-west1-b/instanceGroups/my-ig"
+---
+# Source: net-lb-app-int/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeForwardingRule
+metadata:
+  name: service-attachment-fr
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "service-attachment"
+    app.kubernetes.io/name: net-lb-app-int
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "forwarding_rule"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-test"
+  location: "europe-west1"
+  description: "Terraform managed."
+  ipProtocol: TCP
+  loadBalancingScheme: INTERNAL_MANAGED
+  networkRef:
+    external: "projects/my-project/global/networks/my-vpc"
+  networkTier: PREMIUM
+  portRange: "80"
+  subnetworkRef:
+    external: "projects/my-project/regions/europe-west1/subnetworks/my-subnet"
+  target:
+    targetHTTPProxyRef:
+      name: service-attachment
+---
+# Source: net-lb-app-int/templates/health-check.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeHealthCheck
+metadata:
+  name: service-attachment-hc-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "service-attachment"
+    app.kubernetes.io/name: net-lb-app-int
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "health_check:default"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-test-default"
+  location: "global"
+  description: "Terraform managed."
+  httpHealthCheck:
+    portSpecification: USE_SERVING_PORT
+---
+# Source: net-lb-app-int/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeServiceAttachment
+metadata:
+  name: service-attachment-sa
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "service-attachment"
+    app.kubernetes.io/name: net-lb-app-int
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "service_attachment"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-test"
+  location: "europe-west1"
+  projectRef:
+    external: "my-project"
+  description: "Terraform managed."
+  targetServiceRef:
+    name: service-attachment-fr
+  natSubnets:
+    - external: "projects/my-project/regions/europe-west1/subnetworks/psc-nat"
+  connectionPreference: ACCEPT_MANUAL
+  consumerAcceptLists:
+    - projectRef:
+        external: "other-project"
+      connectionLimit: 10
+  consumerRejectLists:
+    - external: "bad-project"
+  enableProxyProtocol: true
+---
+# Source: net-lb-app-int/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeTargetHTTPProxy
+metadata:
+  name: service-attachment
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "service-attachment"
+    app.kubernetes.io/name: net-lb-app-int
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "target_proxy"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-test"
+  location: "europe-west1"
+  description: "Terraform managed."
+  urlMapRef:
+    name: service-attachment
+---
+# Source: net-lb-app-int/templates/urlmap.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeURLMap
+metadata:
+  name: service-attachment
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "service-attachment"
+    app.kubernetes.io/name: net-lb-app-int
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "url_map"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "ilb-test"
+  location: "europe-west1"
+  description: "Terraform managed."
+  defaultService:
+    backendServiceRef:
+      name: service-attachment-bs-default

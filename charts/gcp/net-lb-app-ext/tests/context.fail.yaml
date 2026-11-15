@@ -1,0 +1,4 @@
+# expect: net-lb-app-ext: context is not supported
+name: lb
+project_id: my-project
+context: {project_ids: {a: b}}

@@ -1,0 +1,6 @@
+# expect: net-lb-proxy-int: neg_configs.a.psc.producer_port is not supported
+name: lb
+project_id: my-project
+region: europe-west1
+vpc_config: {network: projects/my-project/global/networks/my-vpc, subnetwork: projects/my-project/regions/europe-west1/subnetworks/my-subnet}
+neg_configs: {a: {psc: {region: europe-west1, target_service: x, producer_port: 443}}}

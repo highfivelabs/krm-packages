@@ -1,0 +1,4 @@
+# expect: net-lb-app-ext: Only one health check type can be configured at a time.
+name: lb
+project_id: my-project
+health_check_configs: {default: {http: {port: 80}, https: {port: 443}}}

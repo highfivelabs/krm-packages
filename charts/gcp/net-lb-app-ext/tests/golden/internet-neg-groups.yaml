@@ -1,0 +1,114 @@
+---
+# Source: net-lb-app-ext/templates/backend-service.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeBackendService
+metadata:
+  name: internet-neg-groups-bs-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "internet-neg-groups"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "backend_service:default"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-default"
+  location: "global"
+  description: "Terraform managed."
+  loadBalancingScheme: "EXTERNAL"
+  protocol: "HTTP"
+  portName: "http"
+  backend:
+    - balancingMode: "UTILIZATION"
+      capacityScaler: 1
+      description: "Terraform managed."
+      group:
+        networkEndpointGroupRef:
+          external: "projects/my-project/global/networkEndpointGroups/glb-test-0-neg-0"
+---
+# Source: net-lb-app-ext/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeForwardingRule
+metadata:
+  name: internet-neg-groups-fr
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "internet-neg-groups"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "forwarding_rule:"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: global
+  description: "Terraform managed."
+  ipVersion: IPV4
+  ipProtocol: TCP
+  loadBalancingScheme: EXTERNAL
+  portRange: "80"
+  target:
+    targetHTTPProxyRef:
+      name: internet-neg-groups
+---
+# Source: net-lb-app-ext/templates/negs.yaml
+apiVersion: compute.gcp.hfl.dev/v1beta1
+kind: ComputeGlobalNetworkEndpointGroup
+metadata:
+  name: internet-neg-groups-neg-neg-0
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "internet-neg-groups"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "global_neg:neg-0"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  resourceID: "glb-test-0-neg-0"
+  description: "Terraform managed."
+  networkEndpointType: INTERNET_FQDN_PORT
+---
+# Source: net-lb-app-ext/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeTargetHTTPProxy
+metadata:
+  name: internet-neg-groups
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "internet-neg-groups"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "target_proxy"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: global
+  description: "Terraform managed."
+  urlMapRef:
+    name: internet-neg-groups
+---
+# Source: net-lb-app-ext/templates/urlmap.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeURLMap
+metadata:
+  name: internet-neg-groups
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "internet-neg-groups"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "url_map"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: "global"
+  description: "Terraform managed."
+  defaultService:
+    backendServiceRef:
+      name: internet-neg-groups-bs-default
