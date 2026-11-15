@@ -1,0 +1,16 @@
+# MySQL BUILT_IN users, their passwords references to a Kubernetes Secret
+# (docs/secrets.md): a user's key is NAME or NAME@HOST, as in fabric.
+project_id: myproject
+name: orders
+region: europe-west1
+database_version: MYSQL_8_0
+tier: db-g1-small
+network_config:
+  connectivity:
+    public_ipv4: true
+root_password:
+  password: {secretName: orders-sql, key: root}
+users:
+  app@10.0.0.%: {password: {secretName: orders-sql, key: app}}
+  admin: {type: BUILT_IN, password: {secretName: orders-sql, key: admin}}
+  dev@example.com: {type: CLOUD_IAM_USER}

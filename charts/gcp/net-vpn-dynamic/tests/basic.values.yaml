@@ -1,7 +1,14 @@
-# The module README's example, without its tunnel (which the chart
-# refuses): the gateway, its address and forwarding rules, and the router.
+# The module README's example: the gateway, its address and forwarding
+# rules, the router, and a tunnel with its router interface and BGP peer,
+# the shared secret a reference to a Kubernetes Secret (docs/secrets.md).
 project_id: my-project
 region: europe-west1
 network: projects/my-project/global/networks/my-network
 name: gateway-1
 router_config: {asn: 64514}
+tunnels:
+  remote-1:
+    bgp_peer: {address: 169.254.139.134, asn: 64513}
+    bgp_session_range: 169.254.139.133/30
+    peer_ip: 1.1.1.1
+    shared_secret: {secretName: gateway-1-vpn, key: remote-1}

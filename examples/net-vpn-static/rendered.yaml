@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "net-vpn-static-dev-vpn"
     app.kubernetes.io/name: net-vpn-static
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "address"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -26,7 +26,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "net-vpn-static-dev-vpn"
     app.kubernetes.io/name: net-vpn-static
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "esp"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -50,7 +50,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "net-vpn-static-dev-vpn"
     app.kubernetes.io/name: net-vpn-static
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "udp_500"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -75,7 +75,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "net-vpn-static-dev-vpn"
     app.kubernetes.io/name: net-vpn-static
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "udp_4500"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -100,7 +100,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "net-vpn-static-dev-vpn"
     app.kubernetes.io/name: net-vpn-static
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "gateway"
     cnrm.cloud.google.com/project-id: "my-project"

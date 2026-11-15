@@ -1,0 +1,15 @@
+# A self-managed certificate: the chain in PEM as a plain value (it is
+# public), the private key a reference to a Kubernetes Secret
+# (docs/secrets.md). The chain here is a placeholder: the render does not
+# read it.
+project_id: my-project
+certificates:
+  uploaded:
+    description: uploaded by the team
+    location: europe-west1
+    self_managed:
+      pem_certificate: |
+        -----BEGIN CERTIFICATE-----
+        placeholder
+        -----END CERTIFICATE-----
+      pem_private_key: {secretName: uploaded-tls, key: tls.key}

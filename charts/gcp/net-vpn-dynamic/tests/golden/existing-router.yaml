@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "existing-router"
     app.kubernetes.io/name: net-vpn-dynamic
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "address"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -25,7 +25,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "existing-router"
     app.kubernetes.io/name: net-vpn-dynamic
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "esp"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -49,7 +49,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "existing-router"
     app.kubernetes.io/name: net-vpn-dynamic
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "udp_500"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -74,7 +74,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "existing-router"
     app.kubernetes.io/name: net-vpn-dynamic
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "udp_4500"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -91,6 +91,102 @@ spec:
       name: existing-router
 ---
 # Source: net-vpn-dynamic/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterInterface
+metadata:
+  name: existing-router-interface-a
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing-router"
+    app.kubernetes.io/name: net-vpn-dynamic
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "router_interface:a"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "vpn-existing-a"
+  region: "europe-west1"
+  routerRef:
+    external: projects/my-project/regions/europe-west1/routers/existing-router
+  ipRange: "169.254.1.2/30"
+  vpnTunnelRef:
+    name: existing-router-tunnel-a
+---
+# Source: net-vpn-dynamic/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterInterface
+metadata:
+  name: existing-router-interface-b
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing-router"
+    app.kubernetes.io/name: net-vpn-dynamic
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "router_interface:b"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "vpn-existing-b"
+  region: "europe-west1"
+  routerRef:
+    external: projects/my-project/regions/europe-west1/routers/other-router
+  ipRange: "169.254.2.2/30"
+  vpnTunnelRef:
+    name: existing-router-tunnel-b
+---
+# Source: net-vpn-dynamic/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterPeer
+metadata:
+  name: existing-router-bgp-peer-a
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing-router"
+    app.kubernetes.io/name: net-vpn-dynamic
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "bgp_peer:a"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "vpn-existing-a"
+  region: "europe-west1"
+  routerRef: {"external":"existing-router"}
+  routerInterfaceRef:
+    name: existing-router-interface-a
+  peerIpAddress: "169.254.1.1"
+  peerAsn: 64513
+  advertisedRoutePriority: 200
+  advertiseMode: DEFAULT
+---
+# Source: net-vpn-dynamic/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterPeer
+metadata:
+  name: existing-router-bgp-peer-b
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing-router"
+    app.kubernetes.io/name: net-vpn-dynamic
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "bgp_peer:b"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "vpn-existing-b"
+  region: "europe-west1"
+  routerRef: {"external":"other-router"}
+  routerInterfaceRef:
+    name: existing-router-interface-b
+  peerIpAddress: "169.254.2.1"
+  peerAsn: 64513
+  advertisedRoutePriority: 1000
+  advertiseMode: CUSTOM
+  advertisedGroups: ["ALL_VPC_SUBNETS","ALL_PEER_VPC_SUBNETS"]
+  advertisedIpRanges:
+    - range: "10.0.0.0/8"
+      description: "corp"
+---
+# Source: net-vpn-dynamic/templates/main.yaml
 apiVersion: compute.gcp.hfl.dev/v1alpha1
 kind: ComputeRouterRoutePolicy
 metadata:
@@ -99,7 +195,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "existing-router"
     app.kubernetes.io/name: net-vpn-dynamic
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "route_policy:import"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -125,7 +221,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "existing-router"
     app.kubernetes.io/name: net-vpn-dynamic
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "gateway"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -134,3 +230,51 @@ spec:
   region: "europe-west1"
   networkRef:
     external: "projects/my-project/global/networks/my-network"
+---
+# Source: net-vpn-dynamic/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeVPNTunnel
+metadata:
+  name: existing-router-tunnel-a
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing-router"
+    app.kubernetes.io/name: net-vpn-dynamic
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "tunnel:a"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "vpn-existing-a"
+  region: "europe-west1"
+  targetVPNGatewayRef:
+    name: existing-router
+  peerIp: "1.1.1.1"
+  ikeVersion: 1
+  routerRef:
+    external: projects/my-project/regions/europe-west1/routers/existing-router
+  sharedSecret: {"valueFrom":{"secretKeyRef":{"key":"a","name":"vpn-existing"}}}
+---
+# Source: net-vpn-dynamic/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeVPNTunnel
+metadata:
+  name: existing-router-tunnel-b
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing-router"
+    app.kubernetes.io/name: net-vpn-dynamic
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "tunnel:b"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "vpn-existing-b"
+  region: "europe-west1"
+  targetVPNGatewayRef:
+    name: existing-router
+  peerIp: "1.1.1.2"
+  ikeVersion: 2
+  routerRef:
+    external: projects/my-project/regions/europe-west1/routers/other-router
+  sharedSecret: {"valueFrom":{"secretKeyRef":{"key":"b","name":"vpn-existing"}}}

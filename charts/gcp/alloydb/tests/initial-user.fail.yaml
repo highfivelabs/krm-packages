@@ -1,4 +1,4 @@
-# expect: alloydb: initial_user is not supported
+# expect: alloydb: initial_user.password takes a reference to a Kubernetes Secret, {secretName, key}, never the secret's value
 project_id: p
 cluster_name: db
 instance_name: db
