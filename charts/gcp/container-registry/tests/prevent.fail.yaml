@@ -1,0 +1,4 @@
+# expect: container-registry: deletion_policy PREVENT has no Config Connector equivalent
+project_id: p
+location: ""
+deletion_policy: PREVENT

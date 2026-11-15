@@ -1,0 +1,52 @@
+---
+# Source: container-registry/templates/main.yaml
+apiVersion: artifactregistry.cnrm.cloud.google.com/v1beta1
+kind: ArtifactRegistryRepository
+metadata:
+  name: full
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: container-registry
+    app.kubernetes.io/version: "0.1.0"
+    environment: "dev"
+    hfl.dev/team: "shop"
+    team: "shop"
+  annotations:
+    hfl.dev/id: "registry"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  resourceID: "eu.gcr.io"
+  location: "europe"
+  format: "DOCKER"
+  mode: "STANDARD_REPOSITORY"
+---
+# Source: container-registry/templates/iam.yaml
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPartialPolicy
+metadata:
+  name: full-iam
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: container-registry
+    app.kubernetes.io/version: "0.1.0"
+    environment: "dev"
+    hfl.dev/team: "shop"
+    team: "shop"
+  annotations:
+    hfl.dev/id: "iam"
+spec:
+  resourceRef:
+    apiVersion: artifactregistry.cnrm.cloud.google.com/v1beta1
+    kind: ArtifactRegistryRepository
+    name: full
+  bindings:
+    - role: "roles/artifactregistry.reader"
+      members:
+        - member: "group:devs@example.com"
+        - member: "user:foo@example.com"
+    - role: "roles/artifactregistry.writer"
+      members:
+        - member: "serviceAccount:ci@my-project.iam.gserviceaccount.com"
