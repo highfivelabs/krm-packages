@@ -1,0 +1,9 @@
+# expect: compute-vm: tpu_config is not supported: a TPU VM is TPUVirtualMachine or TPUQueuedResource
+project_id: my-project
+zone: europe-west8-b
+name: test
+network_interfaces:
+  - network: projects/my-project/global/networks/vpc
+    subnetwork: projects/my-project/regions/europe-west8/subnetworks/subnet
+tpu_config: {runtime_version: v2-alpha-tpuv5-lite}
+machine_type: ct5lp-hightpu-1t

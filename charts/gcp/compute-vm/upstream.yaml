@@ -1,0 +1,88 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Where this chart came from: the Terraform module it ports and the release
+# it was ported from. Machine-readable; `task upstream-check` keeps it equal
+# to upstream/modules.yaml and Chart.yaml. To take a newer release, see
+# UPSTREAM.md ("Moving the pins").
+module: gcp/compute-vm
+repo: https://github.com/GoogleCloudPlatform/cloud-foundation-fabric
+path: modules/compute-vm
+version: v60.0.0
+commit: f706bc3b6166787df01402f73a96f1de57097477
+license: Apache-2.0
+copyright: Google LLC
+module_url: https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/compute-vm
+registry_url: null
+synced: 2026-11-15
+# Module variables the chart keeps in values.yaml (so tfvars convert one to
+# one) but refuses when set, or accepts only in part. Read by `task
+# coverage`; `task coverage-verify` renders the chart to check that each one
+# is refused. kind: gap (no Config Connector kind or field), alpha (only a
+# v1alpha1 kind), not-ported (Config Connector has it, the chart does not
+# map it yet) or by-design (Bundt replaces it). partial: the variable is
+# accepted, the reason says what is refused.
+refused:
+  - variable: context
+    kind: by-design
+    reason: "Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs"
+  - variable: kms_autokeys
+    kind: gap
+    reason: "a key handle's key is known only after apply and neither ComputeInstance nor ComputeDisk can reference a handle (gap 8)"
+  - variable: tag_bindings
+    kind: gap
+    reason: "a VM's and its disks' tag bindings name their numeric IDs, known only after apply, and TagsLocationTagBinding cannot reference a ComputeInstance or ComputeDisk (gap 8)"
+  - variable: network_tag_bindings
+    kind: gap
+    reason: "a VM's tag binding names its numeric ID, known only after apply, and TagsLocationTagBinding cannot reference a ComputeInstance (gap 8)"
+  - variable: tpu_config
+    kind: alpha
+    reason: "TPUVirtualMachine and TPUQueuedResource are alpha in Config Connector v1.160.0 and not ported yet, even with allow_alpha"
+  - variable: create_template
+    kind: alpha
+    reason: "a global template is a ComputeInstanceTemplate; regional: true needs config-connector-extensions' ComputeRegionInstanceTemplate (v1alpha1), not ported yet, even with allow_alpha"
+    partial: true
+    fields: [regional]
+  - variable: encryption
+    kind: gap
+    reason: "kms_key_self_link is carried; disk_encryption_key_raw is refused: a raw key given here would be in the rendered manifest, and ComputeInstance and ComputeDisk take it from a Kubernetes Secret (valueFrom), which the chart does not take yet (the SECV question)"
+    partial: true
+    fields: [disk_encryption_key_raw]
+  - variable: group
+    kind: gap
+    reason: "named_ports makes an unmanaged ComputeInstanceGroup; membership (joining an existing group) is refused: ComputeInstanceGroup owns its group's whole instance list and there is no membership kind"
+    partial: true
+    fields: [membership]
+  - variable: lifecycle_config
+    kind: gap
+    reason: "key_revocation_action_type and graceful_shutdown are refused: ComputeInstance and ComputeInstanceTemplate have no such fields"
+    partial: true
+    fields: [key_revocation_action_type, graceful_shutdown]
+  - variable: machine_features_config
+    kind: gap
+    reason: "enable_turbo_mode, enable_uefi_networking and performance_monitoring_unit are refused: advancedMachineFeatures has no such fields"
+    partial: true
+    fields: [enable_turbo_mode, enable_uefi_networking, performance_monitoring_unit]
+  - variable: boot_disk
+    kind: gap
+    reason: "architecture and force_attach are refused (no such fields); the hyperdisk settings need use_independent_disk on an instance (a ComputeDisk takes provisioned_iops and provisioned_throughput, not storage_pool), and a template takes provisioned_iops only"
+    partial: true
+    fields: [architecture, force_attach, storage_pool]
+  - variable: attached_disks
+    kind: gap
+    reason: "force_attach (ComputeInstance's attachedDisk has no such field) and hyperdisk.storage_pool (ComputeDisk has none) are refused, and with create_template so are provisioned_throughput and snapshot_schedule"
+    partial: true
+    fields: [force_attach, storage_pool]
+  - variable: network_attached_interfaces
+    kind: gap
+    reason: "carried on a template (ComputeInstanceTemplate's networkAttachment); refused on an instance: ComputeInstance's networkInterface has no networkAttachment field"
+    partial: true
+  - variable: tag_bindings_immutable
+    kind: gap
+    reason: "carried on an instance (params and the boot disk's resourceManagerTags); refused with create_template: ComputeInstanceTemplate has no resourceManagerTags field"
+    partial: true
+  - variable: iap_tunnel_iam_bindings_additive
+    kind: alpha
+    reason: "each entry is config-connector-extensions' IAMMember, which is v1alpha1: needs allow_alpha: true"
+    partial: true
+    needs_allow_alpha: true

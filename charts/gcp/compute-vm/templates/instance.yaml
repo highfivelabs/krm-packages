@@ -1,0 +1,157 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/compute-vm/instance.tf
+(v60.0.0), Copyright 2026 Google LLC, Apache-2.0.
+
+google_compute_instance.default: one ComputeInstance, unless
+create_template is set.
+*/ -}}
+{{- $v := .Values }}
+{{- if not (include "computeVm.isTemplate" .) }}
+{{- $boot := $v.boot_disk | default dict }}
+{{- $ip := $boot.initialize_params }}
+{{- $src := $boot.source | default dict }}
+{{- $hd := dict }}{{ if kindIs "map" $ip }}{{ $hd = $ip.hyperdisk | default dict }}{{ end }}
+{{- $independent := kindIs "map" $boot.use_independent_disk }}
+{{- if not $independent }}
+{{- include "kcc.unsupported" (list $ "boot_disk.initialize_params.hyperdisk" (or (not (kindIs "invalid" $hd.provisioned_iops)) (not (kindIs "invalid" $hd.provisioned_throughput)) $hd.storage_pool) "ComputeInstance's bootDisk.initializeParams has no provisionedIops, provisionedThroughput or storagePool field: use boot_disk.use_independent_disk (a ComputeDisk takes the first two)") }}
+{{- end }}
+{{- $sa := include "computeVm.sa" . | fromJson }}
+{{- $kms := "" }}{{ with $v.encryption }}{{ $kms = .kms_key_self_link | default "" }}{{ end }}
+{{- $annotations := dict }}
+{{- if ne (toString ($v.lifecycle_config | default dict).allow_stopping_for_update) "false" }}
+{{- $_ := set $annotations "cnrm.cloud.google.com/allow-stopping-for-update" "true" }}
+{{- end }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeInstance
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list .Release.Name)) "id" "instance" "project" $v.project_id "abandon" (include "kcc.abandon" .) "annotations" $annotations) | nindent 2 }}
+spec:
+  resourceID: {{ include "computeVm.instanceName" . | quote }}
+  zone: {{ $v.zone | quote }}
+  machineType: {{ $v.machine_type | quote }}
+  {{- with $v.hostname }}
+  hostname: {{ . | quote }}
+  {{- end }}
+  {{- if not (kindIs "invalid" $v.description) }}
+  description: {{ $v.description | quote }}
+  {{- end }}
+  {{- if kindIs "slice" $v.tags }}{{ with $v.tags }}
+  tags: {{ toJson . }}
+  {{- end }}{{ end }}
+  {{- with $v.min_cpu_platform }}
+  minCpuPlatform: {{ . | quote }}
+  {{- end }}
+  canIpForward: {{ $v.can_ip_forward | default false }}
+  deletionProtection: {{ ($v.lifecycle_config | default dict).deletion_protection | default false }}
+  enableDisplay: {{ $v.enable_display | default false }}
+  {{- with $v.metadata }}
+  metadata:
+    {{- include "computeVm.metadata" . | trim | nindent 4 }}
+  {{- end }}
+  {{- with $v.metadata_startup_script }}
+  metadataStartupScript: {{ . | quote }}
+  {{- end }}
+  {{- with include "computeVm.resourcePolicies" . }}
+  resourcePolicies:
+    {{- . | trim | nindent 4 }}
+  {{- end }}
+  {{- with include "computeVm.advanced" . }}
+  advancedMachineFeatures:
+    {{- . | trim | nindent 4 }}
+  {{- end }}
+  {{- with fromJsonArray (include "computeVm.attachedOrder" .) }}
+  attachedDisk:
+    {{- range $k := . }}
+    {{- $d := index $v.attached_disks $k }}
+    {{- $dsrc := $d.source | default dict }}
+    - deviceName: {{ coalesce $d.device_name $d.name $k | quote }}
+      mode: {{ $d.mode | default "READ_WRITE" | quote }}
+      sourceDiskRef:
+        {{- if $dsrc.attach }}
+        external: {{ $dsrc.attach | quote }}
+        {{- else }}
+        name: {{ include "kcc.name" (list $.Release.Name "disk" $k) }}
+        {{- end }}
+    {{- end }}
+  {{- end }}
+  bootDisk:
+    autoDelete: {{ ternary false (ne (toString $boot.auto_delete) "false") $independent }}
+    {{- if $independent }}
+    sourceDiskRef:
+      name: {{ include "kcc.name" (list .Release.Name "boot") }}
+    {{- else if or $src.snapshot $src.attach }}
+    sourceDiskRef:
+      external: {{ coalesce $src.snapshot $src.attach | quote }}
+    {{- end }}
+    {{- with $kms }}
+    kmsKeyRef:
+      external: {{ . | quote }}
+    {{- end }}
+    {{- if and (kindIs "map" $ip) (not $independent) (not $src.attach) }}
+    initializeParams:
+      size: {{ int64 ($ip.size | default 10) }}
+      type: {{ $ip.type | default "pd-balanced" | quote }}
+      {{- with $src.image }}
+      sourceImageRef:
+        external: {{ . | quote }}
+      {{- end }}
+      {{- with $v.tag_bindings_immutable }}
+      resourceManagerTags: {{ toJson . }}
+      {{- end }}
+      {{- $labels := include "computeVm.cloudLabels" . | fromJson }}
+      {{- $_ := set $labels "disk_name" "boot" }}
+      {{- $_ := set $labels "disk_type" ($ip.type | default "pd-balanced") }}
+      labels:
+        {{- range $lk := keys $labels | sortAlpha }}
+        {{ $lk }}: {{ index $labels $lk | quote }}
+        {{- end }}
+    {{- end }}
+  {{- if not (kindIs "invalid" $v.confidential_compute) }}
+  confidentialInstanceConfig:
+    enableConfidentialCompute: true
+  {{- end }}
+  networkInterface:
+    {{- include "computeVm.networkInterfaces" . | trim | nindent 4 }}
+  {{- with $v.network_performance_tier }}
+  networkPerformanceConfig:
+    totalEgressBandwidthTier: {{ . | quote }}
+  {{- end }}
+  scheduling:
+    {{- include "computeVm.scheduling" (list . false) | trim | nindent 4 }}
+  {{- with $v.scratch_disks }}{{ if gt (int .count) 0 }}
+  scratchDisk:
+    {{- range until (int .count) }}
+    - interface: {{ $v.scratch_disks.interface | default "NVME" | quote }}
+      size: {{ int64 ($v.scratch_disks.size | default 375) }}
+    {{- end }}
+  {{- end }}{{ end }}
+  {{- if kindIs "map" $v.service_account }}
+  serviceAccount:
+    {{- if $sa.created }}
+    serviceAccountRef:
+      name: {{ include "kcc.name" (list .Release.Name "sa") }}
+    {{- else if $sa.email }}
+    serviceAccountRef:
+      external: {{ $sa.email | quote }}
+    {{- end }}
+    scopes: {{ toJson $sa.scopes }}
+  {{- end }}
+  {{- with $v.shielded_config }}
+  shieldedInstanceConfig:
+    enableSecureBoot: {{ ne (toString .enable_secure_boot) "false" }}
+    enableVtpm: {{ ne (toString .enable_vtpm) "false" }}
+    enableIntegrityMonitoring: {{ ne (toString .enable_integrity_monitoring) "false" }}
+  {{- end }}
+  {{- with $v.tag_bindings_immutable }}
+  params:
+    resourceManagerTags: {{ toJson . }}
+  {{- end }}
+  {{- with $v.gpu }}
+  guestAccelerator:
+    - type: {{ .type | quote }}
+      count: {{ int64 .count }}
+  {{- end }}
+{{- end }}

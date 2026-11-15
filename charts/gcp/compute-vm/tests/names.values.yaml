@@ -1,0 +1,16 @@
+# Names in full, labels and tags, as Bundt passes them from a team's naming
+# convention (docs/design.md, "Names, labels and tags").
+project_id: my-project
+zone: europe-west8-b
+name: test
+names: {instance: shop-dev-vm, group: shop-dev-vm-group, instanceSchedule: shop-dev-vm-sched, serviceAccount: shop-dev-vm-sa}
+labels: {hfl.dev/team: shop, hfl.dev/environment: dev}
+tags: {team: shop, environment: dev}
+network_interfaces:
+  - network: projects/my-project/global/networks/vpc
+    subnetwork: projects/my-project/regions/europe-west8/subnetworks/subnet
+service_account: {auto_create: true}
+group: {}
+instance_schedule: {vm_stop: "0 20 * * *"}
+attached_disks:
+  data: {}

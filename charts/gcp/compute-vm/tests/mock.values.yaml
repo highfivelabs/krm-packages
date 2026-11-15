@@ -1,0 +1,34 @@
+# Applied to the fake cloud by hack/mock-apply.sh, with the network and
+# subnet in tests/mock.needs.yaml: an instance with a created service
+# account, a zonal attached disk the chart makes, a snapshot schedule
+# attached to it, an instance schedule and an unmanaged group with a named
+# port. Not in it: instance IAM and IAP tunnel IAM (mockgcp has no IAM on
+# instances or IAP tunnels), a snapshot schedule on the boot disk (mockgcp
+# makes no boot disk with an instance), a regional disk and a template
+# (render tests only).
+project_id: mock-project
+zone: us-central1-a
+name: catalog-mock-vm
+network_interfaces:
+  - network: projects/mock-project/global/networks/catalog-mock-vm-net
+    subnetwork: projects/mock-project/regions/us-central1/subnetworks/catalog-mock-vm-sn
+boot_disk:
+  initialize_params: {size: 10, type: pd-standard}
+  source: {image: projects/debian-cloud/global/images/family/debian-12}
+attached_disks:
+  data:
+    initialize_params: {size: 10, type: pd-standard}
+    snapshot_schedule: [daily]
+snapshot_schedules:
+  daily:
+    schedule:
+      daily: {days_in_cycle: 1, start_time: "03:00"}
+    retention_policy: {max_retention_days: 3}
+instance_schedule:
+  vm_stop: "0 20 * * *"
+group:
+  named_ports: {http: 80}
+service_account:
+  auto_create: true
+metadata: {enable-oslogin: "TRUE"}
+tags: [ssh]

@@ -60,6 +60,7 @@ validate Config Connector's own kinds against its CRDs.
 | `networksecurity.gcp.hfl.dev_networksecurityauthzpolicies.yaml` | `NetworkSecurityAuthzPolicy` (`networksecurity.gcp.hfl.dev/v1beta1`; a target's resources by name, an agent gateway among them, and a `CUSTOM` action's authz extension) | `config/crds/` at `c2f0c7d295da38314aad8d8da674d283befcfb46` (2026-11-13, the pin) |
 | `compute.gcp.hfl.dev_computeautoscalers.yaml` | `ComputeAutoscaler` (`compute.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `35833eb8c7594675ea5237c11373665cd806658e` (2026-11-12) |
 | `compute.gcp.hfl.dev_computeregionperinstanceconfigs.yaml` | `ComputeRegionPerInstanceConfig` (`compute.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `35833eb8c7594675ea5237c11373665cd806658e` (2026-11-12) |
+| `compute.gcp.hfl.dev_computediskresourcepolicyattachments.yaml` | `ComputeDiskResourcePolicyAttachment` (`compute.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `384d07c01932defd747c17038a833ca3b591fa7a` (2026-11-14, the pin) |
 
 `Taskfile.yml`'s `CCE_COMMIT`, which the fake-cloud and live runs use, is
 `384d07c01932defd747c17038a833ca3b591fa7a` (2026-11-14), at or after every
