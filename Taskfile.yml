@@ -244,7 +244,8 @@ tasks:
       - '{{.OFFLOAD}} run --machine e2-standard-4 --hours 1 -- env FIXTURES={{.FIXTURES}} offramp/hack/validate.sh'
 
   offramp-live:
-    desc: "The offramp's live proof of one fixture (SHAPE=shared-vpc) in {{.LIVE_PROJECT}}, on an offload VM acting as cce-live-tests@: apply, scan, convert, adopt with Config Connector, check nothing changed, destroy"
+    desc: "The offramp's live proof of one fixture (SHAPE=shared-vpc) in {{.LIVE_PROJECT}}, on an offload VM acting as cce-live-tests@: apply, scan, convert, adopt with Config Connector and config-connector-extensions, check nothing changed, destroy"
+    deps: [cce-snapshot]
     preconditions:
       - sh: test -n "{{.LIVE_PROJECT}}"
         msg: 'set GCP_PROJECT (or HFL_GCP_TEST_PROJECT, the test estate''s project; see .env.example)'
@@ -255,7 +256,7 @@ tasks:
       - sh: '[ "{{.SHAPE}}" != folders ] && [ "{{.SHAPE}}" != platform-project ] || [ -n "{{.OFFRAMP_PARENT}}" ]'
         msg: 'set OFFRAMP_PARENT, OFFRAMP_ORG_ID and (platform-project) OFFRAMP_BILLING_ACCOUNT (see .env.example)'
     cmds:
-      - '{{.OFFLOAD}} run --sa {{.GCP_CCE_LIVE_SA}} --hours 3 -- env PROJECT={{.LIVE_PROJECT}} GCP_PROJECT={{.GCP_PROJECT}} HFL_GCP_TEST_PROJECT={{.HFL_GCP_TEST_PROJECT}} OFFLOAD_BUCKET={{.OFFLOAD_BUCKET}} FIXTURES={{.FIXTURES}} PARENT={{.OFFRAMP_PARENT}} ORG_ID={{.OFFRAMP_ORG_ID}} BILLING_ACCOUNT={{.OFFRAMP_BILLING_ACCOUNT}} ORG_POLICIES={{.OFFRAMP_ORG_POLICIES}} MEMBER={{.OFFRAMP_MEMBER}} FOLDER_FIREWALL={{.OFFRAMP_FOLDER_FIREWALL}} offramp/hack/live.sh {{.SHAPE}}'
+      - '{{.OFFLOAD}} run --sa {{.GCP_CCE_LIVE_SA}} --hours 3 -- env PROJECT={{.LIVE_PROJECT}} GCP_PROJECT={{.GCP_PROJECT}} HFL_GCP_TEST_PROJECT={{.HFL_GCP_TEST_PROJECT}} OFFLOAD_BUCKET={{.OFFLOAD_BUCKET}} CCE_TARBALL={{.CCE_TARBALL}} FIXTURES={{.FIXTURES}} PARENT={{.OFFRAMP_PARENT}} ORG_ID={{.OFFRAMP_ORG_ID}} BILLING_ACCOUNT={{.OFFRAMP_BILLING_ACCOUNT}} ORG_POLICIES={{.OFFRAMP_ORG_POLICIES}} MEMBER={{.OFFRAMP_MEMBER}} FOLDER_FIREWALL={{.OFFRAMP_FOLDER_FIREWALL}} offramp/hack/live.sh {{.SHAPE}}'
     vars:
       SHAPE: '{{.SHAPE | default "shared-vpc"}}'
       # The folders and platform-project shapes: the live-tests folder
