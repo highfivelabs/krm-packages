@@ -139,7 +139,8 @@ quotas: {}
 iam_deny_policies: {}
 # Cloud Asset Inventory feeds, {ID: {content_type, asset_types,
 # asset_names, feed_output_config: {pubsub_destination: {topic}},
-# condition}}; billing_project is not carried (README.md).
+# condition}}; only on a reused project with project_reuse.attributes.number
+# (README.md, "Config Connector bugs"); billing_project is not carried.
 asset_feeds: {}
 # The VPC Service Controls perimeter the project is in, {perimeter_name:
 # accessPolicies/N/servicePerimeters/NAME}; is_dry_run is refused. On a

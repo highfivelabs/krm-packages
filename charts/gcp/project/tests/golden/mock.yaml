@@ -62,30 +62,6 @@ spec:
     preferredValue: 8
   dimensions: {"region":"us-central1"}
 ---
-# Source: project/templates/asset-feeds.yaml
-apiVersion: asset.cnrm.cloud.google.com/v1beta1
-kind: AssetFeed
-metadata:
-  name: mock-feed-catalog-mock-feed
-  labels:
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: "mock"
-    app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
-    env: "test"
-  annotations:
-    hfl.dev/id: "asset-feed:catalog-mock-feed"
-spec:
-  resourceID: "catalog-mock-feed"
-  projectRef:
-    name: mock
-  contentType: "RESOURCE"
-  assetTypes: ["storage.googleapis.com/Bucket"]
-  feedOutputConfig:
-    pubsubDestination:
-      topicRef:
-        external: "projects/catalog-mock-prj/topics/assets"
----
 # Source: project/templates/bigquery-reservation.yaml
 apiVersion: bigqueryreservation.cnrm.cloud.google.com/v1beta1
 kind: BigQueryReservationReservation

@@ -30,7 +30,7 @@ refused:
     fields: [alert_strategy.notification_prompts, documentation.subject, documentation.links, conditions.condition_prometheus_query_language.disable_metric_validation]
   - variable: asset_feeds
     kind: gap
-    reason: "billing_project is not carried: AssetFeed has no field for it, and Config Connector bills the call to the project its controller is configured with"
+    reason: "only on an existing project (project_reuse with attributes.number): Config Connector's AssetFeed must name the project by its number; billing_project is not carried: AssetFeed has no field for it, and Config Connector bills the call to the project its controller is configured with"
     partial: true
   - variable: asset_search
     kind: by-design

@@ -17,32 +17,6 @@ spec:
   resourceRef:
     name: security
 ---
-# Source: project/templates/asset-feeds.yaml
-apiVersion: asset.cnrm.cloud.google.com/v1beta1
-kind: AssetFeed
-metadata:
-  name: security-feed-buckets
-  labels:
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: "security"
-    app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
-  annotations:
-    hfl.dev/id: "asset-feed:buckets"
-spec:
-  resourceID: "buckets"
-  projectRef:
-    name: security
-  contentType: "RESOURCE"
-  assetTypes: ["storage.googleapis.com/Bucket"]
-  feedOutputConfig:
-    pubsubDestination:
-      topicRef:
-        external: "projects/secure-project/topics/assets"
-  condition:
-    expression: "!temporal_asset.deleted"
-    title: "live"
----
 # Source: project/templates/deny-policies.yaml
 apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMDenyPolicy

@@ -1,6 +1,5 @@
-# 0.10.0: an IAM deny policy (config-connector-extensions' IAMDenyPolicy),
-# a Cloud Asset feed and the project in a VPC-SC perimeter, on a new
-# project (the perimeter resource refers to the Project object).
+# 0.10.0: an IAM deny policy (config-connector-extensions' IAMDenyPolicy)
+# and the project in a VPC-SC perimeter, on a new project (the perimeter resource refers to the Project object).
 name: secure-project
 parent: folders/1234567890
 iam_deny_policies:
@@ -14,11 +13,5 @@ iam_deny_policies:
         denial_condition:
           title: only prod
           expression: resource.matchTag('1234567890/env', 'prod')
-asset_feeds:
-  buckets:
-    content_type: RESOURCE
-    asset_types: [storage.googleapis.com/Bucket]
-    feed_output_config: {pubsub_destination: {topic: projects/secure-project/topics/assets}}
-    condition: {expression: "!temporal_asset.deleted", title: live}
 vpc_sc:
   perimeter_name: accessPolicies/1234/servicePerimeters/default
