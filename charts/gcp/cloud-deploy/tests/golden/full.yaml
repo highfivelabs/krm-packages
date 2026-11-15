@@ -1,0 +1,559 @@
+---
+# Source: cloud-deploy/templates/automation.yaml
+apiVersion: clouddeploy.gcp.hfl.dev/v1beta1
+kind: CloudDeployAutomation
+metadata:
+  name: full-automation-nightly
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "automation:nightly"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "nightly"
+  deliveryPipeline: "full"
+  serviceAccount: "deployer@my-project.iam.gserviceaccount.com"
+  suspended: false
+  rules:
+    - timedPromoteReleaseRule:
+        id: "timed-promote-release"
+        schedule: "0 2 * * *"
+        timeZone: "America/New_York"
+        destinationTargetId: "prod"
+  selector:
+    targets:
+      - id: "*"
+---
+# Source: cloud-deploy/templates/automation.yaml
+apiVersion: clouddeploy.gcp.hfl.dev/v1beta1
+kind: CloudDeployAutomation
+metadata:
+  name: full-automation-promote
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "automation:promote"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "promote"
+  deliveryPipeline: "full"
+  description: "Promote and advance."
+  annotations:
+    "owner": "platform"
+  labels:
+    "kind": "promote"
+  serviceAccount: "deployer@my-project.iam.gserviceaccount.com"
+  suspended: true
+  rules:
+    - advanceRolloutRule:
+        id: "advance-rollout"
+        sourcePhases:
+          - "canary-25"
+        wait: "600s"
+    - promoteReleaseRule:
+        id: "promote-release"
+        wait: "3600s"
+        destinationTargetId: "@next"
+        destinationPhase: "stable"
+  selector:
+    targets:
+      - id: "dev"
+      - id: "*"
+        labels:
+          "tier": "dev"
+---
+# Source: cloud-deploy/templates/automation.yaml
+apiVersion: clouddeploy.gcp.hfl.dev/v1beta1
+kind: CloudDeployAutomation
+metadata:
+  name: full-automation-repair
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "automation:repair"
+    cnrm.cloud.google.com/project-id: "other-project"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  projectRef:
+    external: "other-project"
+  location: "us-central1"
+  resourceID: "repair"
+  deliveryPipeline: "full"
+  serviceAccount: "deployer@my-project.iam.gserviceaccount.com"
+  suspended: false
+  rules:
+    - repairRolloutRule:
+        id: "repair-rollout"
+        phases:
+          - "stable"
+        jobs:
+          - "deploy"
+        repairPhases:
+          - retry:
+              attempts: 3
+              wait: "60s"
+              backoffMode: "BACKOFF_MODE_EXPONENTIAL"
+          - rollback:
+              destinationPhase: "stable"
+              disableRollbackIfRolloutPending: false
+  selector:
+    targets:
+      - id: "*"
+---
+# Source: cloud-deploy/templates/delivery-pipeline.yaml
+apiVersion: clouddeploy.cnrm.cloud.google.com/v1beta1
+kind: CloudDeployDeliveryPipeline
+metadata:
+  name: full
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "pipeline"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "full"
+  description: "Every variable."
+  annotations:
+    "owner": "platform"
+  suspended: false
+  serialPipeline:
+    stages:
+      - targetID: "dev"
+        profiles:
+          - "dev"
+        deployParameters:
+          -
+            values:
+              "replicas": "1"
+            matchTargetLabels:
+              "tier": "dev"
+        strategy:
+          canary:
+            canaryDeployment:
+              percentages:
+                - 10
+                - 50
+              verify: true
+              predeploy:
+                actions:
+                  - "lint"
+              postdeploy:
+                actions:
+                  - "smoke"
+            runtimeConfig:
+              cloudRun:
+                automaticTrafficControl: false
+                canaryRevisionTags:
+                  - "canary"
+                priorRevisionTags:
+                  - "prior"
+                stableRevisionTags:
+                  - "stable"
+      - targetID: "staging"
+        strategy:
+          canary:
+            customCanaryDeployment:
+              phaseConfigs:
+                - phaseID: "phase1"
+                  percentage: 25
+                  verify: false
+                  predeploy:
+                    actions:
+                      - "pre"
+                - phaseID: "phase2"
+                  percentage: 75
+                  verify: false
+                  postdeploy:
+                    actions:
+                      - "post"
+      - targetID: "prod"
+        strategy:
+          standard:
+            verify: false
+      - targetID: "legacy"
+        strategy:
+          standard:
+            verify: false
+---
+# Source: cloud-deploy/templates/deploy-policy.yaml
+apiVersion: clouddeploy.gcp.hfl.dev/v1beta1
+kind: CloudDeployDeployPolicy
+metadata:
+  name: full-policy-freeze
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "deploy_policy:freeze"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "freeze"
+  description: "Holiday freeze."
+  annotations:
+    "owner": "platform"
+  labels:
+    "kind": "freeze"
+  suspended: false
+  rules:
+    - rolloutRestriction:
+        id: "holidays"
+        timeWindows:
+          timeZone: "America/New_York"
+          oneTimeWindows:
+            - startDate:
+                day: 24
+                month: 12
+                year: 2026
+              startTime:
+                hours: 0
+              endDate:
+                day: 26
+                month: 12
+                year: 2026
+              endTime:
+                hours: 23
+                minutes: 59
+    - rolloutRestriction:
+        id: "weekends"
+        actions:
+          - "CREATE"
+        invokers:
+          - "USER"
+        timeWindows:
+          timeZone: "America/New_York"
+          weeklyWindows:
+            -
+              daysOfWeek:
+                - "SATURDAY"
+                - "SUNDAY"
+              startTime:
+                hours: 0
+                minutes: 0
+              endTime:
+                hours: 23
+                minutes: 59
+  selectors:
+    - deliveryPipeline:
+        id: "full"
+    - target:
+        id: "*"
+        labels:
+          "tier": "prod"
+---
+# Source: cloud-deploy/templates/target.yaml
+apiVersion: clouddeploy.gcp.hfl.dev/v1beta1
+kind: CloudDeployTarget
+metadata:
+  name: full-target-dev
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "target:dev"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "dev"
+  annotations:
+    "note": "dev"
+  labels:
+    "tier": "dev"
+  deployParameters:
+    "env": "dev"
+  requireApproval: false
+  executionConfigs:
+    -
+      usages:
+        - "RENDER"
+        - "DEPLOY"
+      executionTimeout: "3600s"
+  run:
+    location: "projects/run-project/locations/us-central1"
+---
+# Source: cloud-deploy/templates/target.yaml
+apiVersion: clouddeploy.gcp.hfl.dev/v1beta1
+kind: CloudDeployTarget
+metadata:
+  name: full-target-staging
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "target:staging"
+    cnrm.cloud.google.com/project-id: "staging-project"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  projectRef:
+    external: "staging-project"
+  location: "us-east1"
+  resourceID: "staging"
+  requireApproval: false
+---
+# Source: cloud-deploy/templates/target.yaml
+apiVersion: clouddeploy.gcp.hfl.dev/v1beta1
+kind: CloudDeployTarget
+metadata:
+  name: full-target-prod
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "target:prod"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "prod"
+  requireApproval: true
+  multiTarget:
+    targetIds:
+      - "prod-eu"
+      - "prod-us"
+---
+# Source: cloud-deploy/templates/target.yaml
+apiVersion: clouddeploy.gcp.hfl.dev/v1beta1
+kind: CloudDeployTarget
+metadata:
+  name: full-target-hidden
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "target:hidden"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "hidden"
+  requireApproval: false
+---
+# Source: cloud-deploy/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: full-iam-roles-clouddeploy-approver-b47e8f07
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "iam:roles/clouddeploy.approver"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/deliveryPipelines/full
+    kind: CloudDeployDeliveryPipeline
+  role: "roles/clouddeploy.approver"
+  members:
+    - "group:approvers@example.com"
+---
+# Source: cloud-deploy/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: full-iam-roles-clouddeploy-releaser-a14ac20d
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "iam:roles/clouddeploy.releaser"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/deliveryPipelines/full
+    kind: CloudDeployDeliveryPipeline
+  role: "roles/clouddeploy.releaser"
+  members:
+    - "group:releasers@example.com"
+---
+# Source: cloud-deploy/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: full-iam-binding-conditional
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "iam-binding:conditional"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/deliveryPipelines/full
+    kind: CloudDeployDeliveryPipeline
+  role: "roles/clouddeploy.viewer"
+  members:
+    - "user:ada@example.com"
+  condition:
+    title: "until-2030"
+    expression: "request.time < timestamp('2030-01-01T00:00:00Z')"
+---
+# Source: cloud-deploy/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: full-target-dev-iam-roles-clouddeploy-admin-affc7874
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "target:dev:iam:roles/clouddeploy.admin"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/targets/dev
+    kind: CloudDeployTarget
+  role: "roles/clouddeploy.admin"
+  members:
+    - "group:dev-admins@example.com"
+---
+# Source: cloud-deploy/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: full-target-dev-iam-roles-clouddeploy-operator-e791ab3e
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "target:dev:iam:roles/clouddeploy.operator"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/targets/dev
+    kind: CloudDeployTarget
+  role: "roles/clouddeploy.operator"
+  members:
+    - "group:dev-ops@example.com"
+---
+# Source: cloud-deploy/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: full-target-dev-iam-binding-viewers
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "target:dev:iam-binding:viewers"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/targets/dev
+    kind: CloudDeployTarget
+  role: "roles/clouddeploy.viewer"
+  members:
+    - "group:viewers@example.com"
+---
+# Source: cloud-deploy/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1alpha1
+kind: IAMMember
+metadata:
+  name: full-iam-member-bob
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "iam-member:bob"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/deliveryPipelines/full
+    kind: CloudDeployDeliveryPipeline
+  role: "roles/clouddeploy.viewer"
+  member: "user:bob@example.com"
+---
+# Source: cloud-deploy/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1alpha1
+kind: IAMMember
+metadata:
+  name: full-target-dev-iam-member-runner
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "target:dev:iam-member:runner"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/targets/dev
+    kind: CloudDeployTarget
+  role: "roles/clouddeploy.jobRunner"
+  member: "serviceAccount:runner@my-project.iam.gserviceaccount.com"

@@ -1,0 +1,89 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/cloud-deploy/deploy-policy.tf
+(v60.0.0), Copyright 2025 Google LLC, Apache-2.0.
+
+google_clouddeploy_deploy_policy.default: one CloudDeployDeployPolicy
+(config-connector-extensions, clouddeploy.gcp.hfl.dev/v1beta1) per key of
+deploy_policies: a rollout restriction per key of rollout_restrictions
+(actions, invokers, its time zone and its weekly and one-time windows), and
+the selectors (default every pipeline, "*").
+*/ -}}
+{{- $v := .Values }}
+{{- $abandon := include "kcc.abandon" . }}
+{{- range $key := keys ($v.deploy_policies | default dict) | sortAlpha }}
+{{- $p := index $v.deploy_policies $key }}
+{{- $project := $p.project_id | default $v.project_id }}
+---
+apiVersion: clouddeploy.gcp.hfl.dev/v1beta1
+kind: CloudDeployDeployPolicy
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "policy" $key)) "id" (printf "deploy_policy:%s" $key) "project" $project "abandon" $abandon) | nindent 2 }}
+spec:
+  projectRef:
+    external: {{ $project | quote }}
+  location: {{ $p.region | default $v.region | quote }}
+  resourceID: {{ include "kcc.cloudName" (list $ "deploy policy" $key 63 "letter") | quote }}
+  {{- with $p.description }}
+  description: {{ . | quote }}
+  {{- end }}
+  {{- with (include "cloudDeploy.strmap" (list "annotations" $p.annotations)) }}{{ . | nindent 2 }}{{ end }}
+  {{- with (include "cloudDeploy.strmap" (list "labels" $p.labels)) }}{{ . | nindent 2 }}{{ end }}
+  suspended: {{ $p.suspended | default false }}
+  rules:
+    {{- range $rid := keys ($p.rollout_restrictions | default dict) | sortAlpha }}
+    {{- $r := index $p.rollout_restrictions $rid }}
+    {{- $what := printf "deploy_policies.%s.rollout_restrictions.%s" $key $rid }}
+    {{- if not (or $r.weekly_windows $r.one_time_windows) }}
+    {{- fail (printf "%s: At least one window should be defined (weekly_windows or one_time_windows). (%s)" $.Chart.Name $what) }}
+    {{- end }}
+    {{- if not $r.time_zone }}
+    {{- fail (printf "%s: %s.time_zone is required: the API and CloudDeployDeployPolicy require a time zone for the windows" $.Chart.Name $what) }}
+    {{- end }}
+    - rolloutRestriction:
+        id: {{ $rid | quote }}
+        {{- with (include "cloudDeploy.strlist" (list "actions" $r.actions)) }}{{ . | nindent 8 }}{{ end }}
+        {{- with (include "cloudDeploy.strlist" (list "invokers" $r.invokers)) }}{{ . | nindent 8 }}{{ end }}
+        timeWindows:
+          timeZone: {{ $r.time_zone | quote }}
+          {{- with $r.weekly_windows }}
+          weeklyWindows:
+            {{- range $j, $w := . }}
+            - {{- with (include "cloudDeploy.strlist" (list "daysOfWeek" $w.days_of_week)) }}{{ . | nindent 14 }}{{ end }}
+              {{- with $w.start_time }}
+              startTime:
+                {{- include "cloudDeploy.time" (list $ (printf "%s.weekly_windows[%d].start_time" $what $j) .) | nindent 16 }}
+              {{- end }}
+              {{- with $w.end_time }}
+              endTime:
+                {{- include "cloudDeploy.time" (list $ (printf "%s.weekly_windows[%d].end_time" $what $j) .) | nindent 16 }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- with $r.one_time_windows }}
+          oneTimeWindows:
+            {{- range $j, $w := . }}
+            {{- $ow := printf "%s.one_time_windows[%d]" $what $j }}
+            {{- if not (and $w.start_date $w.start_time $w.end_date $w.end_time) }}
+            {{- fail (printf "%s: %s needs start_date, start_time, end_date and end_time: the API and CloudDeployDeployPolicy require all four" $.Chart.Name $ow) }}
+            {{- end }}
+            - startDate:
+                {{- include "cloudDeploy.date" (list $ (printf "%s.start_date" $ow) $w.start_date) | nindent 16 }}
+              startTime:
+                {{- include "cloudDeploy.time" (list $ (printf "%s.start_time" $ow) $w.start_time) | nindent 16 }}
+              endDate:
+                {{- include "cloudDeploy.date" (list $ (printf "%s.end_date" $ow) $w.end_date) | nindent 16 }}
+              endTime:
+                {{- include "cloudDeploy.time" (list $ (printf "%s.end_time" $ow) $w.end_time) | nindent 16 }}
+            {{- end }}
+          {{- end }}
+    {{- end }}
+  selectors:
+    {{- range $s := ($p.selectors | default (list (dict "id" "*" "type" "DELIVERY_PIPELINE"))) }}
+    {{- $type := upper ($s.type | default "DELIVERY_PIPELINE") }}
+    - {{ ternary "target" "deliveryPipeline" (eq $type "TARGET") }}:
+        id: {{ $s.id | default "*" | quote }}
+        {{- with (include "cloudDeploy.strmap" (list "labels" $s.labels)) }}{{ . | nindent 8 }}{{ end }}
+    {{- end }}
+{{- end }}

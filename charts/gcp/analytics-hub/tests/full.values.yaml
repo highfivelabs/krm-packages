@@ -1,0 +1,39 @@
+# Every variable.
+project_id: my-project
+region: us
+name: sales
+documentation: How to use the sales exchange.
+description: Sales data.
+primary_contact: https://example.com/contact
+allow_alpha: true
+deletion_policy: ABANDON
+iam:
+  roles/analyticshub.viewer: ["group:viewers@example.com"]
+iam_by_principals:
+  "group:admins@example.com": [roles/analyticshub.admin, roles/analyticshub.viewer]
+iam_bindings:
+  more-viewers:
+    role: roles/analyticshub.viewer
+    members: ["user:ada@example.com"]
+  publishers:
+    role: roles/analyticshub.publisher
+    members: ["group:publishers@example.com"]
+iam_bindings_additive:
+  bot:
+    role: roles/analyticshub.subscriber
+    member: "serviceAccount:bot@my-project.iam.gserviceaccount.com"
+listings:
+  orders:
+    bigquery_dataset: projects/my-project/datasets/orders
+    description: Orders by day.
+    documentation: Partitioned by day.
+    categories: [CATEGORY_COMMERCE, CATEGORY_FINANCIAL]
+    primary_contact: orders@example.com
+    request_access: https://example.com/request
+    data_provider: {name: Sales, primary_contact: sales@example.com}
+    publisher: {name: Example Inc}
+    restricted_export_config: {enabled: true, restrict_query_result: true}
+    iam:
+      roles/analyticshub.subscriber: ["group:partners@example.com"]
+  returns:
+    bigquery_dataset: projects/my-project/datasets/returns

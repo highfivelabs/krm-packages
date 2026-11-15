@@ -1,0 +1,21 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (see iam-service-account/package.yaml).
+# Outputs are fabric's declared outputs, selected (docs/design.md,
+# "Outputs"): connection_id, location and description from the rendered
+# connection, connection_config from the inputs (fabric reads it back from
+# the resource; the connection holds what the inputs set).
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: gcp-bigquery-connection
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [kcc]
+  outputs:
+    connection_id: resources.connection.spec.resourceID
+    location: resources.connection.spec.location
+    description: "has(resources.connection.spec.description) ? dyn(resources.connection.spec.description) : null"
+    connection_config: inputs.connection_config

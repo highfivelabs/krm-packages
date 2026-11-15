@@ -1,0 +1,28 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/cloud-deploy/iam.tf (v60.0.0),
+Copyright 2025 Google LLC, Apache-2.0.
+
+Config Connector's IAM kinds cannot reference a delivery pipeline or a
+target, so these are config-connector-extensions' (_iam.tpl), by the
+resources' full names, so they can be deleted after the pipeline's and
+targets' objects are gone:
+google_clouddeploy_delivery_pipeline_iam_binding.authoritative and
+.bindings, google_clouddeploy_delivery_pipeline_iam_member.bindings: on the
+pipeline, one IAMBinding (iam.gcp.hfl.dev/v1beta1) per role of iam merged
+with iam_by_principals, one per entry of iam_bindings (with its
+condition), one IAMMember (iam.gcp.hfl.dev/v1alpha1, so allow_alpha) per
+entry of iam_bindings_additive (with its condition).
+google_clouddeploy_target_iam_binding.authoritative and .bindings,
+google_clouddeploy_target_iam_member.bindings: the same from each target's
+own IAM variables, on that target (made here or not).
+*/ -}}
+{{- $v := .Values }}
+{{- $pipeline := printf "projects/%s/locations/%s/deliveryPipelines/%s" $v.project_id $v.region (include "cloudDeploy.pipeline" .) }}
+{{- include "cloudDeploy.iam" (dict "root" $ "ref" (dict "kind" "CloudDeployDeliveryPipeline" "external" $pipeline) "project" $v.project_id "v" $v "conditions" true) }}
+{{- range $i, $t := ($v.targets | default list) }}
+{{- $project := $t.project_id | default $v.project_id }}
+{{- $ref := dict "kind" "CloudDeployTarget" "external" (printf "projects/%s/locations/%s/targets/%s" $project ($t.region | default $v.region) (include "cloudDeploy.target" (list $ $t.name))) }}
+{{- include "cloudDeploy.iam" (dict "root" $ "ref" $ref "project" $project "v" $t "conditions" true "base" (printf "target-%s" $t.name) "idPrefix" (printf "target:%s:" $t.name) "what" (printf "targets[%d]." $i)) }}
+{{- end }}

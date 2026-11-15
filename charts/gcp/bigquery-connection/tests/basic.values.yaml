@@ -1,0 +1,16 @@
+# A Cloud SQL connection, as fabric's README shows one, with the credential
+# in a Kubernetes Secret instead of a username and password.
+project_id: my-project
+location: EU
+connection_id: my-connection
+friendly_name: My connection
+description: A Cloud SQL connection.
+connection_config:
+  cloud_sql:
+    instance_id: my-project:europe-west1:my-instance
+    database: my-database
+    type: POSTGRES
+    credential:
+      secret_name: my-connection-credential
+iam:
+  roles/bigquery.connectionUser: ["group:analysts@example.com"]

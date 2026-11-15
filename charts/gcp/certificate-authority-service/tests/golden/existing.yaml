@@ -1,0 +1,72 @@
+---
+# Source: certificate-authority-service/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: existing-iam-roles-privateca-certificaterequester-3119b410
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing"
+    app.kubernetes.io/name: certificate-authority-service
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam:roles/privateca.certificateRequester"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/another-project/locations/europe-west1/caPools/existing
+    kind: PrivateCACAPool
+  role: "roles/privateca.certificateRequester"
+  members:
+    - "group:requesters@example.com"
+---
+# Source: certificate-authority-service/templates/main.yaml
+apiVersion: privateca.cnrm.cloud.google.com/v1beta1
+kind: PrivateCACertificateAuthority
+metadata:
+  name: existing-ca-my-ca
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing"
+    app.kubernetes.io/name: certificate-authority-service
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "ca:my-ca"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "my-ca"
+  caPoolRef:
+    external: "projects/another-project/locations/europe-west1/caPools/existing"
+  type: "SELF_SIGNED"
+  lifetime: "315360000s"
+  keySpec:
+    algorithm: "RSA_PKCS1_2048_SHA256"
+  config:
+    subjectConfig:
+      subject:
+        commonName: "test.example.com"
+        organization: "Test Example"
+    x509Config:
+      caOptions:
+        isCa: true
+      keyUsage:
+        baseKeyUsage:
+          certSign: true
+          contentCommitment: false
+          crlSign: true
+          dataEncipherment: false
+          decipherOnly: false
+          digitalSignature: false
+          encipherOnly: false
+          keyAgreement: false
+          keyEncipherment: true
+        extendedKeyUsage:
+          clientAuth: false
+          codeSigning: false
+          emailProtection: false
+          ocspSigning: false
+          serverAuth: true
+          timeStamping: false

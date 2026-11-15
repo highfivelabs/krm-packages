@@ -951,15 +951,15 @@ gcp,binauthz,attestors_config,"map(object({iam, note_reference, pgp_public_keys,
 gcp,binauthz,cluster_admission_rules,"map(object({attestors, enforcement_mode, evaluation_mode}))",yes,,
 gcp,binauthz,default_admission_rule,"object({attestors, enforcement_mode, evaluation_mode})",yes,,
 gcp,binauthz,project_id,string,yes,,
-gcp,certificate-authority-service,ca_configs,"map(object({deletion_protection, gcs_bucket, ignore_active_certificates_on_deletion, is_ca, is_self_signed, key_spec, +8}))",no,,no-chart
-gcp,certificate-authority-service,ca_pool_config,"object({create_pool, use_pool})",no,,no-chart
-gcp,certificate-authority-service,context,"object({ca_ids, ca_pools, condition_vars, custom_roles, iam_principals, kms_keys, +3})",no,,no-chart
-gcp,certificate-authority-service,iam,map(list(string)),no,,no-chart
-gcp,certificate-authority-service,iam_bindings,"map(object({condition, members, role}))",no,,no-chart
-gcp,certificate-authority-service,iam_bindings_additive,"map(object({condition, member, role}))",no,,no-chart
-gcp,certificate-authority-service,iam_by_principals,map(list(string)),no,,no-chart
-gcp,certificate-authority-service,location,string,no,,no-chart
-gcp,certificate-authority-service,project_id,string,no,,no-chart
+gcp,certificate-authority-service,ca_configs,"map(object({deletion_protection, gcs_bucket, ignore_active_certificates_on_deletion, is_ca, is_self_signed, key_spec, +8}))",partial,"pem_ca_certificate and subordinate_config are refused: PrivateCACertificateAuthority has no pemCaCertificate or subordinateConfig field (a subordinate CA is made, and waits for activation, without them); deletion_protection, ignore_active_certificates_on_deletion and skip_grace_period are accepted and have no effect: they are Terraform's own delete options, and Config Connector has none",gap
+gcp,certificate-authority-service,ca_pool_config,"object({create_pool, use_pool})",partial,"create_pool.publishing_options.encoding_format DER is refused: PrivateCACAPool's publishingOptions has no encodingFormat, so the pool publishes PEM (the API's default)",gap
+gcp,certificate-authority-service,context,"object({ca_ids, ca_pools, condition_vars, custom_roles, iam_principals, kms_keys, +3})",no,Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs,by-design
+gcp,certificate-authority-service,iam,map(list(string)),yes,,
+gcp,certificate-authority-service,iam_bindings,"map(object({condition, members, role}))",yes,,
+gcp,certificate-authority-service,iam_bindings_additive,"map(object({condition, member, role}))",partial,config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true,alpha
+gcp,certificate-authority-service,iam_by_principals,map(list(string)),yes,,
+gcp,certificate-authority-service,location,string,yes,,
+gcp,certificate-authority-service,project_id,string,yes,,
 gcp,backup-dr,backup_plans,"map(object({backup_rules, description, resource_type}))",yes,,
 gcp,backup-dr,location,string,yes,,
 gcp,backup-dr,management_server_config,"object({name, network_config, type})",yes,,
@@ -967,20 +967,20 @@ gcp,backup-dr,name,string,yes,,
 gcp,backup-dr,project_id,string,yes,,
 gcp,backup-dr,vault_config,"object({access_restriction, allow_missing, annotations, backup_minimum_enforced_retention_duration, backup_retention_inheritance, description, +4})",partial,"accepted; backup_retention_inheritance, and force_update, ignore_backup_plan_references and allow_missing set to true, are refused: BackupDRBackupVault has no backupRetentionInheritance field, and Config Connector sends none of the three request flags",gap
 gcp,backup-dr,vault_reuse,object({vault_id}),yes,,
-gcp,cloud-deploy,annotations,map(string),no,,no-chart
-gcp,cloud-deploy,automations,"map(object({advance_rollout_rule, annotations, description, labels, project_id, promote_release_rule, +6}))",no,,no-chart
-gcp,cloud-deploy,deploy_policies,"map(object({annotations, description, labels, project_id, region, rollout_restrictions, +2}))",no,,no-chart
-gcp,cloud-deploy,description,string,no,,no-chart
-gcp,cloud-deploy,iam,map(list(string)),no,,no-chart
-gcp,cloud-deploy,iam_bindings,"map(object({condition, members, role}))",no,,no-chart
-gcp,cloud-deploy,iam_bindings_additive,"map(object({condition, member, role}))",no,,no-chart
-gcp,cloud-deploy,iam_by_principals,map(list(string)),no,,no-chart
-gcp,cloud-deploy,labels,map(string),no,,no-chart
-gcp,cloud-deploy,name,string,no,,no-chart
-gcp,cloud-deploy,project_id,string,no,,no-chart
-gcp,cloud-deploy,region,string,no,,no-chart
-gcp,cloud-deploy,suspended,bool,no,,no-chart
-gcp,cloud-deploy,targets,"list(object({annotations, cloud_run_configs, create_target, custom_canary_phase_configs, delivery_pipeline_deploy_parameters, deployment_percentages, +20}))",no,,no-chart
+gcp,cloud-deploy,annotations,map(string),yes,,
+gcp,cloud-deploy,automations,"map(object({advance_rollout_rule, annotations, description, labels, project_id, promote_release_rule, +6}))",partial,"an automation without service_account is refused: fabric then reads the project's Compute Engine default service account, whose email needs the project number, which a render does not have; set service_account",gap
+gcp,cloud-deploy,deploy_policies,"map(object({annotations, description, labels, project_id, region, rollout_restrictions, +2}))",yes,,
+gcp,cloud-deploy,description,string,yes,,
+gcp,cloud-deploy,iam,map(list(string)),yes,,
+gcp,cloud-deploy,iam_bindings,"map(object({condition, members, role}))",yes,,
+gcp,cloud-deploy,iam_bindings_additive,"map(object({condition, member, role}))",partial,config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true,alpha
+gcp,cloud-deploy,iam_by_principals,map(list(string)),yes,,
+gcp,cloud-deploy,labels,map(string),yes,,
+gcp,cloud-deploy,name,string,yes,,
+gcp,cloud-deploy,project_id,string,yes,,
+gcp,cloud-deploy,region,string,yes,,
+gcp,cloud-deploy,suspended,bool,yes,,
+gcp,cloud-deploy,targets,"list(object({annotations, cloud_run_configs, create_target, custom_canary_phase_configs, delivery_pipeline_deploy_parameters, deployment_percentages, +20}))",partial,"accepted; a target's iam_bindings_additive renders config-connector-extensions' IAMMember, which is v1alpha1: set allow_alpha: true",alpha
 gcp,cloud-build-v2-connection,annotations,map(string),yes,,
 gcp,cloud-build-v2-connection,connection_config,"object({bitbucket_cloud, bitbucket_data_center, github, github_enterprise, gitlab})",partial,"github_enterprise is refused: config-connector-extensions' CloudBuildConnection requires githubEnterpriseConfig.apiKey, which the module's variable has no field for",gap
 gcp,cloud-build-v2-connection,connection_create,bool,yes,,
@@ -1012,44 +1012,44 @@ gcp,source-repository,iam_by_principals,map(list(string)),yes,,
 gcp,source-repository,name,string,yes,,
 gcp,source-repository,project_id,string,yes,,
 gcp,source-repository,triggers,"map(object({filename, included_files, service_account, substitutions, template}))",partial,"CloudBuildTrigger's triggerTemplate has no projectId, so a trigger builds a repository of its own project only",gap
-gcp,bigquery-connection,connection_config,"object({aws, azure, cloud_resource, cloud_spanner, cloud_sql, spark})",no,,no-chart
-gcp,bigquery-connection,connection_id,string,no,,no-chart
-gcp,bigquery-connection,context,object({iam_principals}),no,,no-chart
-gcp,bigquery-connection,description,string,no,,no-chart
-gcp,bigquery-connection,encryption_key,string,no,,no-chart
-gcp,bigquery-connection,friendly_name,string,no,,no-chart
-gcp,bigquery-connection,iam,map(list(string)),no,,no-chart
-gcp,bigquery-connection,iam_bindings,"map(object({condition, members, role}))",no,,no-chart
-gcp,bigquery-connection,iam_bindings_additive,"map(object({condition, member, role}))",no,,no-chart
-gcp,bigquery-connection,iam_by_principals,map(list(string)),no,,no-chart
-gcp,bigquery-connection,location,string,no,,no-chart
-gcp,bigquery-connection,project_id,string,no,,no-chart
-gcp,analytics-hub,description,string,no,,no-chart
-gcp,analytics-hub,documentation,string,no,,no-chart
-gcp,analytics-hub,factories_config,object({listings}),no,,no-chart
-gcp,analytics-hub,iam,map(list(string)),no,,no-chart
-gcp,analytics-hub,iam_bindings,"map(object({members, role}))",no,,no-chart
-gcp,analytics-hub,iam_bindings_additive,"map(object({member, role}))",no,,no-chart
-gcp,analytics-hub,iam_by_principals,map(list(string)),no,,no-chart
-gcp,analytics-hub,icon,string,no,,no-chart
-gcp,analytics-hub,listings,"map(object({bigquery_dataset, categories, data_provider, description, documentation, iam, +5}))",no,,no-chart
-gcp,analytics-hub,name,string,no,,no-chart
-gcp,analytics-hub,prefix,string,no,,no-chart
-gcp,analytics-hub,primary_contact,string,no,,no-chart
-gcp,analytics-hub,project_id,string,no,,no-chart
-gcp,analytics-hub,region,string,no,,no-chart
+gcp,bigquery-connection,connection_config,"object({aws, azure, cloud_resource, cloud_spanner, cloud_sql, spark})",partial,"cloud_sql.credential's username and password are refused: they would be in the rendered manifest; BigQueryConnectionConnection takes them from a Kubernetes Secret (cloudSQL.credential.secretRef), which the chart takes as cloud_sql.credential.secret_name instead",gap
+gcp,bigquery-connection,connection_id,string,yes,,
+gcp,bigquery-connection,context,object({iam_principals}),no,Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs,by-design
+gcp,bigquery-connection,description,string,yes,,
+gcp,bigquery-connection,encryption_key,string,no,BigQueryConnectionConnection has no kmsKeyName field,gap
+gcp,bigquery-connection,friendly_name,string,yes,,
+gcp,bigquery-connection,iam,map(list(string)),yes,,
+gcp,bigquery-connection,iam_bindings,"map(object({condition, members, role}))",yes,,
+gcp,bigquery-connection,iam_bindings_additive,"map(object({condition, member, role}))",partial,config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true,alpha
+gcp,bigquery-connection,iam_by_principals,map(list(string)),yes,,
+gcp,bigquery-connection,location,string,yes,,
+gcp,bigquery-connection,project_id,string,yes,,
+gcp,analytics-hub,description,string,yes,,
+gcp,analytics-hub,documentation,string,yes,,
+gcp,analytics-hub,factories_config,object({listings}),no,"fabric reads listings from YAML files on disk; a component has no files, so its listings go in listings",by-design
+gcp,analytics-hub,iam,map(list(string)),yes,,
+gcp,analytics-hub,iam_bindings,"map(object({members, role}))",yes,,
+gcp,analytics-hub,iam_bindings_additive,"map(object({member, role}))",partial,config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true,alpha
+gcp,analytics-hub,iam_by_principals,map(list(string)),yes,,
+gcp,analytics-hub,icon,string,no,BigQueryAnalyticsHubDataExchange has no icon field,gap
+gcp,analytics-hub,listings,"map(object({bigquery_dataset, categories, data_provider, description, documentation, iam, +5}))",partial,icon is refused: BigQueryAnalyticsHubListing has no icon field,gap
+gcp,analytics-hub,name,string,yes,,
+gcp,analytics-hub,prefix,string,yes,,
+gcp,analytics-hub,primary_contact,string,yes,,
+gcp,analytics-hub,project_id,string,yes,,
+gcp,analytics-hub,region,string,yes,,
 gcp,biglake-catalog,databases,"map(object({hive_options, tables, type}))",yes,,
 gcp,biglake-catalog,location,string,yes,,
 gcp,biglake-catalog,name,string,yes,,
 gcp,biglake-catalog,project_id,string,yes,,
-gcp,dataform-repository,iam,map(list(string)),no,,no-chart
-gcp,dataform-repository,iam_bindings,"map(object({condition, members, role}))",no,,no-chart
-gcp,dataform-repository,iam_bindings_additive,"map(object({condition, member, role}))",no,,no-chart
-gcp,dataform-repository,name,string,no,,no-chart
-gcp,dataform-repository,project_id,string,no,,no-chart
-gcp,dataform-repository,region,string,no,,no-chart
-gcp,dataform-repository,remote_repository_settings,"object({branch, secret_name, secret_version, token, url})",no,,no-chart
-gcp,dataform-repository,service_account,string,no,,no-chart
+gcp,dataform-repository,iam,map(list(string)),yes,,
+gcp,dataform-repository,iam_bindings,"map(object({condition, members, role}))",yes,,
+gcp,dataform-repository,iam_bindings_additive,"map(object({condition, member, role}))",partial,config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true,alpha
+gcp,dataform-repository,name,string,yes,,
+gcp,dataform-repository,project_id,string,yes,,
+gcp,dataform-repository,region,string,yes,,
+gcp,dataform-repository,remote_repository_settings,"object({branch, secret_name, secret_version, token, url})",partial,token is refused: a token given here would be in the rendered manifest (fabric's module does not send it either); the repository reads its token from the Secret Manager secret version secret_version names,gap
+gcp,dataform-repository,service_account,string,yes,,
 gcp,dataproc,dataproc_config,"object({cluster_config, graceful_decommission_timeout, virtual_cluster_config})",partial,"DataprocCluster has no graceful decommission timeout (it is a parameter of the update call, not of the cluster)",gap
 gcp,dataproc,iam,map(list(string)),yes,,
 gcp,dataproc,iam_bindings,"map(object({condition, members, role}))",yes,,

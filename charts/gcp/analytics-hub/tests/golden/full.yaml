@@ -1,0 +1,194 @@
+---
+# Source: analytics-hub/templates/main.yaml
+apiVersion: bigqueryanalyticshub.cnrm.cloud.google.com/v1beta1
+kind: BigQueryAnalyticsHubDataExchange
+metadata:
+  name: full
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: analytics-hub
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "data_exchange"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  projectRef:
+    external: "my-project"
+  location: "us"
+  resourceID: "sales"
+  displayName: "sales"
+  description: "Sales data."
+  primaryContact: "https://example.com/contact"
+  documentation: "How to use the sales exchange."
+---
+# Source: analytics-hub/templates/main.yaml
+apiVersion: bigqueryanalyticshub.cnrm.cloud.google.com/v1beta1
+kind: BigQueryAnalyticsHubListing
+metadata:
+  name: full-listing-orders
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: analytics-hub
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "listing:orders"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  projectRef:
+    external: "my-project"
+  location: "us"
+  dataExchangeRef:
+    name: full
+  resourceID: "orders"
+  displayName: "orders"
+  description: "Orders by day."
+  primaryContact: "orders@example.com"
+  documentation: "Partitioned by day."
+  requestAccess: "https://example.com/request"
+  categories:
+    - "CATEGORY_COMMERCE"
+    - "CATEGORY_FINANCIAL"
+  source:
+    bigQueryDatasetSource:
+      datasetRef:
+        external: "projects/my-project/datasets/orders"
+      restrictedExportPolicy:
+        enabled: true
+        restrictQueryResult: true
+---
+# Source: analytics-hub/templates/main.yaml
+apiVersion: bigqueryanalyticshub.cnrm.cloud.google.com/v1beta1
+kind: BigQueryAnalyticsHubListing
+metadata:
+  name: full-listing-returns
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: analytics-hub
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "listing:returns"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  projectRef:
+    external: "my-project"
+  location: "us"
+  dataExchangeRef:
+    name: full
+  resourceID: "returns"
+  displayName: "returns"
+  source:
+    bigQueryDatasetSource:
+      datasetRef:
+        external: "projects/my-project/datasets/returns"
+---
+# Source: analytics-hub/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: full-iam-roles-analyticshub-admin-ae9f91ac
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: analytics-hub
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam:roles/analyticshub.admin"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/us/dataExchanges/sales
+    kind: BigQueryAnalyticsHubDataExchange
+  role: "roles/analyticshub.admin"
+  members:
+    - "group:admins@example.com"
+---
+# Source: analytics-hub/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: full-iam-roles-analyticshub-publisher-afa816db
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: analytics-hub
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam:roles/analyticshub.publisher"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/us/dataExchanges/sales
+    kind: BigQueryAnalyticsHubDataExchange
+  role: "roles/analyticshub.publisher"
+  members:
+    - "group:publishers@example.com"
+---
+# Source: analytics-hub/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: full-iam-roles-analyticshub-viewer-24c378c9
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: analytics-hub
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam:roles/analyticshub.viewer"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/us/dataExchanges/sales
+    kind: BigQueryAnalyticsHubDataExchange
+  role: "roles/analyticshub.viewer"
+  members:
+    - "group:admins@example.com"
+    - "group:viewers@example.com"
+    - "user:ada@example.com"
+---
+# Source: analytics-hub/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: full-listing-orders-iam-roles-analyticshub-subscriber-0458eade
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: analytics-hub
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "listing:orders:iam:roles/analyticshub.subscriber"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/us/dataExchanges/sales/listings/orders
+    kind: BigQueryAnalyticsHubListing
+  role: "roles/analyticshub.subscriber"
+  members:
+    - "group:partners@example.com"
+---
+# Source: analytics-hub/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1alpha1
+kind: IAMMember
+metadata:
+  name: full-iam-member-bot
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: analytics-hub
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam-member:bot"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/us/dataExchanges/sales
+    kind: BigQueryAnalyticsHubDataExchange
+  role: "roles/analyticshub.subscriber"
+  member: "serviceAccount:bot@my-project.iam.gserviceaccount.com"

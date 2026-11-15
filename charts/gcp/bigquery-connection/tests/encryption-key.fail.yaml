@@ -1,0 +1,6 @@
+# expect: bigquery-connection: encryption_key is not supported: BigQueryConnectionConnection has no kmsKeyName field
+project_id: my-project
+location: US
+connection_id: c
+connection_config: {cloud_resource: {}}
+encryption_key: projects/my-project/locations/us/keyRings/k/cryptoKeys/k

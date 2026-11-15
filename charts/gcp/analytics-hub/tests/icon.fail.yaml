@@ -1,0 +1,5 @@
+# expect: analytics-hub: icon is not supported: BigQueryAnalyticsHubDataExchange has no icon field
+project_id: my-project
+region: europe-west1
+name: x
+icon: aWNvbg==

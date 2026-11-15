@@ -1,0 +1,5 @@
+# expect: cloud-deploy: pipeline name "shop-dev-
+project_id: my-project
+region: europe-west1
+namePrefix: shop-dev
+name: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

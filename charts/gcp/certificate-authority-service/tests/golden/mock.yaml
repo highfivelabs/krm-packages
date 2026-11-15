@@ -1,0 +1,95 @@
+---
+# Source: certificate-authority-service/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: mock-iam-roles-privateca-certificaterequester-b43d9143
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: certificate-authority-service
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "iam:roles/privateca.certificateRequester"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  resourceRef:
+    external: projects/mock-project/locations/us-central1/caPools/catalog-mock-pool
+    kind: PrivateCACAPool
+  role: "roles/privateca.certificateRequester"
+  members:
+    - "group:requesters@example.com"
+---
+# Source: certificate-authority-service/templates/main.yaml
+apiVersion: privateca.cnrm.cloud.google.com/v1beta1
+kind: PrivateCACAPool
+metadata:
+  name: mock
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: certificate-authority-service
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "ca_pool"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  projectRef:
+    external: "mock-project"
+  location: "us-central1"
+  resourceID: "catalog-mock-pool"
+  tier: "DEVOPS"
+---
+# Source: certificate-authority-service/templates/main.yaml
+apiVersion: privateca.cnrm.cloud.google.com/v1beta1
+kind: PrivateCACertificateAuthority
+metadata:
+  name: mock-ca-catalog-mock-root
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: certificate-authority-service
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "ca:catalog-mock-root"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  projectRef:
+    external: "mock-project"
+  location: "us-central1"
+  resourceID: "catalog-mock-root"
+  caPoolRef:
+    name: mock
+  type: "SELF_SIGNED"
+  lifetime: "315360000s"
+  keySpec:
+    algorithm: "RSA_PKCS1_2048_SHA256"
+  config:
+    subjectConfig:
+      subject:
+        commonName: "test.example.com"
+        organization: "Test Example"
+    x509Config:
+      caOptions:
+        isCa: true
+      keyUsage:
+        baseKeyUsage:
+          certSign: true
+          contentCommitment: false
+          crlSign: true
+          dataEncipherment: false
+          decipherOnly: false
+          digitalSignature: false
+          encipherOnly: false
+          keyAgreement: false
+          keyEncipherment: true
+        extendedKeyUsage:
+          clientAuth: false
+          codeSigning: false
+          emailProtection: false
+          ocspSigning: false
+          serverAuth: true
+          timeStamping: false

@@ -1,0 +1,6 @@
+# expect: bigquery-connection: context is not supported
+project_id: my-project
+location: US
+connection_id: c
+connection_config: {cloud_resource: {}}
+context: {iam_principals: {a: b}}

@@ -1,0 +1,5 @@
+# expect: names: Additional property ca is not allowed
+project_id: my-project
+location: europe-west1
+ca_pool_config: {create_pool: {name: p}}
+names: {ca: x}

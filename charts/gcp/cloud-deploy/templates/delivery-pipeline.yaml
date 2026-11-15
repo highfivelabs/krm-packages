@@ -1,0 +1,110 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/cloud-deploy/delivery-pipeline.tf
+(v60.0.0), Copyright 2025 Google LLC, Apache-2.0.
+
+google_clouddeploy_delivery_pipeline.default: one
+CloudDeployDeliveryPipeline (Config Connector, v1beta1), a serial pipeline
+with a stage per target not excluded from it, in the list's order: its
+profiles and deploy parameters, and a STANDARD strategy (verify, pre- and
+post-deploy actions) or a CANARY one (the deployment percentages, or the
+custom canary phases; Cloud Run's runtime configuration). The pipeline's
+labels are the chart's labels and tags (fabric's labels variable).
+*/ -}}
+{{- $v := .Values }}
+{{- include "kcc.names" (list $ (list "pipeline")) }}
+{{- $abandon := include "kcc.abandon" . }}
+---
+apiVersion: clouddeploy.cnrm.cloud.google.com/v1beta1
+kind: CloudDeployDeliveryPipeline
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" .Release.Name "id" "pipeline" "project" $v.project_id "abandon" $abandon) | nindent 2 }}
+spec:
+  projectRef:
+    external: {{ $v.project_id | quote }}
+  location: {{ $v.region | quote }}
+  resourceID: {{ include "cloudDeploy.pipeline" . | quote }}
+  {{- with $v.description }}
+  description: {{ . | quote }}
+  {{- end }}
+  {{- with (include "cloudDeploy.strmap" (list "annotations" $v.annotations)) }}{{ . | nindent 2 }}{{ end }}
+  suspended: {{ $v.suspended | default false }}
+  serialPipeline:
+    stages:
+    {{- range $i, $t := ($v.targets | default list) }}
+    {{- if not $t.exclude_from_pipeline }}
+    {{- $strategy := upper ($t.strategy | default "STANDARD") }}
+      - targetID: {{ include "cloudDeploy.target" (list $ $t.name) | quote }}
+        {{- with (include "cloudDeploy.strlist" (list "profiles" $t.profiles)) }}{{ . | nindent 8 }}{{ end }}
+        {{- with $t.delivery_pipeline_deploy_parameters }}
+        deployParameters:
+          {{- range $dp := . }}
+          - {{- with (include "cloudDeploy.strmap" (list "values" $dp.values)) }}{{ . | nindent 12 }}{{ end }}
+            {{- with (include "cloudDeploy.strmap" (list "matchTargetLabels" $dp.matching_target_labels)) }}{{ . | nindent 12 }}{{ end }}
+          {{- end }}
+        {{- end }}
+        strategy:
+          {{- if eq $strategy "CANARY" }}
+          {{- $pcts := $t.deployment_percentages | default (list 10) }}
+          {{- range $j, $p := $pcts }}
+          {{- if or (lt (int $p) 0) (gt (int $p) 99) (and (gt $j 0) (le (int $p) (int (index $pcts (sub $j 1))))) }}
+          {{- fail (printf "%s: For canary strategy, deployment percentages must be in ascending order and each percentage must be between 0 and 99. (targets[%d])" $.Chart.Name $i) }}
+          {{- end }}
+          {{- end }}
+          canary:
+            {{- if $t.custom_canary_phase_configs }}
+            customCanaryDeployment:
+              phaseConfigs:
+                {{- range $pid := keys $t.custom_canary_phase_configs | sortAlpha }}
+                {{- $pc := index $t.custom_canary_phase_configs $pid }}
+                - phaseID: {{ $pid | quote }}
+                  percentage: {{ include "cloudDeploy.int" (list $ (printf "targets[%d].custom_canary_phase_configs.%s.deployment_percentage" $i $pid) $pc.deployment_percentage) }}
+                  verify: {{ $t.verify | default false }}
+                  {{- with $pc.predeploy_actions }}
+                  predeploy:
+                    {{- with (include "cloudDeploy.strlist" (list "actions" .)) }}{{ . | nindent 20 }}{{ end }}
+                  {{- end }}
+                  {{- with $pc.postdeploy_actions }}
+                  postdeploy:
+                    {{- with (include "cloudDeploy.strlist" (list "actions" .)) }}{{ . | nindent 20 }}{{ end }}
+                  {{- end }}
+                {{- end }}
+            {{- else }}
+            canaryDeployment:
+              percentages:
+                {{- range $pcts }}
+                - {{ int . }}
+                {{- end }}
+              verify: {{ $t.verify | default false }}
+              {{- with $t.predeploy_actions }}
+              predeploy:
+                {{- with (include "cloudDeploy.strlist" (list "actions" .)) }}{{ . | nindent 16 }}{{ end }}
+              {{- end }}
+              {{- with $t.postdeploy_actions }}
+              postdeploy:
+                {{- with (include "cloudDeploy.strlist" (list "actions" .)) }}{{ . | nindent 16 }}{{ end }}
+              {{- end }}
+            {{- end }}
+            {{- with $t.cloud_run_configs }}
+            runtimeConfig:
+              cloudRun:
+                automaticTrafficControl: {{ or (not (kindIs "bool" .automatic_traffic_control)) .automatic_traffic_control }}
+                {{- with (include "cloudDeploy.strlist" (list "canaryRevisionTags" .canary_revision_tags)) }}{{ . | nindent 16 }}{{ end }}
+                {{- with (include "cloudDeploy.strlist" (list "priorRevisionTags" .prior_revision_tags)) }}{{ . | nindent 16 }}{{ end }}
+                {{- with (include "cloudDeploy.strlist" (list "stableRevisionTags" .stable_revision_tags)) }}{{ . | nindent 16 }}{{ end }}
+            {{- end }}
+          {{- else }}
+          standard:
+            verify: {{ $t.verify | default false }}
+            {{- with $t.predeploy_actions }}
+            predeploy:
+              {{- with (include "cloudDeploy.strlist" (list "actions" .)) }}{{ . | nindent 14 }}{{ end }}
+            {{- end }}
+            {{- with $t.postdeploy_actions }}
+            postdeploy:
+              {{- with (include "cloudDeploy.strlist" (list "actions" .)) }}{{ . | nindent 14 }}{{ end }}
+            {{- end }}
+          {{- end }}
+    {{- end }}
+    {{- end }}
