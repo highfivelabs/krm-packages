@@ -138,6 +138,7 @@ with every other module the catalog tracks. To take a newer release, see
 example "Simple example"), `psa` ("Looker Core private instance with
 PSA"), `psc` ("Looker Core with PSC", with an egress service attachment),
 `full` ("Looker Core full example", with every other variable set),
+`maintenance-defaults` (an empty maintenance window: Sunday 23:00),
 `names` and `mock`, each validated against config-connector-extensions'
 CRD (`crds/config-connector-extensions`), and the refusals in
 `tests/*.fail.yaml`, among them the secret as a string

@@ -122,9 +122,10 @@ spec:
   encryptionConfig:
     kmsKeyName: {{ .kms_key_name | quote }}
   {{- end }}
-  {{- with $mw }}
+  {{- if not (kindIs "invalid" $mw) }}
+  {{- /* An empty window is fabric's defaults, Sunday 23:00. */}}
   maintenanceWindow:
-    dayOfWeek: {{ .day | default "SUNDAY" | quote }}
+    dayOfWeek: {{ $mw.day | default "SUNDAY" | quote }}
     startTime:
-      {{- include "lookerCore.time" .start_time | nindent 6 }}
+      {{- include "lookerCore.time" $mw.start_time | nindent 6 }}
   {{- end }}
