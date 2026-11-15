@@ -21,7 +21,9 @@ data: {secretName: appgw-tls, key: pfx}
 | `key` | the key in that Secret's `data` that holds the value |
 
 The chart renders it as the controller's own secret reference: Azure
-Service Operator's `SecretReference` (`{name, key}`) on Azure. The
+Service Operator's `SecretReference` (`{name, key}`) on Azure, Config
+Connector's `{valueFrom: {secretKeyRef: {name, key}}}` on Google Cloud
+(`kcc.secretRef` in `lib/_kcc.tpl`). The
 controller reads the Secret when it reconciles and sends the value to the
 cloud; the value is never in the chart's values, the rendered objects or
 the component's inputs. A string where a reference is expected (the secret
@@ -132,6 +134,12 @@ elsewhere, or a gateway without an identity.
 | `avm-res-containerservice-managedcluster` (0.3.0) | `windows_profile_password` (with its `_version`), `aad_profile.server_app_secret`, `service_principal_profile.secret` | `ManagedCluster` `windowsProfile.adminPassword`, `aadProfile.serverAppSecret`, `servicePrincipalProfile.secret` |
 | `avm-res-dbforpostgresql-flexibleserver` (0.2.0) | `administrator_password`, or `administrator_password_wo` with its `_version` | `FlexibleServer` `administratorLoginPassword` |
 | `avm-res-sql-server` (0.4.0) | `administrator_login_password`, or `administrator_login_password_wo` with its `_version` | `Server` `administratorLoginPassword` |
+| `cloudsql-instance` (0.2.0) | `root_password.password` | `SQLInstance` `rootPassword` (SQL Server needs one) |
+| | `users[].password` (a `BUILT_IN` user's, required for one) | `SQLUser` `password` |
+| `alloydb` (0.2.0) | `initial_user.password` | `AlloyDBCluster` `initialUser.password` |
+| | `users[].password` (an `ALLOYDB_BUILT_IN` user's, required for one) | `AlloyDBUser` `password` |
+| `net-vpn-ha`, `net-vpn-dynamic`, `net-vpn-static`, `net-ipsec-over-interconnect` (0.2.0) | `tunnels[].shared_secret` (required) | `ComputeVPNTunnel` `sharedSecret` |
+| `certificate-manager` (0.2.0) | `certificates[].self_managed.pem_private_key` (`pem_certificate`, public, stays a plain value) | `CertificateManagerCertificate` `selfManaged.pemPrivateKey` |
 
 A module's `*_version` beside a write-only secret is required with it, as
 in the module, and does nothing: the controller sends the whole body on
@@ -148,7 +156,10 @@ Not this pattern: the Log Analytics workspace the environment module reads
 its customer ID and shared key from (`log_analytics_workspace`: a lookup
 in Azure, which a render cannot make; give the customer ID and a
 reference to the key instead), a value the module generates (`generate_admin_password_or_ssh_key`,
-`generate_administrator_login_password`: the catalog never generates
+`generate_administrator_login_password`, and on Google Cloud
+`cloudsql-instance`'s `root_password.random_password`, a built-in Cloud
+SQL or AlloyDB user without a password, a VPN tunnel without a
+`shared_secret`, where fabric would generate one: the catalog never generates
 secrets, nor writes one to Key Vault, as
 `account_credentials.key_vault_configuration` and
 `administrator_login_password_key_vault_configuration` would), a password Azure returns once (a storage local user's SSH password, a registry token's
@@ -166,5 +177,6 @@ No key material is committed. A test case that needs a Secret names it in
 its values file, `# secret: NAME KIND`, and `hack/test-secret.sh` makes
 it in the test's namespace before the apply, from material generated then
 (a self-signed certificate as a password-protected PFX, or random bytes),
-and deletes it afterwards. The fake-cloud run (`hack/azure-mock.sh`) and
-the live run (`hack/azure-live.sh`) both call it.
+and deletes it afterwards. The fake-cloud runs (`hack/azure-mock.sh`,
+`hack/mock-apply.sh` for Google Cloud) and
+the live run (`hack/azure-live.sh`) call it.

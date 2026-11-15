@@ -1,0 +1,106 @@
+---
+# Source: compute-vm/templates/template.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeInstanceTemplate
+metadata:
+  name: template-template-93b735f2
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "template"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "template"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "shop-dev-web-93b735f2"
+  region: "europe-west8"
+  machineType: "e2-micro"
+  description: "Managed by the compute-vm Terraform module."
+  tags: ["http-server"]
+  canIpForward: false
+  metadata:
+    - key: "startup-script"
+      value: "echo hi"
+  resourcePolicies:
+    - name: template-schedule
+  disk:
+    - boot: true
+      autoDelete: true
+      diskSizeGb: 20
+      diskType: "hyperdisk-balanced"
+      sourceImageRef:
+        external: "debian-cloud/debian-13"
+      provisionedIops: 3000
+      diskEncryptionKey:
+        kmsKeyRef:
+          external: "projects/my-project/locations/europe-west8/keyRings/kr/cryptoKeys/k"
+    - type: PERSISTENT
+      deviceName: "data"
+      mode: "READ_WRITE"
+      autoDelete: true
+      diskName: "data"
+      diskType: "pd-balanced"
+      diskSizeGb: 10
+      sourceImageRef:
+        external: "projects/debian-cloud/global/images/family/debian-12"
+      diskEncryptionKey:
+        kmsKeyRef:
+          external: "projects/my-project/locations/europe-west8/keyRings/kr/cryptoKeys/k"
+    - type: PERSISTENT
+      deviceName: "ro"
+      mode: "READ_ONLY"
+      sourceDiskRef:
+        external: "projects/my-project/zones/europe-west8-b/disks/shared"
+      diskEncryptionKey:
+        kmsKeyRef:
+          external: "projects/my-project/locations/europe-west8/keyRings/kr/cryptoKeys/k"
+    - type: SCRATCH
+      autoDelete: true
+      diskSizeGb: 375
+      diskType: local-ssd
+      interface: "NVME"
+  networkInterface:
+    - networkRef:
+        external: "projects/my-project/global/networks/vpc"
+      subnetworkRef:
+        external: "projects/my-project/regions/europe-west8/subnetworks/subnet"
+      accessConfig:
+        - {}
+    - networkAttachment: "projects/my-project/regions/europe-west8/networkAttachments/att"
+  scheduling:
+    automaticRestart: false
+    instanceTerminationAction: "DELETE"
+    onHostMaintenance: "TERMINATE"
+    preemptible: true
+    provisioningModel: "SPOT"
+    localSsdRecoveryTimeout:
+      - seconds: 600
+  serviceAccount:
+    serviceAccountRef:
+      external: "vm-sa@my-project.iam.gserviceaccount.com"
+    scopes: ["https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+---
+# Source: compute-vm/templates/resource-policies.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeResourcePolicy
+metadata:
+  name: template-schedule
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "template"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "instance_schedule"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "test-template"
+  region: "europe-west8"
+  description: "Schedule policy for test-template."
+  instanceSchedulePolicy:
+    timeZone: "UTC"
+    vmStopSchedule:
+      schedule: "0 20 * * *"

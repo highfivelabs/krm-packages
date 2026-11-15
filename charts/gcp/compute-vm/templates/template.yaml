@@ -1,0 +1,171 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/compute-vm/template.tf
+(v60.0.0), Copyright 2026 Google LLC, Apache-2.0.
+
+google_compute_instance_template.default: one ComputeInstanceTemplate,
+when create_template is set (regional is refused, main.yaml). fabric names
+it with name_prefix "<name>-" and create_before_destroy, so a change makes a
+new template under a new name; an instance template cannot be changed in
+place. The chart does the same deterministically: the template's name, and
+its object's, end with 8 hex characters of the sha256 of its spec, so a
+changed spec is a new object and Bundt prunes the old one (README.md,
+"Templates").
+*/ -}}
+{{- define "computeVm.templateSpec" -}}
+{{- $v := .Values -}}
+{{- $boot := $v.boot_disk | default dict -}}
+{{- $ip := $boot.initialize_params | default dict -}}
+{{- $bhd := $ip.hyperdisk | default dict -}}
+{{- $kms := "" }}{{ with $v.encryption }}{{ $kms = .kms_key_self_link | default "" }}{{ end -}}
+{{- $sa := include "computeVm.sa" . | fromJson -}}
+region: {{ include "computeVm.region" . | quote }}
+machineType: {{ $v.machine_type | quote }}
+{{- if not (kindIs "invalid" $v.description) }}
+description: {{ $v.description | quote }}
+{{- end }}
+{{- if kindIs "slice" $v.tags }}{{ with $v.tags }}
+tags: {{ toJson . }}
+{{- end }}{{ end }}
+{{- with $v.min_cpu_platform }}
+minCpuPlatform: {{ . | quote }}
+{{- end }}
+canIpForward: {{ $v.can_ip_forward | default false }}
+{{- with $v.metadata }}
+metadata:
+  {{- include "computeVm.metadata" . | trim | nindent 2 }}
+{{- end }}
+{{- with $v.metadata_startup_script }}
+metadataStartupScript: {{ . | quote }}
+{{- end }}
+{{- with include "computeVm.resourcePolicies" . }}
+resourcePolicies:
+  {{- . | trim | nindent 2 }}
+{{- end }}
+{{- with include "computeVm.advanced" . }}
+advancedMachineFeatures:
+  {{- . | trim | nindent 2 }}
+{{- end }}
+disk:
+  - boot: true
+    autoDelete: {{ ne (toString $boot.auto_delete) "false" }}
+    {{- if kindIs "map" $boot.initialize_params }}
+    diskSizeGb: {{ int64 ($ip.size | default 10) }}
+    diskType: {{ $ip.type | default "pd-balanced" | quote }}
+    {{- end }}
+    {{- with ($boot.source | default dict).image }}
+    sourceImageRef:
+      external: {{ . | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" $bhd.provisioned_iops) }}
+    provisionedIops: {{ int64 $bhd.provisioned_iops }}
+    {{- end }}
+    {{- with $kms }}
+    diskEncryptionKey:
+      kmsKeyRef:
+        external: {{ . | quote }}
+    {{- end }}
+  {{- range $k := fromJsonArray (include "computeVm.attachedOrder" .) }}
+  {{- $d := index $v.attached_disks $k }}
+  {{- $src := $d.source | default dict }}
+  {{- $dip := $d.initialize_params | default dict }}
+  {{- $hd := $dip.hyperdisk | default dict }}
+  {{- $mode := $d.mode | default "READ_WRITE" }}
+  - type: PERSISTENT
+    deviceName: {{ coalesce $d.device_name $d.name $k | quote }}
+    mode: {{ $mode | quote }}
+    {{- if ne $mode "READ_ONLY" }}
+    autoDelete: {{ ne (toString $d.auto_delete) "false" }}
+    {{- end }}
+    {{- if $src.attach }}
+    sourceDiskRef:
+      external: {{ $src.attach | quote }}
+    {{- else }}
+    diskName: {{ $d.name | default $k | quote }}
+    diskType: {{ $dip.type | default "pd-balanced" | quote }}
+    diskSizeGb: {{ int64 ($dip.size | default 10) }}
+    {{- end }}
+    {{- with $src.image }}
+    sourceImageRef:
+      external: {{ . | quote }}
+    {{- end }}
+    {{- if not (kindIs "invalid" $hd.provisioned_iops) }}
+    provisionedIops: {{ int64 $hd.provisioned_iops }}
+    {{- end }}
+    {{- with $kms }}
+    diskEncryptionKey:
+      kmsKeyRef:
+        external: {{ . | quote }}
+    {{- end }}
+  {{- end }}
+  {{- with $v.scratch_disks }}{{ range until (int .count) }}
+  - type: SCRATCH
+    autoDelete: true
+    diskSizeGb: {{ int64 ($v.scratch_disks.size | default 375) }}
+    diskType: local-ssd
+    interface: {{ $v.scratch_disks.interface | default "NVME" | quote }}
+  {{- end }}{{ end }}
+{{- if not (kindIs "invalid" $v.confidential_compute) }}
+confidentialInstanceConfig:
+  enableConfidentialCompute: true
+{{- end }}
+{{- with $v.gpu }}
+guestAccelerator:
+  - type: {{ .type | quote }}
+    count: {{ int64 .count }}
+{{- end }}
+networkInterface:
+  {{- include "computeVm.networkInterfaces" . | trim | nindent 2 }}
+  {{- range $v.network_attached_interfaces }}
+  - networkAttachment: {{ . | quote }}
+  {{- end }}
+{{- with $v.network_performance_tier }}
+networkPerformanceConfig:
+  totalEgressBandwidthTier: {{ . | quote }}
+{{- end }}
+scheduling:
+  {{- include "computeVm.scheduling" (list . true) | trim | nindent 2 }}
+{{- if kindIs "map" $v.service_account }}
+serviceAccount:
+  {{- if $sa.created }}
+  serviceAccountRef:
+    name: {{ include "kcc.name" (list .Release.Name "sa") }}
+  {{- else if $sa.email }}
+  serviceAccountRef:
+    external: {{ $sa.email | quote }}
+  {{- end }}
+  scopes: {{ toJson $sa.scopes }}
+{{- end }}
+{{- with $v.shielded_config }}
+shieldedInstanceConfig:
+  enableSecureBoot: {{ ne (toString .enable_secure_boot) "false" }}
+  enableVtpm: {{ ne (toString .enable_vtpm) "false" }}
+  enableIntegrityMonitoring: {{ ne (toString .enable_integrity_monitoring) "false" }}
+{{- end }}
+{{- end -}}
+{{- $v := .Values }}
+{{- if include "computeVm.isTemplate" . }}
+{{- $boot := $v.boot_disk | default dict }}
+{{- $bhd := (($boot.initialize_params | default dict).hyperdisk) | default dict }}
+{{- if not (kindIs "invalid" $bhd.provisioned_throughput) }}
+{{- include "kcc.unsupported" (list $ "boot_disk.initialize_params.hyperdisk.provisioned_throughput" "set" "with create_template: ComputeInstanceTemplate's disk has no provisionedThroughput field") }}
+{{- end }}
+{{- range $k, $d := ($v.attached_disks | default dict) }}
+{{- $hd := (($d.initialize_params | default dict).hyperdisk) | default dict }}
+{{- if not (kindIs "invalid" $hd.provisioned_throughput) }}
+{{- include "kcc.unsupported" (list $ (printf "attached_disks.%s.initialize_params.hyperdisk.provisioned_throughput" $k) "set" "with create_template: ComputeInstanceTemplate's disk has no provisionedThroughput field") }}
+{{- end }}
+{{- end }}
+{{- $spec := include "computeVm.templateSpec" . }}
+{{- $hash := sha256sum (print $spec (include "kcc.labels" (list . dict))) | trunc 8 }}
+{{- $base := include "kcc.resourceName" (list . "template" "instance template" $v.name 54 "letter") }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeInstanceTemplate
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list .Release.Name "template" $hash)) "id" "template" "project" $v.project_id "abandon" (include "kcc.abandon" .)) | nindent 2 }}
+spec:
+  resourceID: {{ printf "%s-%s" $base $hash | quote }}
+  {{- $spec | nindent 2 }}
+{{- end }}

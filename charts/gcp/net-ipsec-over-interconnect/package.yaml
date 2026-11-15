@@ -6,14 +6,14 @@
 # the chart ports: id and self_link of the HA VPN gateway, router_name (the
 # new router's, else router_config.name) and route_policies, each policy's
 # ID keyed as fabric keys them. Not outputs: random_secret (the chart makes
-# no secret), tunnels (refused, so there are none) and fabric's whole
-# objects (bgp_peers, external_gateway, router; docs/design.md, "Outputs").
+# no secret) and fabric's whole objects (bgp_peers, external_gateway,
+# router, tunnels; docs/design.md, "Outputs").
 apiVersion: hfl.dev/v1
 kind: Package
 metadata:
   name: gcp-net-ipsec-over-interconnect
 spec:
-  version: 0.1.0
+  version: 0.2.0
   engine: helm
   providers: [kcc]
   outputs:

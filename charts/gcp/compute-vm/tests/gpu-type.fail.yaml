@@ -1,0 +1,8 @@
+# expect: gpu.type: gpu.type must be one of
+project_id: my-project
+zone: europe-west8-b
+name: test
+network_interfaces:
+  - network: projects/my-project/global/networks/vpc
+    subnetwork: projects/my-project/regions/europe-west8/subnetworks/subnet
+gpu: {type: nvidia-k80, count: 1}

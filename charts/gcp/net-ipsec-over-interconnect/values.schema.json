@@ -312,10 +312,158 @@
       }
     },
     "tunnels": {
-      "description": "VPN tunnel configurations; refused when set (README.md, \"Values\").",
-      "type": "object",
+      "description": "VPN tunnel configurations, keyed (README.md, \"Values\"). Each tunnel's shared_secret is a reference to a Kubernetes Secret (docs/secrets.md).",
+      "type": [
+        "object",
+        "null"
+      ],
       "additionalProperties": {
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "bgp_peer",
+          "bgp_session_range",
+          "vpn_gateway_interface"
+        ],
+        "properties": {
+          "bgp_peer": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "address",
+              "asn"
+            ],
+            "properties": {
+              "address": {
+                "type": "string"
+              },
+              "asn": {
+                "type": "integer"
+              },
+              "custom_advertise": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": false,
+                "required": [
+                  "all_subnets",
+                  "all_vpc_subnets",
+                  "all_peer_vpc_subnets",
+                  "ip_ranges"
+                ],
+                "properties": {
+                  "all_subnets": {
+                    "type": "boolean"
+                  },
+                  "all_vpc_subnets": {
+                    "type": "boolean"
+                  },
+                  "all_peer_vpc_subnets": {
+                    "type": "boolean"
+                  },
+                  "ip_ranges": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "md5_authentication_key": {
+                "description": "Refused: ComputeRouterPeer has no such field.",
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "key": {
+                    "type": "string"
+                  }
+                }
+              },
+              "export_policies": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "description": "Refused: ComputeRouterPeer has no such field."
+              },
+              "import_policies": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "description": "Refused: ComputeRouterPeer has no such field."
+              },
+              "route_priority": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            }
+          },
+          "bgp_session_range": {
+            "type": "string"
+          },
+          "ike_version": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "peer_external_gateway_interface": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "peer_gateway_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Accepted and ignored, as fabric's module ignores it: every tunnel uses peer_gateway_config's gateway."
+          },
+          "router": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Accepted and ignored, as fabric's module ignores it: every tunnel uses router_config's router."
+          },
+          "shared_secret": {
+            "description": "Required: a reference to a Kubernetes Secret in the component's namespace, {secretName, key} (docs/secrets.md); a string, the secret itself, is refused, and so is none (fabric would generate one; the catalog never generates a secret)",
+            "type": [
+              "object",
+              "string",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "secretName": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              }
+            }
+          },
+          "vpn_gateway_interface": {
+            "type": "integer"
+          }
+        }
       }
     },
     "deletion_policy": {

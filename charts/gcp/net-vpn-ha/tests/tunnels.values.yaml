@@ -1,0 +1,45 @@
+# Tunnels to an external peer gateway with every tunnel field the chart
+# carries: names for the tunnel, interface and peer, IKEv1, the peer
+# gateway's interface, a peer with a route priority, custom advertisements
+# and IPv6 next hops, a peer on another router, and a tunnel to a peer
+# gateway key that does not exist (no peer reference, as fabric's try()).
+project_id: my-project
+region: europe-west1
+network: projects/my-project/global/networks/my-network
+name: vpn-onprem
+vpn_gateway_create: {ipv6: true}
+peer_gateways:
+  onprem:
+    external: {redundancy_type: TWO_IPS_REDUNDANCY, interfaces: [8.8.8.8, 8.8.4.4]}
+router_config: {asn: 64514}
+tunnels:
+  a:
+    name: onprem-a
+    peer_router_interface_name: onprem-a-if
+    peer_gateway: onprem
+    peer_external_gateway_interface: 0
+    vpn_gateway_interface: 0
+    ike_version: 1
+    bgp_session_range: 169.254.10.2/30
+    bgp_peer:
+      name: onprem-a-peer
+      address: 169.254.10.1
+      asn: 65001
+      route_priority: 100
+      custom_advertise: {all_subnets: true, ip_ranges: {10.1.0.0/16: app}}
+      ipv6: {nexthop_address: "2600:2d00:0:2::1", peer_nexthop_address: "2600:2d00:0:2::2"}
+    shared_secret: {secretName: vpn-onprem, key: a}
+  b:
+    peer_gateway: onprem
+    peer_external_gateway_interface: 1
+    vpn_gateway_interface: 1
+    bgp_session_range: ""
+    router: other-router
+    bgp_peer: {address: 169.254.11.1, asn: 65001}
+    shared_secret: {secretName: vpn-onprem, key: b}
+  c:
+    peer_gateway: missing
+    vpn_gateway_interface: 0
+    bgp_session_range: 169.254.12.2/30
+    bgp_peer: {address: 169.254.12.1, asn: 65001}
+    shared_secret: {secretName: vpn-onprem, key: c}

@@ -1,7 +1,18 @@
-# A gateway with its own address, after the module README's example
-# (without its tunnels, which the chart refuses).
+# A gateway with its own address, after the module README's example: a
+# tunnel, its shared secret a reference to a Kubernetes Secret
+# (docs/secrets.md), and a route to each remote range through it.
 project_id: my-project
 region: europe-west1
 name: vpn-test
 network: projects/my-project/global/networks/my-network
-remote_ranges: [10.10.0.0/24]
+remote_ranges: [10.10.0.0/24, 192.168.0.0/16]
+tunnels:
+  remote-0:
+    peer_ip: 1.1.1.1
+    shared_secret: {secretName: vpn-test, key: remote-0}
+    traffic_selectors: {local: [0.0.0.0/0], remote: [0.0.0.0/0]}
+  remote-1:
+    peer_ip: 1.1.1.2
+    ike_version: 1
+    shared_secret: {secretName: vpn-test, key: remote-1}
+    traffic_selectors: {local: [10.0.0.0/8], remote: [10.10.0.0/24, 192.168.0.0/16]}

@@ -388,7 +388,7 @@ modules:
     copyright: Google LLC
     registry_url: null
     url: https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/compute-vm
-    chart: null
+    chart: charts/gcp/compute-vm
   - id: gcp/container-registry
     cloud: gcp
     module: container-registry

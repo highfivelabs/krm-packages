@@ -25,11 +25,21 @@ peer_gateway_config:
   create: true
   interfaces: [172.16.0.1, 172.16.0.2]
 router_config: {asn: 64514}
+tunnels:
+  remote-0:
+    bgp_peer: {address: 169.254.1.2, asn: 64513}
+    bgp_session_range: 169.254.1.1/30
+    peer_external_gateway_interface: 0
+    vpn_gateway_interface: 0
+    shared_secret: {secretName: vpn-ipsec, key: shared-secret}
 ```
 
 renders the `ComputeVPNGateway` `vpn-gw-vpn-ipsec` on the two
 attachments, the `ComputeExternalVPNGateway` `peer-vpn-gw-vpn-ipsec` and
-the `ComputeRouter` `router-vpn-ipsec` (`tests/golden/basic.yaml`).
+the `ComputeRouter` `router-vpn-ipsec`, and the `ComputeVPNTunnel`,
+`ComputeRouterInterface` and `ComputeRouterPeer` `vpn-ipsec-remote-0`, the
+tunnel's shared secret read from the Kubernetes Secret `vpn-ipsec`
+(`tests/golden/basic.yaml` has a second tunnel, on interface 1).
 
 ## Values
 
@@ -46,7 +56,7 @@ The module's variables, with the same names, types and defaults.
 | `peer_gateway_config` | `create: true` makes the `ComputeExternalVPNGateway`, `name` or `peer-vpn-gw-<name>`, with its description (fabric's default) and one or two `interfaces` (`SINGLE_IP_INTERNALLY_REDUNDANT` or `TWO_IPS_REDUNDANCY`); otherwise `id` names an existing one (fabric's check, with its message) |
 | `router_config` | required, as in fabric. `create` (default true) makes the `ComputeRouter`, `name` or `router-<name>`, with `asn` (required to create one), `keepalive` and `custom_advertise` (a `CUSTOM` advertise mode with `ALL_SUBNETS` and the ranges); `create: false` reuses the router `name` names. `route_policies` need `allow_alpha` (below) |
 | `route_policies` in `router_config` | one config-connector-extensions `ComputeRouterRoutePolicy` (`compute.gcp.hfl.dev/v1alpha1`) per key, named by it, on the router: `IMPORT` or `EXPORT`, its terms with their match and actions; fabric's checks (priority range, unique priorities, the type) |
-| `tunnels` | refused, not ported yet: a tunnel needs a shared secret, and one given here would be in the rendered manifest while fabric's generated one (`random_id`) has no Config Connector equivalent. `ComputeVPNTunnel` takes its secret from a Kubernetes Secret (`sharedSecret.valueFrom`), which the chart does not take yet: the builder's open SECV question, as for net-vpn-static. Fabric makes one router interface and one BGP peer per tunnel, so there are none of those either. Gaps that would remain: `ComputeRouterPeer` has no `md5AuthenticationKey`, `importPolicies` or `exportPolicies` |
+| `tunnels` | a `ComputeVPNTunnel` per tunnel, `<name>-<key>`, on the HA gateway at `vpn_gateway_interface`, to the peer gateway (the one the chart makes, or `peer_gateway_config.id`) at `peer_external_gateway_interface`, with `ike_version` (2 by default) and the router; `shared_secret`, required, a reference to a Kubernetes Secret, `{secretName, key}` ([secrets](../../../docs/secrets.md)), as `sharedSecret.valueFrom.secretKeyRef`: a string is refused, and so is none (fabric would generate one; the catalog never generates a secret). Per tunnel, as fabric: a `ComputeRouterInterface` (`<name>-<key>`, `bgp_session_range` its IP range, none when `""`) and a `ComputeRouterPeer` (`<name>-<key>`) on the router with the peer's address, ASN, `route_priority` (1000) and `custom_advertise`. A tunnel's `router` and `peer_gateway_id` are accepted and ignored, as fabric ignores them. Refused (gaps): `bgp_peer`'s `md5_authentication_key`, `export_policies` and `import_policies` (`ComputeRouterPeer` has no such fields) |
 | `deletion_policy` | not a fabric variable; `ABANDON` keeps the cloud resources |
 
 ## Outputs
@@ -54,13 +64,15 @@ The module's variables, with the same names, types and defaults.
 `id` and `self_link` of the HA VPN gateway, `router_name` (the new
 router's, else `router_config.name`) and `route_policies` (each policy's
 ID, keyed as fabric keys them). Not outputs: `random_secret` (the chart
-makes no secret), `tunnels` (none), and fabric's whole objects
-(`bgp_peers`, `external_gateway`, `router`; `docs/design.md`, "Outputs").
+makes no secret), and fabric's whole objects (`bgp_peers`,
+`external_gateway`, `router`, `tunnels`; `docs/design.md`, "Outputs").
 
 ## From Terraform
 
 A `module "x" { source = ".../modules/net-ipsec-over-interconnect" ... }`
-block's arguments become the values unchanged, but for `tunnels`. To adopt
+block's arguments become the values unchanged, but a tunnel's
+`shared_secret`, which becomes a reference to the Kubernetes Secret that
+holds it. To adopt
 an existing gateway, keep its names: Config Connector acquires the
 resources of those names (`docs/design.md`, "From Terraform").
 
@@ -88,8 +100,9 @@ with every other module the catalog tracks. To take a newer release, see
 ## Tests
 
 `task test CHART=net-ipsec-over-interconnect`: render cases `basic`
-(fabric's README example without its tunnels), `full` (every value the
-chart carries), `existing` (an existing peer gateway and router), `names`
+(fabric's README example with two tunnels), `full` (every value the
+chart carries but tunnels), `existing` (an existing peer gateway and
+router, and a tunnel to and on them), `names`
 and `mock`, validated against Config Connector v1.160.0's CRD schemas and
 config-connector-extensions' (`ComputeRouterRoutePolicy`), and the
 refusals in `tests/*.fail.yaml`.
@@ -99,10 +112,14 @@ MOCK_CHARTS=net-ipsec-over-interconnect`, run `off-catalog-1113152746-28240`, at
 config-connector-extensions `d54a2075`, whose fake cloud runs its
 `ComputeRouterRoutePolicy` controller): the HA VPN gateway, the external peer gateway, the router and an import route policy (`allow_alpha`) on a network from `tests/mock.needs.yaml`: all 4 objects Ready, the outputs evaluated, all deleted. mockgcp has no interconnect attachments and does not look up the two the gateway names, so the attachments themselves are not exercised.
 
+mockgcp (Config Connector `672414b8`) has no VPN tunnels, so tunnels, their
+router interfaces and BGP peers are render-tested only.
+
 Not applied live: live runs are pending KEYLIVE.
 
 ## Changes
 
+- **0.2.0** (2026-11-15): `tunnels`: the tunnels, their router interfaces and BGP peers; a tunnel's shared secret is a reference to a Kubernetes Secret.
 - **0.1.0** (2026-11-13): the port: the HA VPN gateway on two VLAN
   attachments, the external peer gateway, the router and its route
   policies.

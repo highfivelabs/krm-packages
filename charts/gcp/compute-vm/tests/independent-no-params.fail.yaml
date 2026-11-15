@@ -1,0 +1,8 @@
+# expect: compute-vm: Using an independent disk for boot requires initialize params.
+project_id: my-project
+zone: europe-west8-b
+name: test
+network_interfaces:
+  - network: projects/my-project/global/networks/vpc
+    subnetwork: projects/my-project/regions/europe-west8/subnetworks/subnet
+boot_disk: {initialize_params: null, use_independent_disk: {}}

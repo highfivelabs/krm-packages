@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: certificate-manager
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     kind: "dns"
   annotations:
     hfl.dev/id: "certificate:dns-cert"
@@ -37,7 +37,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: certificate-manager
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "certificate:private-cert"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -63,7 +63,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: certificate-manager
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     ca: "private"
   annotations:
     hfl.dev/id: "issuance_config:private-ca"
@@ -93,7 +93,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: certificate-manager
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     env: "dev"
   annotations:
     hfl.dev/id: "map"
@@ -114,7 +114,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: certificate-manager
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     entry: "primary"
   annotations:
     hfl.dev/id: "entry:primary"
@@ -141,7 +141,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: certificate-manager
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "dns_authorization:example-com"
     cnrm.cloud.google.com/project-id: "my-project"

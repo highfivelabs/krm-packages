@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: alloydb
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "orders"
   annotations:
     hfl.dev/id: "cluster"
@@ -74,7 +74,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: alloydb
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "orders"
   annotations:
     hfl.dev/id: "instance"
@@ -125,7 +125,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: alloydb
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "orders"
   annotations:
     hfl.dev/id: "read-pool:analytics"
@@ -162,7 +162,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: alloydb
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "orders"
   annotations:
     hfl.dev/id: "read-pool:ro"
@@ -200,7 +200,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: alloydb
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "orders"
   annotations:
     hfl.dev/id: "user:dba@example.com"
@@ -221,7 +221,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: alloydb
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "orders"
   annotations:
     hfl.dev/id: "user:orders@example.com"
@@ -242,7 +242,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: alloydb
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "orders"
   annotations:
     hfl.dev/id: "tag-env"

@@ -1,5 +1,8 @@
 # For the fake cloud (hack/mock-apply.sh): a small PostgreSQL instance with
-# one database, deletable.
+# one database and one BUILT_IN user, deletable. The root and user
+# passwords are references to the Secret below, which hack/test-secret.sh
+# makes in the test's namespace before the apply (docs/secrets.md).
+# secret: catalog-mock-sql random
 project_id: mock-project
 prefix: catalog
 name: mock-sql
@@ -11,3 +14,7 @@ network_config:
   connectivity:
     public_ipv4: true
 databases: [app]
+root_password:
+  password: {secretName: catalog-mock-sql, key: value}
+users:
+  app: {password: {secretName: catalog-mock-sql, key: value}}

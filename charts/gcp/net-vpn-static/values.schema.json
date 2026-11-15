@@ -105,13 +105,21 @@
       ]
     },
     "tunnels": {
-      "description": "VPN tunnel configurations; refused when set.",
-      "type": "object",
+      "description": "VPN tunnel configurations, keyed (README.md, \"Values\"). Each tunnel's shared_secret is a reference to a Kubernetes Secret (docs/secrets.md).",
+      "type": [
+        "object",
+        "null"
+      ],
       "additionalProperties": {
         "type": "object",
         "additionalProperties": false,
+        "required": [
+          "peer_ip",
+          "traffic_selectors"
+        ],
         "properties": {
           "cipher_suite": {
+            "description": "Refused: ComputeVPNTunnel has no cipherSuite field.",
             "type": [
               "object",
               "null"
@@ -211,10 +219,21 @@
             "type": "string"
           },
           "shared_secret": {
+            "description": "Required: a reference to a Kubernetes Secret in the component's namespace, {secretName, key} (docs/secrets.md); a string, the secret itself, is refused, and so is none (fabric would generate one; the catalog never generates a secret)",
             "type": [
+              "object",
               "string",
               "null"
-            ]
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "secretName": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              }
+            }
           },
           "traffic_selectors": {
             "type": "object",

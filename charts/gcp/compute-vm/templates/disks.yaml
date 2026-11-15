@@ -1,0 +1,102 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/compute-vm/disks.tf (v60.0.0),
+Copyright 2026 Google LLC, Apache-2.0.
+
+google_compute_disk.boot: the independent boot disk, a ComputeDisk
+(boot_disk.use_independent_disk).
+google_compute_disk.disks and google_compute_region_disk.disks: a
+ComputeDisk per attached disk the chart makes (no source.attach), zonal, or
+regional with initialize_params.replica_zone. None with create_template.
+*/ -}}
+{{- $v := .Values }}
+{{- if not (include "computeVm.isTemplate" .) }}
+{{- $abandon := include "kcc.abandon" . }}
+{{- $region := include "computeVm.region" . }}
+{{- $kms := "" }}{{ with $v.encryption }}{{ $kms = .kms_key_self_link | default "" }}{{ end }}
+{{- $boot := $v.boot_disk | default dict }}
+{{- if kindIs "map" $boot.use_independent_disk }}
+{{- $ip := $boot.initialize_params }}
+{{- if not (kindIs "map" $ip) }}
+{{- fail "compute-vm: Using an independent disk for boot requires initialize params." }}
+{{- end }}
+{{- $hd := $ip.hyperdisk | default dict }}
+{{- include "kcc.unsupported" (list $ "boot_disk.initialize_params.hyperdisk.storage_pool" $hd.storage_pool "ComputeDisk has no storagePool field") }}
+{{- $type := $ip.type | default "pd-balanced" }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeDisk
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list .Release.Name "boot")) "id" "boot_disk" "project" $v.project_id "abandon" $abandon "labels" (dict "disk_name" "boot" "disk_type" $type)) | nindent 2 }}
+spec:
+  resourceID: {{ include "computeVm.bootDiskName" . | quote }}
+  location: {{ $v.zone | quote }}
+  {{- with ($boot.source | default dict).image }}
+  imageRef:
+    external: {{ . | quote }}
+  {{- end }}
+  type: {{ $type | quote }}
+  size: {{ int64 ($ip.size | default 10) }}
+  {{- if not (kindIs "invalid" $hd.provisioned_iops) }}
+  provisionedIops: {{ int64 $hd.provisioned_iops }}
+  {{- end }}
+  {{- if not (kindIs "invalid" $hd.provisioned_throughput) }}
+  provisionedThroughput: {{ int64 $hd.provisioned_throughput }}
+  {{- end }}
+  {{- with $kms }}
+  diskEncryptionKey:
+    kmsKeyRef:
+      external: {{ . | quote }}
+  {{- end }}
+{{- end }}
+{{- range $k := keys ($v.attached_disks | default dict) | sortAlpha }}
+{{- $d := index $v.attached_disks $k }}
+{{- $src := $d.source | default dict }}
+{{- if not $src.attach }}
+{{- $ip := $d.initialize_params | default dict }}
+{{- $hd := $ip.hyperdisk | default dict }}
+{{- $type := $ip.type | default "pd-balanced" }}
+{{- $regional := not (kindIs "invalid" $ip.replica_zone) }}
+{{- if not $regional }}
+{{- include "kcc.unsupported" (list $ (printf "attached_disks.%s.initialize_params.hyperdisk.storage_pool" $k) $hd.storage_pool "ComputeDisk has no storagePool field") }}
+{{- end }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeDisk
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "disk" $k)) "id" (printf "disk:%s" $k) "project" $v.project_id "abandon" $abandon "labels" (dict "disk_name" ($d.name | default $k) "disk_type" $type)) | nindent 2 }}
+spec:
+  resourceID: {{ include "computeVm.diskName" (list $ $k $d) | quote }}
+  {{- if $regional }}
+  {{- /* fabric's google_compute_region_disk: no image and no hyperdisk
+  settings (its image line is commented out). */}}
+  location: {{ $region | quote }}
+  replicaZones: [{{ $v.zone | quote }}, {{ $ip.replica_zone | quote }}]
+  {{- else }}
+  location: {{ $v.zone | quote }}
+  {{- with $src.image }}
+  imageRef:
+    external: {{ . | quote }}
+  {{- end }}
+  {{- if not (kindIs "invalid" $hd.provisioned_iops) }}
+  provisionedIops: {{ int64 $hd.provisioned_iops }}
+  {{- end }}
+  {{- if not (kindIs "invalid" $hd.provisioned_throughput) }}
+  provisionedThroughput: {{ int64 $hd.provisioned_throughput }}
+  {{- end }}
+  {{- end }}
+  type: {{ $type | quote }}
+  size: {{ int64 ($ip.size | default 10) }}
+  {{- with $src.snapshot }}
+  snapshotRef:
+    external: {{ . | quote }}
+  {{- end }}
+  {{- with $kms }}
+  diskEncryptionKey:
+    kmsKeyRef:
+      external: {{ . | quote }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
