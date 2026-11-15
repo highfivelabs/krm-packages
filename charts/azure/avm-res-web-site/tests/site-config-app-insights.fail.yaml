@@ -1,4 +1,4 @@
-# expect: site_config.application_insights_key is not supported
+# expect: site_config.application_insights_key takes a reference to a Kubernetes Secret
 name: app
 location: eastus2
 parent_id: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg

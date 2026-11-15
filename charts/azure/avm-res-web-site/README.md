@@ -30,9 +30,10 @@ FTP basic authentication off (the module's default,
 | Module resource | When | Object (`hfl.dev/id`) |
 | --- | --- | --- |
 | `azapi_resource.this` | always | `Site` (`web.azure.com/v20250501`; the module sends 2025-03-01), `site`, owned by the resource group `parent_id` names |
-| `module.config_appsettings` | always | the `Site`'s `siteConfig.appSettings` (the merged app settings of `locals.app_settings.tf`) |
+| `module.config_appsettings` | always | the `Site`'s `siteConfig.appSettings` (the merged app settings of `locals.app_settings.tf`); when one of them is a reference to a Kubernetes Secret, all of them are an aso-extensions `SitesConfigAppSettings` (`web.azure.hfl.dev/v20260715`), `config_appsettings`, owned by the `Site`, and `siteConfig.appSettings` is left out (one writer) |
+| `module.config_connectionstrings` | `manage_connection_strings` and `connection_strings` not empty | aso-extensions `SitesConfigConnectionStrings`, `config_connectionstrings`, owned by the `Site`, each value a reference to a Kubernetes Secret |
 | `module.config_metadata` | always | the `Site`'s `siteConfig.metadata` (`site_config.metadata` and, on Windows, `CURRENT_STACK`) |
-| `module.slot` | one per `deployment_slots` entry | aso-extensions `SitesSlot` (`web.azure.hfl.dev/v20260715`), `slot:<key>`, owned by the `Site`, its app settings and metadata inline; its lock `slot:<key>/lock` and role assignments `slot:<key>/role-assignment-<k>` |
+| `module.slot` | one per `deployment_slots` entry | aso-extensions `SitesSlot` (`web.azure.hfl.dev/v20260715`), `slot:<key>`, owned by the `Site`, its app settings and metadata inline (or, when one of its settings is a reference to a Kubernetes Secret, a `SitesConfigAppSettings` owned by the slot, `slot:<key>/config_appsettings`; its `connection_strings` a `SitesConfigConnectionStrings`, `slot:<key>/config_connectionstrings`); its lock `slot:<key>/lock` and role assignments `slot:<key>/role-assignment-<k>` |
 | `module.hostname_binding` | one per `custom_domains` entry | aso-extensions `SitesHostNameBinding`, `hostname_binding:<key>`, named for the hostname |
 | `module.slot_hostname_binding` | one per slot `custom_domains` entry | aso-extensions `SitesSlotsHostNameBinding`, `slot:<key>/hostname_binding:<k>` |
 | the slot module's `azapi_resource.private_endpoint`, `.private_dns_zone_group`, `.lock_private_endpoint`, `.role_assignment_private_endpoint` | one per slot `private_endpoints` entry | ASO `PrivateEndpoint`, `slot:<key>/private_endpoint:<k>`, to the `Site`'s `sites-<slot name>` subresource (unless `subresource_name`; members `sites-<slot name>` unless given), named as the site's endpoints are; its zone group, lock (its own, else the slot's when `private_endpoints_inherit_lock`) and role assignments under `slot:<key>/private_endpoint:<k>/` |
@@ -45,7 +46,7 @@ FTP basic authentication off (the module's default,
 | `module.config_logs` | one `logs` entry | aso-extensions `SitesConfigLogs`, `config_logs:<key>` |
 | `module.config_slotconfignames` | `sticky_settings` not empty | aso-extensions `SitesConfigSlotConfigNames`, `config_slotconfignames` |
 | `module.ftp_publishing_credential_policy`, `module.scm_publishing_credential_policy` | `ftp_publish_basic_authentication_enabled` (default) or `scm_publish_basic_authentication_enabled` false | aso-extensions `SitesBasicPublishingCredentialsPolicyFtp` or `...Scm`, `allow: false`, `ftp_publishing_credential_policy` or `scm_publishing_credential_policy` |
-| `module.config_connectionstrings`, `config_azurestorageaccounts`, `config_authsettings` (v1), `config_backup`, `azapi_resource_action.active_slot`, `module.extensions_zipdeploy` | | refused when they would write anything (below) |
+| `config_authsettings` (v1), `config_backup`, `azapi_resource_action.active_slot`, `module.extensions_zipdeploy` | | refused when they would write anything (below) |
 | telemetry | never | not ported |
 
 ## Values: module inputs to ASO
@@ -67,6 +68,11 @@ module's `ignore_null_property`.
 | `kind`, `os_type` | `kind` (the module's `arm_kind_map`: `app,linux`, `functionapp,linux,container` ...), `reserved` (Linux) |
 | `site_config` | `siteConfig`: every field the module sends, the language versions and `linuxFxVersion`/`windowsFxVersion` from `application_stack` as `site_config_helpers` derives them, IP restrictions with their headers, auto heal rules, CORS, virtual applications (Windows web apps), FC1's omissions |
 | `app_settings` and the function app settings (`functions_extension_version`, `storage_account_name` with `storage_uses_managed_identity` and `storage_user_assigned_identity_client_id`, `builtin_logging_enabled`, `content_share_force_disabled`) | `siteConfig.appSettings`, merged as `locals.app_settings.tf` does (the case-insensitive overrides included). Values are taken as given: the module does not mark `app_settings` sensitive |
+| `application_insights_connection_string`, `application_insights_key` (and `site_config`'s, which win, as the module coalesces them) | `APPLICATIONINSIGHTS_CONNECTION_STRING` and `APPINSIGHTS_INSTRUMENTATIONKEY`, each a reference to a Kubernetes Secret, `{secretName, key}` ([secrets](../../../docs/secrets.md)), on the site and on every slot (as the module passes them to slots); the app's settings then render as a `SitesConfigAppSettings`. A string is refused |
+| `storage_account_access_key` | a reference to a Kubernetes Secret, `{secretName, key}`, holding the key; a function app without a managed identity gets `AzureWebJobsStorage` and a Logic App `AzureWebJobsStorage` (and `WEBSITE_CONTENTAZUREFILECONNECTIONSTRING` with `storage_account_share_name`) as `DefaultEndpointsProtocol=https;AccountName=<storage_account_name>;AccountKey=$(value)`, the `SitesConfigAppSettings` `template` the key fills. A string is refused |
+| `kind` `logicapp`, `logic_app_node_version`, `logic_app_runtime_version`, `bundle_version`, `use_extension_bundle`, `storage_account_share_name` | a Logic App: `kind` `functionapp,workflowapp` (and Linux's), and `locals.app_settings.tf`'s Logic App settings (`FUNCTIONS_EXTENSION_VERSION`, `FUNCTIONS_WORKER_RUNTIME` `dotnet`, `WEBSITE_NODE_DEFAULT_VERSION`, the workflows extension bundle, `WEBSITE_CONTENTSHARE`) with the two storage connection strings from the key's Secret. `storage_account_name` and `storage_account_access_key` are required, as in the module. The Logic App variables are read for `logicapp` only |
+| `connection_strings`, `manage_connection_strings` | `SitesConfigConnectionStrings`: each entry's `name` (else its key), `type` (required: Azure takes none without it) and `value`, a reference to a Kubernetes Secret, `{secretName, key}`; a string is refused. The kind writes the whole set; the module's `azapi_update_resource` merges into what Azure has, so a connection string set elsewhere stays with the module and goes with the chart. An empty map, or `manage_connection_strings` false, sends nothing |
+| `slot_sensitive_app_settings` | each slot's sensitive settings, by the slot's key, after its `app_settings` and Application Insights settings, each a reference to a Kubernetes Secret, in the slot's `SitesConfigAppSettings`. A string is refused, and so is a key that names no slot (stricter than the module, which ignores it) |
 | `https_only`, `enabled`, `public_network_access_enabled`, `client_affinity_*`, `client_certificate_*`, `container_size`, `end_to_end_encryption_enabled`, `host_names_disabled`, `hyper_v`, `ip_mode`, `key_vault_reference_identity`, `redundancy_mode`, `scm_site_also_stopped`, `ssh_enabled`, `storage_account_required`, `workload_profile_name`, `auto_generated_domain_name_label_scope`, `daily_memory_time_quota` | the same-named properties (`publicNetworkAccess` `Enabled`/`Disabled`) |
 | `virtual_network_subnet_id`, `vnet_route_all_traffic`, `vnet_application_traffic_enabled`, `virtual_network_backup_restore_enabled`, `vnet_content_share_enabled`, `vnet_image_pull_enabled` | `virtualNetworkSubnetReference`, `outboundVnetRouting` |
 | `hosting_environment_id`, `managed_environment_id`, `dapr_config`, `resource_config` | `hostingEnvironmentProfile`, `managedEnvironmentReference`, `daprConfig`, `resourceConfig` |
@@ -83,7 +89,7 @@ module's `ignore_null_property`.
 | `logs` | `SitesConfigLogs`: `detailedErrorMessages`, `failedRequestsTracing`, the first `application_logs` entry's file system level and Blob Storage destination, and the first `http_logs` entry's file system retention and Blob Storage destination, as the module takes them. One entry only (each writes the site's one `logs` section). A Blob Storage destination's `sas_url` is a reference to a Kubernetes Secret, `{secretName, key}` ([secrets](../../../docs/secrets.md)); a string is refused |
 | `sticky_settings` | `SitesConfigSlotConfigNames`: every entry's app setting and connection string names, flattened as the module does |
 | `ftp_publish_basic_authentication_enabled`, `scm_publish_basic_authentication_enabled` | `false` renders the `ftp` or `scm` publishing credential policy with `allow: false`; `true` renders nothing, as in the module |
-| `enable_telemetry`, `manage_connection_strings`, `zip_deploy_wait_duration` | accepted; nothing is sent (no telemetry, no connection strings, no zip deploy to wait for) |
+| `enable_telemetry`, `zip_deploy_wait_duration` | accepted; nothing is sent (no telemetry, no zip deploy to wait for) |
 
 ### Not module inputs
 
@@ -100,19 +106,14 @@ module's `ignore_null_property`.
 | --- | --- | --- |
 | `retry`, `timeouts`, `ignore_body_changes`, `resource_types` | by-design | the azapi provider's mechanics: ASO retries itself and owns every field; Bundt sets a component's time limit; the API versions are the kinds' |
 | `zip_deploy_file` | by-design | uploads application code, which a Package does not carry |
-| `application_insights_connection_string`, `application_insights_key`, `storage_account_access_key`, `slot_sensitive_app_settings` | gap | secret values the module marks sensitive and writes into app settings: ASO's `Site` and aso-extensions' `SitesSlot` take app settings only in plain text, and aso-extensions (8d7f8c2) has no `Microsoft.Web/sites/config` (`appsettings`) kind that takes a Secret reference (`docs/secrets.md`) |
-| `connection_strings` | gap | a connection string's value is a secret: the kinds take it only in plain text, and there is no `connectionstrings` kind that takes a Secret reference |
-| `kind` (in part) | gap | `logicapp` is refused: the module always writes the storage account key into an app setting (the gap above) |
-| `logic_app_node_version`, `logic_app_runtime_version`, `bundle_version`, `use_extension_bundle`, `storage_account_share_name` | gap | only a Logic App reads them; accepted at their defaults |
 | `auth_settings`, `backup` | gap | `Microsoft.Web/sites/config` (`authsettings`, `backup`) has no ASO or aso-extensions kind (each has a PUT and no GET; aso-extensions `docs/plan.md` §8 Q13). The module writes `auth_settings` only without `auth_settings_v2`, which is mapped |
 | `app_service_active_slot` | gap | a slot swap is an action (`slotsswap`), not a resource |
 | `delete_empty_service_plan` (in part) | gap | `false` is refused: ASO sends no `deleteEmptyServerFarm` |
-| `site_config` (in part) | gap | `application_insights_connection_string`, `application_insights_key`: secret values written into app settings (the gap above) |
-| `deployment_slots` (in part) | gap | a slot must set `ftp_publish_basic_authentication_enabled` and `webdeploy_publish_basic_authentication_enabled` to `true` (a slot's publishing policies have no kind; aso-extensions' are the site's); its `connection_strings`, `zip_deploy_file`, `site_config.application_insights_*` and `custom_domains.*.certificate_key` are refused |
+| `deployment_slots` (in part) | gap | a slot must set `ftp_publish_basic_authentication_enabled` and `webdeploy_publish_basic_authentication_enabled` to `true` (a slot's publishing policies have no kind; aso-extensions' are the site's); its `zip_deploy_file` and `custom_domains.*.certificate_key` are refused |
 | `custom_domains` (in part) | gap | `certificate_key`: the binding takes the thumbprint Azure computes for the certificate and has no field that reads it from the certificate object, so a render cannot wire it; set `thumbprint` |
 
-Coverage: 81 of the module's 99 variables are accepted (6 of them in
-part), 18 refused; 13 of its 14 outputs.
+Coverage: 91 of the module's 99 variables are accepted (4 of them in
+part), 8 refused; 13 of its 14 outputs.
 
 ## Outputs
 
@@ -201,6 +202,14 @@ Secret the run made (`hack/test-secret.sh`), and the outputs evaluated.
 
 ## Changes
 
+- **0.6.0** (2026-11-15): the secret app settings and connection strings
+  are mapped to aso-extensions' `SitesConfigAppSettings` and
+  `SitesConfigConnectionStrings` (RECWEB, the builder's decision of
+  2026-11-15): `application_insights_connection_string`,
+  `application_insights_key` (and `site_config`'s), `storage_account_access_key`,
+  `slot_sensitive_app_settings`, `connection_strings` (the site's and a
+  slot's), and Logic Apps (`kind` `logicapp` with its five variables), each
+  secret a reference to a Kubernetes Secret, `{secretName, key}`.
 - **0.5.0** (2026-11-14): a certificate's `pfx_blob` and `password`
   (a PFX upload), `storage_shares_to_mount` and
   `slots_storage_shares_to_mount_sensitive_values` (with a slot's

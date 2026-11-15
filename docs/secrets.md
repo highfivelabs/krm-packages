@@ -124,9 +124,12 @@ elsewhere, or a gateway without an identity.
 | | `dapr_components[].secrets[].value` | `ManagedEnvironmentsDaprComponent` `secrets[].value` |
 | | `storages[].account_key` (`azure_file.account_key`, which the module never sends, is checked to be a reference) | `ManagedEnvironmentsStorage` `properties.azureFile.accountKey` |
 | `avm-res-app-containerapp` (0.4.0) | `secrets[].value` (and so a registry's `username` and `password_secret_name`, the name of one of those secrets) | `ContainerApp` `configuration.secrets[].value` (aso-extensions' kind) |
-| `avm-res-web-site` (0.5.0) | `logs.*.application_logs.*.azure_blob_storage.sas_url`, `logs.*.http_logs.*.azure_blob_storage.sas_url` | `applicationLogs.azureBlobStorage.sasUrl`, `httpLogs.azureBlobStorage.sasUrl` (aso-extensions' `SitesConfigLogs`) |
+| `avm-res-web-site` (0.6.0) | `logs.*.application_logs.*.azure_blob_storage.sas_url`, `logs.*.http_logs.*.azure_blob_storage.sas_url` | `applicationLogs.azureBlobStorage.sasUrl`, `httpLogs.azureBlobStorage.sasUrl` (aso-extensions' `SitesConfigLogs`) |
 | | `certificates[].pfx_blob`, `.password` | aso-extensions' `Certificate` `pfxBlob`, `password` (a PFX upload; Key Vault and a PFX together are refused, as in the module) |
 | | `storage_shares_to_mount[].access_key`, `slots_storage_shares_to_mount_sensitive_values[]` | `siteConfig.azureStorageAccounts[].accessKey` (ASO's `Site`, aso-extensions' `SitesSlot`) |
+| | `application_insights_connection_string`, `application_insights_key` (and `site_config`'s, on the site and a slot), `slot_sensitive_app_settings[][]` | app settings in aso-extensions' `SitesConfigAppSettings` (`settings[].valueFromSecret`), on the site and each slot; with one, all of an app's settings are that object instead of `siteConfig.appSettings` |
+| | `storage_account_access_key` (a function app's `AzureWebJobsStorage`; a Logic App's, and its `WEBSITE_CONTENTAZUREFILECONNECTIONSTRING`) | `settings[].valueFromSecret` with a `template`, `DefaultEndpointsProtocol=https;AccountName=<name>;AccountKey=$(value)`: the Secret holds the key, the connection string around it is built by the controller |
+| | `connection_strings[].value`, a slot's `connection_strings[].value` | aso-extensions' `SitesConfigConnectionStrings` `connectionStrings[].valueFromSecret` |
 | `avm-res-cognitiveservices-account` (0.2.0) | `custom_question_answering_search_service_key` | `properties.apiProperties.qnaAzureSearchEndpointKey` (ASO's `Account`; `TextAnalytics` only, as in the module) |
 | `avm-res-keyvault-vault` (0.3.0) | `secrets_value[]`, `secrets_value_wo[]` (with `secrets` and `secrets_value_wo_version`) | aso-extensions' `VaultSecret` `value`, one per `secrets` entry, written in the vault's data plane |
 | `avm-res-compute-virtualmachine` (0.5.0) | `account_credentials.admin_credentials.password`, `admin_password` | `osProfile.adminPassword` (aso-extensions' `VirtualMachine`): a Windows machine's OS profile, or Linux password sign-in |
@@ -151,8 +154,9 @@ not both.
 
 ## Still refused, could take a reference next
 
-None at aso-extensions 8d7f8c2: every Azure variable refused as a secret
-value whose kind takes the field as a `SecretReference` is mapped above.
+None at the pinned aso-extensions (`ASOX_COMMIT`): every Azure variable
+refused as a secret value whose kind takes the field as a `SecretReference`
+is mapped above.
 
 Not this pattern: the Log Analytics workspace the environment module reads
 its customer ID and shared key from (`log_analytics_workspace`: a lookup
@@ -165,10 +169,7 @@ SQL or AlloyDB user without a password, a VPN tunnel without a
 secrets, nor writes one to Key Vault, as
 `account_credentials.key_vault_configuration` and
 `administrator_login_password_key_vault_configuration` would), a password Azure returns once (a storage local user's SSH password, a registry token's
-`passwords`), and a secret a kind takes in plain text (a web app's
-`connection_strings`, its Application Insights settings, its storage
-account key and slot sensitive app settings, which the module writes into app
-settings, a run command's `protected_parameters`, a Redis cache's
+`passwords`), and a secret a kind takes in plain text (a run command's `protected_parameters`, a Redis cache's
 storage connection strings, a virtual machine's
 `additional_unattend_contents`, which can carry a password): those need the kind to take a reference
 first.

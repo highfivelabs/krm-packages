@@ -10,10 +10,15 @@
 # a random value; a second certificate is uploaded as a PFX with its
 # password, and an Azure Files share is mounted with an access key, both
 # from Secrets the harness makes the same way (hack/test-secret.sh; nothing
-# committed), as the lines below ask:
+# committed), as the lines below ask. So are the Application Insights
+# connection string (the site's and the slot's app settings then are
+# aso-extensions SitesConfigAppSettings), a slot's sensitive setting and a
+# connection string (SitesConfigConnectionStrings):
 # secret: catalog-web-logs random
 # secret: catalog-web-tls pfx
 # secret: catalog-web-storage random
+# secret: catalog-web-insights random
+# secret: catalog-web-db random
 name: catalog-app
 location: eastus2
 parent_id: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/catalog-rg
@@ -68,3 +73,9 @@ logs:
       default: {file_system: {retention_in_days: 7, retention_in_mb: 35}}
 sticky_settings:
   a: {app_setting_names: [CATALOG]}
+application_insights_connection_string: {secretName: catalog-web-insights, key: value}
+connection_strings:
+  db: {type: SQLAzure, value: {secretName: catalog-web-db, key: value}}
+slot_sensitive_app_settings:
+  staging:
+    API_KEY: {secretName: catalog-web-db, key: value}

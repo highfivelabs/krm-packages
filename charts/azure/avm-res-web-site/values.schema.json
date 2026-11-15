@@ -91,8 +91,40 @@
         "null"
       ]
     },
-    "application_insights_connection_string": {},
-    "application_insights_key": {},
+    "application_insights_connection_string": {
+      "description": "A reference to a Kubernetes Secret in the component's namespace (docs/secrets.md); a string, the secret itself, is refused",
+      "type": [
+        "object",
+        "string",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "secretName": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      }
+    },
+    "application_insights_key": {
+      "description": "A reference to a Kubernetes Secret in the component's namespace (docs/secrets.md); a string, the secret itself, is refused",
+      "type": [
+        "object",
+        "string",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "secretName": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      }
+    },
     "auth_settings": {},
     "auth_settings_v2": {},
     "auto_generated_domain_name_label_scope": {
@@ -251,7 +283,50 @@
         null
       ]
     },
-    "connection_strings": {},
+    "connection_strings": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "value": {
+            "description": "A reference to a Kubernetes Secret in the component's namespace (docs/secrets.md); a string, the secret itself, is refused",
+            "type": [
+              "object",
+              "string",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "secretName": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
     "container_size": {
       "type": [
         "number",
@@ -445,10 +520,21 @@
                   ]
                 },
                 "value": {
+                  "description": "A reference to a Kubernetes Secret in the component's namespace (docs/secrets.md); a string, the secret itself, is refused",
                   "type": [
+                    "object",
                     "string",
                     "null"
-                  ]
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "secretName": {
+                      "type": "string"
+                    },
+                    "key": {
+                      "type": "string"
+                    }
+                  }
                 }
               },
               "type": [
@@ -1116,16 +1202,38 @@
                 ]
               },
               "application_insights_connection_string": {
+                "description": "A reference to a Kubernetes Secret in the component's namespace (docs/secrets.md); a string, the secret itself, is refused",
                 "type": [
+                  "object",
                   "string",
                   "null"
-                ]
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "secretName": {
+                    "type": "string"
+                  },
+                  "key": {
+                    "type": "string"
+                  }
+                }
               },
               "application_insights_key": {
+                "description": "A reference to a Kubernetes Secret in the component's namespace (docs/secrets.md); a string, the secret itself, is refused",
                 "type": [
+                  "object",
                   "string",
                   "null"
-                ]
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "secretName": {
+                    "type": "string"
+                  },
+                  "key": {
+                    "type": "string"
+                  }
+                }
               },
               "application_stack": {
                 "additionalProperties": false,
@@ -3278,16 +3386,38 @@
           ]
         },
         "application_insights_connection_string": {
+          "description": "A reference to a Kubernetes Secret in the component's namespace (docs/secrets.md); a string, the secret itself, is refused",
           "type": [
+            "object",
             "string",
             "null"
-          ]
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "secretName": {
+              "type": "string"
+            },
+            "key": {
+              "type": "string"
+            }
+          }
         },
         "application_insights_key": {
+          "description": "A reference to a Kubernetes Secret in the component's namespace (docs/secrets.md); a string, the secret itself, is refused",
           "type": [
+            "object",
             "string",
             "null"
-          ]
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "secretName": {
+              "type": "string"
+            },
+            "key": {
+              "type": "string"
+            }
+          }
         },
         "application_stack": {
           "additionalProperties": false,
@@ -4487,7 +4617,35 @@
       },
       "type": "object"
     },
-    "slot_sensitive_app_settings": {},
+    "slot_sensitive_app_settings": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": {
+          "description": "A reference to a Kubernetes Secret in the component's namespace (docs/secrets.md); a string, the secret itself, is refused",
+          "type": [
+            "object",
+            "string",
+            "null"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "secretName": {
+              "type": "string"
+            },
+            "key": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "slots_storage_shares_to_mount_sensitive_values": {
       "type": [
         "object",
@@ -4518,7 +4676,23 @@
       ]
     },
     "sticky_settings": {},
-    "storage_account_access_key": {},
+    "storage_account_access_key": {
+      "description": "A reference to a Kubernetes Secret in the component's namespace (docs/secrets.md); a string, the secret itself, is refused",
+      "type": [
+        "object",
+        "string",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "secretName": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      }
+    },
     "storage_account_name": {
       "type": [
         "string",

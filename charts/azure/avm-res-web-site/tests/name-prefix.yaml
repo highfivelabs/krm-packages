@@ -19,6 +19,8 @@ exempt:
   SitesConfigSlotConfigNames: "a config section of the site, its name fixed by Azure (slotConfigNames)"
   SitesBasicPublishingCredentialsPolicyFtp: "a policy of the site, its name fixed by Azure (ftp)"
   SitesBasicPublishingCredentialsPolicyScm: "a policy of the site, its name fixed by Azure (scm)"
+  SitesConfigAppSettings: "a config section of the site or slot, its name fixed by Azure (appsettings)"
+  SitesConfigConnectionStrings: "a config section of the site or slot, its name fixed by Azure (connectionstrings)"
 nameFields:
   Site: azureName
   Certificate: azureName
