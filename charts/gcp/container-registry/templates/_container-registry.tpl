@@ -13,3 +13,32 @@ as JSON {name, location}. Google fixes both by the Container Registry host.
 {{- end -}}
 {{- index $hosts $l | toJson -}}
 {{- end -}}
+
+{{- /*
+containerRegistry.iam: fabric's iam with its Cloud Storage roles translated
+to Artifact Registry roles (the builder, 2026-11-15, CRREG-1; docs/design.md,
+decision 13), as JSON {iam, notes}. Fabric bound iam on the registry's Cloud
+Storage bucket; a gcr.io repository on Artifact Registry takes Artifact
+Registry roles only. Exactly five storage roles translate, by our own table
+(Google gives none); two roles that translate to one Artifact Registry role,
+or to one also listed as is, share one binding. Every other roles/storage.*
+role is refused. Each converted role gives one note, which iam.yaml writes
+into the render and NOTES.txt prints on install.
+*/ -}}
+{{- define "containerRegistry.iam" -}}
+{{- $map := dict "roles/storage.objectViewer" "roles/artifactregistry.reader" "roles/storage.legacyBucketReader" "roles/artifactregistry.reader" "roles/storage.legacyBucketWriter" "roles/artifactregistry.writer" "roles/storage.legacyBucketOwner" "roles/artifactregistry.repoAdmin" "roles/storage.admin" "roles/artifactregistry.repoAdmin" -}}
+{{- $iam := dict -}}
+{{- $notes := list -}}
+{{- $v := .Values.iam | default dict -}}
+{{- range $role := keys $v | sortAlpha -}}
+{{- $to := $role -}}
+{{- if hasKey $map $role -}}
+{{- $to = index $map $role -}}
+{{- $notes = append $notes (printf "container-registry: iam role %s was converted to %s. gcr.io repositories are legacy, supported for organizations still on gcr.io; new setups should use a native Artifact Registry repository with Artifact Registry roles directly." $role $to) -}}
+{{- else if hasPrefix "roles/storage." $role -}}
+{{- include "kcc.unsupported" (list $ (printf "iam.%s" $role) "set" "the registry is an Artifact Registry repository, not a Cloud Storage bucket: grant an Artifact Registry role instead (roles/artifactregistry.reader to pull, roles/artifactregistry.writer to push, roles/artifactregistry.repoAdmin to also delete)") -}}
+{{- end -}}
+{{- $_ := set $iam $to (concat (get $iam $to | default list) (index $v $role | default list) | uniq | sortAlpha) -}}
+{{- end -}}
+{{- toJson (dict "iam" $iam "notes" $notes) -}}
+{{- end -}}

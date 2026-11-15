@@ -78,6 +78,7 @@ var commands = map[string]func(args []string) error{
 	"upstream": upstreamCmd,
 	"coverage": coverageCmd,
 	"convert":  convertCmd,
+	"factory":  factoryCmd,
 	"nameprefix": func(args []string) error {
 		var all []string
 		for _, dir := range args {

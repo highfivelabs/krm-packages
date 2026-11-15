@@ -122,6 +122,19 @@ tasks:
     cmds:
       - bin/catalogtool convert {{.CLI_ARGS}}
 
+  factory:
+    desc: "Generate Bundt documents from a fabric project-factory tree (tools/factory/README.md): task factory -- -config ../my-factory/factory.yaml -out /tmp/docs [-folder-ids ids.yaml] [-folders-only]"
+    deps: [tools]
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - '{{.ROOT_DIR}}/bin/catalogtool factory -catalog {{.ROOT_DIR}} {{.CLI_ARGS}}'
+
+  factory-update:
+    desc: Accept the factory generator's new output as its golden files (tools/factory/testdata/worked/out)
+    dir: tools
+    cmds:
+      - UPDATE=1 go test ./factory -run TestWorked
+
   examples-test:
     desc: Check examples/ (converter output, plan previews, rendered objects against Config Connector's schemas)
     cmds:

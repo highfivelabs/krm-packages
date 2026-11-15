@@ -1,0 +1,35 @@
+# Written by the factory generator (catalogtool factory) from data/folders
+# at 4f2a9c1. Do not edit: edit the factory's files and run it again.
+apiVersion: hfl.dev/v1
+kind: Stack
+metadata:
+  name: folders
+  scope: gcp-factory
+  annotations:
+    hfl.dev/factory: "data/folders@4f2a9c1"
+spec:
+  components:
+    - name: folder-team-a
+      package:
+        name: gcp-folder
+        version: "0.2.0"
+      inputs:
+        name: Team A
+        parent: organizations/1234567890
+    - name: folder-team-a-app-0
+      package:
+        name: gcp-folder
+        version: "0.2.0"
+      inputs:
+        name: App 0
+        parent: "${components.folder-team-a.outputs.id}"
+---
+apiVersion: hfl.dev/v1
+kind: Instance
+metadata:
+  name: folders
+  scope: gcp-factory/gcp-org
+  annotations:
+    hfl.dev/factory: "data/folders@4f2a9c1"
+spec:
+  stack: folders
