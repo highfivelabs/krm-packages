@@ -172,8 +172,12 @@ config-connector-extensions' CRDs, and the refusals in `tests/*.fail.yaml`.
 Fake cloud: `task test-mock MOCK_CHARTS=compute-vm`:
 `tests/mock.values.yaml`, an instance with a created service account, an
 attached disk with a snapshot schedule attached to it, an instance schedule
-and an unmanaged group, on the network in `tests/mock.needs.yaml`. Result:
-pending. Not in the fake-cloud case, render-tested only: instance IAM and
+and an unmanaged group, on the network in `tests/mock.needs.yaml`. 2026-11-15, offload VM
+`off-catalog-1115101217-21342`, config-connector-extensions at `384d07c0`:
+all 7 objects (instance, disk, its policy attachment, both resource
+policies, group, account) Ready and deleted, and the outputs evaluated
+(`internal_ip`, `internal_ips` and `external_ip` empty: mockgcp assigns no
+addresses). Not in the fake-cloud case, render-tested only: instance IAM and
 IAP tunnel IAM (mockgcp has neither), a snapshot schedule on the boot disk
 (mockgcp makes no boot disk with an instance), a regional disk, and the
 template.
