@@ -1,0 +1,14 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+The module variables this chart keeps in its values but cannot carry
+(upstream.yaml, "refused"): each stops the render, naming the gap, when it
+is set to anything but its Terraform default. Renders nothing.
+*/ -}}
+{{- $v := .Values }}
+{{- /* repository_type is refused in repository.yaml, before the repository
+needs anything else. */}}
+{{- $public := "a public repository (ECR Public) is refused: ACK's ecrpublic Repository (ecrpublic-controller v1.7.0) has no policy or catalog data field, and the module always attaches a policy to a public repository" }}
+{{- include "ack.unsupported" (list $ "public_repository_catalog_data" $v.public_repository_catalog_data $public) }}
+{{- include "ack.unsupported" (list $ "repository_force_delete" $v.repository_force_delete "ACK's Repository has no field to delete a repository that still holds images (ecr-controller v1.11.1)") }}

@@ -1,0 +1,563 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ecr values (terraform-aws-modules ecr v3.2.0)",
+  "type": "object",
+  "additionalProperties": false,
+  "definitions": {
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "test",
+        "variable",
+        "values"
+      ],
+      "properties": {
+        "test": {
+          "type": "string"
+        },
+        "variable": {
+          "type": "string"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ]
+          }
+        }
+      }
+    },
+    "statement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sid": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "actions": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "not_actions": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "effect": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "Allow",
+            "Deny",
+            null
+          ]
+        },
+        "resources": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "not_resources": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "principals": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "identifiers"
+            ],
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "identifiers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "not_principals": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "identifiers"
+            ],
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "identifiers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "condition": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/condition"
+          }
+        },
+        "conditions": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/condition"
+          }
+        }
+      }
+    }
+  },
+  "properties": {
+    "names": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 256,
+          "pattern": "^(?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)*[a-z0-9]+(?:[._-][a-z0-9]+)*$"
+        }
+      }
+    },
+    "namePrefix": {
+      "type": "string",
+      "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?)?$",
+      "maxLength": 63
+    },
+    "labels": {
+      "type": "object",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean",
+          "null"
+        ]
+      }
+    },
+    "account_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9]{12}$"
+    },
+    "partition": {
+      "type": "string",
+      "enum": [
+        "aws",
+        "aws-cn",
+        "aws-us-gov"
+      ]
+    },
+    "deletion_policy": {
+      "type": "string",
+      "enum": [
+        "DELETE",
+        "ABANDON",
+        "PREVENT"
+      ]
+    },
+    "allow_alpha": {
+      "type": "boolean"
+    },
+    "attach_repository_policy": {
+      "type": "boolean",
+      "description": "Determines whether a repository policy will be attached to the repository"
+    },
+    "create": {
+      "type": "boolean",
+      "description": "Determines whether resources will be created (affects all resources)"
+    },
+    "create_lifecycle_policy": {
+      "type": "boolean",
+      "description": "Determines whether a lifecycle policy will be created"
+    },
+    "create_registry_policy": {
+      "type": "boolean",
+      "description": "Determines whether a registry policy will be created"
+    },
+    "create_registry_replication_configuration": {
+      "type": "boolean",
+      "description": "Determines whether a registry replication configuration will be created"
+    },
+    "create_repository": {
+      "type": "boolean",
+      "description": "Determines whether a repository will be created"
+    },
+    "create_repository_policy": {
+      "type": "boolean",
+      "description": "Determines whether a repository policy will be created"
+    },
+    "manage_registry_scanning_configuration": {
+      "type": "boolean",
+      "description": "Determines whether the registry scanning configuration will be managed"
+    },
+    "public_repository_catalog_data": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Not supported (gap): ECR Public (see repository_type)"
+    },
+    "region": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Region where this resource will be managed"
+    },
+    "registry_policy": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The policy document. This is a JSON formatted string"
+    },
+    "registry_pull_through_cache_rules": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ecr_repository_prefix",
+          "upstream_registry_url"
+        ],
+        "properties": {
+          "ecr_repository_prefix": {
+            "type": "string"
+          },
+          "upstream_registry_url": {
+            "type": "string"
+          },
+          "credential_arn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "custom_role_arn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "upstream_repository_prefix": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "region": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "description": "List of pull through cache rules to create"
+    },
+    "registry_replication_rules": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "destinations"
+        ],
+        "properties": {
+          "destinations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "region",
+                "registry_id"
+              ],
+              "properties": {
+                "region": {
+                  "type": "string"
+                },
+                "registry_id": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "repository_filters": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "filter",
+                "filter_type"
+              ],
+              "properties": {
+                "filter": {
+                  "type": "string"
+                },
+                "filter_type": {
+                  "type": "string",
+                  "enum": [
+                    "PREFIX_MATCH"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "description": "The replication rules for a replication configuration. A maximum of 10 are allowed"
+    },
+    "registry_scan_rules": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "scan_frequency",
+          "filter"
+        ],
+        "properties": {
+          "scan_frequency": {
+            "type": "string",
+            "enum": [
+              "SCAN_ON_PUSH",
+              "CONTINUOUS_SCAN",
+              "MANUAL"
+            ]
+          },
+          "filter": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "filter"
+              ],
+              "properties": {
+                "filter": {
+                  "type": "string"
+                },
+                "filter_type": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "enum": [
+                    "WILDCARD",
+                    null
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "description": "One or multiple blocks specifying scanning rules"
+    },
+    "registry_scan_type": {
+      "type": "string",
+      "enum": [
+        "ENHANCED",
+        "BASIC"
+      ],
+      "description": "the scanning type to set for the registry. Can be either `ENHANCED` or `BASIC`"
+    },
+    "repository_encryption_type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "KMS",
+        "AES256",
+        "KMS_DSSE",
+        null
+      ],
+      "description": "The encryption type for the repository"
+    },
+    "repository_force_delete": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Not supported (gap): ACK's Repository has no force delete field"
+    },
+    "repository_image_scan_on_push": {
+      "type": "boolean",
+      "description": "Indicates whether images are scanned after being pushed to the repository"
+    },
+    "repository_image_tag_mutability": {
+      "type": "string",
+      "enum": [
+        "MUTABLE",
+        "MUTABLE_WITH_EXCLUSION",
+        "IMMUTABLE",
+        "IMMUTABLE_WITH_EXCLUSION"
+      ],
+      "description": "The tag mutability setting for the repository"
+    },
+    "repository_image_tag_mutability_exclusion_filter": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "filter",
+          "filter_type"
+        ],
+        "properties": {
+          "filter": {
+            "type": "string"
+          },
+          "filter_type": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Filters for tags that override the tag mutability setting"
+    },
+    "repository_kms_key": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The ARN of the KMS key to use when encryption_type is `KMS`"
+    },
+    "repository_lambda_read_access_arns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The ARNs of the Lambda service roles that have read access to the repository"
+    },
+    "repository_lifecycle_policy": {
+      "type": "string",
+      "description": "The lifecycle policy document, JSON"
+    },
+    "repository_name": {
+      "type": "string",
+      "description": "The name of the repository"
+    },
+    "repository_policy": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The JSON policy to apply to the repository"
+    },
+    "repository_policy_statements": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "$ref": "#/definitions/statement"
+      },
+      "description": "A map of IAM policy statements for custom permission usage"
+    },
+    "repository_read_access_arns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The ARNs of the IAM users/roles that have read access to the repository"
+    },
+    "repository_read_write_access_arns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The ARNs of the IAM users/roles that have read/write access to the repository"
+    },
+    "repository_type": {
+      "type": "string",
+      "enum": [
+        "private",
+        "public"
+      ],
+      "description": "The type of repository to create. Not supported (gap): only private"
+    },
+    "tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean"
+        ]
+      },
+      "description": "A map of tags to add to all resources"
+    }
+  }
+}

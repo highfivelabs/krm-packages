@@ -1,0 +1,15 @@
+# Applied to the fake AWS (hack/mock-apply-aws.sh): a repository with the
+# default read-only policy for the fake's own account (account_id,
+# tests/mock.set.yaml: the emulator answers as 000000000000, moto as
+# 123456789012), a lifecycle policy and a pull through cache rule. The registry settings
+# (ack-extensions' kinds) are render-tested only: they are one per account,
+# and the Cloud Control kinds have not yet become Ready on either fake
+# (docs/aws.md, "Charts").
+repository_name: catalog-test/repo
+region: us-east-1
+account_id: "000000000000"
+repository_image_tag_mutability: MUTABLE
+repository_lifecycle_policy: '{"rules":[{"rulePriority":1,"description":"Expire untagged","selection":{"tagStatus":"untagged","countType":"sinceImagePushed","countUnit":"days","countNumber":7},"action":{"type":"expire"}}]}'
+registry_pull_through_cache_rules:
+  pub: {ecr_repository_prefix: catalog-test-pub, upstream_registry_url: public.ecr.aws}
+tags: {catalog-test: "true"}
