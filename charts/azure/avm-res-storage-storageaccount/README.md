@@ -100,7 +100,7 @@ Every module variable is a value of the same name, type and default
 
 | Variable | Kind | Why |
 | --- | --- | --- |
-| a local user's `ssh_password_enabled`, `timeouts` | not ported, by design | Azure generates the password, returned once by `regeneratePassword`: whether a component may hold one is the builder's decision; Bundt sets a component's time limit |
+| a local user's `ssh_password_enabled`, `timeouts` | gap, by design | Azure generates the password, returned once by the `regeneratePassword` action, which no kind performs (the kind's `hasSshPassword` can only remove one): whether a component may hold one is the builder's decision; Bundt sets a component's time limit |
 | `static_website` | gap | set on the blob service's data plane, which ASO does not call |
 | `access_tier: Smart` | gap | needs API version 2025-08-01; ASO's `StorageAccount` is at 2025-06-01 |
 | a table's or share's `signed_identifiers` | gap | ASO renders a signed identifier's `id` as an ARM reference |

@@ -28,8 +28,10 @@ refused:
     kind: by-design
     reason: "writes a generated password or SSH private key to Key Vault; the catalog never generates a secret (docs/secrets.md)"
   - variable: run_commands_secrets
-    kind: not-ported
-    reason: "protected parameters and run-as passwords are secret values"
+    kind: gap
+    partial: true
+    reason: "accepted: run_as_user, and run_as_password as a reference to a Kubernetes Secret (aso-extensions' VirtualMachinesRunCommand runAsPasswordFromSecret; docs/secrets.md), but protected_parameters are refused: the kind takes them only in plain text, so the secret values would sit in the component's inputs"
+    fields: [protected_parameters]
   - variable: account_credentials
     kind: by-design
     partial: true

@@ -167,6 +167,8 @@ run_commands:
     location: eastus2
     deploy_sequence: 1
     script_source: {command_id: ifconfig}
+run_commands_secrets:
+  hello: {run_as_user: runner, run_as_password: {secretName: vm-run-hello, key: password}}
 shutdown_schedules:
   nightly:
     daily_recurrence_time: "1900"

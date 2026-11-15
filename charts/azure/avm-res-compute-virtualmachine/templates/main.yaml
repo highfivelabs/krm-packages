@@ -40,7 +40,13 @@ catalog never generates one. */ -}}
 {{- $pwRef := $acPwRef | default (include "aso.secretRef" (list $ "admin_password" $v.admin_password)) }}
 {{- include "aso.unsupported" (list $ "account_credentials.key_vault_configuration" $ac.key_vault_configuration "it writes the generated password or SSH private key to Key Vault, a secret value the chart does not make") }}
 {{- include "aso.unsupported" (list $ "generated_secrets_key_vault_secret_config" $v.generated_secrets_key_vault_secret_config "it writes the generated password or SSH private key to Key Vault, a secret value the chart does not make") }}
-{{- include "aso.unsupported" (list $ "run_commands_secrets" $v.run_commands_secrets "protected parameters and run-as passwords are secret values; how a component supplies one is the builder's decision") }}
+{{- /* run_commands_secrets: matched to run_commands by key (children.yaml).
+A key with no run command is an error here; the module would drop it. */ -}}
+{{- range $k, $_ := ($v.run_commands_secrets | default dict) }}
+{{- if not (hasKey ($v.run_commands | default dict) $k) }}
+{{- fail (printf "avm-res-compute-virtualmachine: run_commands_secrets.%s has no run_commands entry of the same key" $k) }}
+{{- end }}
+{{- end }}
 {{- include "aso.unsupported" (list $ "azure_backup_configurations" $v.azure_backup_configurations "Microsoft.RecoveryServices/vaults/backupFabrics/protectionContainers/protectedItems (a protected VM) has no Azure Service Operator or aso-extensions kind") }}
 {{- include "aso.unsupported" (list $ "timeouts" $v.timeouts "Azure Service Operator has no per-request timeouts; Bundt sets a component's time limit") }}
 {{- $dct := $v.disk_controller_type }}

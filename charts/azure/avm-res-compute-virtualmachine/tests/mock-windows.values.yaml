@@ -1,7 +1,8 @@
 # For an apply against the fake cloud: a Windows machine whose admin
 # password is a reference to a Secret the harness makes before the apply
 # with a random value (hack/test-secret.sh; nothing committed), as the line
-# below asks, with an interface and the Windows-only settings.
+# below asks, with an interface and the Windows-only settings, and a run
+# command that runs as that admin with the same password reference.
 # secret: catalog-vm-win-admin random
 name: catalog-vmwin
 location: eastus2
@@ -23,3 +24,10 @@ network_interfaces:
       ipc0:
         name: ipconfig1
         private_ip_subnet_resource_id: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/catalog-rg/providers/Microsoft.Network/virtualNetworks/vnet/subnets/default
+run_commands:
+  whoami:
+    name: whoami
+    location: eastus2
+    script_source: {script: "whoami"}
+run_commands_secrets:
+  whoami: {run_as_user: catalogadmin, run_as_password: {secretName: catalog-vm-win-admin, key: value}}
