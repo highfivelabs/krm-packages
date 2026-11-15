@@ -145,7 +145,12 @@ CRD (`crds/config-connector-extensions`), and the refusals in
 
 Fake cloud (`task test-mock MOCK_CHARTS=looker-core`,
 `tests/mock.values.yaml`): a public instance whose client secret comes
-from a Secret that `hack/test-secret.sh` makes. MOCK_RESULT
+from a Secret that `hack/test-secret.sh` makes. On 2026-11-15 (offload VM
+`off-catalog-1115230547-26084`, config-connector-extensions `069e4211`)
+the instance became Ready with the client secret read from that Secret,
+the outputs evaluated (`id`, `instance_id`, `instance_name`; the fake
+reports no `lookerUri` or `lookerVersion`, so those were null), and the
+instance was deleted: 0 failures.
 
 Live: not run. A Looker instance is billed by the year and takes about an
 hour to make, which the live rules exclude (`docs/design.md`, "Testing":
