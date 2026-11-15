@@ -1,0 +1,3 @@
+# expect: is not an IAM principal ARN
+account_id: "111122223333"
+collector: {aws_principal_arns: ["bundt-estate-collector"]}

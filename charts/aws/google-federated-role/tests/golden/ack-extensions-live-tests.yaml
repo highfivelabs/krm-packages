@@ -1,0 +1,46 @@
+---
+# Source: google-federated-role/templates/role.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: ack-extensions-live-tests-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "ack-extensions-live-tests"
+    app.kubernetes.io/name: google-federated-role
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "role"
+spec:
+  name: "ack-extensions-live-tests"
+  path: "/"
+  description: "Assumed only by the offload VMs' Google service account, through web identity federation, for task test-live (ack-extensions docs/live-runs.md)."
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRoleWithWebIdentity\"],\"Condition\":{\"StringEquals\":{\"accounts.google.com:oaud\":[\"ack-extensions-live-tests\"],\"accounts.google.com:sub\":[\"000000000000000000000\"]}},\"Effect\":\"Allow\",\"Principal\":{\"Federated\":[\"accounts.google.com\"]},\"Sid\":\"OnlyTheOffloadServiceAccount\"}],\"Version\":\"2012-10-17\"}"
+  maxSessionDuration: 3600
+  policyRefs:
+    - from:
+        name: ack-extensions-live-tests-policy-part-1
+  tags:
+    - key: "purpose"
+      value: "ack-extensions-live-tests"
+---
+# Source: google-federated-role/templates/role.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: ack-extensions-live-tests-policy-part-1
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "ack-extensions-live-tests"
+    app.kubernetes.io/name: google-federated-role
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy:part-1"
+spec:
+  name: "ack-extensions-live-tests-part-1"
+  path: "/"
+  description: "ack-extensions live tests, part 1"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"cloudformation:CreateResource\",\"cloudformation:DeleteResource\",\"cloudformation:GetResource\",\"cloudformation:GetResourceRequestStatus\",\"cloudformation:ListResources\",\"cloudformation:UpdateResource\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"ServiceCloudformation\"},{\"Action\":[\"config:DescribeConfigurationRecorderStatus\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"ServiceConfig\"},{\"Action\":[\"ec2:CreateSubnet\",\"ec2:CreateTags\",\"ec2:CreateTransitGateway\",\"ec2:CreateTransitGatewayRouteTable\",\"ec2:CreateTransitGatewayVpcAttachment\",\"ec2:CreateVpc\",\"ec2:DeleteSubnet\",\"ec2:DeleteTransitGateway\",\"ec2:DeleteTransitGatewayRouteTable\",\"ec2:DeleteTransitGatewayVpcAttachment\",\"ec2:DeleteVpc\",\"ec2:DescribeTransitGatewayPeeringAttachments\",\"ec2:DescribeTransitGatewayVpcAttachments\",\"ec2:DescribeTransitGateways\",\"ec2:DescribeVpcs\",\"ec2:GetTransitGatewayRouteTableAssociations\",\"ec2:GetTransitGatewayRouteTablePropagations\",\"ec2:SearchTransitGatewayRoutes\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"ServiceEc2\"},{\"Action\":[\"iam:AttachRolePolicy\",\"iam:CreateRole\",\"iam:CreateSAMLProvider\",\"iam:DeleteRole\",\"iam:DeleteSAMLProvider\",\"iam:GetSAMLProvider\",\"iam:ListRolePolicies\",\"iam:ListSAMLProviderTags\",\"iam:ListSAMLProviders\",\"iam:PutRolePolicy\",\"iam:TagSAMLProvider\",\"iam:UntagSAMLProvider\",\"iam:UpdateSAMLProvider\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"ServiceIam\"},{\"Action\":[\"logs:CreateLogGroup\",\"logs:DeleteLogGroup\",\"logs:DescribeLogGroups\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"ServiceLogs\"},{\"Action\":[\"route53:CreateHostedZone\",\"route53:DeleteHostedZone\",\"route53:GetQueryLoggingConfig\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"ServiceRoute53\"},{\"Action\":[\"route53resolver:ListResolverDnssecConfigs\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"ServiceRoute53resolver\"},{\"Action\":[\"s3:CreateBucket\",\"s3:DeleteBucket\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"ServiceS3\"},{\"Action\":[\"secretsmanager:CreateSecret\",\"secretsmanager:DeleteSecret\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"ServiceSecretsmanager\"},{\"Action\":[\"sso:AttachCustomerManagedPolicyReferenceToPermissionSet\",\"sso:AttachManagedPolicyToPermissionSet\",\"sso:CreateAccountAssignment\",\"sso:CreatePermissionSet\",\"sso:DeleteAccountAssignment\",\"sso:DeleteInlinePolicyFromPermissionSet\",\"sso:DeletePermissionSet\",\"sso:DeletePermissionsBoundaryFromPermissionSet\",\"sso:DescribeAccountAssignmentCreationStatus\",\"sso:DescribeAccountAssignmentDeletionStatus\",\"sso:DescribePermissionSet\",\"sso:DescribePermissionSetProvisioningStatus\",\"sso:DetachCustomerManagedPolicyReferenceFromPermissionSet\",\"sso:DetachManagedPolicyFromPermissionSet\",\"sso:GetInlinePolicyForPermissionSet\",\"sso:GetPermissionsBoundaryForPermissionSet\",\"sso:ListAccountAssignments\",\"sso:ListCustomerManagedPolicyReferencesInPermissionSet\",\"sso:ListInstances\",\"sso:ListManagedPoliciesInPermissionSet\",\"sso:ListPermissionSets\",\"sso:ListTagsForResource\",\"sso:ProvisionPermissionSet\",\"sso:PutInlinePolicyToPermissionSet\",\"sso:PutPermissionsBoundaryToPermissionSet\",\"sso:TagResource\",\"sso:UntagResource\",\"sso:UpdatePermissionSet\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"ServiceSso\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "purpose"
+      value: "ack-extensions-live-tests"

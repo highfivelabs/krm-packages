@@ -10,7 +10,7 @@ kind: Package
 metadata:
   name: aws-iam-role
 spec:
-  version: 0.1.0
+  version: 0.1.1
   engine: helm
   providers: [ack]
   outputs:

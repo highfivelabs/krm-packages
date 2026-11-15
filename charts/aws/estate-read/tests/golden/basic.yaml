@@ -1,0 +1,40 @@
+---
+# Source: estate-read/templates/role.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: basic-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: estate-read
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "role"
+spec:
+  name: "bundt-estate-read"
+  path: "/"
+  description: "Read-only inventory for Bundt's estate collector; no data reads, no writes."
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam::444455556666:role/bundt-estate-collector\"]},\"Sid\":\"Collector\"}],\"Version\":\"2012-10-17\"}"
+  maxSessionDuration: 3600
+  policies:
+    - "arn:aws:iam::111122223333:policy/bundt-estate-read-cloud-control"
+    - "arn:aws:iam::aws:policy/job-function/ViewOnlyAccess"
+---
+# Source: estate-read/templates/role.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: basic-policy-cloud-control
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: estate-read
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy:cloud-control"
+spec:
+  name: "bundt-estate-read-cloud-control"
+  path: "/"
+  description: "Cloud Control's read actions, for Bundt's estate collector"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"cloudformation:GetResource\",\"cloudformation:ListResources\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"CloudControlRead\"}],\"Version\":\"2012-10-17\"}"

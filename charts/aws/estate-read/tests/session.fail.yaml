@@ -1,0 +1,4 @@
+# expect: max_session_duration 100000 must be 3600 to 43200 seconds
+account_id: "111122223333"
+collector: {aws_principal_arns: ["arn:aws:iam::444455556666:role/c"]}
+max_session_duration: 100000

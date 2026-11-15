@@ -1,0 +1,9 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The namePrefix convention (docs/design.md, "Names, labels and tags"): the
+# role's name and its policies' (which start with it), unique in the
+# account, carry the namePrefix.
+nameFields:
+  Role: name
+  Policy: name

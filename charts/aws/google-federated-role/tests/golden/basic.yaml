@@ -1,0 +1,38 @@
+---
+# Source: google-federated-role/templates/role.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: basic-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: google-federated-role
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "role"
+spec:
+  name: "gsa-reader"
+  path: "/"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRoleWithWebIdentity\"],\"Condition\":{\"StringEquals\":{\"accounts.google.com:oaud\":[\"gsa-reader\"],\"accounts.google.com:sub\":[\"123456789012345678901\"]}},\"Effect\":\"Allow\",\"Principal\":{\"Federated\":[\"accounts.google.com\"]},\"Sid\":\"GoogleServiceAccount\"}],\"Version\":\"2012-10-17\"}"
+  policyRefs:
+    - from:
+        name: basic-policy-read
+---
+# Source: google-federated-role/templates/role.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: basic-policy-read
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: google-federated-role
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy:read"
+spec:
+  name: "gsa-reader-read"
+  path: "/"
+  description: "Read one bucket"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"s3:GetObject\",\"s3:ListBucket\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:s3:::example\",\"arn:aws:s3:::example/*\"],\"Sid\":\"Read\"}],\"Version\":\"2012-10-17\"}"
