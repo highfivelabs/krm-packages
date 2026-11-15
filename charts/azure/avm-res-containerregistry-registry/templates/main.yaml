@@ -26,12 +26,34 @@ private_dns_zone_group block a PrivateEndpointsPrivateDnsZoneGroup when the
 module manages it, the application security group associations its
 applicationSecurityGroups, and azurerm_management_lock.private_endpoint an
 aso-extensions ManagementLock (the entry's lock, else the registry's when
-private_endpoints_inherit_lock). A token's passwords
-(azurerm_container_registry_token_password, secrets Azure returns once) and
-the customer-managed key are refused; the telemetry is not ported.
+private_endpoints_inherit_lock). The customer-managed key is the registry's
+encryption, its identity's client ID read from a ConfigMap
+(customer_managed_key.user_assigned_identity.client_id_from_config). A
+token's passwords (azurerm_container_registry_token_password, secrets Azure
+returns once) are refused; the telemetry is not ported.
 */ -}}
 {{- $v := .Values }}
-{{- include "aso.unsupported" (list $ "customer_managed_key" $v.customer_managed_key "ASO's Registry takes the key's URI and the identity's client ID, which the module looks up from the vault and identity IDs and a render cannot") }}
+{{- /* customer_managed_key: ASO's Registry takes the key's URI and the
+identity's client ID. The module reads the client ID from Azure (a data
+source on the identity's resource ID), which a render cannot; the chart
+takes it from a ConfigMap instead (identityFromConfig), a Package input the
+builder decided on 2026-11-15 (RECWEB): user_assigned_identity.client_id_from_config
+{name, key}, such as the ConfigMap avm-res-managedidentity-userassignedidentity
+exports (<release>-id-outputs, key clientId). The key URI is built from the
+vault's name in the public cloud's Key Vault DNS suffix (vault.azure.net),
+versionless unless key_version is set, as the module's key ID. */ -}}
+{{- $cmk := $v.customer_managed_key }}
+{{- $cmkIdentity := dict }}
+{{- if $cmk }}
+{{- $cmkIdentity = $cmk.user_assigned_identity | default dict }}
+{{- range (list "key_vault_resource_id" "key_name") }}
+{{- if not (get $cmk .) }}{{ fail (printf "avm-res-containerregistry-registry: customer_managed_key.%s is required" .) }}{{ end }}
+{{- end }}
+{{- if not $cmkIdentity.resource_id }}{{ fail "avm-res-containerregistry-registry: customer_managed_key.user_assigned_identity.resource_id is required: Azure reads the key as that identity" }}{{ end }}
+{{- $from := $cmkIdentity.client_id_from_config | default dict }}
+{{- if not (and $from.name $from.key) }}{{ fail "avm-res-containerregistry-registry: customer_managed_key.user_assigned_identity.client_id_from_config {name, key} is required: the module reads the identity's client ID from Azure, which a render cannot, so the chart reads it from a ConfigMap (identityFromConfig), such as the <release>-id-outputs ConfigMap avm-res-managedidentity-userassignedidentity exports (key clientId)" }}{{ end }}
+{{- if not (has $cmkIdentity.resource_id (($v.managed_identities | default dict).user_assigned_resource_ids | default list)) }}{{ fail "avm-res-containerregistry-registry: customer_managed_key.user_assigned_identity.resource_id must also be in managed_identities.user_assigned_resource_ids: Azure reads the key as one of the registry's identities" }}{{ end }}
+{{- end }}
 {{- include "aso.unsupported" (list $ "resource_types" (ternary "" "set" (empty (compact (values ($v.resource_types | default dict))))) "ASO's kinds fix the API versions (RegistryCacheRule 2025-11-01)") }}
 {{- include "aso.unsupported" (list $ "retry" $v.retry "Azure Service Operator retries every failed request itself, with backoff") }}
 {{- include "aso.unsupported" (list $ "timeouts" $v.timeouts "Azure Service Operator has no per-request timeouts; Bundt sets a component's time limit") }}
@@ -84,6 +106,15 @@ spec:
   adminUserEnabled: {{ eq $v.admin_enabled true }}
   anonymousPullEnabled: {{ eq $v.anonymous_pull_enabled true }}
   dataEndpointEnabled: {{ eq $v.data_endpoint_enabled true }}
+  {{- with $cmk }}
+  encryption:
+    status: enabled
+    keyVaultProperties:
+      keyIdentifier: {{ printf "https://%s.vault.azure.net/keys/%s%s" (last (splitList "/" (trimSuffix "/" .key_vault_resource_id))) .key_name (ternary (printf "/%s" (toString .key_version)) "" (not (empty .key_version))) | quote }}
+      identityFromConfig:
+        name: {{ $cmkIdentity.client_id_from_config.name | quote }}
+        key: {{ $cmkIdentity.client_id_from_config.key | quote }}
+  {{- end }}
   {{- if or $mi.system_assigned $uai }}
   identity:
     type: {{ ternary (ternary "SystemAssigned, UserAssigned" "SystemAssigned" (gt (len $uai) 0)) "UserAssigned" (eq $mi.system_assigned true) | quote }}

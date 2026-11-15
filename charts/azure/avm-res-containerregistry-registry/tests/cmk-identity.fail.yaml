@@ -1,0 +1,11 @@
+# expect: avm-res-containerregistry-registry: customer_managed_key.user_assigned_identity.resource_id must also be in managed_identities.user_assigned_resource_ids
+name: acrtest01
+location: eastus2
+resource_group_name: /subscriptions/s/resourceGroups/rg
+sku: Premium
+customer_managed_key:
+  key_vault_resource_id: /subscriptions/s/resourceGroups/rg/providers/Microsoft.KeyVault/vaults/kv
+  key_name: k
+  user_assigned_identity:
+    resource_id: /subscriptions/s/resourceGroups/rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id
+    client_id_from_config: {name: id-outputs, key: clientId}

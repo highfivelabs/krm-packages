@@ -25,7 +25,7 @@ renders the ASO `UserAssignedIdentity` `uami-example`
 
 | Module resource | When | Object (`hfl.dev/id`) |
 | --- | --- | --- |
-| `azurerm_user_assigned_identity.this` | always | aso-extensions' `UserAssignedIdentity` (`managedidentity.azure.hfl.dev/v20241130`, beside ASO's 2023-01-31 kind under its name; aso-extensions `docs/plan.md` §8 open question 11), `user_assigned_identity`, owned by the resource group; its principal ID exported by a CEL expression (`operatorSpec.configMapExpressions`) |
+| `azurerm_user_assigned_identity.this` | always | aso-extensions' `UserAssignedIdentity` (`managedidentity.azure.hfl.dev/v20241130`, beside ASO's 2023-01-31 kind under its name; aso-extensions `docs/plan.md` §8 open question 11), `user_assigned_identity`, owned by the resource group; its client ID (always, key `clientId`, for another component's `*FromConfig` field, such as `avm-res-containerregistry-registry`'s customer-managed key) and principal ID (with `outbound_role_assignments`, key `principalId`) exported by CEL expressions (`operatorSpec.configMapExpressions`) to the ConfigMap `<release>-id-outputs` |
 | `azurerm_federated_identity_credential.this` | one per `federated_identity_credentials` entry | `FederatedIdentityCredential`, `federated_identity_credential:<key>`, owned by the identity by its ARM ID (ASO's kind names ASO's `UserAssignedIdentity` as owner) |
 | `azurerm_role_assignment.this` | one per `outbound_role_assignments` entry | `RoleAssignment` (`authorization.azure.com/v20220401`), `outbound_role_assignment:<key>`, owned by the entry's `scope` (by ARM ID); its principal the identity's, read with `principalIdFromConfig` from the ConfigMap `<release>-id-outputs` the identity exports (`operatorSpec.configMapExpressions`, `self.status.principalId`) |
 | `azurerm_management_lock.this` | `lock` set | `ManagementLock` (aso-extensions), `lock` |
@@ -118,6 +118,9 @@ fake cloud with stock ASO (`docs/azure.md`, "8. Charts").
 
 ## Changes
 
+- **0.4.0** (2026-11-15): the identity's client ID is always exported to
+  `<release>-id-outputs` (key `clientId`), so another component can read it
+  with a `*FromConfig` field (RECWEB).
 - **0.3.0** (2026-11-14): always aso-extensions' `UserAssignedIdentity`
   (the builder's choice); the principal ID by CEL expression, the
   federated credentials and lock by ARM ID. Moving from an earlier version:
