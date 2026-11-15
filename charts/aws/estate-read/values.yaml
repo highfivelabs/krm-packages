@@ -1,0 +1,61 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# estate-read: the read-only role Bundt's estate collector assumes in one
+# AWS account (bundt drafts/estate/README.md, section 4; asks/estate-answers.md).
+# README.md says what each value renders.
+
+# Names, labels and tags (docs/design.md, "Names, labels and tags").
+#
+# The role's name in full, {role}. A name set here takes no namePrefix.
+# Unset, the role is named name. The Cloud Control policy is named
+# <role's name>-cloud-control.
+names: {}
+namePrefix: ""
+labels: {}
+# AWS tags on the role and the policy.
+tags: {}
+# DELETE (default): deleting the component deletes the role and the policy.
+# ABANDON keeps them (services.k8s.aws/deletion-policy: retain).
+deletion_policy: DELETE
+
+# The AWS account the role is in and its partition: the Cloud Control
+# policy's ARN is built from them, since the role also takes the AWS managed
+# ViewOnlyAccess by ARN (ACK's Role takes policy ARNs or references, not
+# both). Bundt fills account_id from the Environment.
+account_id: null
+partition: aws
+
+# The role's name: the same in every account, so the collector finds it.
+name: bundt-estate-read
+path: null
+description: Read-only inventory for Bundt's estate collector; no data reads, no writes.
+# Seconds (3600 to 43200). One hour: a collector run assumes it again.
+max_session_duration: 3600
+
+# Who may assume the role: the collector's principal only (at least one of
+# the two). Never a Bundt provisioning (bnt-ip) identity.
+collector:
+  # AWS principals (role ARNs) that may sts:AssumeRole into it: the
+  # collector's own role, in the account it runs from.
+  aws_principal_arns: []
+  # Optional: an sts:ExternalId the AWS principals must present.
+  external_id: null
+  # A Google service account (the collector on GKE), by its unique ID (21
+  # digits), through IAM's built-in Google federation, presenting ID tokens
+  # with the audience google_audience (as google-federated-role's trust).
+  google_service_account_unique_id: null
+  google_audience: null
+
+# AWS's managed job-function/ViewOnlyAccess (lists and describes; not
+# ReadOnlyAccess, which reads data: object contents, table items).
+view_only_access: true
+# A policy of its own with Cloud Control's read actions
+# (cloudformation:ListResources and GetResource), which the per-account
+# source lists with (README.md).
+cloud_control_read: true
+
+# The iam-role chart, a dependency for its policy document builder only:
+# it renders nothing of its own here.
+iam-role:
+  create: false

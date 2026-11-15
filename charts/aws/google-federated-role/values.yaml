@@ -1,0 +1,69 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# google-federated-role: an IAM role one Google service account assumes
+# through IAM's built-in Google federation, and its policies. README.md
+# says what each value renders.
+
+# Names, labels and tags (docs/design.md, "Names, labels and tags").
+#
+# The role's name in full, {role}. A name set here takes no namePrefix.
+# Unset, the role is named name. Each policy under policies is named
+# <role's name>-<key>.
+names: {}
+# An optional convenience: "<namePrefix>-" in front of the role's name (and
+# so of its policies' names). Empty (the default) changes nothing.
+namePrefix: ""
+# Kubernetes labels on every object. They stay in Kubernetes: ACK does not
+# copy labels to AWS (AWS tags are tags).
+labels: {}
+# AWS tags on the role and every policy.
+tags: {}
+# DELETE (default): deleting the component deletes the role (its policies
+# detached first) and the policies. ABANDON keeps them
+# (services.k8s.aws/deletion-policy: retain).
+deletion_policy: DELETE
+
+# The AWS account the role is in and its partition. Needed only when both
+# policies and policy_arns are set: ACK's Role takes its policies as ARNs or
+# as references, not both, so the policies' ARNs are then built
+# (arn:<partition>:iam::<account_id>:policy<path><name>). Bundt fills
+# account_id from the Environment.
+account_id: null
+partition: aws
+
+# The role's name (required), path, description and maximum session length
+# in seconds (3600 to 43200; unset, IAM's default of one hour).
+name: null
+path: null
+description: null
+max_session_duration: null
+
+# Who may assume the role: one Google service account, by its unique ID (21
+# digits: gcloud iam service-accounts describe EMAIL
+# --format='value(uniqueId)'), presenting a Google ID token whose audience
+# (aud) is audience. The trust policy allows sts:AssumeRoleWithWebIdentity
+# from the federated principal accounts.google.com only when
+# accounts.google.com:sub is the unique ID and accounts.google.com:oaud is
+# the audience (IAM's names for the token's sub and aud claims). No IAM OIDC
+# provider is made: one for https://accounts.google.com takes over every
+# Google ID token in the account (README.md).
+google_service_account_unique_id: null
+audience: null
+# The trust statement's Sid.
+trust_sid: GoogleServiceAccount
+
+# AWS managed (or existing) policies to attach, {key: ARN}, in key order.
+policy_arns: {}
+# Customer managed policies to make and attach, {key: {description,
+# statements}}, in key order. statements are in the iam module's shape
+# (sid, effect, actions, not_actions, resources, not_resources, principals,
+# not_principals, condition), as iam-role's inline_policy_permissions takes
+# them. Each document must fit IAM's 6,144 characters; split a long one
+# over several keys.
+policies: {}
+
+# The iam-role chart, a dependency for its policy document builder only:
+# it renders nothing of its own here.
+iam-role:
+  create: false

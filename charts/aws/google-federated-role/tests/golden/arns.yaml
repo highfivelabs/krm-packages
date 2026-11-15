@@ -1,0 +1,19 @@
+---
+# Source: google-federated-role/templates/role.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: arns-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "arns"
+    app.kubernetes.io/name: google-federated-role
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "role"
+spec:
+  name: "gsa-viewer"
+  path: "/"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRoleWithWebIdentity\"],\"Condition\":{\"StringEquals\":{\"accounts.google.com:oaud\":[\"gsa-viewer\"],\"accounts.google.com:sub\":[\"123456789012345678901\"]}},\"Effect\":\"Allow\",\"Principal\":{\"Federated\":[\"accounts.google.com\"]},\"Sid\":\"GoogleServiceAccount\"}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - "arn:aws:iam::aws:policy/job-function/ViewOnlyAccess"

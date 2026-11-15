@@ -1,0 +1,48 @@
+---
+# Source: estate-read/templates/role.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: full-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: estate-read
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "role"
+spec:
+  name: "bundt-estate-read"
+  path: "/bundt/"
+  description: "Read-only inventory for Bundt's estate collector; no data reads, no writes."
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Condition\":{\"StringEquals\":{\"sts:ExternalId\":[\"estate-7f3c\"]}},\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam::444455556666:role/bundt-estate-collector\",\"arn:aws:iam::777788889999:role/bundt-estate-collector\"]},\"Sid\":\"Collector\"},{\"Action\":[\"sts:AssumeRoleWithWebIdentity\"],\"Condition\":{\"StringEquals\":{\"accounts.google.com:oaud\":[\"bundt-estate-read\"],\"accounts.google.com:sub\":[\"123456789012345678901\"]}},\"Effect\":\"Allow\",\"Principal\":{\"Federated\":[\"accounts.google.com\"]},\"Sid\":\"CollectorGoogle\"}],\"Version\":\"2012-10-17\"}"
+  maxSessionDuration: 7200
+  policies:
+    - "arn:aws:iam::111122223333:policy/bundt/bundt-estate-read-cloud-control"
+    - "arn:aws:iam::aws:policy/job-function/ViewOnlyAccess"
+  tags:
+    - key: "owner"
+      value: "cloud-ops"
+---
+# Source: estate-read/templates/role.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: full-policy-cloud-control
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: estate-read
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "policy:cloud-control"
+spec:
+  name: "bundt-estate-read-cloud-control"
+  path: "/bundt/"
+  description: "Cloud Control's read actions, for Bundt's estate collector"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"cloudformation:GetResource\",\"cloudformation:ListResources\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"CloudControlRead\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "owner"
+      value: "cloud-ops"

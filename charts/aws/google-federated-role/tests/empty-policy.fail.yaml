@@ -1,0 +1,5 @@
+# expect: google-federated-role: policies.p has no statement
+name: x
+google_service_account_unique_id: "123456789012345678901"
+audience: x
+policies: {p: {description: empty}}

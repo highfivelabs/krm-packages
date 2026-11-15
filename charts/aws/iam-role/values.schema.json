@@ -151,6 +151,10 @@
     }
   },
   "properties": {
+    "global": {
+      "type": "object",
+      "description": "Helm's global values, which Helm gives a chart used as a dependency (charts/aws/google-federated-role, charts/aws/estate-read); unused"
+    },
     "names": {
       "type": "object",
       "additionalProperties": false,

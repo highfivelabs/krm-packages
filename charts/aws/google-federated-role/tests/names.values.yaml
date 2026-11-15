@@ -1,0 +1,8 @@
+# The role's name in full from names (no namePrefix); the policies follow it.
+names: {role: team-a-gsa-reader}
+name: ignored
+google_service_account_unique_id: "123456789012345678901"
+audience: gsa-reader
+policies:
+  read:
+    statements: [{actions: ["s3:GetObject"], resources: ["*"]}]

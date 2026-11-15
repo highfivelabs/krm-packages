@@ -1,0 +1,126 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+The estate collector's read role in one account (iam/Role), with AWS's
+ViewOnlyAccess and a Cloud Control read policy of its own (iam/Policy),
+rendered as the iam-role and iam-policy charts render them. The documents
+are built by the iam-role chart's builder (iamrole.document). IAM is
+global: no object takes a region.
+*/ -}}
+{{- include "ack.names" (list $ (list "role")) -}}
+{{- $v := .Values -}}
+{{- $chart := .Chart.Name -}}
+{{- if (index $v "iam-role").create }}
+{{- fail (printf "%s: iam-role.create must stay false: the iam-role dependency only lends its document builder; set this chart's own values" $chart) }}
+{{- end }}
+{{- $name := include "ack.resourceName" (list $ "role" "role" ($v.name | default "") 64) }}
+{{- if not $name }}
+{{- fail (printf "%s: name is required: the role's name (or names.role)" $chart) }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.max_session_duration) }}
+{{- if or (lt (int64 $v.max_session_duration) 3600) (gt (int64 $v.max_session_duration) 43200) }}
+{{- fail (printf "%s: max_session_duration %v must be 3600 to 43200 seconds" $chart $v.max_session_duration) }}
+{{- end }}
+{{- end }}
+{{- $c := $v.collector | default dict }}
+{{- $trustBlocks := list }}
+{{- with $c.aws_principal_arns }}
+{{- range . }}
+{{- if not (regexMatch "^arn:aws[a-z-]*:(iam|sts)::[0-9]{12}:" (toString .)) }}
+{{- fail (printf "%s: collector.aws_principal_arns %q is not an IAM principal ARN (arn:aws:iam::<account>:role/<name>)" $chart (toString .)) }}
+{{- end }}
+{{- end }}
+{{- $s := dict "sid" "Collector" "actions" (list "sts:AssumeRole") "principals" (list (dict "type" "AWS" "identifiers" .)) }}
+{{- with $c.external_id }}
+{{- $_ := set $s "condition" (list (dict "test" "StringEquals" "variable" "sts:ExternalId" "values" (list (toString .)))) }}
+{{- end }}
+{{- $trustBlocks = append $trustBlocks $s }}
+{{- else }}
+{{- if $c.external_id }}
+{{- fail (printf "%s: collector.external_id is set without collector.aws_principal_arns: only an AWS principal presents an external ID" $chart) }}
+{{- end }}
+{{- end }}
+{{- with $c.google_service_account_unique_id }}
+{{- $id := toString . }}
+{{- if not (regexMatch "^[0-9]{21}$" $id) }}
+{{- fail (printf "%s: collector.google_service_account_unique_id %q must be the service account's unique ID, 21 digits (gcloud iam service-accounts describe EMAIL --format='value(uniqueId)'); quote it" $chart $id) }}
+{{- end }}
+{{- $aud := toString ($c.google_audience | default "") }}
+{{- if not $aud }}
+{{- fail (printf "%s: collector.google_audience is required with collector.google_service_account_unique_id: the audience of the ID tokens the collector presents (accounts.google.com:oaud)" $chart) }}
+{{- end }}
+{{- $trustBlocks = append $trustBlocks (dict
+  "sid" "CollectorGoogle"
+  "actions" (list "sts:AssumeRoleWithWebIdentity")
+  "principals" (list (dict "type" "Federated" "identifiers" (list "accounts.google.com")))
+  "condition" (list
+    (dict "test" "StringEquals" "variable" "accounts.google.com:oaud" "values" (list $aud))
+    (dict "test" "StringEquals" "variable" "accounts.google.com:sub" "values" (list $id)))) }}
+{{- end }}
+{{- if not $trustBlocks }}
+{{- fail (printf "%s: the role trusts no one: set collector.aws_principal_arns or collector.google_service_account_unique_id (the collector's principal)" $chart) }}
+{{- end }}
+{{- $trust := include "iamrole.document" (list $ "trust" list $trustBlocks list) }}
+{{- $path := $v.path | default "/" }}
+{{- $tags := include "ack.tags" (list $ $v.tags) | fromJson }}
+{{- $role := include "ack.name" (list .Release.Name "role") }}
+{{- $policyObject := include "ack.name" (list .Release.Name "policy" "cloud-control") }}
+{{- $policyName := printf "%s-cloud-control" $name }}
+{{- if gt (len $policyName) 128 }}
+{{- fail (printf "%s: policy name %q is more than the 128 characters IAM allows" $chart $policyName) }}
+{{- end }}
+{{- $viewOnly := printf "arn:%s:iam::aws:policy/job-function/ViewOnlyAccess" $v.partition }}
+{{- if and $v.view_only_access $v.cloud_control_read (not $v.account_id) }}
+{{- fail (printf "%s: account_id is required: the Cloud Control policy is attached by ARN beside ViewOnlyAccess (ACK's Role takes policy ARNs or references, not both), and the chart cannot look the account up (values.yaml)" $chart) }}
+{{- end }}
+{{- if not (or $v.view_only_access $v.cloud_control_read) }}
+{{- fail (printf "%s: view_only_access and cloud_control_read are both false: the role would read nothing" $chart) }}
+{{- end }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $role "id" "role") | nindent 2 }}
+spec:
+  name: {{ $name | quote }}
+  path: {{ $path | quote }}
+{{- with $v.description }}
+  description: {{ . | quote }}
+{{- end }}
+  assumeRolePolicyDocument: {{ $trust | quote }}
+{{- if not (kindIs "invalid" $v.max_session_duration) }}
+  maxSessionDuration: {{ int64 $v.max_session_duration }}
+{{- end }}
+{{- if and $v.view_only_access $v.cloud_control_read }}
+  policies:
+    - {{ printf "arn:%s:iam::%s:policy%s%s" $v.partition (toString $v.account_id) $path $policyName | quote }}
+    - {{ $viewOnly | quote }}
+{{- else if $v.cloud_control_read }}
+  policyRefs:
+    - from:
+        name: {{ $policyObject }}
+{{- else }}
+  policies:
+    - {{ $viewOnly | quote }}
+{{- end }}
+{{- with $tags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- if $v.cloud_control_read }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $policyObject "id" "policy:cloud-control") | nindent 2 }}
+spec:
+  name: {{ $policyName | quote }}
+  path: {{ $path | quote }}
+  description: "Cloud Control's read actions, for Bundt's estate collector"
+  policyDocument: {{ include "iamrole.document" (list $ "cloud-control" list (list (dict "sid" "CloudControlRead" "actions" (list "cloudformation:GetResource" "cloudformation:ListResources") "resources" (list "*"))) list) | quote }}
+{{- with $tags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
