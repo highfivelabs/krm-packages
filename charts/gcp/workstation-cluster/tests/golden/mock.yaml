@@ -1,0 +1,98 @@
+---
+# Source: workstation-cluster/templates/main.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: mock-config-dev-iam-roles-workstations-user-ee5134aa
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: workstation-cluster
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "config:dev:iam:roles/workstations.user"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  resourceRef:
+    external: projects/mock-project/locations/us-central1/workstationClusters/catalog-mock-ws/workstationConfigs/dev
+    kind: WorkstationConfig
+  role: "roles/workstations.user"
+  members:
+    - "group:devs@example.com"
+---
+# Source: workstation-cluster/templates/main.yaml
+apiVersion: workstations.cnrm.cloud.google.com/v1beta1
+kind: Workstation
+metadata:
+  name: mock-ws-dev-ws1
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: workstation-cluster
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "workstation:dev-ws1"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  parentRef:
+    name: mock-config-dev
+  resourceID: "ws1"
+  labels:
+    - key: "env"
+      value: "test"
+---
+# Source: workstation-cluster/templates/main.yaml
+apiVersion: workstations.cnrm.cloud.google.com/v1beta1
+kind: WorkstationCluster
+metadata:
+  name: mock
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: workstation-cluster
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "cluster"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  projectRef:
+    external: "mock-project"
+  location: "us-central1"
+  resourceID: "catalog-mock-ws"
+  networkRef:
+    external: "projects/mock-project/global/networks/default"
+  subnetworkRef:
+    external: "projects/mock-project/regions/us-central1/subnetworks/default"
+  labels:
+    - key: "env"
+      value: "test"
+---
+# Source: workstation-cluster/templates/main.yaml
+apiVersion: workstations.cnrm.cloud.google.com/v1beta1
+kind: WorkstationConfig
+metadata:
+  name: mock-config-dev
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: workstation-cluster
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "config:dev"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  parentRef:
+    name: mock
+  resourceID: "dev"
+  labels:
+    - key: "env"
+      value: "test"
+  host:
+    gceInstance:
+      machineType: "e2-standard-4"
+      disablePublicIPAddresses: false
+      enableNestedVirtualization: false

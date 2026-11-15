@@ -1,0 +1,8 @@
+# expect: namePrefix: Does not match pattern
+project_id: my-project
+id: my-workstation-cluster
+location: europe-west1
+network_config:
+  network: projects/my-project/global/networks/vpc
+  subnetwork: projects/my-project/regions/europe-west1/subnetworks/subnet
+namePrefix: Shop_Dev

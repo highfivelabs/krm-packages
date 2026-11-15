@@ -304,7 +304,7 @@ modules:
     copyright: Google LLC
     registry_url: null
     url: https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/cloud-function-v1
-    chart: null
+    chart: charts/gcp/cloud-function-v1
   - id: gcp/cloud-function-v2
     cloud: gcp
     module: cloud-function-v2
@@ -1410,7 +1410,7 @@ modules:
     copyright: Google LLC
     registry_url: null
     url: https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/workstation-cluster
-    chart: null
+    chart: charts/gcp/workstation-cluster
   - id: aws/iam
     cloud: aws
     module: iam

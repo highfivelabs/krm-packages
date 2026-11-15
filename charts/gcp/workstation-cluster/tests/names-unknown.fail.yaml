@@ -1,0 +1,8 @@
+# expect: names: Additional property bucket is not allowed
+project_id: my-project
+id: my-workstation-cluster
+location: europe-west1
+network_config:
+  network: projects/my-project/global/networks/vpc
+  subnetwork: projects/my-project/regions/europe-west1/subnetworks/subnet
+names: {bucket: x}

@@ -1,0 +1,92 @@
+---
+# Source: cloud-function-v1/templates/main.yaml
+apiVersion: cloudfunctions.cnrm.cloud.google.com/v1beta1
+kind: CloudFunctionsFunction
+metadata:
+  name: mock
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: cloud-function-v1
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "function"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  projectRef:
+    external: "mock-project"
+  region: "us-central1"
+  resourceID: "mock-cf1"
+  description: "Terraform managed."
+  runtime: "python312"
+  availableMemoryMb: 256
+  maxInstances: 1
+  timeout: "180s"
+  entryPoint: "main"
+  serviceAccountRef:
+    name: mock-sa
+  sourceArchiveUrl: "gs://catalog-mock-cf1-code/fn.zip"
+  httpsTrigger:
+    securityLevel: "SECURE_ALWAYS"
+---
+# Source: cloud-function-v1/templates/serviceaccount.yaml
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: mock-sa-roles-logging-logwriter-bda95243
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: cloud-function-v1
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "sa-role:roles/logging.logWriter"
+spec:
+  resourceRef:
+    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+    kind: Project
+    external: "projects/mock-project"
+  role: "roles/logging.logWriter"
+  memberFrom:
+    serviceAccountRef:
+      name: mock-sa
+---
+# Source: cloud-function-v1/templates/serviceaccount.yaml
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMServiceAccount
+metadata:
+  name: mock-sa
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: cloud-function-v1
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "service_account"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  resourceID: "mock-cf1"
+  displayName: "mock-cf1"
+---
+# Source: cloud-function-v1/templates/bundle.yaml
+apiVersion: storage.cnrm.cloud.google.com/v1beta1
+kind: StorageBucket
+metadata:
+  name: mock-bucket
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: cloud-function-v1
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "bucket"
+    cnrm.cloud.google.com/project-id: "mock-project"
+    cnrm.cloud.google.com/force-destroy: "true"
+spec:
+  resourceID: "catalog-mock-cf1-code"
+  location: "us-central1"
+  uniformBucketLevelAccess: true

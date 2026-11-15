@@ -1,0 +1,132 @@
+---
+# Source: workstation-cluster/templates/main.yaml
+apiVersion: workstations.cnrm.cloud.google.com/v1beta1
+kind: Workstation
+metadata:
+  name: full-ws-dev-alice
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: workstation-cluster
+    app.kubernetes.io/version: "0.1.0"
+    env: "prod"
+  annotations:
+    hfl.dev/id: "workstation:dev-alice"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  parentRef:
+    name: full-config-dev
+  resourceID: "alice"
+  displayName: "Alice"
+  annotations:
+    - key: "user"
+      value: "alice"
+  labels:
+    - key: "env"
+      value: "prod"
+    - key: "owner"
+      value: "alice"
+---
+# Source: workstation-cluster/templates/main.yaml
+apiVersion: workstations.cnrm.cloud.google.com/v1beta1
+kind: WorkstationCluster
+metadata:
+  name: full
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: workstation-cluster
+    app.kubernetes.io/version: "0.1.0"
+    env: "prod"
+  annotations:
+    hfl.dev/id: "cluster"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "my-workstation-cluster"
+  displayName: "My cluster"
+  networkRef:
+    external: "projects/my-project/global/networks/vpc"
+  subnetworkRef:
+    external: "projects/my-project/regions/europe-west1/subnetworks/subnet"
+  privateClusterConfig:
+    enablePrivateEndpoint: true
+    allowedProjects:
+      - external: "other-project"
+  annotations:
+    - key: "owner"
+      value: "platform"
+  labels:
+    - key: "env"
+      value: "prod"
+---
+# Source: workstation-cluster/templates/main.yaml
+apiVersion: workstations.cnrm.cloud.google.com/v1beta1
+kind: WorkstationConfig
+metadata:
+  name: full-config-dev
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: workstation-cluster
+    app.kubernetes.io/version: "0.1.0"
+    env: "prod"
+  annotations:
+    hfl.dev/id: "config:dev"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  parentRef:
+    name: full
+  resourceID: "dev"
+  displayName: "Developers"
+  annotations:
+    - key: "purpose"
+      value: "dev"
+  labels:
+    - key: "env"
+      value: "prod"
+    - key: "tier"
+      value: "dev"
+  replicaZones: ["europe-west1-b","europe-west1-c"]
+  idleTimeout: "1200s"
+  runningTimeout: "43200s"
+  host:
+    gceInstance:
+      machineType: "n2d-standard-4"
+      serviceAccountRef:
+        external: "ws@my-project.iam.gserviceaccount.com"
+      serviceAccountScopes: ["https://www.googleapis.com/auth/cloud-platform"]
+      poolSize: 1
+      bootDiskSizeGB: 50
+      tags: ["workstation"]
+      disablePublicIPAddresses: true
+      enableNestedVirtualization: false
+      shieldedInstanceConfig:
+        enableSecureBoot: true
+        enableVTPM: true
+        enableIntegrityMonitoring: true
+      confidentialInstanceConfig:
+        enableConfidentialCompute: true
+  container:
+    image: "europe-west1-docker.pkg.dev/my-project/ws/code-oss:latest"
+    command: ["/bin/entrypoint"]
+    args: ["--verbose"]
+    workingDir: "/home/user"
+    env:
+      - name: "EDITOR"
+        value: "vim"
+    runAsUser: 1000
+  encryptionKey:
+    kmsCryptoKeyRef:
+      external: "projects/my-project/locations/europe-west1/keyRings/kr/cryptoKeys/k"
+    serviceAccountRef:
+      external: "kms@my-project.iam.gserviceaccount.com"
+  persistentDirectories:
+    - gcePD:
+        diskType: pd-balanced
+        fsType: ext4
+        reclaimPolicy: DELETE
+        sizeGB: 200
+      mountPath: /home

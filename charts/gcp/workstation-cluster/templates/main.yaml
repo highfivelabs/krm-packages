@@ -1,0 +1,206 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/workstation-cluster/main.tf and
+iam.tf (v60.0.0), Copyright 2024 Google LLC, Apache-2.0.
+
+google_workstations_workstation_cluster.cluster: a WorkstationCluster
+(Config Connector, workstations.cnrm.cloud.google.com/v1beta1).
+google_workstations_workstation_config.configs: one WorkstationConfig per
+workstation_configs entry, in the cluster.
+google_workstations_workstation.workstations: one Workstation per entry of
+a configuration's workstations, in that configuration.
+iam.tf: on each configuration and workstation, IAMBinding (iam, and
+iam_bindings) and IAMMember (iam_bindings_additive, allow_alpha) from
+config-connector-extensions, by the resource's full name
+(_workstation-cluster.tpl, workstationCluster.iam).
+Refused by name (no Config Connector field): domain, and in
+workstation_configs enable_audit_agent, max_workstations,
+gce_instance.accelerators, gce_instance.boost_configs and
+workstations.env. factories_config (files read from disk) is refused.
+*/ -}}
+{{- $v := .Values }}
+{{- include "kcc.unsupported" (list $ "context" $v.context "use Bundt expressions (${...}) and valueFrom in the component's inputs instead") }}
+{{- include "kcc.unsupported" (list $ "factories_config" (compact (values ($v.factories_config | default dict))) "fabric reads workstation configurations from YAML files on disk, and a component has no files: put each file's contents under workstation_configs.<file name>") }}
+{{- include "kcc.unsupported" (list $ "domain" $v.domain "Config Connector's WorkstationCluster (v1.160.0) has no domainConfig field") }}
+{{- include "kcc.names" (list $ (list "cluster")) }}
+{{- $abandon := include "kcc.abandon" . }}
+{{- $clusterPath := include "workstationCluster.clusterPath" . }}
+{{- $nc := $v.network_config }}
+---
+apiVersion: workstations.cnrm.cloud.google.com/v1beta1
+kind: WorkstationCluster
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" .Release.Name "id" "cluster" "project" $v.project_id "abandon" $abandon) | nindent 2 }}
+spec:
+  projectRef:
+    external: {{ $v.project_id | quote }}
+  location: {{ $v.location | quote }}
+  resourceID: {{ include "workstationCluster.cluster" . | quote }}
+  {{- with $v.display_name }}
+  displayName: {{ . | quote }}
+  {{- end }}
+  networkRef:
+    external: {{ $nc.network | quote }}
+  subnetworkRef:
+    external: {{ $nc.subnetwork | quote }}
+  {{- with $v.private_cluster_config }}
+  privateClusterConfig:
+    enablePrivateEndpoint: {{ .enable_private_endpoint | default false }}
+    {{- with .allowed_projects }}
+    allowedProjects:
+      {{- range . }}
+      - external: {{ . | quote }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  {{- with include "workstationCluster.kv" (list "annotations" $v.annotations) }}{{ . | nindent 2 }}{{- end }}
+  {{- with include "workstationCluster.kv" (list "labels" (include "workstationCluster.labels" (list $ $v.labels) | fromJson)) }}{{ . | nindent 2 }}{{- end }}
+{{- range $ck := keys ($v.workstation_configs | default dict) | sortAlpha }}
+{{- $c := index $v.workstation_configs $ck }}
+{{- $what := printf "workstation_configs.%s" $ck }}
+{{- $gap := "Config Connector's WorkstationConfig (v1.160.0) has no field for it" }}
+{{- include "kcc.unsupported" (list $ (printf "%s.enable_audit_agent" $what) $c.enable_audit_agent $gap) }}
+{{- include "kcc.unsupported" (list $ (printf "%s.max_workstations" $what) $c.max_workstations $gap) }}
+{{- $gi := $c.gce_instance }}
+{{- if $gi }}
+{{- include "kcc.unsupported" (list $ (printf "%s.gce_instance.accelerators" $what) $gi.accelerators $gap) }}
+{{- include "kcc.unsupported" (list $ (printf "%s.gce_instance.boost_configs" $what) $gi.boost_configs $gap) }}
+{{- end }}
+{{- $cfgName := include "kcc.name" (list $.Release.Name "config" $ck) }}
+{{- $cfgPath := printf "%s/workstationConfigs/%s" $clusterPath $ck }}
+---
+apiVersion: workstations.cnrm.cloud.google.com/v1beta1
+kind: WorkstationConfig
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" $cfgName "id" (printf "config:%s" $ck) "project" $v.project_id "abandon" $abandon) | nindent 2 }}
+spec:
+  parentRef:
+    name: {{ $.Release.Name }}
+  resourceID: {{ $ck | quote }}
+  {{- with $c.display_name }}
+  displayName: {{ . | quote }}
+  {{- end }}
+  {{- with include "workstationCluster.kv" (list "annotations" $c.annotations) }}{{ . | nindent 2 }}{{- end }}
+  {{- with include "workstationCluster.kv" (list "labels" (include "workstationCluster.labels" (list $ $c.labels) | fromJson)) }}{{ . | nindent 2 }}{{- end }}
+  {{- with $c.replica_zones }}
+  replicaZones: {{ toJson . }}
+  {{- end }}
+  {{- $t := $c.timeouts | default dict }}
+  {{- if not (kindIs "invalid" $t.idle) }}
+  idleTimeout: {{ printf "%ds" (int $t.idle) | quote }}
+  {{- end }}
+  {{- if not (kindIs "invalid" $t.running) }}
+  runningTimeout: {{ printf "%ds" (int $t.running) | quote }}
+  {{- end }}
+  {{- with $gi }}
+  host:
+    gceInstance:
+      {{- with .machine_type }}
+      machineType: {{ . | quote }}
+      {{- end }}
+      {{- with .service_account }}
+      serviceAccountRef:
+        external: {{ . | quote }}
+      {{- end }}
+      {{- with .service_account_scopes }}
+      serviceAccountScopes: {{ toJson . }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .pool_size) }}
+      poolSize: {{ int .pool_size }}
+      {{- end }}
+      {{- if not (kindIs "invalid" .boot_disk_size_gb) }}
+      bootDiskSizeGB: {{ int .boot_disk_size_gb }}
+      {{- end }}
+      {{- with .tags }}
+      tags: {{ toJson . }}
+      {{- end }}
+      disablePublicIPAddresses: {{ .disable_public_ip_addresses | default false }}
+      enableNestedVirtualization: {{ .enable_nested_virtualization | default false }}
+      {{- with .shielded_instance_config }}
+      shieldedInstanceConfig:
+        enableSecureBoot: {{ .enable_secure_boot | default false }}
+        enableVTPM: {{ .enable_vtpm | default false }}
+        enableIntegrityMonitoring: {{ .enable_integrity_monitoring | default false }}
+      {{- end }}
+      {{- if .enable_confidential_compute }}
+      confidentialInstanceConfig:
+        enableConfidentialCompute: true
+      {{- end }}
+  {{- end }}
+  {{- with $c.container }}
+  container:
+    {{- with .image }}
+    image: {{ . | quote }}
+    {{- end }}
+    {{- with .command }}
+    command: {{ toJson . }}
+    {{- end }}
+    {{- with .args }}
+    args: {{ toJson . }}
+    {{- end }}
+    {{- with .working_dir }}
+    workingDir: {{ . | quote }}
+    {{- end }}
+    {{- with .env }}
+    env:
+      {{- range $k := keys . | sortAlpha }}
+      - name: {{ $k | quote }}
+        value: {{ index $c.container.env $k | quote }}
+      {{- end }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .run_as_user) }}
+    {{- if not (regexMatch "^[0-9]+$" (toString .run_as_user)) }}
+    {{- fail (printf "workstation-cluster: %s.container.run_as_user %q must be a user ID (a number): WorkstationConfig takes runAsUser as an integer" $what (toString .run_as_user)) }}
+    {{- end }}
+    runAsUser: {{ toString .run_as_user }}
+    {{- end }}
+  {{- end }}
+  {{- with $c.encryption_key }}
+  encryptionKey:
+    kmsCryptoKeyRef:
+      external: {{ .kms_key | quote }}
+    {{- with .kms_key_service_account }}
+    serviceAccountRef:
+      external: {{ . | quote }}
+    {{- end }}
+  {{- end }}
+  {{- with $c.persistent_directories }}
+  persistentDirectories:
+    {{- range . }}
+    {{- $pd := dict }}
+    {{- with .mount_path }}{{ $_ := set $pd "mountPath" . }}{{ end }}
+    {{- with .gce_pd }}
+    {{- $g := dict }}
+    {{- if not (kindIs "invalid" .size_gb) }}{{ $_ := set $g "sizeGB" (int .size_gb) }}{{ end }}
+    {{- with .fs_type }}{{ $_ := set $g "fsType" . }}{{ end }}
+    {{- with .disk_type }}{{ $_ := set $g "diskType" . }}{{ end }}
+    {{- with .source_snapshot }}{{ $_ := set $g "sourceSnapshot" . }}{{ end }}
+    {{- with .reclaim_policy }}{{ $_ := set $g "reclaimPolicy" . }}{{ end }}
+    {{- $_ := set $pd "gcePD" $g }}
+    {{- end }}
+    - {{ toYaml $pd | indent 6 | trim }}
+    {{- end }}
+  {{- end }}
+{{- include "workstationCluster.iam" (dict "root" $ "ref" (dict "kind" "WorkstationConfig" "external" $cfgPath) "v" $c "base" (printf "config-%s" $ck) "idPrefix" (printf "config:%s:" $ck) "what" $what) }}
+{{- range $wk := keys ($c.workstations | default dict) | sortAlpha }}
+{{- $w := index $c.workstations $wk }}
+{{- $wwhat := printf "%s.workstations.%s" $what $wk }}
+{{- include "kcc.unsupported" (list $ (printf "%s.env" $wwhat) $w.env "Config Connector's Workstation (v1.160.0) has no env field; set the variables in the configuration's container.env") }}
+---
+apiVersion: workstations.cnrm.cloud.google.com/v1beta1
+kind: Workstation
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "ws" $ck $wk)) "id" (printf "workstation:%s-%s" $ck $wk) "project" $v.project_id "abandon" $abandon) | nindent 2 }}
+spec:
+  parentRef:
+    name: {{ $cfgName }}
+  resourceID: {{ $wk | quote }}
+  {{- with $w.display_name }}
+  displayName: {{ . | quote }}
+  {{- end }}
+  {{- with include "workstationCluster.kv" (list "annotations" $w.annotations) }}{{ . | nindent 2 }}{{- end }}
+  {{- with include "workstationCluster.kv" (list "labels" (include "workstationCluster.labels" (list $ $w.labels) | fromJson)) }}{{ . | nindent 2 }}{{- end }}
+{{- include "workstationCluster.iam" (dict "root" $ "ref" (dict "kind" "Workstation" "external" (printf "%s/workstations/%s" $cfgPath $wk)) "v" $w "base" (printf "ws-%s-%s" $ck $wk) "idPrefix" (printf "workstation:%s-%s:" $ck $wk) "what" $wwhat) }}
+{{- end }}
+{{- end }}

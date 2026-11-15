@@ -1140,42 +1140,42 @@ gcp,endpoints,iam,map(list(string)),yes,,
 gcp,endpoints,openapi_config,object({yaml_path}),partial,a chart cannot read the caller's files: yaml_path is accepted and ignored; the document's contents go under files_data.openapi_config,by-design
 gcp,endpoints,project_id,string,partial,"accepted; null (fabric's default, the Terraform provider's project) is refused: a chart has no provider project",by-design
 gcp,endpoints,service_name,string,yes,,
-gcp,cloud-function-v1,bucket_config,"object({force_destroy, lifecycle_delete_age_days, location})",no,,no-chart
-gcp,cloud-function-v1,bucket_name,string,no,,no-chart
-gcp,cloud-function-v1,build_environment_variables,map(string),no,,no-chart
-gcp,cloud-function-v1,build_worker_pool,string,no,,no-chart
-gcp,cloud-function-v1,bundle_config,"object({folder_options, path})",no,,no-chart
-gcp,cloud-function-v1,context,"object({cidr_ranges, condition_vars, custom_roles, iam_principals, kms_keys, locations, +4})",no,,no-chart
-gcp,cloud-function-v1,description,string,no,,no-chart
-gcp,cloud-function-v1,environment_variables,map(string),no,,no-chart
-gcp,cloud-function-v1,function_config,"object({cpu, entry_point, instance_count, memory_mb, runtime, timeout_seconds})",no,,no-chart
-gcp,cloud-function-v1,https_security_level,string,no,,no-chart
-gcp,cloud-function-v1,iam,map(list(string)),no,,no-chart
-gcp,cloud-function-v1,ingress_settings,string,no,,no-chart
-gcp,cloud-function-v1,kms_key,string,no,,no-chart
-gcp,cloud-function-v1,labels,map(string),no,,no-chart
-gcp,cloud-function-v1,name,string,no,,no-chart
-gcp,cloud-function-v1,prefix,string,no,,no-chart
-gcp,cloud-function-v1,project_id,string,no,,no-chart
-gcp,cloud-function-v1,region,string,no,,no-chart
-gcp,cloud-function-v1,repository_settings,"object({registry, repository})",no,,no-chart
-gcp,cloud-function-v1,secrets,"map(object({is_volume, project_id, secret, versions}))",no,,no-chart
-gcp,cloud-function-v1,service_account_config,"object({create, display_name, email, name, roles})",no,,no-chart
-gcp,cloud-function-v1,trigger_config,"object({event, resource, retry})",no,,no-chart
-gcp,cloud-function-v1,vpc_connector,"object({egress_settings, name})",no,,no-chart
-gcp,cloud-function-v1,vpc_connector_create,"object({instances, ip_cidr_range, machine_type, name, network, subnet, +1})",no,,no-chart
-gcp,workstation-cluster,annotations,map(string),no,,no-chart
-gcp,workstation-cluster,context,"object({condition_vars, custom_roles, iam_principals, locations, networks, project_ids, +1})",no,,no-chart
-gcp,workstation-cluster,display_name,string,no,,no-chart
-gcp,workstation-cluster,domain,string,no,,no-chart
-gcp,workstation-cluster,factories_config,object({workstation_configs}),no,,no-chart
-gcp,workstation-cluster,id,string,no,,no-chart
-gcp,workstation-cluster,labels,map(string),no,,no-chart
-gcp,workstation-cluster,location,string,no,,no-chart
-gcp,workstation-cluster,network_config,"object({network, subnetwork})",no,,no-chart
-gcp,workstation-cluster,private_cluster_config,"object({allowed_projects, enable_private_endpoint})",no,,no-chart
-gcp,workstation-cluster,project_id,string,no,,no-chart
-gcp,workstation-cluster,workstation_configs,"map(object({annotations, container, display_name, enable_audit_agent, encryption_key, gce_instance, +9}))",no,,no-chart
+gcp,cloud-function-v1,bucket_config,"object({force_destroy, lifecycle_delete_age_days, location})",yes,,
+gcp,cloud-function-v1,bucket_name,string,yes,,
+gcp,cloud-function-v1,build_environment_variables,map(string),no,Config Connector's CloudFunctionsFunction (v1.160.0) has no buildEnvironmentVariables field,gap
+gcp,cloud-function-v1,build_worker_pool,string,no,Config Connector's CloudFunctionsFunction (v1.160.0) has no buildWorkerPool field,gap
+gcp,cloud-function-v1,bundle_config,"object({folder_options, path})",partial,"a local zip or folder is read and uploaded by the machine running Terraform; a chart has no files (and StorageBucketObject takes text content, not an archive), so path must be a Cloud Storage object URI",by-design
+gcp,cloud-function-v1,context,"object({cidr_ranges, condition_vars, custom_roles, iam_principals, kms_keys, locations, +4})",no,Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs,by-design
+gcp,cloud-function-v1,description,string,yes,,
+gcp,cloud-function-v1,environment_variables,map(string),yes,,
+gcp,cloud-function-v1,function_config,"object({cpu, entry_point, instance_count, memory_mb, runtime, timeout_seconds})",yes,,
+gcp,cloud-function-v1,https_security_level,string,yes,,
+gcp,cloud-function-v1,iam,map(list(string)),yes,,
+gcp,cloud-function-v1,ingress_settings,string,yes,,
+gcp,cloud-function-v1,kms_key,string,no,Config Connector's CloudFunctionsFunction (v1.160.0) has no kmsKeyName field,gap
+gcp,cloud-function-v1,labels,map(string),yes,,
+gcp,cloud-function-v1,name,string,yes,,
+gcp,cloud-function-v1,prefix,string,yes,,
+gcp,cloud-function-v1,project_id,string,yes,,
+gcp,cloud-function-v1,region,string,yes,,
+gcp,cloud-function-v1,repository_settings,"object({registry, repository})",partial,"Config Connector's CloudFunctionsFunction (v1.160.0) has no dockerRegistry or dockerRepository field; only the default (Artifact Registry, no repository) is accepted",gap
+gcp,cloud-function-v1,secrets,"map(object({is_volume, project_id, secret, versions}))",no,Config Connector's CloudFunctionsFunction (v1.160.0) has no secretEnvironmentVariables or secretVolumes fields,gap
+gcp,cloud-function-v1,service_account_config,"object({create, display_name, email, name, roles})",yes,,
+gcp,cloud-function-v1,trigger_config,"object({event, resource, retry})",yes,,
+gcp,cloud-function-v1,vpc_connector,"object({egress_settings, name})",yes,,
+gcp,cloud-function-v1,vpc_connector_create,"object({instances, ip_cidr_range, machine_type, name, network, subnet, +1})",yes,,
+gcp,workstation-cluster,annotations,map(string),yes,,
+gcp,workstation-cluster,context,"object({condition_vars, custom_roles, iam_principals, locations, networks, project_ids, +1})",no,Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs,by-design
+gcp,workstation-cluster,display_name,string,yes,,
+gcp,workstation-cluster,domain,string,no,Config Connector's WorkstationCluster (v1.160.0) has no domainConfig field,gap
+gcp,workstation-cluster,factories_config,object({workstation_configs}),no,"fabric reads workstation configurations from YAML files on disk; a component has no files, so they go in workstation_configs",by-design
+gcp,workstation-cluster,id,string,yes,,
+gcp,workstation-cluster,labels,map(string),yes,,
+gcp,workstation-cluster,location,string,yes,,
+gcp,workstation-cluster,network_config,"object({network, subnetwork})",yes,,
+gcp,workstation-cluster,private_cluster_config,"object({allowed_projects, enable_private_endpoint})",yes,,
+gcp,workstation-cluster,project_id,string,yes,,
+gcp,workstation-cluster,workstation_configs,"map(object({annotations, container, display_name, enable_audit_agent, encryption_key, gce_instance, +9}))",partial,"Config Connector's WorkstationConfig and Workstation (v1.160.0) have no field for enable_audit_agent, max_workstations, gce_instance.accelerators, gce_instance.boost_configs or a workstation's env; iam_bindings_additive needs allow_alpha (config-connector-extensions' IAMMember is v1alpha1)",gap
 gcp,gcve-private-cloud,prefix,string,no,,no-chart
 gcp,gcve-private-cloud,project_id,string,no,,no-chart
 gcp,gcve-private-cloud,vmw_network_config,"object({create, description, name, network_policies})",no,,no-chart

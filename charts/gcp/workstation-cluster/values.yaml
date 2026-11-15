@@ -1,0 +1,64 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values mirror the Terraform variables of fabric's workstation-cluster
+# module (v60.0.0): same names, types and defaults, so a module block's
+# arguments become this file one to one (README.md, "From Terraform").
+# values.schema.json carries the types.
+
+# Names, labels and tags (docs/design.md, "Names, labels and tags"). Not
+# Terraform variables: Bundt supplies names from a team's naming convention
+# and stamps its identity labels; the chart takes them and computes none.
+#
+# names.cluster sets the cluster's ID in full (else id). Configurations and
+# workstations are named by their keys, inside the cluster.
+names: {}
+# An optional convenience: "<namePrefix>-" in front of the cluster's ID
+# when names.cluster is not set. Empty (the default) changes nothing.
+namePrefix: ""
+# Kubernetes labels on every object; fabric's "Workstation cluster labels".
+# A prefixed key (hfl.dev/team) stays in Kubernetes; an unprefixed one also
+# becomes a Google Cloud label on the cluster, every configuration and
+# every workstation.
+labels: {}
+# Cloud labels on every resource: on Google Cloud, labels.
+tags: {}
+# Not a Terraform variable: accept v1alpha1 kinds (config-connector-
+# extensions' IAMMember, for iam_bindings_additive on configurations and
+# workstations), whose schema may change (docs/design.md, "Alpha kinds").
+allow_alpha: false
+# DELETE (the default) or ABANDON: what deleting an object does to its
+# cloud resource. Not a fabric variable (docs/design.md, "Deletion").
+deletion_policy: DELETE
+
+# Workstation cluster annotations.
+annotations: {}
+# Context-specific interpolations. Refused when set: Bundt's ${...}
+# expressions and valueFrom replace fabric's $context lookups.
+context: {}
+# Display name.
+display_name: null
+# Domain. Refused when set: Config Connector's WorkstationCluster has no
+# domainConfig field.
+domain: null
+# Path to folder with YAML resource description data files. Refused when
+# set: a chart has no files; put each file's contents under
+# workstation_configs.<file name>.
+factories_config: {}
+# Workstation cluster ID.
+id: ""
+# Location.
+location: ""
+# Network configuration: {network, subnetwork}.
+network_config: null
+# Private cluster config: {enable_private_endpoint, allowed_projects}.
+private_cluster_config: null
+# Cluster ID.
+project_id: ""
+# Workstation configurations, by ID: {annotations, display_name, labels,
+# replica_zones, container, encryption_key, gce_instance, iam,
+# iam_bindings, iam_bindings_additive, persistent_directories, timeouts,
+# workstations}. enable_audit_agent, max_workstations,
+# gce_instance.accelerators, gce_instance.boost_configs and
+# workstations.<id>.env are refused (no Config Connector field).
+workstation_configs: {}

@@ -1,0 +1,147 @@
+---
+# Source: cloud-function-v1/templates/main.yaml
+apiVersion: cloudfunctions.cnrm.cloud.google.com/v1beta1
+kind: CloudFunctionsFunction
+metadata:
+  name: full
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-function-v1
+    app.kubernetes.io/version: "0.1.0"
+    env: "prod"
+  annotations:
+    hfl.dev/id: "function"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  region: "europe-west1"
+  resourceID: "pfx-full-fn"
+  description: "A function."
+  runtime: "nodejs22"
+  availableMemoryMb: 512
+  maxInstances: 5
+  timeout: "60s"
+  entryPoint: "handler"
+  environmentVariables:
+    "LOG_EXECUTION_ID": "true"
+    "MODE": "prod"
+  serviceAccountRef:
+    name: full-sa
+  sourceArchiveUrl: "gs://pfx-code/fn.zip"
+  httpsTrigger:
+    securityLevel: "SECURE_OPTIONAL"
+  ingressSettings: "ALLOW_INTERNAL_ONLY"
+  vpcConnectorRef:
+    name: full-connector
+  vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY"
+---
+# Source: cloud-function-v1/templates/main.yaml
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPartialPolicy
+metadata:
+  name: full-iam
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-function-v1
+    app.kubernetes.io/version: "0.1.0"
+    env: "prod"
+  annotations:
+    hfl.dev/id: "iam"
+spec:
+  resourceRef:
+    apiVersion: cloudfunctions.cnrm.cloud.google.com/v1beta1
+    kind: CloudFunctionsFunction
+    name: full
+  bindings:
+    - role: "roles/cloudfunctions.invoker"
+      members:
+        - member: "serviceAccount:caller@my-project.iam.gserviceaccount.com"
+---
+# Source: cloud-function-v1/templates/serviceaccount.yaml
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: full-sa-roles-logging-logwriter-35fbd78d
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-function-v1
+    app.kubernetes.io/version: "0.1.0"
+    env: "prod"
+  annotations:
+    hfl.dev/id: "sa-role:roles/logging.logWriter"
+spec:
+  resourceRef:
+    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+    kind: Project
+    external: "projects/my-project"
+  role: "roles/logging.logWriter"
+  memberFrom:
+    serviceAccountRef:
+      name: full-sa
+---
+# Source: cloud-function-v1/templates/serviceaccount.yaml
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMServiceAccount
+metadata:
+  name: full-sa
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-function-v1
+    app.kubernetes.io/version: "0.1.0"
+    env: "prod"
+  annotations:
+    hfl.dev/id: "service_account"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "fn-runner"
+  displayName: "Function runner"
+---
+# Source: cloud-function-v1/templates/bundle.yaml
+apiVersion: storage.cnrm.cloud.google.com/v1beta1
+kind: StorageBucket
+metadata:
+  name: full-bucket
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-function-v1
+    app.kubernetes.io/version: "0.1.0"
+    env: "prod"
+  annotations:
+    hfl.dev/id: "bucket"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "pfx-code"
+  location: "EU"
+  uniformBucketLevelAccess: true
+---
+# Source: cloud-function-v1/templates/vpcconnector.yaml
+apiVersion: vpcaccess.cnrm.cloud.google.com/v1beta1
+kind: VPCAccessConnector
+metadata:
+  name: full-connector
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloud-function-v1
+    app.kubernetes.io/version: "0.1.0"
+    env: "prod"
+  annotations:
+    hfl.dev/id: "vpc_connector"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "fn-conn"
+  ipCidrRange: "10.8.0.0/28"
+  networkRef:
+    external: "projects/my-project/global/networks/vpc"
+  machineType: "e2-micro"
+  maxInstances: 3
+  minInstances: 2

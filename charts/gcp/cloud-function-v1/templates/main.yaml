@@ -1,0 +1,117 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/cloud-function-v1/main.tf
+(v60.0.0), Copyright 2025 Google LLC, Apache-2.0.
+
+google_cloudfunctions_function.function: a CloudFunctionsFunction
+(Config Connector, cloudfunctions.cnrm.cloud.google.com/v1beta1), its
+source the Cloud Storage object bundle_config.path names in the bucket
+fabric's local.bucket names; an HTTPS trigger without trigger_config, an
+event trigger with it.
+google_cloudfunctions_function_iam_binding.default (iam, authoritative per
+role): one IAMPartialPolicy on the function (docs/design.md, "IAM").
+Refused by name (Config Connector's CloudFunctionsFunction has no field):
+build_environment_variables, build_worker_pool, kms_key, secrets and
+repository_settings other than fabric's default registry.
+*/ -}}
+{{- $v := .Values }}
+{{- include "kcc.unsupported" (list $ "context" $v.context "use Bundt expressions (${...}) and valueFrom in the component's inputs instead") }}
+{{- include "kcc.names" (list $ (list "function" "bucket" "serviceAccount" "vpcConnector")) }}
+{{- $abandon := include "kcc.abandon" . }}
+{{- $fc := $v.function_config | default dict }}
+{{- $gap := "Config Connector's CloudFunctionsFunction (v1.160.0) has no field for it" }}
+{{- include "kcc.unsupported" (list $ "build_environment_variables" $v.build_environment_variables $gap) }}
+{{- include "kcc.unsupported" (list $ "build_worker_pool" $v.build_worker_pool $gap) }}
+{{- include "kcc.unsupported" (list $ "kms_key" $v.kms_key $gap) }}
+{{- include "kcc.unsupported" (list $ "secrets" $v.secrets (printf "%s (secretEnvironmentVariables, secretVolumes); the cloud-function-v2 chart takes secrets" $gap)) }}
+{{- $rs := $v.repository_settings | default dict }}
+{{- include "kcc.unsupported" (list $ "repository_settings.repository" $rs.repository (printf "%s (dockerRepository)" $gap)) }}
+{{- if and $rs.registry (ne $rs.registry "ARTIFACT_REGISTRY") }}
+{{- include "kcc.unsupported" (list $ (printf "repository_settings.registry %q" $rs.registry) true (printf "%s (dockerRegistry); the function builds into Artifact Registry, Google Cloud's default and fabric's" $gap)) }}
+{{- end }}
+{{- /* bundle_config: only a Cloud Storage object. Terraform zips a local
+folder or uploads a local zip from the machine it runs on; a chart has no
+files, and StorageBucketObject (config-connector-extensions, v1alpha1)
+takes text content, not an archive. */}}
+{{- $b := $v.bundle_config }}
+{{- $path := $b.path }}
+{{- if not (hasPrefix "gs://" $path) }}
+{{- include "kcc.unsupported" (list $ (printf "bundle_config.path %q (a local zip or folder)" $path) true "a chart has no local files to zip or upload; upload the bundle and give its Cloud Storage URI, gs://<bucket>/<object>.zip") }}
+{{- end }}
+{{- if not (hasSuffix ".zip" $path) }}
+{{- fail "cloud-function-v1: Bundle path must be set to a GCS object URI, a local folder or a local zip file." }}
+{{- end }}
+{{- $fo := dict }}
+{{- range $k, $x := ($b.folder_options | default dict) }}{{ if not (empty $x) }}{{ $_ := set $fo $k $x }}{{ end }}{{ end }}
+{{- include "kcc.unsupported" (list $ "bundle_config.folder_options" $fo "options for zipping a local folder, and the chart takes only a Cloud Storage object") }}
+{{- $c := $v.service_account_config | default dict }}
+{{- $saEmail := include "cloudFunctionV1.serviceAccountEmail" . }}
+---
+apiVersion: cloudfunctions.cnrm.cloud.google.com/v1beta1
+kind: CloudFunctionsFunction
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" .Release.Name "id" "function" "project" $v.project_id "abandon" $abandon) | nindent 2 }}
+spec:
+  projectRef:
+    external: {{ $v.project_id | quote }}
+  region: {{ $v.region | quote }}
+  resourceID: {{ include "cloudFunctionV1.function" . | quote }}
+  {{- with $v.description }}
+  description: {{ . | quote }}
+  {{- end }}
+  runtime: {{ $fc.runtime | default "python312" | quote }}
+  {{- if not (kindIs "invalid" $fc.memory_mb) }}
+  availableMemoryMb: {{ int $fc.memory_mb }}
+  {{- end }}
+  {{- if not (kindIs "invalid" $fc.instance_count) }}
+  maxInstances: {{ int $fc.instance_count }}
+  {{- end }}
+  {{- if not (kindIs "invalid" $fc.timeout_seconds) }}
+  timeout: {{ printf "%ds" (int $fc.timeout_seconds) | quote }}
+  {{- end }}
+  {{- with $fc.entry_point }}
+  entryPoint: {{ . | quote }}
+  {{- end }}
+  {{- with $v.environment_variables }}
+  environmentVariables:
+    {{- range $k, $x := . }}
+    {{ $k | quote }}: {{ $x | quote }}
+    {{- end }}
+  {{- end }}
+  {{- if ne (toString $c.create) "false" }}
+  serviceAccountRef:
+    name: {{ include "kcc.name" (list .Release.Name "sa") }}
+  {{- else if $saEmail }}
+  serviceAccountRef:
+    external: {{ $saEmail | quote }}
+  {{- end }}
+  sourceArchiveUrl: {{ printf "gs://%s/%s" (include "cloudFunctionV1.bucket" .) (regexReplaceAll "^gs://[^/]+/" $path "") | quote }}
+  {{- with $v.trigger_config }}
+  eventTrigger:
+    eventType: {{ .event | quote }}
+    resourceRef:
+      external: {{ .resource | quote }}
+    {{- if not (kindIs "invalid" .retry) }}
+    failurePolicy: {{ .retry }}
+    {{- end }}
+  {{- else }}
+  httpsTrigger:
+    securityLevel: {{ $v.https_security_level | default "SECURE_ALWAYS" | quote }}
+  {{- end }}
+  {{- with $v.ingress_settings }}
+  ingressSettings: {{ . | quote }}
+  {{- end }}
+  {{- if $v.vpc_connector_create }}
+  vpcConnectorRef:
+    name: {{ include "kcc.name" (list .Release.Name "connector") }}
+  {{- else }}
+  {{- with ($v.vpc_connector | default dict).name }}
+  vpcConnectorRef:
+    external: {{ . | quote }}
+  {{- end }}
+  {{- end }}
+  {{- with ($v.vpc_connector | default dict).egress_settings }}
+  vpcConnectorEgressSettings: {{ . | quote }}
+  {{- end }}
+{{- include "kcc.iam" (dict "root" $ "base" .Release.Name "idPrefix" "" "resourceRef" (dict "apiVersion" "cloudfunctions.cnrm.cloud.google.com/v1beta1" "kind" "CloudFunctionsFunction" "name" .Release.Name) "v" (dict "iam" $v.iam)) }}

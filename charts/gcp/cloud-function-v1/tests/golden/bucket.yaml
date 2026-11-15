@@ -1,0 +1,118 @@
+---
+# Source: cloud-function-v1/templates/main.yaml
+apiVersion: cloudfunctions.cnrm.cloud.google.com/v1beta1
+kind: CloudFunctionsFunction
+metadata:
+  name: bucket
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "bucket"
+    app.kubernetes.io/name: cloud-function-v1
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "function"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  region: "europe-west1"
+  resourceID: "myprefix-test-cf-http"
+  description: "Terraform managed."
+  runtime: "python312"
+  availableMemoryMb: 256
+  maxInstances: 1
+  timeout: "180s"
+  entryPoint: "main"
+  serviceAccountRef:
+    name: bucket-sa
+  sourceArchiveUrl: "gs://myprefix-my-bucket/bundles/function.zip"
+  httpsTrigger:
+    securityLevel: "SECURE_ALWAYS"
+---
+# Source: cloud-function-v1/templates/serviceaccount.yaml
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: bucket-sa-roles-logging-logwriter-aa3199fd
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "bucket"
+    app.kubernetes.io/name: cloud-function-v1
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "sa-role:roles/logging.logWriter"
+spec:
+  resourceRef:
+    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+    kind: Project
+    external: "projects/my-project"
+  role: "roles/logging.logWriter"
+  memberFrom:
+    serviceAccountRef:
+      name: bucket-sa
+---
+# Source: cloud-function-v1/templates/serviceaccount.yaml
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicyMember
+metadata:
+  name: bucket-sa-roles-monitoring-metricwriter-868061a5
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "bucket"
+    app.kubernetes.io/name: cloud-function-v1
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "sa-role:roles/monitoring.metricWriter"
+spec:
+  resourceRef:
+    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+    kind: Project
+    external: "projects/my-project"
+  role: "roles/monitoring.metricWriter"
+  memberFrom:
+    serviceAccountRef:
+      name: bucket-sa
+---
+# Source: cloud-function-v1/templates/serviceaccount.yaml
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMServiceAccount
+metadata:
+  name: bucket-sa
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "bucket"
+    app.kubernetes.io/name: cloud-function-v1
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "service_account"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "test-cf-http"
+  displayName: "test-cf-http"
+---
+# Source: cloud-function-v1/templates/bundle.yaml
+apiVersion: storage.cnrm.cloud.google.com/v1beta1
+kind: StorageBucket
+metadata:
+  name: bucket-bucket
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "bucket"
+    app.kubernetes.io/name: cloud-function-v1
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "bucket"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/force-destroy: "true"
+spec:
+  resourceID: "myprefix-my-bucket"
+  location: "europe-west1"
+  uniformBucketLevelAccess: true
+  lifecycleRule:
+    - action:
+        type: Delete
+      condition:
+        age: 1
+        withState: ARCHIVED
+  versioning:
+    enabled: true

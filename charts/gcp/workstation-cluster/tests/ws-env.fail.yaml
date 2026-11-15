@@ -1,0 +1,8 @@
+# expect: workstation-cluster: workstation_configs.dev.workstations.ws1.env is not supported
+project_id: my-project
+id: my-workstation-cluster
+location: europe-west1
+network_config:
+  network: projects/my-project/global/networks/vpc
+  subnetwork: projects/my-project/regions/europe-west1/subnetworks/subnet
+workstation_configs: {dev: {workstations: {ws1: {env: {A: b}}}}}

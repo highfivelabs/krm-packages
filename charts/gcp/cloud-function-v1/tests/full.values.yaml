@@ -1,0 +1,35 @@
+# Every variable the chart carries.
+project_id: my-project
+region: europe-west1
+prefix: pfx
+name: full-fn
+description: A function.
+bucket_name: code
+bucket_config: {location: EU}
+bundle_config: {path: "gs://pfx-code/fn.zip", folder_options: {}}
+environment_variables: {LOG_EXECUTION_ID: "true", MODE: prod}
+function_config:
+  cpu: "1"
+  entry_point: handler
+  instance_count: 5
+  memory_mb: 512
+  runtime: nodejs22
+  timeout_seconds: 60
+https_security_level: SECURE_OPTIONAL
+ingress_settings: ALLOW_INTERNAL_ONLY
+repository_settings: {registry: ARTIFACT_REGISTRY}
+iam:
+  roles/cloudfunctions.invoker: ["serviceAccount:caller@my-project.iam.gserviceaccount.com"]
+service_account_config:
+  name: fn-runner
+  display_name: Function runner
+  roles: [roles/logging.logWriter]
+vpc_connector:
+  egress_settings: PRIVATE_RANGES_ONLY
+vpc_connector_create:
+  ip_cidr_range: 10.8.0.0/28
+  machine_type: e2-micro
+  name: fn-conn
+  network: projects/my-project/global/networks/vpc
+  instances: {max: 3, min: 2}
+labels: {env: prod}

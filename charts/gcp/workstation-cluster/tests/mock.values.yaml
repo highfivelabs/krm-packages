@@ -1,0 +1,17 @@
+# Applied to the fake cloud by hack/mock-apply.sh: a cluster, a
+# configuration with an IAMBinding (config-connector-extensions' fake cloud
+# serves any getIamPolicy path) and one workstation.
+project_id: mock-project
+id: catalog-mock-ws
+location: us-central1
+network_config:
+  network: projects/mock-project/global/networks/default
+  subnetwork: projects/mock-project/regions/us-central1/subnetworks/default
+labels: {env: test}
+workstation_configs:
+  dev:
+    gce_instance: {machine_type: e2-standard-4}
+    iam:
+      roles/workstations.user: ["group:devs@example.com"]
+    workstations:
+      ws1: {}

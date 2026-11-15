@@ -1,0 +1,27 @@
+# fabric's "IAM" example, with roles on the configuration too: IAMBinding
+# per role (iam) and per entry (iam_bindings); the additive entries are
+# IAMMember (v1alpha1, so allow_alpha).
+project_id: my-project
+id: my-workstation-cluster
+location: europe-west1
+network_config:
+  network: projects/my-project/global/networks/vpc
+  subnetwork: projects/my-project/regions/europe-west1/subnetworks/subnet
+allow_alpha: true
+workstation_configs:
+  my-workstation-config:
+    iam:
+      roles/workstations.viewer: ["group:viewers@my-org.com"]
+    iam_bindings:
+      admins: {role: roles/workstations.admin, members: ["group:admins@my-org.com"]}
+    iam_bindings_additive:
+      operator: {role: roles/workstations.operationViewer, member: "user:ops@my-org.com"}
+    workstations:
+      my-workstation:
+        labels: {team: my-team}
+        iam:
+          roles/workstations.user: ["user:user1@my-org.com"]
+        iam_bindings:
+          users: {role: roles/workstations.workstationCreator, members: ["user:user2@my-org.com"]}
+        iam_bindings_additive:
+          user3: {role: roles/workstations.user, member: "user:user3@my-org.com"}

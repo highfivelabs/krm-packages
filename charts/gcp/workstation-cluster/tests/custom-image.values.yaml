@@ -1,0 +1,17 @@
+# fabric's "Custom image" example.
+project_id: my-project
+id: my-workstation-cluster
+location: europe-west1
+network_config:
+  network: projects/my-project/global/networks/vpc
+  subnetwork: projects/my-project/regions/europe-west1/subnetworks/subnet
+workstation_configs:
+  my-workstation-config:
+    container:
+      image: repo/my-image:v10.0.0
+      args: ["--arg1", "value1", "--arg2", "value2"]
+      env: {VAR1: VALUE1, VAR2: VALUE2}
+      working_dir: /my-dir
+    workstations:
+      my-workstation:
+        labels: {team: my-team}

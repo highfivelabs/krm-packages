@@ -129,18 +129,18 @@ How much of the Terraform modules people use today the catalog carries, counted 
 
 ![All tracked modules](docs/coverage/total.svg)
 
-**177 modules tracked**: 15 ported, 121 partial, 36 blocked, 5 not started. Green is ported, amber partial (some variables refused with a message that names the gap), dark grey blocked (a resource type of the module has no stable kind: none, or only an alpha one), light grey not started.
+**177 modules tracked**: 15 ported, 123 partial, 34 blocked, 5 not started. Green is ported, amber partial (some variables refused with a message that names the gap), dark grey blocked (a resource type of the module has no stable kind: none, or only an alpha one), light grey not started.
 
 | Source | Modules | Bar | Variables covered |
 | --- | ---: | --- | ---: |
-| Google Cloud: Cloud Foundation Fabric and terraform-google-modules | 98 | ![gcp](docs/coverage/gcp.svg) | 1172 of 1478 (79.3%) |
+| Google Cloud: Cloud Foundation Fabric and terraform-google-modules | 98 | ![gcp](docs/coverage/gcp.svg) | 1200 of 1478 (81.2%) |
 | AWS: terraform-aws-modules | 42 | ![aws](docs/coverage/aws.svg) | 575 of 2348 (24.5%) |
 | Azure: Azure Verified Modules | 37 | ![azure](docs/coverage/azure.svg) | 1054 of 1170 (90.1%) |
-| **All** | **177** | | **2801 of 4996 (56.1%)** |
+| **All** | **177** | | **2829 of 4996 (56.6%)** |
 
 ### Google Cloud: Cloud Foundation Fabric and terraform-google-modules
 
-9 ported, 73 partial, 13 blocked, 3 not started.
+9 ported, 75 partial, 11 blocked, 3 not started.
 
 **Ported and partial**
 
@@ -217,6 +217,8 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | [`data-catalog-tag`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/data-catalog-tag) ([chart](charts/gcp/data-catalog-tag)) | ![data-catalog-tag](docs/coverage/bars/gcp-data-catalog-tag.svg) 2 of 2 | 1 of 1 | 0 of 1 | partial |
 | [`api-gateway`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/api-gateway) ([chart](charts/gcp/api-gateway)) | ![api-gateway](docs/coverage/bars/gcp-api-gateway.svg) 8 of 8 | 10 of 10 | 4 of 9 | ported |
 | [`endpoints`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/endpoints) ([chart](charts/gcp/endpoints)) | ![endpoints](docs/coverage/bars/gcp-endpoints.svg) 5 of 5 | 3 of 3 | 0 of 2 | partial |
+| [`cloud-function-v1`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/cloud-function-v1) ([chart](charts/gcp/cloud-function-v1)) | ![cloud-function-v1](docs/coverage/bars/gcp-cloud-function-v1.svg) 19 of 24 | 7 of 10 | 6 of 7 | partial |
+| [`workstation-cluster`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/workstation-cluster) ([chart](charts/gcp/workstation-cluster)) | ![workstation-cluster](docs/coverage/bars/gcp-workstation-cluster.svg) 9 of 12 | 3 of 5 | 3 of 7 | partial |
 | [`geap-agent-gateway`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/geap-agent-gateway) ([chart](charts/gcp/geap-agent-gateway)) | ![geap-agent-gateway](docs/coverage/bars/gcp-geap-agent-gateway.svg) 14 of 15 | 6 of 7 | 0 of 6 | partial |
 | [`geap-agent-runtime`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/geap-agent-runtime) ([chart](charts/gcp/geap-agent-runtime)) | ![geap-agent-runtime](docs/coverage/bars/gcp-geap-agent-runtime.svg) 12 of 14 | 2 of 3 | 3 of 5 | partial |
 | [`secops-rules`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/secops-rules) ([chart](charts/gcp/secops-rules)) | ![secops-rules](docs/coverage/bars/gcp-secops-rules.svg) 5 of 5 | 0 of 0 | 0 of 3 | partial |
@@ -229,7 +231,7 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | [`iam-folders-iam`](https://github.com/terraform-google-modules/terraform-google-iam/tree/v8.3.0/modules/folders_iam) ([chart](charts/gcp/folders-iam)) | ![iam-folders-iam](docs/coverage/bars/gcp-iam-folders-iam.svg) 4 of 4 | 3 of 3 | 0 of 0 | partial |
 | [`org-policy-v2`](https://github.com/terraform-google-modules/terraform-google-org-policy/tree/v7.4.0/modules/org_policy_v2) ([chart](charts/gcp/org-policy-v2)) | ![org-policy-v2](docs/coverage/bars/gcp-org-policy-v2.svg) 8 of 8 | 3 of 3 | 0 of 0 | partial |
 
-**Blocked: a resource type has no stable kind (first 10 of 13, by rank)**
+**Blocked: a resource type has no stable kind (first 10 of 11, by rank)**
 
 | Module | Variables covered | Outputs | Resource types with a stable kind | Status |
 | --- | --- | ---: | ---: | --- |
@@ -240,9 +242,9 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | [`secure-source-manager-instance`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/secure-source-manager-instance) | ![secure-source-manager-instance](docs/coverage/bars/gcp-secure-source-manager-instance.svg) 0 of 11 | 0 of 4 | 2 of 7 | blocked |
 | [`data-catalog-tag-template`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/data-catalog-tag-template) | ![data-catalog-tag-template](docs/coverage/bars/gcp-data-catalog-tag-template.svg) 0 of 4 | 0 of 2 | 0 of 3 | blocked |
 | [`apigee`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/apigee) | ![apigee](docs/coverage/bars/gcp-apigee.svg) 0 of 8 | 0 of 9 | 9 of 12 | blocked |
-| [`cloud-function-v1`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/cloud-function-v1) | ![cloud-function-v1](docs/coverage/bars/gcp-cloud-function-v1.svg) 0 of 24 | 0 of 10 | 6 of 7 | blocked |
-| [`workstation-cluster`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/workstation-cluster) | ![workstation-cluster](docs/coverage/bars/gcp-workstation-cluster.svg) 0 of 12 | 0 of 5 | 3 of 7 | blocked |
 | [`gcve-private-cloud`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/gcve-private-cloud) | ![gcve-private-cloud](docs/coverage/bars/gcp-gcve-private-cloud.svg) 0 of 5 | 0 of 5 | 0 of 5 | blocked |
+| [`looker-core`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/looker-core) | ![looker-core](docs/coverage/bars/gcp-looker-core.svg) 0 of 15 | 0 of 11 | 0 of 1 | blocked |
+| [`ai-applications`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/ai-applications) | ![ai-applications](docs/coverage/bars/gcp-ai-applications.svg) 0 of 8 | 0 of 8 | 2 of 11 | blocked |
 
 **Not started**
 

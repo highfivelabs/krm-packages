@@ -1,0 +1,38 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Where this chart came from: the Terraform module it ports and the release
+# it was ported from. Machine-readable; `task upstream-check` keeps it equal
+# to upstream/modules.yaml and Chart.yaml. To take a newer release, see
+# UPSTREAM.md ("Moving the pins").
+module: gcp/workstation-cluster
+repo: https://github.com/GoogleCloudPlatform/cloud-foundation-fabric
+path: modules/workstation-cluster
+version: v60.0.0
+commit: f706bc3b6166787df01402f73a96f1de57097477
+license: Apache-2.0
+copyright: Google LLC
+module_url: https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/workstation-cluster
+registry_url: null
+synced: 2026-11-15
+# Module variables the chart keeps in values.yaml (so tfvars convert one to
+# one) but refuses when set, or accepts only in part. Read by `task
+# coverage`; `task coverage-verify` renders the chart to check that each one
+# is refused. kind: gap (no Config Connector kind or field) or by-design
+# (Bundt replaces it). partial: the variable is accepted, the reason says
+# what is refused.
+refused:
+  - variable: context
+    kind: by-design
+    reason: "Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs"
+  - variable: factories_config
+    kind: by-design
+    reason: "fabric reads workstation configurations from YAML files on disk; a component has no files, so they go in workstation_configs"
+  - variable: domain
+    kind: gap
+    reason: "Config Connector's WorkstationCluster (v1.160.0) has no domainConfig field"
+  - variable: workstation_configs
+    kind: gap
+    reason: "Config Connector's WorkstationConfig and Workstation (v1.160.0) have no field for enable_audit_agent, max_workstations, gce_instance.accelerators, gce_instance.boost_configs or a workstation's env; iam_bindings_additive needs allow_alpha (config-connector-extensions' IAMMember is v1alpha1)"
+    partial: true
+    fields: [enable_audit_agent, max_workstations, gce_instance.accelerators, gce_instance.boost_configs, workstations.env]
