@@ -1,0 +1,10 @@
+# The factory's other inputs (the generator's config): fabric's
+# data_defaults, its context, and where the tree is.
+defaults:
+  prefix: hfl                        # fabric: project and bucket names start with it
+  deletion_policy: ABANDON           # Bundt: cloudResources keep on the project and its buckets
+context:                             # fabric's `context` variable, as is
+  folder_ids: {default: organizations/1234567890}
+  storage_buckets: {log-bucket: hfl-central-logs}
+folders: data/folders                # data/folders/team-a/app-0/.config.yaml makes the folder
+projects: data/projects

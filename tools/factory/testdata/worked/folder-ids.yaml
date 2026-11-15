@@ -1,0 +1,3 @@
+# The folders Instance's outputs once it is applied: each folder's id.
+team-a: folders/2345678901
+team-a/app-0: folders/3456789012
