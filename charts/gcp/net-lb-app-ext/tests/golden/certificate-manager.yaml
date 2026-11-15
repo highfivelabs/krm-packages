@@ -1,0 +1,124 @@
+---
+# Source: net-lb-app-ext/templates/backend-service.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeBackendService
+metadata:
+  name: certificate-manager-bs-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "certificate-manager"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "backend_service:default"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-default"
+  location: "global"
+  description: "Terraform managed."
+  loadBalancingScheme: "EXTERNAL_MANAGED"
+  protocol: "HTTPS"
+  healthChecks:
+    - healthCheckRef:
+        name: certificate-manager-hc-default
+  portName: "https"
+  backend:
+    - balancingMode: "UTILIZATION"
+      capacityScaler: 1
+      description: "Terraform managed."
+      group:
+        instanceGroupRef:
+          external: "projects/my-project/zones/europe-west8-b/instanceGroups/my-ig-b"
+---
+# Source: net-lb-app-ext/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeForwardingRule
+metadata:
+  name: certificate-manager-fr
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "certificate-manager"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "forwarding_rule:"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: global
+  description: "Terraform managed."
+  ipVersion: IPV4
+  ipProtocol: TCP
+  loadBalancingScheme: EXTERNAL_MANAGED
+  portRange: "443"
+  target:
+    targetHTTPSProxyRef:
+      name: certificate-manager
+---
+# Source: net-lb-app-ext/templates/health-check.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeHealthCheck
+metadata:
+  name: certificate-manager-hc-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "certificate-manager"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "health_check:default"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-default"
+  location: "global"
+  description: "Terraform managed."
+  httpHealthCheck:
+    portSpecification: USE_SERVING_PORT
+---
+# Source: net-lb-app-ext/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeTargetHTTPSProxy
+metadata:
+  name: certificate-manager
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "certificate-manager"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "target_proxy"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: global
+  description: "Terraform managed."
+  certificateMapRef:
+    external: "//certificatemanager.googleapis.com/projects/my-project/locations/global/certificateMaps/my-map"
+  certificateManagerCertificates:
+    - external: "projects/my-project/locations/global/certificates/my-cert"
+  httpKeepAliveTimeoutSec: 610
+  serverTlsPolicyRef:
+    external: "projects/my-project/locations/global/serverTlsPolicies/my-mtls"
+  urlMapRef:
+    name: certificate-manager
+---
+# Source: net-lb-app-ext/templates/urlmap.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeURLMap
+metadata:
+  name: certificate-manager
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "certificate-manager"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "url_map"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: "global"
+  description: "Terraform managed."
+  defaultService:
+    backendServiceRef:
+      name: certificate-manager-bs-default

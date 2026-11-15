@@ -1,0 +1,4 @@
+# expect: net-lb-app-ext: Cloud Run NEGs need either target service or target urlmask defined.
+name: lb
+project_id: my-project
+neg_configs: {a: {cloudrun: {region: europe-west1}}}

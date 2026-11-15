@@ -1,0 +1,30 @@
+# fabric's README, "HTTPS load balancers": an existing certificate and one
+# made from a PEM whose private key is a Kubernetes Secret
+# (docs/secrets.md), on a reserved address with global access.
+name: ilb-test
+project_id: my-project
+region: europe-west1
+protocol: HTTPS
+address: projects/my-project/regions/europe-west1/addresses/ilb
+global_access: true
+backend_service_configs:
+  default:
+    backends:
+      - group: projects/my-project/zones/europe-west1-b/instanceGroups/my-ig
+    protocol: HTTP
+https_proxy_config:
+  ssl_policy: projects/my-project/regions/europe-west1/sslPolicies/modern
+ssl_certificates:
+  certificate_ids:
+    - projects/my-project/regions/europe-west1/sslCertificates/my-cert
+  create_configs:
+    default:
+      name: ilb-test-own
+      certificate: |
+        -----BEGIN CERTIFICATE-----
+        MIIBPUBLICCERTIFICATEONLY
+        -----END CERTIFICATE-----
+      private_key: {secretName: ilb-tls, key: tls.key}
+vpc_config:
+  network: projects/my-project/global/networks/my-vpc
+  subnetwork: projects/my-project/regions/europe-west1/subnetworks/my-subnet

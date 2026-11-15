@@ -1,0 +1,4 @@
+# expect: net-lb-app-ext: backend_service_configs.default.security_settings.aws_v4_authentication is not supported
+name: lb
+project_id: my-project
+backend_service_configs: {default: {backends: [], security_settings: {aws_v4_authentication: {access_key_id: a, origin_region: us-east-1}}}}

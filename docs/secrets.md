@@ -140,6 +140,8 @@ elsewhere, or a gateway without an identity.
 | | `users[].password` (an `ALLOYDB_BUILT_IN` user's, required for one) | `AlloyDBUser` `password` |
 | `net-vpn-ha`, `net-vpn-dynamic`, `net-vpn-static`, `net-ipsec-over-interconnect` (0.2.0) | `tunnels[].shared_secret` (required) | `ComputeVPNTunnel` `sharedSecret` |
 | `certificate-manager` (0.2.0) | `certificates[].self_managed.pem_private_key` (`pem_certificate`, public, stays a plain value) | `CertificateManagerCertificate` `selfManaged.pemPrivateKey` |
+| `net-lb-app-ext`, `net-lb-app-int` (0.1.0) | `ssl_certificates.create_configs.*.private_key` | `ComputeSSLCertificate` `privateKey` (the certificate, public, stays a plain value) |
+| | `backend_service_configs.*.iap_config.oauth2_client_secret` | `ComputeBackendService` `iap.oauth2ClientSecret` |
 
 A module's `*_version` beside a write-only secret is required with it, as
 in the module, and does nothing: the controller sends the whole body on

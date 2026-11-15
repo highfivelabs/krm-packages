@@ -1,0 +1,32 @@
+# fabric's README, "Serverless NEG creation": Cloud Run and Cloud
+# Functions, no health checks.
+name: glb-test-0
+project_id: my-project
+backend_service_configs:
+  default:
+    backends:
+      - group: run
+    health_checks: []
+  fn:
+    backends:
+      - group: fn
+    health_checks: []
+health_check_configs: {}
+neg_configs:
+  run:
+    cloudrun:
+      region: europe-west8
+      target_service: {name: my-run-service, tag: blue}
+  fn:
+    project_id: other-project
+    description: A function.
+    cloudfunction:
+      region: europe-west8
+      target_function: my-function
+urlmap_config:
+  default_service: default
+  host_rules: [{hosts: ["*"], path_matcher: main}]
+  path_matchers:
+    main:
+      default_service: default
+      path_rules: [{paths: [/fn/*], service: fn}]

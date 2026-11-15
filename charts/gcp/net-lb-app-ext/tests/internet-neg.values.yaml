@@ -1,0 +1,27 @@
+# fabric's README, "Internet NEG creation": a global internet NEG of
+# domain names, and one of addresses, with their endpoints (alpha).
+name: glb-test-0
+project_id: my-project
+allow_alpha: true
+backend_service_configs:
+  default:
+    backends:
+      - group: neg-0
+    health_checks: []
+  ip:
+    backends:
+      - group: neg-1
+    health_checks: []
+health_check_configs: {}
+neg_configs:
+  neg-0:
+    internet:
+      use_fqdn: true
+      endpoints:
+        e-0: {destination: www.example.org, port: 80}
+  neg-1:
+    description: By address.
+    internet:
+      use_fqdn: false
+      endpoints:
+        e-0: {destination: 203.0.113.10, port: 443}

@@ -934,7 +934,7 @@ modules:
     copyright: Google LLC
     registry_url: null
     url: https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/net-lb-app-ext
-    chart: null
+    chart: charts/gcp/net-lb-app-ext
   - id: gcp/net-lb-app-ext-regional
     cloud: gcp
     module: net-lb-app-ext-regional
@@ -962,7 +962,7 @@ modules:
     copyright: Google LLC
     registry_url: null
     url: https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/net-lb-app-int
-    chart: null
+    chart: charts/gcp/net-lb-app-int
   - id: gcp/net-lb-app-int-cross-region
     cloud: gcp
     module: net-lb-app-int-cross-region
