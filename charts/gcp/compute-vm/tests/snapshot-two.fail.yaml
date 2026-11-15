@@ -1,0 +1,8 @@
+# expect: Must validate one and only one schema
+project_id: my-project
+zone: europe-west8-b
+name: test
+network_interfaces:
+  - network: projects/my-project/global/networks/vpc
+    subnetwork: projects/my-project/regions/europe-west8/subnetworks/subnet
+snapshot_schedules: {s: {schedule: {daily: {days_in_cycle: 1, start_time: "01:00"}, hourly: {hours_in_cycle: 4, start_time: "01:00"}}}}

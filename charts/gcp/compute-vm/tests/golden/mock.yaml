@@ -1,0 +1,190 @@
+---
+# Source: compute-vm/templates/disks.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeDisk
+metadata:
+  name: mock-disk-data
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    disk_name: "data"
+    disk_type: "pd-standard"
+  annotations:
+    hfl.dev/id: "disk:data"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  resourceID: "catalog-mock-vm-data"
+  location: "us-central1-a"
+  type: "pd-standard"
+  size: 10
+---
+# Source: compute-vm/templates/resource-policies.yaml
+apiVersion: compute.gcp.hfl.dev/v1beta1
+kind: ComputeDiskResourcePolicyAttachment
+metadata:
+  name: mock-disk-data-snapshot-daily
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "disk_snapshot:data-daily"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  resourceID: "catalog-mock-vm-daily"
+  projectRef:
+    external: "mock-project"
+  zone: "us-central1-a"
+  diskRef:
+    name: mock-disk-data
+---
+# Source: compute-vm/templates/instance.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeInstance
+metadata:
+  name: mock
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "instance"
+    cnrm.cloud.google.com/project-id: "mock-project"
+    cnrm.cloud.google.com/allow-stopping-for-update: "true"
+spec:
+  resourceID: "catalog-mock-vm"
+  zone: "us-central1-a"
+  machineType: "e2-micro"
+  description: "Managed by the compute-vm Terraform module."
+  tags: ["ssh"]
+  canIpForward: false
+  deletionProtection: false
+  enableDisplay: false
+  metadata:
+    - key: "enable-oslogin"
+      value: "TRUE"
+  resourcePolicies:
+    - name: mock-schedule
+  attachedDisk:
+    - deviceName: "data"
+      mode: "READ_WRITE"
+      sourceDiskRef:
+        name: mock-disk-data
+  bootDisk:
+    autoDelete: true
+    initializeParams:
+      size: 10
+      type: "pd-standard"
+      sourceImageRef:
+        external: "projects/debian-cloud/global/images/family/debian-12"
+      labels:
+        disk_name: "boot"
+        disk_type: "pd-standard"
+  networkInterface:
+    - networkRef:
+        external: "projects/mock-project/global/networks/catalog-mock-vm-net"
+      subnetworkRef:
+        external: "projects/mock-project/regions/us-central1/subnetworks/catalog-mock-vm-sn"
+  scheduling:
+    automaticRestart: true
+    onHostMaintenance: "MIGRATE"
+    preemptible: false
+    provisioningModel: "STANDARD"
+  serviceAccount:
+    serviceAccountRef:
+      name: mock-sa
+    scopes: ["https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+---
+# Source: compute-vm/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeInstanceGroup
+metadata:
+  name: mock-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "group"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  resourceID: "catalog-mock-vm"
+  zone: "us-central1-a"
+  description: "Managed by the compute-vm Terraform module."
+  networkRef:
+    external: "projects/mock-project/global/networks/catalog-mock-vm-net"
+  instances:
+    - name: mock
+  namedPort:
+    - name: "http"
+      port: 80
+---
+# Source: compute-vm/templates/resource-policies.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeResourcePolicy
+metadata:
+  name: mock-schedule
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "instance_schedule"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  resourceID: "catalog-mock-vm"
+  region: "us-central1"
+  description: "Schedule policy for catalog-mock-vm."
+  instanceSchedulePolicy:
+    timeZone: "UTC"
+    vmStopSchedule:
+      schedule: "0 20 * * *"
+---
+# Source: compute-vm/templates/resource-policies.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeResourcePolicy
+metadata:
+  name: mock-snapshot-daily
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "snapshot_schedule:daily"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  resourceID: "catalog-mock-vm-daily"
+  region: "us-central1"
+  description: "Schedule policy daily for catalog-mock-vm."
+  snapshotSchedulePolicy:
+    schedule:
+      dailySchedule:
+        daysInCycle: 1
+        startTime: "03:00"
+    retentionPolicy:
+      maxRetentionDays: 3
+      onSourceDiskDelete: "KEEP_AUTO_SNAPSHOTS"
+---
+# Source: compute-vm/templates/main.yaml
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMServiceAccount
+metadata:
+  name: mock-sa
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "service_account"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  resourceID: "tf-vm-catalog-mock-vm"
+  displayName: "Terraform VM catalog-mock-vm."

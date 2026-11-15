@@ -1,0 +1,60 @@
+apiVersion: hfl.dev/v1
+kind: Template
+metadata:
+  name: compute-vm
+spec:
+  version: "1.0.0"
+  components:
+    - name: web-vm
+      package:
+        name: gcp-compute-vm
+        version: "0.1.0"
+      inputs:
+        zone: europe-west1-b
+        name: web-0
+        network_interfaces:
+          - network: projects/myproject/global/networks/vpc
+            subnetwork: projects/myproject/regions/europe-west1/subnetworks/apps
+        attached_disks:
+          data:
+            initialize_params:
+              size: 20
+              type: pd-ssd
+            snapshot_schedule:
+              - daily
+        snapshot_schedules:
+          daily:
+            retention_policy:
+              max_retention_days: 7
+            schedule:
+              daily:
+                days_in_cycle: 1
+                start_time: "03:00"
+        service_account:
+          auto_create: true
+        tags:
+          - http-server
+          - ssh
+        labels:
+          app: web
+---
+apiVersion: hfl.dev/v1
+kind: Stack
+metadata:
+  name: compute-vm
+  scope: my-team
+spec:
+  template: compute-vm
+---
+apiVersion: hfl.dev/v1
+kind: Instance
+metadata:
+  name: compute-vm-dev
+  scope: my-team/dev
+spec:
+  stack: compute-vm
+  version: "1.0.0"
+  components:
+    web-vm:
+      values:
+        project_id: myproject

@@ -1,0 +1,8 @@
+# expect: compute-vm: boot_disk.initialize_params.hyperdisk is not supported
+project_id: my-project
+zone: europe-west8-b
+name: test
+network_interfaces:
+  - network: projects/my-project/global/networks/vpc
+    subnetwork: projects/my-project/regions/europe-west8/subnetworks/subnet
+boot_disk: {initialize_params: {type: hyperdisk-balanced, hyperdisk: {provisioned_iops: 3000}}}

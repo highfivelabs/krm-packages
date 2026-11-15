@@ -1,0 +1,8 @@
+# expect: compute-vm: network_attached_interfaces is not supported: ComputeInstance's networkInterface has no networkAttachment field
+project_id: my-project
+zone: europe-west8-b
+name: test
+network_interfaces:
+  - network: projects/my-project/global/networks/vpc
+    subnetwork: projects/my-project/regions/europe-west8/subnetworks/subnet
+network_attached_interfaces: [projects/my-project/regions/europe-west8/networkAttachments/a]

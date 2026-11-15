@@ -1,0 +1,17 @@
+# Additive IAP tunnel IAM: config-connector-extensions' IAMMember, alpha.
+project_id: my-project
+zone: europe-west8-b
+name: test
+allow_alpha: true
+service_account: null
+network_interfaces:
+  - network: projects/my-project/global/networks/vpc
+    subnetwork: projects/my-project/regions/europe-west8/subnetworks/subnet
+iap_tunnel_iam_bindings_additive:
+  ops:
+    role: roles/iap.tunnelResourceAccessor
+    member: user:ops@example.com
+  dev:
+    role: roles/iap.tunnelResourceAccessor
+    member: group:dev@example.com
+    condition: {title: expires, expression: request.time < timestamp("2027-01-01T00:00:00Z"), description: Until next year.}

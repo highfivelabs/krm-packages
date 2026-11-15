@@ -1,0 +1,168 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values mirror the Terraform variables of fabric's compute-vm module
+# (v60.0.0): same names, types and defaults, so a module block's arguments
+# become this file one to one (README.md, "From Terraform").
+# values.schema.json carries the types and the module's validations.
+
+# Names, labels and tags (docs/design.md, "Names, labels and tags"). Not
+# Terraform variables: Bundt supplies names from a team's naming convention
+# and stamps its identity labels; the chart takes them and computes none.
+#
+# names.instance: the instance's name in full. names.group,
+# names.instanceSchedule: the unmanaged group's and the instance schedule
+# policy's (fabric gives both the instance's name; unset, they take the
+# instance's name as set). names.serviceAccount: the created account's ID
+# (fabric's tf-vm-<name>). names.template: the instance template's name
+# before the chart's -<hash> suffix (fabric's name_prefix, <name>-). A
+# name set here takes no namePrefix.
+names: {}
+# An optional convenience: "<namePrefix>-" in front of every name the chart
+# derives from name (the instance, the account, the template) or is given
+# in an entry (a disk's own name), never one set under names. Empty (the
+# default) changes nothing.
+namePrefix: ""
+# fabric's instance labels: Kubernetes labels on every object; an
+# unprefixed key is also a Google Cloud label on every resource that takes
+# labels (the instance, its disks, the template), as Config Connector copies
+# it, and on the boot disk's initialize params, as fabric merges them.
+labels: {}
+# fabric's network tags (a list, fabric's default []): the instance's or
+# template's tags. A map is every chart's tags instead: Google Cloud labels
+# on every resource that takes them. null (the default here, so either
+# shape merges) is fabric's [].
+tags: null
+
+# Additional disks, {KEY: {auto_delete, device_name, force_attach, position,
+# mode, name, initialize_params: {replica_zone, size, type, hyperdisk:
+# {provisioned_iops, provisioned_throughput, storage_pool}},
+# snapshot_schedule, source: {attach, image, snapshot}}}. A disk with
+# initialize_params.replica_zone is regional.
+attached_disks: {}
+# Boot disk: {architecture, auto_delete, force_attach, snapshot_schedule,
+# initialize_params: {size, type, hyperdisk}, source: {attach, disk, image,
+# snapshot}, use_independent_disk: {name}}.
+boot_disk:
+  auto_delete: true
+  initialize_params:
+    size: 10
+    type: pd-balanced
+    hyperdisk: {}
+  source:
+    image: debian-cloud/debian-13
+# Enable IP forwarding.
+can_ip_forward: false
+# Confidential Compute: SEV or SEV_SNP.
+confidential_compute: null
+# Context-specific interpolations. Refused when set: Bundt replaces fabric's
+# $context lookups with ${...} expressions and valueFrom.
+context: {}
+# Create an instance template instead of an instance: {regional}. A global
+# template unless regional is true (config-connector-extensions'
+# ComputeRegionInstanceTemplate, alpha: refused, not ported yet).
+create_template: null
+# Description of the instance (or template).
+description: Managed by the compute-vm Terraform module.
+# Enable a virtual display on the instance.
+enable_display: false
+# Encryption: {encrypt_boot, disk_encryption_key_raw, kms_key_self_link}.
+# disk_encryption_key_raw is refused: the key would be in the rendered
+# manifest.
+encryption: null
+# GPU: {count, type}.
+gpu: null
+# Instance group: {membership, named_ports}. named_ports makes an unmanaged
+# group holding the instance; membership (joining an existing group) is
+# refused.
+group: null
+# Instance FQDN name.
+hostname: null
+# Instance IAM, {ROLE: [MEMBERS]}.
+iam: {}
+# IAP tunnel IAM, {ROLE: [MEMBERS]}, exact per role.
+iap_tunnel_iam: {}
+# IAP tunnel IAM, {KEY: {role, members, condition}}, exact per role.
+iap_tunnel_iam_bindings: {}
+# Additive IAP tunnel IAM, {KEY: {member, role, condition}}: an IAMMember
+# each (config-connector-extensions, alpha: needs allow_alpha).
+iap_tunnel_iam_bindings_additive: {}
+# Instance schedule: {active, description, expiration_time, start_time,
+# timezone, vm_start, vm_stop}.
+instance_schedule: null
+# KMS Autokey key handles. Refused when set: no disk can reference a key
+# handle.
+kms_autokeys: {}
+# Instance lifecycle: {allow_stopping_for_update, deletion_protection,
+# key_revocation_action_type, graceful_shutdown: {enabled,
+# max_duration_secs}}.
+lifecycle_config:
+  allow_stopping_for_update: true
+  deletion_protection: false
+# Machine features: {enable_nested_virtualization, enable_turbo_mode,
+# enable_uefi_networking, performance_monitoring_unit, threads_per_core,
+# visible_core_count}.
+machine_features_config: {}
+# Machine type.
+machine_type: e2-micro
+# Instance metadata, {KEY: VALUE}.
+metadata: {}
+# Startup script.
+metadata_startup_script: null
+# Minimum CPU platform.
+min_cpu_platform: null
+# Instance name (required).
+name: null
+# Network interfaces on network attachments (templates only; refused on an
+# instance).
+network_attached_interfaces: []
+# Network interfaces (required): [{network, subnetwork, alias_ips, nat,
+# network_tier, nic_type, stack_type, queue_count,
+# internal_ipv6_prefix_length, external_ipv6, addresses: {internal,
+# external}}].
+network_interfaces: null
+# Network performance tier: DEFAULT or TIER_1.
+network_performance_tier: null
+# Network tag bindings. Refused when set: the binding names the instance's
+# numeric ID.
+network_tag_bindings: {}
+# Project ID (required).
+project_id: null
+# Project number, which fabric uses only in tag bindings (refused here).
+project_number: null
+# Resource policies to attach to the instance or template (IDs or self
+# links).
+resource_policies: null
+# Scheduling: {automatic_restart, maintenance_interval, min_node_cpus,
+# on_host_maintenance, provisioning_model, termination_action,
+# local_ssd_recovery_timeout, max_run_duration, node_affinities}.
+scheduling_config: {}
+# Scratch disks: {count, interface, size}.
+scratch_disks:
+  count: 0
+  interface: NVME
+  size: 375
+# Service account: {auto_create, email, scopes}. {} (the default) is the
+# Compute Engine default account; null attaches none.
+service_account: {}
+# Shielded VM: {enable_secure_boot, enable_vtpm, enable_integrity_monitoring}.
+shielded_config: null
+# Snapshot schedule resource policies, {KEY: {schedule: {daily, hourly,
+# weekly}, description, retention_policy, snapshot_properties}}.
+snapshot_schedules: {}
+# Tag bindings. Refused when set: a binding names the instance's or disk's
+# numeric ID.
+tag_bindings: {}
+# Immutable tag bindings, {tagKeys/ID: tagValues/ID}.
+tag_bindings_immutable: null
+# TPU configuration. Refused when set: TPUVirtualMachine and
+# TPUQueuedResource are alpha and not ported yet.
+tpu_config: null
+# Zone (required).
+zone: null
+
+# Not fabric variables: deletion_policy DELETE (default) or ABANDON
+# (PREVENT is refused, docs/design.md "Deletion"); allow_alpha accepts
+# the alpha kinds (IAMMember for iap_tunnel_iam_bindings_additive).
+deletion_policy: DELETE
+allow_alpha: false
