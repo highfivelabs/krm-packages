@@ -1,6 +1,6 @@
 cloud,module,variable,type,covered,refused_reason,gap_kind
 gcp,project,alerts,"map(object({alert_strategy, combiner, conditions, display_name, documentation, enabled, +3}))",partial,"MonitoringAlertPolicy has no notification prompts, documentation subject or links, or a PromQL condition's disableMetricValidation",gap
-gcp,project,asset_feeds,"map(object({asset_names, asset_types, billing_project, condition, content_type, feed_output_config}))",partial,"billing_project is not carried: AssetFeed has no field for it, and Config Connector bills the call to the project its controller is configured with",gap
+gcp,project,asset_feeds,"map(object({asset_names, asset_types, billing_project, condition, content_type, feed_output_config}))",partial,"only on an existing project (project_reuse with attributes.number): Config Connector's AssetFeed must name the project by its number; billing_project is not carried: AssetFeed has no field for it, and Config Connector bills the call to the project its controller is configured with",gap
 gcp,project,asset_search,"map(object({asset_types, query}))",no,"a search is a read, not a resource",by-design
 gcp,project,auto_create_network,bool,yes,,
 gcp,project,bigquery_reservations,"map(object({assignments, concurrency, edition, ignore_idle_slots, location, max_slots, +3}))",yes,,
