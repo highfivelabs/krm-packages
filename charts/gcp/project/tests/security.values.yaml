@@ -1,0 +1,17 @@
+# 0.10.0: an IAM deny policy (config-connector-extensions' IAMDenyPolicy)
+# and the project in a VPC-SC perimeter, on a new project (the perimeter resource refers to the Project object).
+name: secure-project
+parent: folders/1234567890
+iam_deny_policies:
+  no-sa-keys:
+    display_name: No service account keys
+    rules:
+      - description: Nobody but the admins creates keys.
+        denied_principals: ["principalSet://goog/public:all"]
+        denied_permissions: ["iam.googleapis.com/serviceAccountKeys.create"]
+        exception_principals: ["principalSet://goog/group/admins@example.com"]
+        denial_condition:
+          title: only prod
+          expression: resource.matchTag('1234567890/env', 'prod')
+vpc_sc:
+  perimeter_name: accessPolicies/1234/servicePerimeters/default

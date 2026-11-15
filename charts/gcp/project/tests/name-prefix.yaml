@@ -24,5 +24,7 @@ exempt:
   TagsTagValue: "its short name is scoped to its tag key, which carries the namePrefix"
   IAMWorkloadIdentityPoolProvider: "its ID is scoped to its pool, which carries the namePrefix"
   BigQueryReservationAssignment: "Google Cloud assigns its ID"
+  IAMDenyPolicy: "named by its key, per project: a deny policy ID is unique only on the resource it is attached to (as in the folder chart)"
+  AccessContextManagerServicePerimeterResource: "puts the project in a perimeter; it has no name of its own"
 nameFields:
   TagsTagKey: shortName

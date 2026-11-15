@@ -8,11 +8,11 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "reuse-tags"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.9.1"
+    app.kubernetes.io/version: "0.10.0"
   annotations:
     hfl.dev/id: "tag-binding:env"
 spec:
   parentRef:
-    external: "//cloudresourcemanager.googleapis.com/projects/1.23456789012e+11"
+    external: "//cloudresourcemanager.googleapis.com/projects/123456789012"
   tagValueRef:
     external: "tagValues/1234567890"

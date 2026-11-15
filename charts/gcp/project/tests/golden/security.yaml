@@ -1,0 +1,67 @@
+---
+# Source: project/templates/vpc-sc.yaml
+apiVersion: accesscontextmanager.cnrm.cloud.google.com/v1beta1
+kind: AccessContextManagerServicePerimeterResource
+metadata:
+  name: security-vpc-sc
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "security"
+    app.kubernetes.io/name: project
+    app.kubernetes.io/version: "0.10.0"
+  annotations:
+    hfl.dev/id: "vpc_sc"
+spec:
+  perimeterNameRef:
+    external: "accessPolicies/1234/servicePerimeters/default"
+  resourceRef:
+    name: security
+---
+# Source: project/templates/deny-policies.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMDenyPolicy
+metadata:
+  name: security-deny-no-sa-keys
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "security"
+    app.kubernetes.io/name: project
+    app.kubernetes.io/version: "0.10.0"
+  annotations:
+    hfl.dev/id: "iam_deny_policy:no-sa-keys"
+spec:
+  resourceID: "no-sa-keys"
+  projectRef:
+    name: security
+  displayName: "No service account keys"
+  rules:
+    - denyRule:
+        deniedPrincipals:
+          - "principalSet://goog/public:all"
+        deniedPermissions:
+          - "iam.googleapis.com/serviceAccountKeys.create"
+        exceptionPrincipals:
+          - "principalSet://goog/group/admins@example.com"
+        denialCondition:
+          title: "only prod"
+          expression: "resource.matchTag('1234567890/env', 'prod')"
+      description: "Nobody but the admins creates keys."
+---
+# Source: project/templates/project.yaml
+apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+kind: Project
+metadata:
+  name: security
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "security"
+    app.kubernetes.io/name: project
+    app.kubernetes.io/version: "0.10.0"
+  annotations:
+    hfl.dev/id: "project"
+    cnrm.cloud.google.com/auto-create-network: "false"
+spec:
+  resourceID: secure-project
+  name: "secure-project"
+  folderRef:
+    external: "1234567890"

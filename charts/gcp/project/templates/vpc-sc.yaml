@@ -1,0 +1,76 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/project/vpc-sc.tf and main.tf
+(v60.0.0), Copyright 2025 Google LLC, Apache-2.0.
+
+google_access_context_manager_service_perimeter_resource.default (vpc_sc):
+an AccessContextManagerServicePerimeterResource (v1beta1) putting the
+project in the perimeter perimeter_name (accessPolicies/<n>/
+servicePerimeters/<name>). Google Cloud names the project by its number:
+the Project object this chart makes (Config Connector reads its number),
+or, with project_reuse, project_reuse.attributes.number. is_dry_run is
+refused: Config Connector has no dry-run perimeter resource kind (fabric's
+google_access_context_manager_service_perimeter_dry_run_resource).
+
+google_compute_organization_security_policy_association.default
+(cloud_armor_policy): a ComputeOrganizationSecurityPolicyAssociation
+(v1alpha1, behind allow_alpha) of the hierarchical Cloud Armor policy with
+the project, named project-<number> unless named, as the folder chart
+renders it. Its attachmentId is the project's number, a plain string, so
+it needs project_reuse with attributes.number: a new project's number is
+known only after apply. Exclusions are refused with fabric's message.
+*/ -}}
+{{- $v := .Values }}
+{{- $abandon := include "kcc.abandon" . }}
+{{- $reuse := not (kindIs "invalid" $v.project_reuse) }}
+{{- $number := include "project.reuseNumber" . }}
+{{- with $v.vpc_sc }}
+{{- include "kcc.unsupported" (list $ "vpc_sc.is_dry_run" .is_dry_run "Config Connector has no dry-run perimeter resource kind (fabric's google_access_context_manager_service_perimeter_dry_run_resource)") }}
+{{- if not .perimeter_name }}
+{{- fail "project: vpc_sc.perimeter_name is required" }}
+{{- end }}
+{{- include "project.context" (list $ "vpc_sc.perimeter_name" .perimeter_name) }}
+{{- if not (regexMatch "^accessPolicies/[^/]+/servicePerimeters/[^/]+$" (toString .perimeter_name)) }}
+{{- fail (printf "project: vpc_sc.perimeter_name %q must be accessPolicies/<policy>/servicePerimeters/<name>" .perimeter_name) }}
+{{- end }}
+{{- if and $reuse (not $number) }}
+{{- fail "project: vpc_sc on a reused project needs project_reuse.attributes.number: a perimeter names the project by its number, which the chart cannot read" }}
+{{- end }}
+---
+apiVersion: accesscontextmanager.cnrm.cloud.google.com/v1beta1
+kind: AccessContextManagerServicePerimeterResource
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "vpc-sc")) "id" "vpc_sc" "abandon" $abandon) | nindent 2 }}
+spec:
+  perimeterNameRef:
+    external: {{ .perimeter_name | quote }}
+  resourceRef:
+    {{- if $reuse }}
+    external: {{ printf "projects/%s" $number | quote }}
+    {{- else }}
+    name: {{ $.Release.Name }}
+    {{- end }}
+{{- end }}
+{{- with $v.cloud_armor_policy }}
+{{- include "kcc.alpha" (list $ "cloud_armor_policy" . "ComputeOrganizationSecurityPolicyAssociation") }}
+{{- if or .excluded_folders .excluded_projects }}
+{{- fail "project: Exclusions are not supported for project-level Cloud Armor policy associations." }}
+{{- end }}
+{{- if not .policy_id }}
+{{- fail "project: cloud_armor_policy.policy_id is required" }}
+{{- end }}
+{{- include "project.context" (list $ "cloud_armor_policy.policy_id" .policy_id) }}
+{{- if not $number }}
+{{- fail "project: cloud_armor_policy needs an existing project (project_reuse with attributes.number): the association's attachmentId is the project's number, which is known only after a new project is made" }}
+{{- end }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1alpha1
+kind: ComputeOrganizationSecurityPolicyAssociation
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "cloud-armor")) "id" "cloud_armor_policy" "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "kcc.cloudName" (list $ "Cloud Armor policy association" (.name | default (printf "project-%s" $number)) 63) | quote }}
+  attachmentId: {{ printf "projects/%s" $number | quote }}
+  policyId: {{ .policy_id | quote }}
+{{- end }}
