@@ -4,7 +4,7 @@ Layout after specs/record/plans.md R2 (one change per object); not captured from
   create  Template   container-registry 1.0.0
   create  Stack      my-team/container-registry  (Template container-registry)
   create  Instance   my-team/dev/container-registry-dev  (Stack container-registry, Template version 1.0.0)
-  create  Component  container-registry-dev-container-registry  (gcp-container-registry 0.1.0)
+  create  Component  container-registry-dev-container-registry  (gcp-container-registry 0.2.0)
             create  ArtifactRegistryRepository container-registry-dev-container-registry  (named eu.gcr.io in the cloud)
             create  IAMPartialPolicy           container-registry-dev-container-registry-iam
             outputs once Ready: id

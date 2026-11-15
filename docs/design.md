@@ -93,10 +93,28 @@ The decisions of 2026-11-09, applied in the sections below.
     `DOCKER` repository with gcr.io domain support that Google defines for
     the module's `location`: empty is `gcr.io` in `us`, `US` `us.gcr.io` in
     `us`, `EU` `eu.gcr.io` in `europe`, `ASIA` `asia.gcr.io` in `asia`.
-    The repository's IAM replaces the bucket's; a Cloud Storage role in
-    `iam` is refused with the Artifact Registry role to use, and the `id`
-    output is the repository's resource name, not a bucket
+    The repository's IAM replaces the bucket's, and the `id` output is the
+    repository's resource name, not a bucket
     (`charts/gcp/container-registry/README.md`).
+    Cloud Storage roles in `iam` (CRREG-1, answered by the builder
+    2026-11-15: "I think as recommended for CRREG-1"; on the page:
+    "gcr.io repositories are legacy and worth supporting for orgs that
+    still use them but not otherwise, we should warn against using this.
+    feel free to merge PRs related im taking the recommended path").
+    The recommendation taken: "Translate with the table below, and log a
+    note for each converted role so tfvars convert one to one. Keep
+    refusing any other storage role. Also accept that the id output is now
+    the repository's resource name, not the bucket name." So the chart
+    (0.2.0) translates `roles/storage.objectViewer` and
+    `roles/storage.legacyBucketReader` to `roles/artifactregistry.reader`,
+    `roles/storage.legacyBucketWriter` to `roles/artifactregistry.writer`,
+    and `roles/storage.legacyBucketOwner` and `roles/storage.admin` to
+    `roles/artifactregistry.repoAdmin`, merging members of roles that
+    translate to one role into one binding. Each converted role gives a
+    note that gcr.io repositories are legacy and new setups should use a
+    native Artifact Registry repository with Artifact Registry roles; the
+    chart's README carries the same deprecation line. Any other
+    `roles/storage.*` role is still refused.
 
 ## Summary
 

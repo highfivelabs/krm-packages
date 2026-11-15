@@ -1,0 +1,5 @@
+# roles/storage.legacyBucketReader in fabric's iam becomes roles/artifactregistry.reader, with a note (CRREG-1).
+project_id: my-project
+location: ""
+iam:
+  roles/storage.legacyBucketReader: ["user:foo@example.com"]
