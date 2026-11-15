@@ -1,0 +1,4 @@
+# expect: must be the service account's unique ID, 21 digits
+name: x
+google_service_account_unique_id: "sa@example.iam.gserviceaccount.com"
+audience: x

@@ -1,0 +1,4 @@
+# expect: estate-read: names.policy is not a name this chart gives
+account_id: "111122223333"
+collector: {aws_principal_arns: ["arn:aws:iam::444455556666:role/c"]}
+names: {policy: x}

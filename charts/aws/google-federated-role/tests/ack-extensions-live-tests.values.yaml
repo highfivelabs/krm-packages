@@ -1,0 +1,147 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The instance for ack-extensions' live tests: the role
+# ack-extensions-live-tests in the AWS test account, which the offload VMs'
+# Google service account assumes for `task test-live` (ack-extensions
+# docs/live-runs.md). The same role, trust and permissions as ack-extensions'
+# generated CloudFormation template
+# cloudcontrol/config/live/sandbox-account.yaml at 7d67acc (2026-11-15),
+# statement for statement; that template's budget alarm is not here (no ACK
+# or ack-extensions kind serves AWS::Budgets::Budget; README.md).
+#
+# The service account's unique ID never goes in this repository: the one
+# here is a placeholder. Set the real one where the instance is deployed
+# (google_service_account_unique_id), as the template took it as a
+# parameter. When ack-extensions' liveKinds change, regenerate the
+# statements from that template (README.md, "The ack-extensions live-test
+# role").
+name: ack-extensions-live-tests
+description: Assumed only by the offload VMs' Google service account, through web identity federation, for task test-live (ack-extensions docs/live-runs.md).
+max_session_duration: 3600
+google_service_account_unique_id: "000000000000000000000"
+audience: ack-extensions-live-tests
+trust_sid: OnlyTheOffloadServiceAccount
+tags:
+  purpose: ack-extensions-live-tests
+policies:
+  part-1:
+    description: ack-extensions live tests, part 1
+    statements:
+      - sid: ServiceCloudformation
+        effect: Allow
+        actions:
+          - cloudformation:CreateResource
+          - cloudformation:DeleteResource
+          - cloudformation:GetResource
+          - cloudformation:GetResourceRequestStatus
+          - cloudformation:ListResources
+          - cloudformation:UpdateResource
+        resources: ['*']
+      - sid: ServiceConfig
+        effect: Allow
+        actions:
+          - config:DescribeConfigurationRecorderStatus
+        resources: ['*']
+      - sid: ServiceEc2
+        effect: Allow
+        actions:
+          - ec2:CreateSubnet
+          - ec2:CreateTags
+          - ec2:CreateTransitGateway
+          - ec2:CreateTransitGatewayRouteTable
+          - ec2:CreateTransitGatewayVpcAttachment
+          - ec2:CreateVpc
+          - ec2:DeleteSubnet
+          - ec2:DeleteTransitGateway
+          - ec2:DeleteTransitGatewayRouteTable
+          - ec2:DeleteTransitGatewayVpcAttachment
+          - ec2:DeleteVpc
+          - ec2:DescribeTransitGatewayPeeringAttachments
+          - ec2:DescribeTransitGatewayVpcAttachments
+          - ec2:DescribeTransitGateways
+          - ec2:DescribeVpcs
+          - ec2:GetTransitGatewayRouteTableAssociations
+          - ec2:GetTransitGatewayRouteTablePropagations
+          - ec2:SearchTransitGatewayRoutes
+        resources: ['*']
+      - sid: ServiceIam
+        effect: Allow
+        actions:
+          - iam:AttachRolePolicy
+          - iam:CreateRole
+          - iam:CreateSAMLProvider
+          - iam:DeleteRole
+          - iam:DeleteSAMLProvider
+          - iam:GetSAMLProvider
+          - iam:ListRolePolicies
+          - iam:ListSAMLProviderTags
+          - iam:ListSAMLProviders
+          - iam:PutRolePolicy
+          - iam:TagSAMLProvider
+          - iam:UntagSAMLProvider
+          - iam:UpdateSAMLProvider
+        resources: ['*']
+      - sid: ServiceLogs
+        effect: Allow
+        actions:
+          - logs:CreateLogGroup
+          - logs:DeleteLogGroup
+          - logs:DescribeLogGroups
+        resources: ['*']
+      - sid: ServiceRoute53
+        effect: Allow
+        actions:
+          - route53:CreateHostedZone
+          - route53:DeleteHostedZone
+          - route53:GetQueryLoggingConfig
+        resources: ['*']
+      - sid: ServiceRoute53resolver
+        effect: Allow
+        actions:
+          - route53resolver:ListResolverDnssecConfigs
+        resources: ['*']
+      - sid: ServiceS3
+        effect: Allow
+        actions:
+          - s3:CreateBucket
+          - s3:DeleteBucket
+        resources: ['*']
+      - sid: ServiceSecretsmanager
+        effect: Allow
+        actions:
+          - secretsmanager:CreateSecret
+          - secretsmanager:DeleteSecret
+        resources: ['*']
+      - sid: ServiceSso
+        effect: Allow
+        actions:
+          - sso:AttachCustomerManagedPolicyReferenceToPermissionSet
+          - sso:AttachManagedPolicyToPermissionSet
+          - sso:CreateAccountAssignment
+          - sso:CreatePermissionSet
+          - sso:DeleteAccountAssignment
+          - sso:DeleteInlinePolicyFromPermissionSet
+          - sso:DeletePermissionSet
+          - sso:DeletePermissionsBoundaryFromPermissionSet
+          - sso:DescribeAccountAssignmentCreationStatus
+          - sso:DescribeAccountAssignmentDeletionStatus
+          - sso:DescribePermissionSet
+          - sso:DescribePermissionSetProvisioningStatus
+          - sso:DetachCustomerManagedPolicyReferenceFromPermissionSet
+          - sso:DetachManagedPolicyFromPermissionSet
+          - sso:GetInlinePolicyForPermissionSet
+          - sso:GetPermissionsBoundaryForPermissionSet
+          - sso:ListAccountAssignments
+          - sso:ListCustomerManagedPolicyReferencesInPermissionSet
+          - sso:ListInstances
+          - sso:ListManagedPoliciesInPermissionSet
+          - sso:ListPermissionSets
+          - sso:ListTagsForResource
+          - sso:ProvisionPermissionSet
+          - sso:PutInlinePolicyToPermissionSet
+          - sso:PutPermissionsBoundaryToPermissionSet
+          - sso:TagResource
+          - sso:UntagResource
+          - sso:UpdatePermissionSet
+        resources: ['*']

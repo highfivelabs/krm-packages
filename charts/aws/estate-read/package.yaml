@@ -1,0 +1,18 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (docs/design.md, "Outputs"): the role's
+# name, ARN and unique ID (IAM's RoleId) from the live Role
+# (resources.role); the collector assumes the ARN.
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: aws-estate-read
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [ack]
+  outputs:
+    name: resources.role.spec.name
+    arn: resources.role.status.ackResourceMetadata.arn
+    unique_id: resources.role.status.roleID

@@ -1,0 +1,4 @@
+# The Cloud Control policy alone, attached by reference.
+view_only_access: false
+collector:
+  aws_principal_arns: ["arn:aws:iam::444455556666:role/bundt-estate-collector"]

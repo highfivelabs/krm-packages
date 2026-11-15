@@ -7,8 +7,8 @@ main.tf and locals.tf (v0.6.0), Copyright (c) Microsoft Corporation, MIT.
 azurerm_user_assigned_identity.this: one aso-extensions UserAssignedIdentity
 (managedidentity.azure.hfl.dev/v20241130, beside ASO's 2023-01-31 kind),
 owned by the resource group
-resource_group_name names, exporting its principal ID to a ConfigMap
-(operatorSpec.configMaps). azurerm_federated_identity_credential.this: one
+resource_group_name names, exporting its client ID (always) and principal ID
+(with outbound_role_assignments) to the ConfigMap <release>-id-outputs. azurerm_federated_identity_credential.this: one
 ASO FederatedIdentityCredential per entry, owned by the identity.
 azurerm_role_assignment.this (outbound_role_assignments): one ASO
 RoleAssignment per entry, owned by the scope it grants (by ARM ID), its
@@ -57,13 +57,18 @@ spec:
   {{- with $v.isolation_scope }}
   isolationScope: {{ . | quote }}
   {{- end }}
-  {{- if $v.outbound_role_assignments }}
   operatorSpec:
     configMapExpressions:
+      # The client ID, for another component's *FromConfig field (a
+      # registry's customer-managed key, identityFromConfig).
+      - name: {{ $cm }}
+        key: clientId
+        value: self.status.clientId
+      {{- if $v.outbound_role_assignments }}
       - name: {{ $cm }}
         key: principalId
         value: self.status.principalId
-  {{- end }}
+      {{- end }}
   {{- with $tags }}
   tags:
     {{- toYaml . | nindent 4 }}

@@ -1,0 +1,5 @@
+# expect: IAM attaches at most 10 managed policies to a role by default
+name: x
+google_service_account_unique_id: "123456789012345678901"
+audience: x
+policy_arns: {a: "arn:a", b: "arn:b", c: "arn:c", d: "arn:d", e: "arn:e", f: "arn:f", g: "arn:g", h: "arn:h", i: "arn:i", j: "arn:j", k: "arn:k"}

@@ -1,0 +1,5 @@
+# expect: max_session_duration 60 must be 3600 to 43200 seconds
+name: x
+google_service_account_unique_id: "123456789012345678901"
+audience: x
+max_session_duration: 60

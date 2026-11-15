@@ -7,6 +7,17 @@ put in the cluster by [External Secrets Operator](https://external-secrets.io)
 (ESO). A chart never takes a secret's value in its values, and never
 generates one. The catalog holds no secret values, test ones included.
 
+**RECWEB (the builder, 2026-11-15)**, verbatim: "RECWEB: as recommended
+(Yes. Also: yes to taking the registry CMK identity's client ID from a
+ConfigMap (identityFromConfig) as a Package input; no for now to holding
+passwords Azure returns once (registry tokens, storage local-user SSH).)"
+So: aso-extensions adds a `Microsoft.Web/sites/config` `appsettings` /
+`connectionstrings` kind whose values can be Secret references (the web
+app's secret settings follow once it is released); the registry's
+`customer_managed_key` takes its identity's client ID from a ConfigMap
+(`avm-res-containerregistry-registry` 0.3.0); a registry token's
+`passwords` and a storage local user's SSH password stay refused.
+
 ## The pattern
 
 A value that is secret material is an object of two fields:
@@ -166,7 +177,7 @@ SQL or AlloyDB user without a password, a VPN tunnel without a
 secrets, nor writes one to Key Vault, as
 `account_credentials.key_vault_configuration` and
 `administrator_login_password_key_vault_configuration` would), a password Azure returns once (a storage local user's SSH password, a registry token's
-`passwords`), and a secret a kind takes in plain text (a web app's
+`passwords`; not held, the builder's answer of 2026-11-15), and a secret a kind takes in plain text (a web app's
 `connection_strings`, its Application Insights settings, its storage
 account key and slot sensitive app settings, which the module writes into app
 settings, a run command's `protected_parameters`, a Redis cache's

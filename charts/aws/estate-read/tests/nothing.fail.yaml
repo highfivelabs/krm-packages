@@ -1,0 +1,4 @@
+# expect: view_only_access and cloud_control_read are both false
+collector: {aws_principal_arns: ["arn:aws:iam::444455556666:role/c"]}
+view_only_access: false
+cloud_control_read: false

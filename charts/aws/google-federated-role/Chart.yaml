@@ -1,0 +1,26 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: v2
+name: google-federated-role
+description: >-
+  An IAM role that one Google service account assumes through IAM's
+  built-in Google federation (accounts.google.com, conditions on the
+  token's sub and audience; no IAM OIDC provider), with its managed
+  policies, as AWS Controllers for Kubernetes (ACK) objects. Built on the
+  catalog's iam-role chart (its policy document builder) and rendered as
+  the iam-role and iam-policy charts render a Role and a Policy. Not a
+  module port.
+type: application
+version: 0.1.0
+kubeVersion: ">=1.27.0-0"
+keywords: [aws, ack, iam, federation, google, wrapper]
+home: https://github.com/highfivelabs/catalog
+dependencies:
+  - name: iam-role
+    version: 0.1.1
+    repository: file://../iam-role
+annotations:
+  # Not a port of one module: upstream checks skip a chart marked as a
+  # wrapper (it has no upstream.yaml); its dependency carries the pin.
+  hfl.dev/kind: wrapper
+  hfl.dev/ack-iam-controller: "v1.11.3"

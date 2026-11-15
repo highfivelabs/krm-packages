@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "basic"
     app.kubernetes.io/name: avm-res-managedidentity-userassignedidentity
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "user_assigned_identity"
 spec:
@@ -16,3 +16,10 @@ spec:
   location: "eastus2"
   owner:
     armId: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example"
+  operatorSpec:
+    configMapExpressions:
+      # The client ID, for another component's *FromConfig field (a
+      # registry's customer-managed key, identityFromConfig).
+      - name: basic-id-outputs
+        key: clientId
+        value: self.status.clientId
