@@ -38,42 +38,43 @@ refused:
   - variable: zip_deploy_file
     kind: by-design
     reason: "a zip deploy uploads a local file to the site's Kudu (extensions/zipDeploy): application code, which a Package does not carry"
-  # Secret values: the builder decides how a component supplies one (SECV).
+  # Secret values the module writes into app settings or connection strings:
+  # the kinds take them only in plain text (docs/secrets.md, "Still refused").
   - variable: application_insights_connection_string
-    kind: not-ported
-    reason: "a secret value (the module marks it sensitive); how a component supplies one is the builder's decision"
+    kind: gap
+    reason: "a secret value (the module marks it sensitive) the module writes into the APPLICATIONINSIGHTS_CONNECTION_STRING app setting: ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference (docs/secrets.md)"
   - variable: application_insights_key
-    kind: not-ported
-    reason: "a secret value (the module marks it sensitive); how a component supplies one is the builder's decision"
+    kind: gap
+    reason: "a secret value (the module marks it sensitive) the module writes into the APPINSIGHTS_INSTRUMENTATIONKEY app setting: ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference (docs/secrets.md)"
   - variable: storage_account_access_key
-    kind: not-ported
-    reason: "a secret value (the module marks it sensitive) the module writes into the AzureWebJobsStorage connection string; how a component supplies one is the builder's decision. Use storage_uses_managed_identity"
+    kind: gap
+    reason: "a secret value (the module marks it sensitive) the module writes into the AzureWebJobsStorage app setting: ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference (docs/secrets.md). Use storage_uses_managed_identity"
   - variable: slot_sensitive_app_settings
-    kind: not-ported
-    reason: "secret values (the module marks them sensitive); how a component supplies one is the builder's decision"
+    kind: gap
+    reason: "secret values (the module marks them sensitive) the module writes into a slot's app settings: ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference (docs/secrets.md)"
   - variable: connection_strings
-    kind: not-ported
-    reason: "a connection string's value is a secret (ASO's siteConfig.connectionStrings takes it in plain text); how a component supplies one is the builder's decision"
-  # Logic Apps: the module always writes the storage account key into an app setting.
+    kind: gap
+    reason: "a connection string's value is a secret: ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference (docs/secrets.md)"
+  # Logic Apps: the module always writes the storage account key into an app setting (the gap above).
   - variable: kind
-    kind: not-ported
-    reason: "webapp and functionapp are accepted; logicapp is refused: the module writes the storage account's access key into the AzureWebJobsStorage and WEBSITE_CONTENTAZUREFILECONNECTIONSTRING app settings (a secret value, the builder's decision)"
+    kind: gap
+    reason: "webapp and functionapp are accepted; logicapp is refused: the module always writes the storage account's access key into the AzureWebJobsStorage (and WEBSITE_CONTENTAZUREFILECONNECTIONSTRING) app settings, and ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference (docs/secrets.md)"
     partial: true
   - variable: logic_app_node_version
-    kind: not-ported
-    reason: "only a Logic App reads it (WEBSITE_NODE_DEFAULT_VERSION), and kind logicapp is refused; accepted at its default"
+    kind: gap
+    reason: "only a Logic App reads it (WEBSITE_NODE_DEFAULT_VERSION), and kind logicapp is refused (a gap: the module writes the storage account key into its app settings); accepted at its default"
   - variable: logic_app_runtime_version
-    kind: not-ported
-    reason: "only a Logic App reads it (FUNCTIONS_EXTENSION_VERSION), and kind logicapp is refused; accepted at its default"
+    kind: gap
+    reason: "only a Logic App reads it (FUNCTIONS_EXTENSION_VERSION), and kind logicapp is refused (a gap: the module writes the storage account key into its app settings); accepted at its default"
   - variable: bundle_version
-    kind: not-ported
-    reason: "only a Logic App reads it (the extension bundle's version), and kind logicapp is refused; accepted at its default"
+    kind: gap
+    reason: "only a Logic App reads it (the extension bundle's version), and kind logicapp is refused (a gap: the module writes the storage account key into its app settings); accepted at its default"
   - variable: use_extension_bundle
-    kind: not-ported
-    reason: "only a Logic App reads it, and kind logicapp is refused; accepted at its default (true)"
+    kind: gap
+    reason: "only a Logic App reads it, and kind logicapp is refused (a gap: the module writes the storage account key into its app settings); accepted at its default (true)"
   - variable: storage_account_share_name
-    kind: not-ported
-    reason: "only a Logic App reads it (WEBSITE_CONTENTSHARE beside a connection string with the account key), and kind logicapp is refused"
+    kind: gap
+    reason: "only a Logic App reads it (WEBSITE_CONTENTSHARE beside a connection string with the account key), and kind logicapp is refused (a gap: the module writes the storage account key into its app settings)"
   # Kinds Azure Service Operator and aso-extensions (8d7f8c2) do not have.
   - variable: auth_settings
     kind: gap
@@ -90,17 +91,17 @@ refused:
     partial: true
   # Accepted in part.
   - variable: site_config
-    kind: not-ported
-    reason: "accepted, but application_insights_connection_string and application_insights_key are refused: the Application Insights connection string and key, which the module marks sensitive at the root (a secret value, the builder's decision)"
+    kind: gap
+    reason: "accepted, but application_insights_connection_string and application_insights_key are refused: the Application Insights connection string and key, which the module marks sensitive at the root and writes into app settings: ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference (docs/secrets.md)"
     partial: true
     fields: [application_insights_connection_string, application_insights_key]
   - variable: deployment_slots
-    kind: not-ported
-    reason: "accepted as aso-extensions SitesSlot and SitesSlotsHostNameBinding, but a slot's ftp_publish_basic_authentication_enabled and webdeploy_publish_basic_authentication_enabled must be true (false writes a slot's basicPublishingCredentialsPolicies object, which has no kind: aso-extensions' policies are the site's), and its connection_strings (secret values in plain text), zip_deploy_file (application code), site_config.application_insights_* (secret values) and custom_domains.*.certificate_key (a thumbprint Azure computes) are refused"
+    kind: gap
+    reason: "accepted as aso-extensions SitesSlot and SitesSlotsHostNameBinding, but a slot's ftp_publish_basic_authentication_enabled and webdeploy_publish_basic_authentication_enabled must be true (false writes a slot's basicPublishingCredentialsPolicies object, which has no kind: aso-extensions' policies are the site's), its connection_strings and site_config.application_insights_* are refused (secret values the kind takes only in plain text; no kind takes them as a Secret reference), its custom_domains.*.certificate_key (SitesSlotsHostNameBinding takes the thumbprint Azure computes, with no field that reads it from the certificate) and its zip_deploy_file (application code, by design)"
     partial: true
     fields: [ftp_publish_basic_authentication_enabled, webdeploy_publish_basic_authentication_enabled, connection_strings, zip_deploy_file, site_config.application_insights_connection_string, site_config.application_insights_key, custom_domains.certificate_key]
   - variable: custom_domains
-    kind: not-ported
-    reason: "accepted as aso-extensions SitesHostNameBinding with a thumbprint, but certificate_key is refused: the binding takes the certificate's thumbprint, which Azure computes when it makes the certificate and a render cannot read"
+    kind: gap
+    reason: "accepted as aso-extensions SitesHostNameBinding with a thumbprint, but certificate_key is refused: the binding takes the certificate's thumbprint, which Azure computes when it makes the certificate, and the kind has no field that reads it from the certificate (no thumbprintFromConfig), so a render cannot wire it"
     partial: true
     fields: [certificate_key]

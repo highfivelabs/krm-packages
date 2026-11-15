@@ -80,6 +80,13 @@ spec:
 {{- include "aso.unsupported" (list $ (printf "run_commands.%s.error_blob_managed_identity" $k) $r.error_blob_managed_identity "aso-extensions' VirtualMachinesRunCommand is at ARM API 2022-03-01, before errorBlobManagedIdentity") }}
 {{- include "aso.unsupported" (list $ (printf "run_commands.%s.output_blob_managed_identity" $k) $r.output_blob_managed_identity "aso-extensions' VirtualMachinesRunCommand is at ARM API 2022-03-01, before outputBlobManagedIdentity") }}
 {{- include "aso.unsupported" (list $ (printf "run_commands.%s.timeouts" $k) $r.timeouts "Azure Service Operator has no per-request timeouts; Bundt sets a component's time limit") }}
+{{- /* run_commands_secrets of the same key: the run-as password is a
+reference to a Kubernetes Secret (docs/secrets.md), sent as
+runAsPasswordFromSecret; protected parameters the kind takes only in plain
+text, so they are refused. */ -}}
+{{- $sec := index ($v.run_commands_secrets | default dict) $k | default dict }}
+{{- include "aso.unsupported" (list $ (printf "run_commands_secrets.%s.protected_parameters" $k) $sec.protected_parameters "aso-extensions' VirtualMachinesRunCommand takes protectedParameters only in plain text, so the secret values would sit in the component's inputs (docs/secrets.md)") }}
+{{- $runPw := include "aso.secretRef" (list $ (printf "run_commands_secrets.%s.run_as_password" $k) $sec.run_as_password) }}
 {{- $obj := include "aso.name" (list $vmObj "run" $k) }}
 ---
 apiVersion: compute.azure.hfl.dev/v20220301
@@ -103,6 +110,12 @@ spec:
     - name: {{ $p.name | quote }}
       value: {{ $p.value | quote }}
     {{- end }}
+  {{- end }}
+  {{- with $sec.run_as_user }}
+  runAsUser: {{ . | quote }}
+  {{- end }}
+  {{- with $runPw }}
+  runAsPasswordFromSecret: {{ . }}
   {{- end }}
   source:
     {{- with $src.command_id }}

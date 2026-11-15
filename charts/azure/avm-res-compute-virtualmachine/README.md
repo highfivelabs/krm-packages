@@ -109,13 +109,16 @@ Every module variable is a value of the same name, type and default
 | `public_ip_configuration_details` | each created public IP |
 | `data_disk_managed_disks`, `data_disk_existing_disks` | the disks and the machine's `dataDisks` |
 | `extensions`, `run_commands`, `shutdown_schedules`, `maintenance_configuration_resource_ids` | their objects |
+| `run_commands_secrets` | by `run_commands` key: `run_as_user` as `runAsUser`, and `run_as_password` as a reference to a Kubernetes Secret, `{secretName, key}` (`docs/secrets.md`), sent as `runAsPasswordFromSecret`. A key with no run command stops the render (the module would drop it) |
 | `lock`, `role_assignments`, `role_assignments_system_managed_identity`, `diagnostic_settings`, `tags` | the AVM interfaces |
 | `enable_telemetry` | accepted; nothing is sent |
 
 **Refused** (`upstream.yaml`): generating an SSH key pair or a password
 (give public keys or a password reference: the catalog never generates a
 secret), writing one to Key Vault (`account_credentials.key_vault_configuration`,
-`generated_secrets_key_vault_secret_config`), `run_commands_secrets`, an
+`generated_secrets_key_vault_secret_config`), a run command's
+`run_commands_secrets.*.protected_parameters` (the kind takes them only in
+plain text), an
 extension's `protected_settings` (its `protected_settings_from_key_vault`
 is mapped), and `additional_unattend_contents` (an unattend file can carry
 a password, and the kind takes it only in plain text). Gaps: `azure_backup_configurations` (no kind
