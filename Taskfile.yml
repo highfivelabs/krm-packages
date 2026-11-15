@@ -252,10 +252,19 @@ tasks:
         msg: 'set GCP_CCE_LIVE_SA (the service account the offramp''s live proof runs as; see .env.example)'
       - sh: test -n "{{.OFFLOAD_BUCKET}}"
         msg: 'set OFFLOAD_BUCKET (the offload bucket, gs://...; see .env.example)'
+      - sh: '[ "{{.SHAPE}}" != folders ] && [ "{{.SHAPE}}" != platform-project ] || [ -n "{{.OFFRAMP_PARENT}}" ]'
+        msg: 'set OFFRAMP_PARENT, OFFRAMP_ORG_ID and (platform-project) OFFRAMP_BILLING_ACCOUNT (see .env.example)'
     cmds:
-      - '{{.OFFLOAD}} run --sa {{.GCP_CCE_LIVE_SA}} --hours 3 -- env PROJECT={{.LIVE_PROJECT}} GCP_PROJECT={{.GCP_PROJECT}} HFL_GCP_TEST_PROJECT={{.HFL_GCP_TEST_PROJECT}} OFFLOAD_BUCKET={{.OFFLOAD_BUCKET}} FIXTURES={{.FIXTURES}} offramp/hack/live.sh {{.SHAPE}}'
+      - '{{.OFFLOAD}} run --sa {{.GCP_CCE_LIVE_SA}} --hours 3 -- env PROJECT={{.LIVE_PROJECT}} GCP_PROJECT={{.GCP_PROJECT}} HFL_GCP_TEST_PROJECT={{.HFL_GCP_TEST_PROJECT}} OFFLOAD_BUCKET={{.OFFLOAD_BUCKET}} FIXTURES={{.FIXTURES}} PARENT={{.OFFRAMP_PARENT}} ORG_ID={{.OFFRAMP_ORG_ID}} BILLING_ACCOUNT={{.OFFRAMP_BILLING_ACCOUNT}} ORG_POLICIES={{.OFFRAMP_ORG_POLICIES}} MEMBER={{.OFFRAMP_MEMBER}} FOLDER_FIREWALL={{.OFFRAMP_FOLDER_FIREWALL}} offramp/hack/live.sh {{.SHAPE}}'
     vars:
       SHAPE: '{{.SHAPE | default "shared-vpc"}}'
+      # The folders and platform-project shapes: the live-tests folder
+      # (folders/<n>), its organization, the billing account the platform
+      # project links to, and whether the folders shape sets its three
+      # organization policies and its hierarchical firewall policy (see
+      # .env.example).
+      OFFRAMP_ORG_POLICIES: '{{.OFFRAMP_ORG_POLICIES | default "true"}}'
+      OFFRAMP_FOLDER_FIREWALL: '{{.OFFRAMP_FOLDER_FIREWALL | default "true"}}'
 
   test-live:
     desc: Apply charts to real Google Cloud (project {{.LIVE_PROJECT}}, tiny resources, deleted straight after) on an offload VM acting as {{.LIVE_SA}}; LIVE_CHARTS="artifact-registry" picks charts (default the pilot's three; hack/live-apply.sh names the roles each needs)

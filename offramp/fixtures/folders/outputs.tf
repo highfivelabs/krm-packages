@@ -12,7 +12,3 @@ output "environments" {
 output "teams" {
   value = module.teams.ids
 }
-
-output "firewall_policy" {
-  value = module.hierarchical_firewall.fw_policy.name
-}
