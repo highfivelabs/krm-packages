@@ -1,0 +1,76 @@
+---
+# Source: google-federated-role/templates/role.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: full-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: google-federated-role
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "role"
+spec:
+  name: "gsa-full"
+  path: "/federated/"
+  description: "Every value set"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRoleWithWebIdentity\"],\"Condition\":{\"StringEquals\":{\"accounts.google.com:oaud\":[\"https://example.com/aws\"],\"accounts.google.com:sub\":[\"123456789012345678901\"]}},\"Effect\":\"Allow\",\"Principal\":{\"Federated\":[\"accounts.google.com\"]},\"Sid\":\"OnlyTheRunner\"}],\"Version\":\"2012-10-17\"}"
+  maxSessionDuration: 7200
+  policies:
+    - "arn:aws:iam::111122223333:policy/federated/gsa-full-a"
+    - "arn:aws:iam::111122223333:policy/federated/gsa-full-b"
+    - "arn:aws:iam::aws:policy/job-function/ViewOnlyAccess"
+  tags:
+    - key: "Environment"
+      value: "test"
+    - key: "team"
+      value: "platform"
+---
+# Source: google-federated-role/templates/role.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: full-policy-a
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: google-federated-role
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "policy:a"
+spec:
+  name: "gsa-full-a"
+  path: "/federated/"
+  description: "Part a"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"logs:CreateLogGroup\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"Logs\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "Environment"
+      value: "test"
+    - key: "team"
+      value: "platform"
+---
+# Source: google-federated-role/templates/role.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: full-policy-b
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: google-federated-role
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "policy:b"
+spec:
+  name: "gsa-full-b"
+  path: "/federated/"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"iam:*\"],\"Condition\":{\"StringNotEquals\":{\"aws:RequestedRegion\":[\"us-east-2\"]}},\"Effect\":\"Deny\",\"Resource\":[\"*\"],\"Sid\":\"DenyIam\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "Environment"
+      value: "test"
+    - key: "team"
+      value: "platform"

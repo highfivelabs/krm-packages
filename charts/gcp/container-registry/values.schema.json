@@ -47,7 +47,7 @@
       }
     },
     "iam": {
-      "description": "IAM bindings for the registry in {ROLE => [MEMBERS]} format. Artifact Registry roles; a Cloud Storage role is refused.",
+      "description": "IAM bindings for the registry in {ROLE => [MEMBERS]} format. Artifact Registry roles; five Cloud Storage roles are translated to them with a note, any other Cloud Storage role is refused.",
       "type": [
         "object",
         "null"

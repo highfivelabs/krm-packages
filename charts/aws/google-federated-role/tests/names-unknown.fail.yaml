@@ -1,0 +1,5 @@
+# expect: google-federated-role: names.policy is not a name this chart gives
+names: {policy: x}
+name: x
+google_service_account_unique_id: "123456789012345678901"
+audience: x

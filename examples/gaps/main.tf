@@ -41,9 +41,9 @@ module "scratch" {
   location   = "EU"
 }
 
-module "looker" {
-  source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/looker-core?ref=v60.0.0"
+module "workflow" {
+  source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/workflows?ref=v60.0.0"
   project_id = var.project_id
   region     = "europe-west1"
-  name       = "looker"
+  name       = "nightly"
 }

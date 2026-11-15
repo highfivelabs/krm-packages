@@ -1,0 +1,8 @@
+# Applied to the fake AWS by hack/mock-apply-aws.sh: the role with
+# ViewOnlyAccess and the Cloud Control policy (its ARN built from the fake's
+# account, tests/mock.set.yaml), trusted by a role in that account.
+name: catalog-estate-read
+account_id: "000000000000"
+collector:
+  aws_principal_arns: ["arn:aws:iam::000000000000:role/catalog-estate-collector"]
+tags: {catalog-test: "true"}

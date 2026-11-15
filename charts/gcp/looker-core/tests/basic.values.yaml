@@ -1,0 +1,11 @@
+# Fabric's README example "Simple example": a public instance, its OAuth
+# client secret in a Kubernetes Secret instead of the module's string.
+allow_alpha: true
+project_id: my-project
+region: europe-west1
+name: looker
+network_config:
+  public: true
+oauth_config:
+  client_id: xxxxxxxxx
+  client_secret: {secretName: looker-oauth, key: client-secret}

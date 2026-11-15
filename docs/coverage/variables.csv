@@ -1181,21 +1181,21 @@ gcp,gcve-private-cloud,project_id,string,no,,no-chart
 gcp,gcve-private-cloud,vmw_network_config,"object({create, description, name, network_policies})",no,,no-chart
 gcp,gcve-private-cloud,vmw_network_peerings,"map(object({description, peer_network, peer_to_vmware_engine_network, routes_config}))",no,,no-chart
 gcp,gcve-private-cloud,vmw_private_cloud_configs,"map(object({additional_cluster_configs, cidr, description, management_cluster_config, zone}))",no,,no-chart
-gcp,looker-core,admin_settings,object({allowed_email_domains}),no,,no-chart
-gcp,looker-core,controlled_egress,"object({egress_fqdns, enabled, marketplace_enabled})",no,,no-chart
-gcp,looker-core,custom_domain,string,no,,no-chart
-gcp,looker-core,encryption_config,object({kms_key_name}),no,,no-chart
-gcp,looker-core,fips_enabled,bool,no,,no-chart
-gcp,looker-core,gemini_enabled,bool,no,,no-chart
-gcp,looker-core,maintenance_config,"object({deny_maintenance_period, maintenance_window})",no,,no-chart
-gcp,looker-core,name,string,no,,no-chart
-gcp,looker-core,network_config,"object({psa_config, psc_config, public})",no,,no-chart
-gcp,looker-core,oauth_config,"object({client_id, client_secret})",no,,no-chart
-gcp,looker-core,periodic_export_config,"object({gcs_uri, kms_key, start_time})",no,,no-chart
-gcp,looker-core,platform_edition,string,no,,no-chart
-gcp,looker-core,prefix,string,no,,no-chart
-gcp,looker-core,project_id,string,no,,no-chart
-gcp,looker-core,region,string,no,,no-chart
+gcp,looker-core,admin_settings,object({allowed_email_domains}),yes,,
+gcp,looker-core,controlled_egress,"object({egress_fqdns, enabled, marketplace_enabled})",yes,,
+gcp,looker-core,custom_domain,string,yes,,
+gcp,looker-core,encryption_config,object({kms_key_name}),yes,,
+gcp,looker-core,fips_enabled,bool,yes,,
+gcp,looker-core,gemini_enabled,bool,yes,,
+gcp,looker-core,maintenance_config,"object({deny_maintenance_period, maintenance_window})",yes,,
+gcp,looker-core,name,string,yes,,
+gcp,looker-core,network_config,"object({psa_config, psc_config, public})",yes,,
+gcp,looker-core,oauth_config,"object({client_id, client_secret})",partial,"client_secret is a reference to a Kubernetes Secret, {secretName, key}, rendered as LookerInstance's oauthConfig.clientSecret.valueFrom.secretKeyRef (docs/secrets.md); the secret itself, a string, is refused: it would be in the rendered manifest",by-design
+gcp,looker-core,periodic_export_config,"object({gcs_uri, kms_key, start_time})",yes,,
+gcp,looker-core,platform_edition,string,yes,,
+gcp,looker-core,prefix,string,yes,,
+gcp,looker-core,project_id,string,yes,,
+gcp,looker-core,region,string,yes,,
 gcp,ai-applications,chat_agent_security_configs,"object({audio_export_settings, dlp_deidentify_template, dlp_inspect_template, enable_insights_export, location, purge_data_types, +3})",no,,no-chart
 gcp,ai-applications,context,"object({kms_keys, locations, project_ids})",no,,no-chart
 gcp,ai-applications,data_stores_configs,"map(object({advanced_site_search_config, content_config, create_advanced_site_search, display_name, document_processing_config, industry_vertical, +6}))",no,,no-chart
@@ -1268,7 +1268,7 @@ gcp,secops-rules,project_id,string,yes,,
 gcp,secops-rules,reference_lists_config,"map(object({description, type}))",yes,,
 gcp,secops-rules,rules_config,"map(object({alerting, archived, enabled, run_frequency}))",partial,accepted; each rule's deployment is config-connector-extensions' v1alpha1 ChronicleRuleDeployment: set allow_alpha: true,alpha
 gcp,secops-rules,tenant_config,"object({customer_id, region})",yes,,
-gcp,container-registry,iam,map(list(string)),partial,"the registry is an Artifact Registry repository, not a Cloud Storage bucket: a Cloud Storage role (roles/storage.*) is refused with the Artifact Registry role to use",by-design
+gcp,container-registry,iam,map(list(string)),partial,"the registry is an Artifact Registry repository, not a Cloud Storage bucket: roles/storage.objectViewer, legacyBucketReader, legacyBucketWriter, legacyBucketOwner and admin are translated to Artifact Registry roles with a note (CRREG-1); any other Cloud Storage role (roles/storage.*) is refused with the Artifact Registry role to use",by-design
 gcp,container-registry,location,string,yes,,
 gcp,container-registry,project_id,string,yes,,
 gcp,projects-data-source,ignore_folders,list(string),no,,no-chart
@@ -3964,7 +3964,7 @@ azure,avm-res-compute-virtualmachine,admin_ssh_keys,"list(object({public_key, us
 azure,avm-res-compute-virtualmachine,admin_username,string,yes,,
 azure,avm-res-compute-virtualmachine,allow_extension_operations,bool,yes,,
 azure,avm-res-compute-virtualmachine,availability_set_resource_id,string,yes,,
-azure,avm-res-compute-virtualmachine,azure_backup_configurations,"map(object({backup_policy_resource_id, exclude_disk_luns, include_disk_luns, recovery_vault_name, recovery_vault_resource_id, resource_group_name}))",no,Microsoft.RecoveryServices/vaults/backupFabrics/protectionContainers/protectedItems (a protected VM) has no Azure Service Operator or aso-extensions kind,gap
+azure,avm-res-compute-virtualmachine,azure_backup_configurations,"map(object({backup_policy_resource_id, exclude_disk_luns, include_disk_luns, recovery_vault_name, recovery_vault_resource_id, resource_group_name}))",yes,,
 azure,avm-res-compute-virtualmachine,boot_diagnostics,bool,yes,,
 azure,avm-res-compute-virtualmachine,boot_diagnostics_storage_account_uri,string,yes,,
 azure,avm-res-compute-virtualmachine,bypass_platform_safety_checks_on_user_schedule_enabled,bool,yes,,
@@ -4178,7 +4178,7 @@ azure,avm-res-containerregistry-registry,anonymous_pull_enabled,bool,yes,,
 azure,avm-res-containerregistry-registry,azuread_authentication_as_arm_policy_enabled,bool,yes,,
 azure,avm-res-containerregistry-registry,cache_rules,"map(object({credential_set_key, credential_set_resource_id, name, source_repository, target_repository}))",yes,,
 azure,avm-res-containerregistry-registry,credential_sets,"map(object({auth_credentials, login_server, name}))",yes,,
-azure,avm-res-containerregistry-registry,customer_managed_key,"object({key_name, key_vault_resource_id, key_version, user_assigned_identity})",no,"ASO's Registry takes the key's URI and the identity's client ID (keyIdentifier, and identity or identityFromConfig, a ConfigMap only an ASO UserAssignedIdentity in the cluster writes); the module looks the client ID up from the identity's resource ID, which a render cannot",gap
+azure,avm-res-containerregistry-registry,customer_managed_key,"object({key_name, key_vault_resource_id, key_version, user_assigned_identity})",yes,,
 azure,avm-res-containerregistry-registry,data_endpoint_enabled,bool,yes,,
 azure,avm-res-containerregistry-registry,diagnostic_settings,"map(object({event_hub_authorization_rule_resource_id, event_hub_name, log_analytics_destination_type, log_categories, log_groups, marketplace_partner_resource_id, +4}))",yes,,
 azure,avm-res-containerregistry-registry,enable_telemetry,bool,yes,,

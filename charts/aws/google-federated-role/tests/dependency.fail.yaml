@@ -1,0 +1,5 @@
+# expect: iam-role.create must stay false
+name: x
+google_service_account_unique_id: "123456789012345678901"
+audience: x
+iam-role: {create: true, name: x, trust_policy_permissions: {A: {actions: ["sts:AssumeRole"], principals: [{type: AWS, identifiers: ["arn:aws:iam::111122223333:root"]}]}}}

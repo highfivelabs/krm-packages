@@ -1,0 +1,27 @@
+---
+# Source: looker-core/templates/main.yaml
+apiVersion: looker.gcp.hfl.dev/v1alpha1
+kind: LookerInstance
+metadata:
+  name: mock
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: looker-core
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "instance"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  projectRef:
+    external: "mock-project"
+  location: "us-central1"
+  resourceID: "catalog-mock-looker"
+  platformEdition: "LOOKER_CORE_STANDARD_ANNUAL"
+  publicIpEnabled: true
+  pscEnabled: false
+  geminiEnabled: true
+  oauthConfig:
+    clientId: "catalog-mock.apps.googleusercontent.com"
+    clientSecret: {"valueFrom":{"secretKeyRef":{"key":"value","name":"catalog-mock-looker"}}}

@@ -1,0 +1,41 @@
+# Fabric's README example "Looker Core full example" (admin settings, a
+# CMEK key, PSA), with every other variable set: a prefix, a custom domain,
+# FIPS and Gemini, controlled egress, a maintenance window and deny
+# period, and periodic export.
+allow_alpha: true
+project_id: my-project
+region: europe-west1
+prefix: analytics
+name: looker
+admin_settings:
+  allowed_email_domains: ["google.com"]
+encryption_config:
+  kms_key_name: projects/my-project/locations/europe-west1/keyRings/keyring/cryptoKeys/key-regional
+network_config:
+  psa_config:
+    network: projects/my-project/global/networks/my-network
+    allocated_ip_range: looker
+    enable_public_ip: true
+    enable_private_ip: true
+oauth_config:
+  client_id: xxxxxxxxx
+  client_secret: {secretName: looker-oauth, key: client-secret}
+platform_edition: LOOKER_CORE_ENTERPRISE_ANNUAL
+custom_domain: looker.example.com
+fips_enabled: true
+gemini_enabled: true
+controlled_egress:
+  marketplace_enabled: false
+  egress_fqdns: ["github.com"]
+maintenance_config:
+  maintenance_window:
+    day: SATURDAY
+    start_time: {hours: 2}
+  deny_maintenance_period:
+    start_date: {year: 2026, month: 12, day: 20}
+    end_date: {year: 2027, month: 1, day: 5}
+periodic_export_config:
+  kms_key: projects/my-project/locations/europe-west1/keyRings/keyring/cryptoKeys/key-export
+  gcs_uri: gs://my-looker-export
+  start_time: {hours: 3}
+deletion_policy: ABANDON

@@ -1,0 +1,27 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: v2
+name: estate-read
+description: >-
+  The read-only IAM role Bundt's estate collector assumes in one AWS
+  account (bundt-estate-read): AWS's job-function/ViewOnlyAccess and Cloud
+  Control's read actions, trusted by the collector's principal only (AWS
+  principals, or a Google service account through IAM's built-in Google
+  federation), as AWS Controllers for Kubernetes (ACK) objects. Built on
+  the catalog's iam-role chart (its policy document builder) and rendered
+  as the iam-role and iam-policy charts render a Role and a Policy. Not a
+  module port.
+type: application
+version: 0.1.0
+kubeVersion: ">=1.27.0-0"
+keywords: [aws, ack, iam, estate, inventory, wrapper]
+home: https://github.com/highfivelabs/catalog
+dependencies:
+  - name: iam-role
+    version: 0.1.1
+    repository: file://../iam-role
+annotations:
+  # Not a port of one module: upstream checks skip a chart marked as a
+  # wrapper (it has no upstream.yaml); its dependency carries the pin.
+  hfl.dev/kind: wrapper
+  hfl.dev/ack-iam-controller: "v1.11.3"

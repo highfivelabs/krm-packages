@@ -1,0 +1,4 @@
+# expect: estate-read: name is required
+account_id: "111122223333"
+collector: {aws_principal_arns: ["arn:aws:iam::444455556666:role/c"]}
+name: ""

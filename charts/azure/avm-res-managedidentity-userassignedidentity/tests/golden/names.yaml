@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "names"
     app.kubernetes.io/name: avm-res-managedidentity-userassignedidentity
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
     hfl.dev/team: "shop"
   annotations:
     hfl.dev/id: "user_assigned_identity"
@@ -17,5 +17,12 @@ spec:
   location: "eastus2"
   owner:
     armId: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-shop-dev"
+  operatorSpec:
+    configMapExpressions:
+      # The client ID, for another component's *FromConfig field (a
+      # registry's customer-managed key, identityFromConfig).
+      - name: names-id-outputs
+        key: clientId
+        value: self.status.clientId
   tags:
     team: shop

@@ -17,6 +17,15 @@ shutdown-computevm-<machine> in the machine's resource group, as azurerm
 names it. azapi_resource.this_maintenance_configuration_assignment: one
 aso-extensions ConfigurationAssignment
 (maintenance.azure.hfl.dev/v20230401) per entry, on the machine.
+main.backup.tf's azapi_resource.this_backup_intent (the protected item): one
+aso-extensions VaultsProtectedItem (recoveryservices.azure.hfl.dev/v20260701)
+per azure_backup_configurations entry, owned by the vault by ARM ID, the
+machine and the policy by ARM ID; the kind names the container and item
+from the machine as the module does
+(iaasvmcontainer;iaasvmcontainerv2;<rg>;<vm>, vm;iaasvmcontainerv2;<rg>;<vm>).
+exclude_disk_luns wins over include_disk_luns, as in the module. The
+deprecated resource_group_name and recovery_vault_name are accepted and
+unused (the module takes the vault from its ID).
 The module's deploy_sequence orders its extension and run command modules;
 ASO reconciles every child once the machine is Ready, so the sequence is
 accepted and has no effect.
@@ -178,4 +187,29 @@ spec:
     {{- toYaml $vmRef | nindent 4 }}
   maintenanceConfigurationReference:
     armId: {{ lower $id | quote }}
+{{- end }}
+{{- range $k, $b := ($v.azure_backup_configurations | default dict) }}
+{{- if not $b.recovery_vault_resource_id }}{{ fail (printf "avm-res-compute-virtualmachine: azure_backup_configurations.%s.recovery_vault_resource_id is required" $k) }}{{ end }}
+{{- if not $b.backup_policy_resource_id }}{{ fail (printf "avm-res-compute-virtualmachine: azure_backup_configurations.%s.backup_policy_resource_id is required to turn backup on (the module's protected item needs a policy on creation)" $k) }}{{ end }}
+---
+apiVersion: recoveryservices.azure.hfl.dev/v20260701
+kind: VaultsProtectedItem
+metadata:
+  {{- include "aso.metadata" (dict "root" $ "name" (include "aso.name" (list $vmObj "backup" $k)) "id" (printf "backup:%s" $k) "abandon" $abandon) | nindent 2 }}
+spec:
+  owner:
+    armId: {{ $b.recovery_vault_resource_id | quote }}
+  sourceResourceReference:
+    {{- toYaml $vmRef | nindent 4 }}
+  policyReference:
+    armId: {{ $b.backup_policy_resource_id | quote }}
+  {{- if $b.exclude_disk_luns }}
+  diskExclusionProperties:
+    diskLunList: {{ toJson $b.exclude_disk_luns }}
+    isInclusionList: false
+  {{- else if $b.include_disk_luns }}
+  diskExclusionProperties:
+    diskLunList: {{ toJson $b.include_disk_luns }}
+    isInclusionList: true
+  {{- end }}
 {{- end }}

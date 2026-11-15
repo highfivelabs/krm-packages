@@ -1,0 +1,6 @@
+dependencies:
+- name: iam-role
+  repository: file://../iam-role
+  version: 0.1.1
+digest: sha256:c07a4582c88352c351dd467e1eff4cae8c1b5f807edaa61aa4d11b3565735b6d
+generated: "2026-11-15T16:29:23.578835-06:00"

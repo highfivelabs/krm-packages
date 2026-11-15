@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "names"
     app.kubernetes.io/name: iam-role
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.1.1"
     hfl.dev/team: "shop"
   annotations:
     hfl.dev/id: "role"
@@ -30,7 +30,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "names"
     app.kubernetes.io/name: iam-role
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.1.1"
     hfl.dev/team: "shop"
   annotations:
     hfl.dev/id: "instance-profile"

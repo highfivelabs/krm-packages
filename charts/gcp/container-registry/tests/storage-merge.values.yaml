@@ -1,0 +1,13 @@
+# Storage roles that translate to one Artifact Registry role share one
+# binding with that role as given: objectViewer, legacyBucketReader and
+# artifactregistry.reader are one reader binding; legacyBucketOwner and
+# storage.admin one repoAdmin binding. Members listed twice appear once
+# (CRREG-1).
+project_id: my-project
+location: ""
+iam:
+  roles/storage.objectViewer: ["user:a@example.com", "user:b@example.com"]
+  roles/storage.legacyBucketReader: ["user:b@example.com", "user:c@example.com"]
+  roles/artifactregistry.reader: ["user:a@example.com", "user:d@example.com"]
+  roles/storage.legacyBucketOwner: ["group:ops@example.com"]
+  roles/storage.admin: ["group:ops@example.com", "user:e@example.com"]

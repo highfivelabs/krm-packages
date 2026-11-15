@@ -1,0 +1,518 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "looker-core values (fabric looker-core v60.0.0)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "network_config",
+    "project_id",
+    "region"
+  ],
+  "properties": {
+    "names": {
+      "description": "The instance's ID in full (not a Terraform variable; docs/design.md, \"Names, labels and tags\"). A name set here takes no prefix.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "instance": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63,
+          "pattern": "^[a-z]([-a-z0-9]*[a-z0-9])?$"
+        }
+      }
+    },
+    "namePrefix": {
+      "description": "Optional convenience (not a Terraform variable): <namePrefix>- in front of the instance's ID (unless set under names). A DNS label. Empty changes nothing.",
+      "type": "string",
+      "pattern": "^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+    },
+    "labels": {
+      "description": "Kubernetes labels on the object (not a Terraform variable). A Looker instance takes no Google Cloud labels.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 63
+      }
+    },
+    "tags": {
+      "description": "Cloud labels (not a Terraform variable; Google Cloud labels: lower-case letters, digits, _ and -). A Looker instance takes none: they stay on the object's metadata.labels.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "propertyNames": {
+        "pattern": "^[a-z]([a-z0-9_-]{0,61}[a-z0-9])?$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^([a-z0-9]([a-z0-9_-]{0,61}[a-z0-9])?)?$"
+      }
+    },
+    "admin_settings": {
+      "description": "Looker Core admins settings.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "allowed_email_domains"
+      ],
+      "properties": {
+        "allowed_email_domains": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "controlled_egress": {
+      "description": "Controlled egress configuration.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "marketplace_enabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "egress_fqdns": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "custom_domain": {
+      "description": "Looker core instance custom domain.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "encryption_config": {
+      "description": "Set encryption configuration. KMS name format: 'projects/[PROJECT]/locations/[REGION]/keyRings/[RING]/cryptoKeys/[KEY_NAME]'.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "kms_key_name"
+      ],
+      "properties": {
+        "kms_key_name": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "fips_enabled": {
+      "description": "FIPS 140-2 Encryption enablement for Looker (Google Cloud Core).",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "gemini_enabled": {
+      "description": "Gemini enablement for Looker (Google Cloud Core).",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "maintenance_config": {
+      "description": "Set maintenance window configuration and maintenance deny period (up to 90 days).",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "maintenance_window": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "day": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "start_time": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "hours": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 23
+                },
+                "minutes": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 59
+                },
+                "seconds": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 59
+                },
+                "nanos": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 999999999
+                }
+              }
+            }
+          }
+        },
+        "deny_maintenance_period": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "start_date",
+            "end_date"
+          ],
+          "properties": {
+            "start_date": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "year",
+                "month",
+                "day"
+              ],
+              "properties": {
+                "year": {
+                  "type": "integer"
+                },
+                "month": {
+                  "type": "integer"
+                },
+                "day": {
+                  "type": "integer"
+                }
+              }
+            },
+            "end_date": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "year",
+                "month",
+                "day"
+              ],
+              "properties": {
+                "year": {
+                  "type": "integer"
+                },
+                "month": {
+                  "type": "integer"
+                },
+                "day": {
+                  "type": "integer"
+                }
+              }
+            },
+            "start_time": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "hours": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 23
+                },
+                "minutes": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 59
+                },
+                "seconds": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 59
+                },
+                "nanos": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 999999999
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "name": {
+      "description": "Name of the looker core instance.",
+      "type": "string",
+      "minLength": 1
+    },
+    "network_config": {
+      "description": "Network configuration for cluster and instance. Only one between psa_config, psc_config and public can be used.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "psa_config": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "network"
+          ],
+          "properties": {
+            "network": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allocated_ip_range": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "enable_public_ip": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "enable_private_ip": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            }
+          }
+        },
+        "psc_config": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "allowed_vpcs": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
+            "service_attachments": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "local_fqdn",
+                  "target_service_attachment_uri"
+                ],
+                "properties": {
+                  "local_fqdn": {
+                    "type": "string"
+                  },
+                  "target_service_attachment_uri": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "public": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "oauth_config": {
+      "description": "Looker Core Oauth config. client_secret is a reference to a Kubernetes Secret, {secretName, key}, never the secret itself (docs/secrets.md).",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "client_id",
+        "client_secret"
+      ],
+      "properties": {
+        "client_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "client_secret": {
+          "description": "A Kubernetes Secret in the component's namespace and the key that holds the OAuth client secret.",
+          "type": [
+            "object",
+            "string"
+          ]
+        }
+      }
+    },
+    "periodic_export_config": {
+      "description": "Configuration for periodic export.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "kms_key",
+        "gcs_uri",
+        "start_time"
+      ],
+      "properties": {
+        "kms_key": {
+          "type": "string"
+        },
+        "gcs_uri": {
+          "type": "string"
+        },
+        "start_time": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "hours": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 23
+            },
+            "minutes": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 59
+            },
+            "seconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 59
+            },
+            "nanos": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 999999999
+            }
+          }
+        }
+      }
+    },
+    "platform_edition": {
+      "description": "Platform editions for a Looker instance. Each edition maps to a set of instance features, like its size.",
+      "type": "string"
+    },
+    "prefix": {
+      "description": "Optional prefix used to generate instance names.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "project_id": {
+      "description": "The ID of the project where this instances will be created.",
+      "type": "string",
+      "minLength": 1
+    },
+    "region": {
+      "description": "Region for the Looker core instance.",
+      "type": "string",
+      "minLength": 1
+    },
+    "allow_alpha": {
+      "description": "Accept config-connector-extensions' v1alpha1 kinds (not a Terraform variable). The chart's LookerInstance is v1alpha1, so it is required.",
+      "type": "boolean"
+    },
+    "deletion_policy": {
+      "description": "DELETE (default) or ABANDON (not a fabric variable).",
+      "enum": [
+        "DELETE",
+        "ABANDON",
+        "PREVENT",
+        null
+      ]
+    }
+  }
+}

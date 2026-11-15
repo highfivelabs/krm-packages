@@ -25,6 +25,6 @@ synced: 2026-11-15
 refused:
   - variable: iam
     kind: by-design
-    reason: "the registry is an Artifact Registry repository, not a Cloud Storage bucket: a Cloud Storage role (roles/storage.*) is refused with the Artifact Registry role to use"
+    reason: "the registry is an Artifact Registry repository, not a Cloud Storage bucket: roles/storage.objectViewer, legacyBucketReader, legacyBucketWriter, legacyBucketOwner and admin are translated to Artifact Registry roles with a note (CRREG-1); any other Cloud Storage role (roles/storage.*) is refused with the Artifact Registry role to use"
     partial: true
     fields: [roles/storage.*]

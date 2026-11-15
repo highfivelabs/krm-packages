@@ -1,4 +1,4 @@
-# expect: azure_backup_configurations is not supported
+# expect: azure_backup_configurations.a.backup_policy_resource_id is required
 name: vm
 location: eastus2
 resource_group_name: /subscriptions/s/resourceGroups/rg

@@ -1,0 +1,11 @@
+# expect: looker-core: Platform Edition type must one of
+allow_alpha: true
+platform_edition: LOOKER_CORE_NONPROD_STANDARD_ANNUAL
+project_id: my-project
+region: europe-west1
+name: looker
+network_config:
+  public: true
+oauth_config:
+  client_id: xxxxxxxxx
+  client_secret: {secretName: looker-oauth, key: client-secret}

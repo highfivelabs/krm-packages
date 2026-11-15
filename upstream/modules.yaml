@@ -822,7 +822,7 @@ modules:
     copyright: Google LLC
     registry_url: null
     url: https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/looker-core
-    chart: null
+    chart: charts/gcp/looker-core
   - id: gcp/managed-kafka
     cloud: gcp
     module: managed-kafka

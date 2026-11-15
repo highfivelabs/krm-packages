@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: container-registry
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "registry"
     cnrm.cloud.google.com/project-id: "mock-project"
@@ -27,7 +27,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: container-registry
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "iam"
 spec:

@@ -1,0 +1,96 @@
+# Written by the factory generator (catalogtool factory) from data/projects/dev-ta-app0-be.yaml
+# at 4f2a9c1. Do not edit: edit the factory's files and run it again.
+apiVersion: hfl.dev/v1
+kind: Stack
+metadata:
+  name: dev-ta-app0-be
+  scope: gcp-factory
+  annotations:
+    hfl.dev/factory: "data/projects/dev-ta-app0-be.yaml@4f2a9c1"
+spec:
+  components:
+    - name: project
+      package:
+        name: gcp-project
+        version: "0.10.0"
+      inputs:
+        name: dev-ta-app0-be
+        prefix: hfl
+        parent: folders/3456789012
+        billing_account: 012345-67890A-BCDEF0
+        labels:
+          app: app-0
+          team: team-a
+        services:
+          - compute.googleapis.com
+          - container.googleapis.com
+          - storage.googleapis.com
+    - name: sa-app-0-be
+      package:
+        name: gcp-iam-service-account
+        version: "0.4.0"
+      inputs:
+        project_id: "${components.project.outputs.project_id}"
+        name: app-0-be
+        display_name: Backend instances.
+        iam_project_roles:
+          hfl-dev-ta-app0-be:
+            - roles/logging.logWriter
+            - roles/monitoring.metricWriter
+            - roles/storage.objectViewer
+        iam:
+          roles/iam.serviceAccountUser:
+            - "${components.sa-app-0-fe.outputs.iam_email}"
+    - name: sa-app-0-fe
+      package:
+        name: gcp-iam-service-account
+        version: "0.4.0"
+      inputs:
+        project_id: "${components.project.outputs.project_id}"
+        name: app-0-fe
+        display_name: Frontend instances.
+        iam_project_roles:
+          hfl-dev-ta-app0-be:
+            - roles/logging.logWriter
+            - roles/monitoring.metricWriter
+    - name: bucket-app-0-bucket-a
+      package:
+        name: gcp-gcs
+        version: "0.4.0"
+      inputs:
+        project_id: "${components.project.outputs.project_id}"
+        prefix: hfl
+        name: dev-ta-app0-be-app-0-bucket-a
+        location: europe-west8
+        iam:
+          roles/storage.objectViewer:
+            - "serviceAccount:service-${components.project.outputs.number}@compute-system.iam.gserviceaccount.com"
+    - name: bucket-app-0-bucket-b
+      package:
+        name: gcp-gcs
+        version: "0.4.0"
+      inputs:
+        project_id: "${components.project.outputs.project_id}"
+        prefix: hfl
+        name: dev-ta-app0-be-app-0-bucket-b
+        location: europe-west8
+        logging_config:
+          log_bucket: hfl-central-logs
+          log_object_prefix: log-prefix
+---
+apiVersion: hfl.dev/v1
+kind: Instance
+metadata:
+  name: dev-ta-app0-be
+  scope: gcp-factory/gcp-org
+  annotations:
+    hfl.dev/factory: "data/projects/dev-ta-app0-be.yaml@4f2a9c1"
+spec:
+  stack: dev-ta-app0-be
+  components:
+    project:
+      cloudResources: keep
+    bucket-app-0-bucket-a:
+      cloudResources: keep
+    bucket-app-0-bucket-b:
+      cloudResources: keep

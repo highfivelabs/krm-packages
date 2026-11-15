@@ -1,0 +1,10 @@
+# expect: looker-core: Please specify exactly one of psa_config, psc_config or public.
+allow_alpha: true
+project_id: my-project
+region: europe-west1
+name: looker
+network_config:
+  public: false
+oauth_config:
+  client_id: xxxxxxxxx
+  client_secret: {secretName: looker-oauth, key: client-secret}

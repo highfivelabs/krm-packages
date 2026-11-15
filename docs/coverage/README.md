@@ -189,13 +189,15 @@ YAML files and call other modules once per file. `docs/design.md`
 chart: Bundt renders from inputs alone, a Template has no loops, and one
 chart making fifty projects would be one component, one plan line and one
 blast radius. A generator that writes one Instance per file of the tree,
-from the charts below, is accepted in principle and not built. Their rows
-stay `not started` or `blocked` and are not ported:
+from the charts below, replaces them: built for `project-factory` on
+2026-11-15 (RECPF, `catalogtool factory`, `tools/factory/README.md`);
+`net-vpc-factory` is next. Neither is a chart, so their rows stay `not
+started` or `blocked`:
 
 | Module | What it composes | Its own resource types | Judged |
 | --- | --- | --- | --- |
 | `net-vpc-factory` | `net-vpc` and `net-vpc-firewall`, per file | none | a factory wrapper: every resource it makes belongs to `net-vpc` or `net-vpc-firewall`, which have charts. A chart would add no variable or resource the catalog lacks |
-| `project-factory` (2026-11-12) | `project` (and its IAM), `folder` (four levels, and their IAM), `gcs`, `iam-service-account`, `bigquery-dataset`, `billing-account` (budgets), `data-catalog-policy-tag`, `dataplex-aspect-types`, `kms`, `logging-bucket`, `pubsub` | `google_network_security_dns_threat_detector` (config-connector-extensions' `NetworkSecurityDNSThreatDetector`) and two `terraform_data` preconditions | a factory wrapper, like `net-vpc-factory`. Its eight variables (`folders`, `projects`, `data_defaults`, `data_merges`, `data_overrides`, `factories_config`, `context`, `notification_channels`) are the tree and its defaults, whose values are the composed modules' variables: a chart would re-expose those charts' values under one object per project and add no coverage of its own. The one resource it makes itself, a project's DNS threat detector, is a candidate for the `project` chart (a `dns_threat_detector` value, as the factory's file has it) rather than a reason for a factory chart. Its row stays `blocked` on that kind |
+| `project-factory` (2026-11-12) | `project` (and its IAM), `folder` (four levels, and their IAM), `gcs`, `iam-service-account`, `bigquery-dataset`, `billing-account` (budgets), `data-catalog-policy-tag`, `dataplex-aspect-types`, `kms`, `logging-bucket`, `pubsub` | `google_network_security_dns_threat_detector` (config-connector-extensions' `NetworkSecurityDNSThreatDetector`) and two `terraform_data` preconditions | a factory wrapper, like `net-vpc-factory`. Its eight variables (`folders`, `projects`, `data_defaults`, `data_merges`, `data_overrides`, `factories_config`, `context`, `notification_channels`) are the tree and its defaults, whose values are the composed modules' variables: a chart would re-expose those charts' values under one object per project and add no coverage of its own. The one resource it makes itself, a project's DNS threat detector, is a candidate for the `project` chart (a `dns_threat_detector` value, as the factory's file has it) rather than a reason for a factory chart. Its row stays `blocked` on that kind. The generator (2026-11-15) maps a project file's project, service accounts, buckets and folders, and refuses `dns_threat_detector` by name with the composed modules it does not map yet (`kms`, `pubsub_topics`, `datasets`, `log_buckets`, budgets, `automation`) |
 
 ## Limits
 

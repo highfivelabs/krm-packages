@@ -1,0 +1,43 @@
+---
+# Source: google-federated-role/templates/role.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: mock-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: google-federated-role
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "role"
+spec:
+  name: "catalog-gsa-role"
+  path: "/"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRoleWithWebIdentity\"],\"Condition\":{\"StringEquals\":{\"accounts.google.com:oaud\":[\"catalog-gsa-role\"],\"accounts.google.com:sub\":[\"123456789012345678901\"]}},\"Effect\":\"Allow\",\"Principal\":{\"Federated\":[\"accounts.google.com\"]},\"Sid\":\"GoogleServiceAccount\"}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - "arn:aws:iam::000000000000:policy/catalog-gsa-role-read"
+    - "arn:aws:iam::aws:policy/ReadOnlyAccess"
+  tags:
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: google-federated-role/templates/role.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: mock-policy-read
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: google-federated-role
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy:read"
+spec:
+  name: "catalog-gsa-role-read"
+  path: "/"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"s3:GetObject\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:s3:::catalog-test/*\"],\"Sid\":\"Read\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "catalog-test"
+      value: "true"

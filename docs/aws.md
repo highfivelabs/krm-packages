@@ -628,6 +628,8 @@ Config Connector. What differs:
 | `charts/aws/eks-pod-identity` | `terraform-aws-eks-pod-identity` v2.10.0 | partial: the role trusting EKS Pod Identity, the custom policy (source, statements, override merged by Sid), policy ARNs, and the pod identity associations (`roleRef`); the module's preset policies (63 variables) are not ported yet. Passed on AWS Emulator, moto unused (`off-catalog-1113030542-23849`; the associations untested there: they need an EKS cluster) |
 | `charts/aws/secrets-manager` | `terraform-aws-secrets-manager` v2.2.0 | partial: the secret with its replicas, KMS key and recovery window; its value from a Kubernetes Secret (`secret_string_ref`, ACK's `secretString`), never from values: `secret_string`, `secret_string_wo`, `secret_binary` and the random password are refused, as are version stages and `ignore_secret_changes`; the resource policy (built as the module builds it, merged by `Sid`) through ack-extensions' Cloud Control `ResourcePolicy` (`allow_alpha`, the secret by name); rotation is a gap (no ACK field, no ack-extensions kind at `ACKX_COMMIT`). Fake-AWS (`off-catalog-1115093833-20939`): the `Secret` synced with its value from the case's Kubernetes Secret, outputs evaluated and deleted on AWS Emulator and on moto; the `ResourcePolicy` never became Ready on either (the Cloud Control open question below) |
 | `charts/aws/ecr` | `terraform-aws-ecr` v3.2.0 | partial: the private repository with its policy (the module's read-only, Lambda and read/write statements and `repository_policy_statements`, or `repository_policy`) and lifecycle policy inline, pull through cache rules; the registry policy and scanning configuration through ack-extensions' Cloud Control kinds and the replication configuration through its `ReplicationConfiguration` (`allow_alpha`); `account_id` is needed for the default policy; ECR Public (no policy or catalog data on ACK's ecrpublic `Repository`) and `repository_force_delete` are refused. Passed on AWS Emulator, moto unused (`off-catalog-1115093833-20939`; the registry settings render-tested only) |
+| `charts/aws/google-federated-role` | none (a wrapper on `iam-role`) | an IAM role one Google service account assumes through IAM's built-in Google federation (`accounts.google.com`, conditions on `sub` and `oaud`; no IAM OIDC provider), with policies of its own (by reference, or by ARN with `account_id` beside `policy_arns`) and AWS managed policies. `tests/ack-extensions-live-tests.values.yaml` is ack-extensions' live-test role, statement for statement its CloudFormation template at `7d67acc` (the budget alarm aside: no kind serves AWS Budgets); not deployed |
+| `charts/aws/estate-read` | none (a wrapper on `iam-role`) | Bundt's estate collector's read role in one account (`bundt-estate-read`): `job-function/ViewOnlyAccess` and a Cloud Control read policy, trusted by the collector's AWS principals (optionally with an external ID) or its Google service account; in place of the StackSet the estate draft printed (bundt `asks/estate-answers.md`); not deployed |
 
 **notify-slack has no chart** (2026-11-12). The module is a Lambda
 function (its `functions/notify_slack.py`, packaged by terraform-aws-lambda
@@ -753,6 +755,34 @@ run fixed `hack/mock-apply-aws.sh`, which waited for a per-service
 ack-extensions manager for every group in `crds/ack-extensions`, Cloud
 Control's among them: a Cloud Control kind of a service with no generated
 kind (`secretsmanager`) stopped the run (`off-catalog-1115092456-11622`).
+
+**Cause and fix (RECCC, 2026-11-15; Linear HFL-635).** The run now keeps
+the Cloud Control manager's log and pod state before it deletes the
+context (`<fake>/<chart>/cloudcontrol-manager.log`). With it,
+`off-catalog-1115213007-10866` (ack-extensions `6c39295`, secrets-manager)
+showed the cause: a context naming no kinds makes the manager serve every
+kind in ack-extensions' registry (1,345), and the operator's fixed 256Mi
+limit killed it within 17 seconds of each start (`OOMKilled`, five
+restarts on AWS Emulator, six on moto). Between kills it made at most one
+pass, so an object kept its first reconcile or got none. Two fixes, each
+proven alone on secrets-manager and ec2-instance:
+
+- **here:** `cc_context` names the render's Cloud Control kinds in the
+  context (`spec.kinds`, `Kind.service`), so the manager serves those
+  alone. At `ACKX_COMMIT` 2cdca6c, `off-catalog-1115230746-20275`:
+  `ResourcePolicy` and `EIPAssociation` Ready and deleted on AWS Emulator;
+- **in ack-extensions** (its `docs/cloudcontrol.md` section 11): the
+  operator sizes the manager's memory to the kinds served (801Mi limit
+  for all of them), and the manager serves only kinds whose CRD is
+  installed. With this script's context naming no kinds,
+  `off-catalog-1115230746-21184` (ack-extensions `21f314b`): both Ready
+  and deleted on AWS Emulator, the manager serving 1,345 kinds with no
+  restart.
+
+On the emulator Ready proves the chart's wiring and the references, not
+the resource (its Cloud Control reaches no service). moto has no Cloud
+Control API, so a Cloud Control object cannot become Ready on moto in
+this run: the moto rows for these kinds stay failures.
 
 Gaps the charts found, for ack-extensions (beyond section 5):
 
