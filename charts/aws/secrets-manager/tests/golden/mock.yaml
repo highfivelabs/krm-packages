@@ -1,0 +1,52 @@
+---
+# Source: secrets-manager/templates/secret.yaml
+apiVersion: secretsmanager.services.k8s.aws/v1alpha1
+kind: Secret
+metadata:
+  name: mock-secret
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: secrets-manager
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "secret"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "catalog-test/secret"
+  description: "catalog fake-AWS test"
+  recoveryWindowInDays: 0
+  secretString:
+    name: "catalog-test-secret"
+    key: "value"
+  tags:
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: secrets-manager/templates/policy.yaml
+apiVersion: secretsmanager.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: ResourcePolicy
+metadata:
+  name: mock-policy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: secrets-manager
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  secretId: "catalog-test/secret"
+  resourcePolicy:
+    Statement:
+    - Action:
+      - secretsmanager:GetSecretValue
+      Effect: Allow
+      Principal:
+        AWS:
+        - '*'
+      Resource:
+      - '*'
+      Sid: read
+    Version: "2012-10-17"

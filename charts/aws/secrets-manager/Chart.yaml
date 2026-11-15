@@ -1,0 +1,22 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: v2
+name: secrets-manager
+description: >-
+  A Secrets Manager secret with its replicas, its value from a Kubernetes
+  Secret and its resource policy, as AWS Controllers for Kubernetes (ACK)
+  objects. A port of terraform-aws-modules' secrets-manager module.
+type: application
+version: 0.1.0
+# The module release this chart was ported from (UPSTREAM.md).
+appVersion: "terraform-aws-secrets-manager-v2.2.0"
+kubeVersion: ">=1.27.0-0"
+keywords: [aws, ack, secretsmanager, terraform-aws-modules]
+home: https://github.com/highfivelabs/catalog
+sources:
+  - https://github.com/terraform-aws-modules/terraform-aws-secrets-manager/tree/f3d3da1c801816563080065c5f37f212c8dee444
+annotations:
+  hfl.dev/source: terraform-aws-secrets-manager
+  hfl.dev/source-version: v2.2.0
+  hfl.dev/source-commit: f3d3da1c801816563080065c5f37f212c8dee444
+  hfl.dev/ack-secretsmanager-controller: "v1.8.2"

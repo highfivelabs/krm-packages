@@ -1,0 +1,19 @@
+---
+# Source: ecr/templates/repository.yaml
+apiVersion: ecr.services.k8s.aws/v1alpha1
+kind: Repository
+metadata:
+  name: default-repository
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "default"
+    app.kubernetes.io/name: ecr
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "repository"
+spec:
+  name: "default"
+  imageScanningConfiguration:
+    scanOnPush: true
+  imageTagMutability: "IMMUTABLE"
+  policy: "{\"Statement\":[{\"Action\":[\"ecr:GetAuthorizationToken\",\"ecr:BatchCheckLayerAvailability\",\"ecr:BatchGetImage\",\"ecr:DescribeImageScanFindings\",\"ecr:DescribeImages\",\"ecr:DescribeRepositories\",\"ecr:GetDownloadUrlForLayer\",\"ecr:GetLifecyclePolicy\",\"ecr:GetLifecyclePolicyPreview\",\"ecr:GetRepositoryPolicy\",\"ecr:ListImages\",\"ecr:ListTagsForResource\"],\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam::111122223333:root\"]},\"Sid\":\"PrivateReadOnly\"}],\"Version\":\"2012-10-17\"}"

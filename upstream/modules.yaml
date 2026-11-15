@@ -1690,7 +1690,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/secrets-manager/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-secrets-manager/tree/v2.2.0
-    chart: null
+    chart: charts/aws/secrets-manager
   - id: aws/cloudfront
     cloud: aws
     module: cloudfront
@@ -1732,7 +1732,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/ecr/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-ecr/tree/v3.2.0
-    chart: null
+    chart: charts/aws/ecr
   - id: aws/sns
     cloud: aws
     module: sns

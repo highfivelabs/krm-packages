@@ -1,0 +1,41 @@
+---
+# Source: ecr/templates/registry.yaml
+apiVersion: ecr.services.k8s.aws/v1alpha1
+kind: PullThroughCacheRule
+metadata:
+  name: mock-cache-pub
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: ecr
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "pull_through_cache_rule:pub"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  ecrRepositoryPrefix: "catalog-test-pub"
+  upstreamRegistryURL: "public.ecr.aws"
+---
+# Source: ecr/templates/repository.yaml
+apiVersion: ecr.services.k8s.aws/v1alpha1
+kind: Repository
+metadata:
+  name: mock-repository
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: ecr
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "repository"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "catalog-test/repo"
+  imageScanningConfiguration:
+    scanOnPush: true
+  imageTagMutability: "MUTABLE"
+  lifecyclePolicy: "{\"rules\":[{\"rulePriority\":1,\"description\":\"Expire untagged\",\"selection\":{\"tagStatus\":\"untagged\",\"countType\":\"sinceImagePushed\",\"countUnit\":\"days\",\"countNumber\":7},\"action\":{\"type\":\"expire\"}}]}"
+  policy: "{\"Statement\":[{\"Action\":[\"ecr:GetAuthorizationToken\",\"ecr:BatchCheckLayerAvailability\",\"ecr:BatchGetImage\",\"ecr:DescribeImageScanFindings\",\"ecr:DescribeImages\",\"ecr:DescribeRepositories\",\"ecr:GetDownloadUrlForLayer\",\"ecr:GetLifecyclePolicy\",\"ecr:GetLifecyclePolicyPreview\",\"ecr:GetRepositoryPolicy\",\"ecr:ListImages\",\"ecr:ListTagsForResource\"],\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam::000000000000:root\"]},\"Sid\":\"PrivateReadOnly\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "catalog-test"
+      value: "true"

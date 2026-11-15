@@ -1,0 +1,2 @@
+# expect: ecr: repository_name is required
+tags: {a: b}

@@ -1,0 +1,24 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (docs/design.md, "Outputs"): the module's
+# repository outputs, from the live Repository (resources.repository). A
+# private repository's registry is its account.
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: aws-ecr
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [ack]
+  outputs:
+    repository_name: >-
+      'repository' in resources ? resources.repository.spec.name : null
+    repository_arn: >-
+      'repository' in resources ? resources.repository.status.ackResourceMetadata.arn : null
+    repository_registry_id: >-
+      'repository' in resources ? resources.repository.status.ackResourceMetadata.ownerAccountID : null
+    repository_url: >-
+      'repository' in resources && has(resources.repository.status.repositoryURI)
+      ? resources.repository.status.repositoryURI : null

@@ -1,0 +1,5 @@
+# expect: secrets-manager: create_policy needs the alpha kind ResourcePolicy
+name: x
+create_policy: true
+policy_statements:
+  a: {actions: ["secretsmanager:GetSecretValue"], resources: ["*"]}

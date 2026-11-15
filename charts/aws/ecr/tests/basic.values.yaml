@@ -1,0 +1,6 @@
+# The module's README usage ("Private Repository"): read/write access for
+# one role, and a lifecycle policy keeping the last 30 tagged images.
+repository_name: private-example
+repository_read_write_access_arns: ["arn:aws:iam::012345678901:role/terraform"]
+repository_lifecycle_policy: '{"rules":[{"rulePriority":1,"description":"Keep last 30 images","selection":{"tagStatus":"tagged","tagPrefixList":["v"],"countType":"imageCountMoreThan","countNumber":30},"action":{"type":"expire"}}]}'
+tags: {Terraform: "true", Environment: dev}

@@ -1,0 +1,32 @@
+---
+# Source: ecr/templates/registry.yaml
+apiVersion: ecr.services.k8s.aws/v1alpha1
+kind: PullThroughCacheRule
+metadata:
+  name: registry-only-cache-quay
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "registry-only"
+    app.kubernetes.io/name: ecr
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "pull_through_cache_rule:quay"
+spec:
+  ecrRepositoryPrefix: "quay"
+  upstreamRegistryURL: "quay.io"
+---
+# Source: ecr/templates/registry.yaml
+apiVersion: ecr.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: RegistryScanningConfiguration
+metadata:
+  name: registry-only-registry-scanning
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "registry-only"
+    app.kubernetes.io/name: ecr
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "registry_scanning_configuration"
+spec:
+  scanType: "BASIC"
+  rules: []
