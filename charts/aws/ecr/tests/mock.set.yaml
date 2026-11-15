@@ -1,0 +1,6 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values hack/mock-apply-aws.sh sets for the fake it runs on: its account,
+# which the default repository policy's principal names.
+account_id: account %s

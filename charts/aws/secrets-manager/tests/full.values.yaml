@@ -1,0 +1,39 @@
+# Every variable the chart carries: replicas (one region from its key, one
+# given, a KMS key each), the value from another namespace's Kubernetes
+# Secret, and the resource policy (allow_alpha: ack-extensions'
+# ResourcePolicy) from a source document, statements and an override
+# document merged by Sid.
+name: shop/db/password
+region: eu-west-1
+description: The shop database's password
+kms_key_id: arn:aws:kms:eu-west-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+force_overwrite_replica_secret: true
+recovery_window_in_days: 7
+replica:
+  eu-central-1: {kms_key_id: alias/shop}
+  second: {region: us-east-1}
+create_secret_version: true
+secret_string_ref: {name: shop-db, key: password, namespace: shop-secrets}
+allow_alpha: true
+create_policy: true
+block_public_policy: true
+source_policy_documents:
+  - '{"Version":"2012-10-17","Statement":[{"Sid":"Source","Effect":"Allow","Principal":{"AWS":"arn:aws:iam::111122223333:root"},"Action":"secretsmanager:DescribeSecret","Resource":"*"}]}'
+policy_statements:
+  read:
+    sid: AllowAccountRead
+    principals: [{type: AWS, identifiers: ["arn:aws:iam::111122223333:root"]}]
+    actions: ["secretsmanager:GetSecretValue"]
+    resources: ["*"]
+  deny:
+    effect: Deny
+    principals: [{type: "*", identifiers: ["*"]}]
+    actions: ["secretsmanager:DeleteSecret"]
+    resources: ["*"]
+    condition:
+      - {test: StringNotEquals, variable: "aws:PrincipalAccount", values: ["111122223333"]}
+override_policy_documents:
+  - '{"Version":"2012-10-17","Statement":{"Sid":"Source","Effect":"Allow","Principal":{"AWS":"arn:aws:iam::111122223333:role/admin"},"Action":"secretsmanager:*","Resource":"*"}}'
+labels: {hfl.dev/team: shop}
+tags: {team: shop}
+deletion_policy: ABANDON

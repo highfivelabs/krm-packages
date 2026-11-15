@@ -1,0 +1,110 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf's registry resources, one per account and Region except the pull
+through cache rules:
+  - aws_ecr_pull_through_cache_rule.this: one ecr/PullThroughCacheRule per
+    entry of registry_pull_through_cache_rules;
+  - aws_ecr_registry_policy.this: ack-extensions' Cloud Control
+    RegistryPolicy (allow_alpha);
+  - aws_ecr_registry_scanning_configuration.this: ack-extensions' Cloud
+    Control RegistryScanningConfiguration (allow_alpha);
+  - aws_ecr_replication_configuration.this: ack-extensions'
+    ReplicationConfiguration (ecr.aws.hfl.dev, allow_alpha).
+*/ -}}
+{{- $v := .Values -}}
+{{- if $v.create }}
+{{- $region := $v.region | default "" }}
+{{- $rules := $v.registry_pull_through_cache_rules | default dict }}
+{{- range $k := keys $rules | sortAlpha }}
+{{- $r := index $rules $k }}
+---
+apiVersion: ecr.services.k8s.aws/v1alpha1
+kind: PullThroughCacheRule
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "cache" $k)) "id" (printf "pull_through_cache_rule:%s" $k) "region" ($r.region | default $region)) | nindent 2 }}
+spec:
+  ecrRepositoryPrefix: {{ include "ack.cloudName" (list $ "pull through cache rule repository prefix" $r.ecr_repository_prefix 30) | quote }}
+  upstreamRegistryURL: {{ $r.upstream_registry_url | quote }}
+{{- with $r.credential_arn }}
+  credentialARN: {{ . | quote }}
+{{- end }}
+{{- with $r.custom_role_arn }}
+  customRoleARN: {{ . | quote }}
+{{- end }}
+{{- with $r.upstream_repository_prefix }}
+  upstreamRepositoryPrefix: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- if $v.create_registry_policy }}
+{{- include "ack.alpha" (list $ "create_registry_policy" $v.create_registry_policy "RegistryPolicy (ack-extensions, Cloud Control)") }}
+{{- if not $v.registry_policy }}
+{{- fail "ecr: create_registry_policy needs registry_policy (the JSON policy document)" }}
+{{- end }}
+{{- $doc := $v.registry_policy | fromJson }}
+{{- if hasKey $doc "Error" }}
+{{- fail "ecr: registry_policy is not a JSON policy document" }}
+{{- end }}
+---
+apiVersion: ecr.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: RegistryPolicy
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "registry-policy")) "id" "registry_policy" "region" $region) | nindent 2 }}
+spec:
+  policyText:
+{{- $doc | toYaml | nindent 4 }}
+{{- end }}
+{{- if $v.manage_registry_scanning_configuration }}
+{{- include "ack.alpha" (list $ "manage_registry_scanning_configuration" $v.manage_registry_scanning_configuration "RegistryScanningConfiguration (ack-extensions, Cloud Control)") }}
+---
+apiVersion: ecr.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: RegistryScanningConfiguration
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "registry-scanning")) "id" "registry_scanning_configuration" "region" $region) | nindent 2 }}
+spec:
+  scanType: {{ $v.registry_scan_type | quote }}
+{{- if $v.registry_scan_rules }}
+  rules:
+{{- range $v.registry_scan_rules }}
+    - scanFrequency: {{ .scan_frequency | quote }}
+      repositoryFilters:
+{{- range .filter }}
+        - filter: {{ .filter | quote }}
+          filterType: {{ .filter_type | default "WILDCARD" | quote }}
+{{- end }}
+{{- end }}
+{{- else }}
+  rules: []
+{{- end }}
+{{- end }}
+{{- if $v.create_registry_replication_configuration }}
+{{- include "ack.alpha" (list $ "create_registry_replication_configuration" $v.create_registry_replication_configuration "ReplicationConfiguration (ack-extensions)") }}
+---
+apiVersion: ecr.aws.hfl.dev/v1alpha1
+kind: ReplicationConfiguration
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "registry-replication")) "id" "registry_replication_configuration" "region" $region) | nindent 2 }}
+spec:
+  replicationConfiguration:
+{{- if $v.registry_replication_rules }}
+    rules:
+{{- range $v.registry_replication_rules }}
+      - destinations:
+{{- range .destinations }}
+          - region: {{ .region | quote }}
+            registryID: {{ .registry_id | quote }}
+{{- end }}
+{{- with .repository_filters }}
+        repositoryFilters:
+{{- range . }}
+          - filter: {{ .filter | quote }}
+            filterType: {{ .filter_type | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- else }}
+    rules: []
+{{- end }}
+{{- end }}
+{{- end }}

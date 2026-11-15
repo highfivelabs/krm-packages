@@ -1,0 +1,4 @@
+# expect: secrets-manager: create_policy needs a statement
+name: x
+allow_alpha: true
+create_policy: true

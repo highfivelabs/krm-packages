@@ -1,0 +1,23 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: v2
+name: ecr
+description: >-
+  An ECR repository with its repository and lifecycle policies, and the
+  registry's pull through cache rules, policy, scanning and replication
+  configurations, as AWS Controllers for Kubernetes (ACK) objects. A port
+  of terraform-aws-modules' ecr module.
+type: application
+version: 0.1.0
+# The module release this chart was ported from (UPSTREAM.md).
+appVersion: "terraform-aws-ecr-v3.2.0"
+kubeVersion: ">=1.27.0-0"
+keywords: [aws, ack, ecr, terraform-aws-modules]
+home: https://github.com/highfivelabs/catalog
+sources:
+  - https://github.com/terraform-aws-modules/terraform-aws-ecr/tree/b6ef04d088cf91d5ba9505132e9ff7c9f847ed5d
+annotations:
+  hfl.dev/source: terraform-aws-ecr
+  hfl.dev/source-version: v3.2.0
+  hfl.dev/source-commit: b6ef04d088cf91d5ba9505132e9ff7c9f847ed5d
+  hfl.dev/ack-ecr-controller: "v1.11.1"

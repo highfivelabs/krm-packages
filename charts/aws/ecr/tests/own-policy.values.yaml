@@ -1,0 +1,7 @@
+# create_repository_policy false: the JSON repository_policy is attached as
+# given; create_lifecycle_policy false drops the lifecycle policy.
+repository_name: own-policy
+create_repository_policy: false
+repository_policy: '{"Version":"2012-10-17","Statement":[{"Sid":"All","Effect":"Allow","Principal":{"AWS":"arn:aws:iam::111122223333:root"},"Action":"ecr:*"}]}'
+create_lifecycle_policy: false
+repository_lifecycle_policy: '{"rules":[]}'

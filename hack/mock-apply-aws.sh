@@ -393,8 +393,13 @@ run_chart() {
   sets=()
   if [[ -f "${needs}" ]]; then
     kubectl apply --server-side -n "${ns}" -f "${needs}" >"${out}/needs.log"
-    kubectl wait -n "${ns}" --for=condition=Ready -f "${needs}" --timeout="${TIMEOUT}s" >>"${out}/needs.log" 2>&1 \
-      || echo "   ${chart}: tests/mock.needs.yaml not Ready in ${TIMEOUT}s" >&2
+    # Kubernetes' own objects (a Secret a case reads a value from) have no
+    # Ready condition: wait for the others.
+    mapfile -t waitfor < <(kubectl get -n "${ns}" -f "${needs}" -o name | grep -Ev '^(secret|configmap)/' || true)
+    if [[ ${#waitfor[@]} -gt 0 ]]; then
+      kubectl wait -n "${ns}" --for=condition=Ready "${waitfor[@]}" --timeout="${TIMEOUT}s" >>"${out}/needs.log" 2>&1 \
+        || echo "   ${chart}: tests/mock.needs.yaml not Ready in ${TIMEOUT}s" >&2
+    fi
   fi
   if [[ -f "${dir}/tests/mock.set.yaml" ]]; then
     while read -r key obj path; do

@@ -1,0 +1,5 @@
+# create_secret_version: false (values managed outside, as the module's
+# README says): secret_string_ref is not rendered.
+name: external
+create_secret_version: false
+secret_string_ref: {name: unused, key: value}

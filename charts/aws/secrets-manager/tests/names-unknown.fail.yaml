@@ -1,0 +1,3 @@
+# expect: names: Additional property policy is not allowed
+names: {policy: x}
+name: x

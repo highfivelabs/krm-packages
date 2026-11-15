@@ -1,0 +1,25 @@
+---
+# Source: ecr/templates/repository.yaml
+apiVersion: ecr.services.k8s.aws/v1alpha1
+kind: Repository
+metadata:
+  name: basic-repository
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: ecr
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "repository"
+spec:
+  name: "private-example"
+  imageScanningConfiguration:
+    scanOnPush: true
+  imageTagMutability: "IMMUTABLE"
+  lifecyclePolicy: "{\"rules\":[{\"rulePriority\":1,\"description\":\"Keep last 30 images\",\"selection\":{\"tagStatus\":\"tagged\",\"tagPrefixList\":[\"v\"],\"countType\":\"imageCountMoreThan\",\"countNumber\":30},\"action\":{\"type\":\"expire\"}}]}"
+  policy: "{\"Statement\":[{\"Action\":[\"ecr:GetAuthorizationToken\",\"ecr:BatchCheckLayerAvailability\",\"ecr:BatchGetImage\",\"ecr:DescribeImageScanFindings\",\"ecr:DescribeImages\",\"ecr:DescribeRepositories\",\"ecr:GetDownloadUrlForLayer\",\"ecr:GetLifecyclePolicy\",\"ecr:GetLifecyclePolicyPreview\",\"ecr:GetRepositoryPolicy\",\"ecr:ListImages\",\"ecr:ListTagsForResource\"],\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam::012345678901:role/terraform\"]},\"Sid\":\"PrivateReadOnly\"},{\"Action\":[\"ecr:PutImage\",\"ecr:InitiateLayerUpload\",\"ecr:UploadLayerPart\",\"ecr:CompleteLayerUpload\"],\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam::012345678901:role/terraform\"]},\"Sid\":\"ReadWrite\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "Environment"
+      value: "dev"
+    - key: "Terraform"
+      value: "true"

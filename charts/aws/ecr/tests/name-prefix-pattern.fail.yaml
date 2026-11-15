@@ -1,0 +1,4 @@
+# expect: namePrefix: Does not match pattern
+namePrefix: "-lead"
+repository_name: x
+account_id: "111122223333"
