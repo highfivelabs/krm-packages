@@ -377,6 +377,34 @@ YAML
   echo "   CloudControlContext ${ns}/cloudcontrol Ready: a Cloud Control manager serves ${ns}"
 }
 
+# cc_logs NS OUT: the Cloud Control manager serving NS runs in
+# ack-extensions-system and goes with its CloudControlContext, so its logs
+# are kept before the context is deleted: the context, the manager's pods
+# (restarts and the last state: an OOM kill shows there), and the logs of
+# the running container and of the one before it, into
+# OUT/cloudcontrol-manager.log.
+cc_logs() {
+  local ns="$1" out="$2" p
+  local sel="aws.hfl.dev/component=cloudcontrol,aws.hfl.dev/environment=$1"
+  {
+    echo "== CloudControlContext ${ns}/cloudcontrol"
+    kubectl -n "${ns}" get cloudcontrolcontext cloudcontrol -o yaml 2>&1
+    echo "== pods (ack-extensions-system, ${sel})"
+    kubectl -n ack-extensions-system get pods -l "${sel}" -o wide 2>&1
+    kubectl -n ack-extensions-system get pods -l "${sel}" -o json 2>/dev/null \
+      | jq -r '.items[] | .metadata.name as $n | .status.containerStatuses[]? | "\($n) \(.name): restarts=\(.restartCount) state=\(.state | keys | first) last=\(.lastState | tostring)"'
+    for p in $(kubectl -n ack-extensions-system get pods -l "${sel}" -o name 2>/dev/null); do
+      echo "== ${p} (previous container)"
+      kubectl -n ack-extensions-system logs "${p}" --previous --tail=2000 2>&1 || true
+      echo "== ${p}"
+      kubectl -n ack-extensions-system logs "${p}" --tail=5000 2>&1 || true
+    done
+    echo "== events (${ns})"
+    kubectl -n "${ns}" get events --sort-by=.lastTimestamp 2>&1 | tail -100
+  } >"${out}/cloudcontrol-manager.log" 2>&1
+  echo "   the Cloud Control manager's logs: ${out}/cloudcontrol-manager.log"
+}
+
 # run_chart VALUES: apply one chart's case to the fake BACKEND points at,
 # check it, delete it. Its rows go to ${OUT}/${BACKEND}/<chart>.rows; it
 # sets chart_failed (objects not Ready or not deleted, outputs not
@@ -490,6 +518,7 @@ run_chart() {
     fi
   fi
   if [[ "${cc}" == yes ]]; then
+    cc_logs "${ns}" "${out}"
     kubectl -n "${ns}" delete cloudcontrolcontext cloudcontrol --ignore-not-found --wait=false >/dev/null 2>&1 || true
   fi
   [[ "${outputs_ok}" == yes ]] || chart_failed=$((chart_failed + 1))
