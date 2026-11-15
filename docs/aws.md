@@ -754,6 +754,34 @@ ack-extensions manager for every group in `crds/ack-extensions`, Cloud
 Control's among them: a Cloud Control kind of a service with no generated
 kind (`secretsmanager`) stopped the run (`off-catalog-1115092456-11622`).
 
+**Cause and fix (RECCC, 2026-11-15; Linear HFL-635).** The run now keeps
+the Cloud Control manager's log and pod state before it deletes the
+context (`<fake>/<chart>/cloudcontrol-manager.log`). With it,
+`off-catalog-1115213007-10866` (ack-extensions `6c39295`, secrets-manager)
+showed the cause: a context naming no kinds makes the manager serve every
+kind in ack-extensions' registry (1,345), and the operator's fixed 256Mi
+limit killed it within 17 seconds of each start (`OOMKilled`, five
+restarts on AWS Emulator, six on moto). Between kills it made at most one
+pass, so an object kept its first reconcile or got none. Two fixes, each
+proven alone on secrets-manager and ec2-instance:
+
+- **here:** `cc_context` names the render's Cloud Control kinds in the
+  context (`spec.kinds`, `Kind.service`), so the manager serves those
+  alone. At `ACKX_COMMIT` 2cdca6c, `off-catalog-1115230746-20275`:
+  `ResourcePolicy` and `EIPAssociation` Ready and deleted on AWS Emulator;
+- **in ack-extensions** (its `docs/cloudcontrol.md` section 11): the
+  operator sizes the manager's memory to the kinds served (801Mi limit
+  for all of them), and the manager serves only kinds whose CRD is
+  installed. With this script's context naming no kinds,
+  `off-catalog-1115230746-21184` (ack-extensions `21f314b`): both Ready
+  and deleted on AWS Emulator, the manager serving 1,345 kinds with no
+  restart.
+
+On the emulator Ready proves the chart's wiring and the references, not
+the resource (its Cloud Control reaches no service). moto has no Cloud
+Control API, so a Cloud Control object cannot become Ready on moto in
+this run: the moto rows for these kinds stay failures.
+
 Gaps the charts found, for ack-extensions (beyond section 5):
 
 | Gap | Needed by | Shape |
