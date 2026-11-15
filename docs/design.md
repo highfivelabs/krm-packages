@@ -37,8 +37,16 @@ The decisions of 2026-11-09, applied in the sections below.
 3. **Alpha kinds only behind an opt-in value per chart** (`allow_alpha`).
    **Beta kinds are on by default.**
 4. **Factories**: the generator is accepted in principle, after a closer
-   look at what it produces. The worked example is in "Factories, worked". It is not
-   built.
+   look at what it produces. The worked example is in "Factories, worked".
+   **Built** (2026-11-15, RECPF; the builder: "RECPF: as recommended (Build
+   the generator the design accepts in principle. Leave project-factory
+   blocked until then. Also: yes to config-connector-extensions'
+   IAMBinding taking CloudFunctionsFunction, AssetFeed's parent comparison
+   fix, and a stable Cloud Armor association; SCC v2 mute config and
+   project SHA module kinds at low priority.)"): `catalogtool factory`
+   (`task factory`, `tools/factory/README.md`), with the worked example as
+   its golden test. The config-connector-extensions parts of the answer
+   are that repository's.
 5. **Authoritative IAM**: the kind is `IAMBinding` (first built as
    `IAMRoleBinding`) in config-connector-extensions. Non-authoritative IAM
    is preferred, so the additive `IAMPolicyMember` stays the
@@ -441,8 +449,10 @@ one plan line and one blast radius. A generator that reads the factory's
 YAML tree and writes Bundt documents, one Instance per project, is
 accepted in principle, after a look at what it produces:
 "Factories, worked" below is a real factory file, the documents the
-generator would write from it, and how an edit becomes a plan. The
-generator is not built.
+generator writes from it, and how an edit becomes a plan. The generator
+is built (2026-11-15, RECPF): `catalogtool factory`, `tools/factory`.
+It covers `project-factory`; `net-vpc-factory` is next (the example works
+only the project factory).
 
 **Not Packages**: `cloud-config-container` (cloud-init text for VMs, a
 helper not a resource) and `projects-data-source` (a read). The
@@ -499,11 +509,15 @@ services:
 ```
 
 ```yaml
-# the factory's other inputs (the generator's config, one file)
-defaults: {prefix: hfl}                 # fabric: bucket names start with it
-context:                                # fabric's `context` variable, as is
+# factory.yaml: the factory's other inputs (the generator's config, one file)
+defaults:
+  prefix: hfl                        # fabric: project and bucket names start with it
+  deletion_policy: ABANDON           # Bundt: cloudResources keep on the project and its buckets
+context:                             # fabric's `context` variable, as is
+  folder_ids: {default: organizations/1234567890}
   storage_buckets: {log-bucket: hfl-central-logs}
-folders: data/folders                   # data/folders/team-a/app-0/.config.yaml makes the folder
+folders: data/folders                # data/folders/team-a/app-0/.config.yaml makes the folder
+projects: data/projects
 ```
 
 **The generator** reads the tree and writes documents. What each element
@@ -514,7 +528,7 @@ becomes:
 | a `projects/<file>.yaml` | a Stack `<file>` of the platform team and one Instance of it, in the platform Environment; the Stack lists its components inline (the escape hatch, drafts/agreed), since a Template cannot loop over a file's service accounts and buckets |
 | the file's project keys (`parent`, `billing_account`, `labels`, `services`, `iam*`, `org_policies`, `contacts`, ...) | the inputs of the component `project` (`gcp-project`) |
 | `service_accounts.<n>` | a component `sa-<n>` (`gcp-iam-service-account`); `iam_self_roles` becomes `iam_project_roles` on the project's ID |
-| `buckets.<n>` | a component `bucket-<n>` (`gcp-gcs`), with the factory's `prefix` |
+| `buckets.<n>` | a component `bucket-<n>` (`gcp-gcs`), with the factory's `prefix` and fabric's name, `<project name>-<n>` |
 | `$iam_principals:service_accounts/<this project>/<sa>`, `.../_self_/<sa>` | `"${components.sa-<sa>.outputs.iam_email}"`: an expression on a component of the same Instance, which also orders them |
 | `$iam_principals:service_agents/_self_/<agent>` | `"serviceAccount:service-${components.project.outputs.number}@<agent domain>"`, the domain from fabric's `service-agents.yaml` |
 | `$folder_ids:`, `$project_ids:` of something this factory makes | a literal written by the generator, read from the Instance that made it (the folders go first, in their own Instance); Bundt expressions cannot read another Instance's outputs |
@@ -524,48 +538,88 @@ becomes:
 | a project's `deletion_policy` and the factory's defaults for it | `cloudResources: keep` on the Instance's `project` and bucket components (instances.md R36), else Bundt's default, delete |
 | the file's path and Git commit | the annotation `hfl.dev/factory` on the Stack and the Instance |
 
-**Output**: for that one file, two documents. The Stack (components cut
-to three of its five, same shape):
+**Output**: for that one file, two documents (the generator's golden
+file, `tools/factory/testdata/worked/out/dev-ta-app0-be.yaml`; the
+folders' are `folders.yaml` beside it). The Stack:
 
 ```yaml
 apiVersion: hfl.dev/v1
 kind: Stack
 metadata:
   name: dev-ta-app0-be
-  scope: platform
-  annotations: {hfl.dev/factory: "data/projects/dev-ta-app0-be.yaml@4f2a9c1"}
+  scope: gcp-factory
+  annotations:
+    hfl.dev/factory: "data/projects/dev-ta-app0-be.yaml@4f2a9c1"
 spec:
-  components:                          # inline; this shape is an assumption
+  components:
     - name: project
-      package: {name: gcp-project, version: 0.1.0}
+      package:
+        name: gcp-project
+        version: "0.10.0"
       inputs:
         name: dev-ta-app0-be
-        parent: folders/3456789012     # $folder_ids:team-a/app-0, from the folders Instance
+        prefix: hfl
+        parent: folders/3456789012
         billing_account: 012345-67890A-BCDEF0
-        labels: {app: app-0, team: team-a}
-        services: [compute.googleapis.com, container.googleapis.com, storage.googleapis.com]
+        labels:
+          app: app-0
+          team: team-a
+        services:
+          - compute.googleapis.com
+          - container.googleapis.com
+          - storage.googleapis.com
     - name: sa-app-0-be
-      package: {name: gcp-iam-service-account, version: 0.1.0}
+      package:
+        name: gcp-iam-service-account
+        version: "0.4.0"
       inputs:
         project_id: "${components.project.outputs.project_id}"
         name: app-0-be
         display_name: Backend instances.
-        iam_project_roles:             # iam_self_roles, and the project's own iam_by_principals entry for this account
-          dev-ta-app0-be: [roles/logging.logWriter, roles/monitoring.metricWriter, roles/storage.objectViewer]
+        iam_project_roles:
+          hfl-dev-ta-app0-be:
+            - roles/logging.logWriter
+            - roles/monitoring.metricWriter
+            - roles/storage.objectViewer
         iam:
-          roles/iam.serviceAccountUser: ["${components.sa-app-0-fe.outputs.iam_email}"]
+          roles/iam.serviceAccountUser:
+            - "${components.sa-app-0-fe.outputs.iam_email}"
+    - name: sa-app-0-fe
+      package:
+        name: gcp-iam-service-account
+        version: "0.4.0"
+      inputs:
+        project_id: "${components.project.outputs.project_id}"
+        name: app-0-fe
+        display_name: Frontend instances.
+        iam_project_roles:
+          hfl-dev-ta-app0-be:
+            - roles/logging.logWriter
+            - roles/monitoring.metricWriter
     - name: bucket-app-0-bucket-a
-      package: {name: gcp-gcs, version: 0.1.0}
+      package:
+        name: gcp-gcs
+        version: "0.4.0"
       inputs:
         project_id: "${components.project.outputs.project_id}"
         prefix: hfl
-        name: app-0-bucket-a
+        name: dev-ta-app0-be-app-0-bucket-a
         location: europe-west8
         iam:
           roles/storage.objectViewer:
             - "serviceAccount:service-${components.project.outputs.number}@compute-system.iam.gserviceaccount.com"
-    # sa-app-0-fe and bucket-app-0-bucket-b: the same way;
-    # bucket-b has logging_config.log_bucket: hfl-central-logs, from `context`
+    - name: bucket-app-0-bucket-b
+      package:
+        name: gcp-gcs
+        version: "0.4.0"
+      inputs:
+        project_id: "${components.project.outputs.project_id}"
+        prefix: hfl
+        name: dev-ta-app0-be-app-0-bucket-b
+        location: europe-west8
+        logging_config:
+          log_bucket: hfl-central-logs
+          log_object_prefix: log-prefix
 ```
 
 and the Instance:
@@ -575,14 +629,18 @@ apiVersion: hfl.dev/v1
 kind: Instance
 metadata:
   name: dev-ta-app0-be
-  scope: platform/gcp-org              # an Environment whose Target runs Config Connector with organization roles
-  annotations: {hfl.dev/factory: "data/projects/dev-ta-app0-be.yaml@4f2a9c1"}
+  scope: gcp-factory/gcp-org
+  annotations:
+    hfl.dev/factory: "data/projects/dev-ta-app0-be.yaml@4f2a9c1"
 spec:
-  stack: dev-ta-app0-be                # an inline Stack has no Template version; how an Instance names it is open
+  stack: dev-ta-app0-be
   components:
-    project: {cloudResources: keep}
-    bucket-app-0-bucket-a: {cloudResources: keep}
-    bucket-app-0-bucket-b: {cloudResources: keep}
+    project:
+      cloudResources: keep
+    bucket-app-0-bucket-a:
+      cloudResources: keep
+    bucket-app-0-bucket-b:
+      cloudResources: keep
 ```
 
 That file makes a project, two service accounts and two buckets: five live
@@ -653,6 +711,38 @@ What this shows and what it does not:
   `shared_vpc_service_config.service_agent_iam`, `pam_entitlements`, a
   `kms` block or `tags` meets a refusal naming the gap, as a module block
   would.
+
+**Built** (2026-11-15, RECPF): `catalogtool factory` (`task factory`,
+`tools/factory/README.md`) writes the documents above from the tree, and
+the example is its golden test (`tools/factory/testdata/worked`, in `task
+tools-test`). Building it corrected the example where it differed from
+fabric or from its own table, so a team moving off fabric keeps its names:
+
+- fabric's `prefix` names the project too (`projects-defaults.tf`), so
+  the project component takes `prefix: hfl`, its ID is
+  `hfl-dev-ta-app0-be`, and the accounts' `iam_project_roles` are on that
+  ID (the example had the bare name);
+- fabric names a bucket `<project name>-<key>` (`projects-buckets.tf`),
+  so `dev-ta-app0-be-app-0-bucket-a` with the prefix (the example had the
+  key alone);
+- the example kept the project and buckets without a `deletion_policy`,
+  against its own table: the config now sets `deletion_policy: ABANDON` in
+  `defaults`, which is what `keep` stands for;
+- the Stacks are the `gcp-factory` Team's and the Instances are in its
+  Environment `gcp-org` (the example said `platform`), since "How an edit
+  becomes a plan" scopes the plan to that Team; both are flags;
+- the example's `0.1.0` versions are the charts' current ones.
+
+The generator reads the folders too (`folders.yaml`, a Stack and Instance
+`folders`, nested folders by expression) and takes their IDs for the
+projects from a file of the folders Instance's outputs (`-folder-ids`),
+with `-folders-only` as the first pass. It refuses by name what the
+composed charts refuse, the modules it does not map yet (`kms`,
+`pubsub_topics`, `datasets`, `log_buckets`, budgets, `automation`, project
+templates, a project's `factories_config`, the DNS threat detector) and
+whatever would make a cycle; one refusal writes nothing.
+`net-vpc-factory` is next: the same approach, its files becoming `net-vpc`
+and `net-vpc-firewall` components, not worked here yet.
 
 ## IAM
 
@@ -1104,7 +1194,8 @@ the pilot:
    (`hfl.dev/gcp-scope`) that only the platform team's Environment
    provides.
 3. **The factory generator** (after the builder has seen "Factories,
-   worked"):
+   worked"). Built on 2026-11-15 (RECPF) on these recommendations, which
+   are still not confirmed one by one:
    - one Instance per project, of an inline Stack, as the unit.
      Recommended yes: a project is what a team asks for, reviews and
      deletes.
