@@ -1,0 +1,11 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+A note for each Cloud Storage role in iam that the chart converted to an
+Artifact Registry role (containerRegistry.iam). Bundt's plan does not read
+NOTES.txt; iam.yaml writes the same notes into the render.
+*/ -}}
+{{- range $n := (include "containerRegistry.iam" . | fromJson).notes }}
+{{ $n }}
+{{- end }}

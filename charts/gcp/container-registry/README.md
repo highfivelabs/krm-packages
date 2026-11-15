@@ -1,5 +1,10 @@
 # container-registry
 
+> **Deprecated for new setups.** gcr.io repositories are legacy: this chart
+> is supported for organizations still on gcr.io. New setups should use a
+> native Artifact Registry repository chart
+> ([`artifact-registry`](../artifact-registry)) and Artifact Registry roles.
+
 A Container Registry host as an Artifact Registry repository with gcr.io
 domain support and its IAM, as Config Connector objects. A port of Cloud
 Foundation Fabric's
@@ -58,14 +63,45 @@ The module's variables, with the same names, types and defaults.
 | `labels`, `tags` | Kubernetes labels on every object; unprefixed ones and `tags` are Google Cloud labels on the repository |
 | `project_id` | the repository's project (`cnrm.cloud.google.com/project-id`) |
 | `location` | the repository's name and location, per the table above; anything but `US`, `EU`, `ASIA` or empty is refused |
-| `iam` | one `IAMPartialPolicy` on the repository (`docs/design.md`, "IAM": the listed members are kept, others left alone). Fabric bound these on the registry's Cloud Storage bucket; the roles must now be Artifact Registry roles |
+| `iam` | one `IAMPartialPolicy` on the repository (`docs/design.md`, "IAM": the listed members are kept, others left alone). Fabric bound these on the registry's Cloud Storage bucket; the roles are now Artifact Registry roles, and five Cloud Storage roles are translated (below) |
 | `deletion_policy` | not a fabric variable; `ABANDON` keeps the repository and its images |
+
+### Cloud Storage roles in `iam`
+
+A Cloud Storage role cannot be granted on an Artifact Registry repository.
+So that a module call's `iam` converts one to one, the chart translates
+these five (the builder, 2026-11-15, CRREG-1; `docs/design.md`,
+decision 13). Google gives no role-for-role table; this one is ours.
+
+| Cloud Storage role | Artifact Registry role |
+| --- | --- |
+| `roles/storage.objectViewer` | `roles/artifactregistry.reader` |
+| `roles/storage.legacyBucketReader` | `roles/artifactregistry.reader` |
+| `roles/storage.legacyBucketWriter` | `roles/artifactregistry.writer` |
+| `roles/storage.legacyBucketOwner` | `roles/artifactregistry.repoAdmin` |
+| `roles/storage.admin` | `roles/artifactregistry.repoAdmin` |
+
+Roles that translate to one Artifact Registry role, or to one `iam` also
+lists as is, share one binding, each member once
+(`tests/storage-merge.values.yaml`). Each converted role gives a note,
+written as a `# NOTE` comment into the render (ahead of the
+`IAMPartialPolicy`) and printed by Helm on install (`templates/NOTES.txt`):
+it names the role and its translation, says gcr.io repositories are
+legacy, and that new setups should use a native Artifact Registry
+repository with Artifact Registry roles directly. Bundt's plan does not
+show Helm's NOTES.txt, so in a Bundt plan the note is the comment in the
+rendered objects.
+
+`legacyBucketOwner` and `storage.admin` to `repoAdmin` is a judgment call:
+`repoAdmin` reads, writes and deletes images in the repository but does
+not manage the repository's IAM, which both bucket roles could on the
+bucket. Review those bindings.
 
 Refused, in part:
 
 | Variable | Why |
 | --- | --- |
-| `iam` with a `roles/storage.*` role | a Cloud Storage role cannot be granted on an Artifact Registry repository. The message names the roles to use: `roles/artifactregistry.reader` to pull, `.writer` to push, `.repoAdmin` to also delete. The chart does not translate the role itself (an open question for the builder) |
+| `iam` with any other `roles/storage.*` role | a Cloud Storage role cannot be granted on an Artifact Registry repository, and only the five above translate. The message names the roles to use: `roles/artifactregistry.reader` to pull, `.writer` to push, `.repoAdmin` to also delete (`tests/storage-role.fail.yaml`) |
 
 ## Outputs
 
@@ -76,9 +112,11 @@ Refused, in part:
 ## From Terraform
 
 A `module "x" { source = ".../modules/container-registry" ... }` block's
-arguments become the values unchanged (`examples/container-registry/`),
-except a Cloud Storage role in `iam`, which is refused with the Artifact
-Registry role to use. A project that already set up its gcr.io repository
+arguments become the values unchanged (`examples/container-registry/`).
+The five Cloud Storage roles above are translated with a note; any other
+Cloud Storage role in `iam` is refused with the Artifact Registry role to
+use. The `id` output changes meaning: it was the bucket's name and is now
+the repository's resource name ("Outputs"). A project that already set up its gcr.io repository
 (by hand, or with `gcloud artifacts docker upgrade migrate`) keeps it: Config
 Connector acquires the repository of that name and location
 (`docs/design.md`, "From Terraform"). Images still in a Container Registry
@@ -97,7 +135,10 @@ with every other module the catalog tracks. To take a newer release, see
 ## Tests
 
 `task test CHART=container-registry`: render cases `basic`, `full`, `us`,
-`asia` and `mock`, each validated against Config Connector v1.160.0's CRD
+`asia`, `mock`, one per translated Cloud Storage role
+(`storage-object-viewer`, `storage-legacy-bucket-reader`,
+`storage-legacy-bucket-writer`, `storage-legacy-bucket-owner`,
+`storage-admin`) and `storage-merge`, each validated against Config Connector v1.160.0's CRD
 schemas, and the refusals in `tests/*.fail.yaml`.
 
 Not yet applied to the fake cloud or live: `tests/mock.values.yaml` is ready
@@ -105,5 +146,9 @@ for `task test-mock MOCK_CHARTS=container-registry`.
 
 ## Changes
 
+- **0.2.0** (2026-11-15): five Cloud Storage roles in `iam` are
+  translated to Artifact Registry roles, each with a note; any other is
+  still refused. A deprecation line: gcr.io repositories are legacy (the
+  builder, CRREG-1).
 - **0.1.0** (2026-11-15): the port, as an Artifact Registry gcr.io
   repository (decision 30).

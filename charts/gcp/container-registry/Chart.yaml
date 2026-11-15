@@ -8,7 +8,7 @@ description: >-
   Connector objects. A port of Cloud Foundation Fabric's
   container-registry module; Container Registry itself is shut down.
 type: application
-version: 0.1.0
+version: 0.2.0
 # The fabric release this chart was ported from (UPSTREAM.md).
 appVersion: "fabric-v60.0.0"
 kubeVersion: ">=1.27.0-0"
