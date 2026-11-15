@@ -101,3 +101,10 @@ secretsmanager-controller v1.8.2's CRDs and ack-extensions'
 `ResourcePolicy`, and the refusal cases. `tests/mock.values.yaml` is the
 case the fake-AWS run applies, its value from the Kubernetes Secret in
 `tests/mock.needs.yaml` (`docs/aws.md`, "Charts").
+
+The fake-AWS run (`off-catalog-1115093833-20939`, 2026-11-15): the `Secret`
+synced with its value from the Kubernetes Secret, its outputs evaluated
+and it was deleted, on AWS Emulator and on moto. The `ResourcePolicy` did
+not become Ready on either fake, as no Cloud Control kind has yet
+(`docs/aws.md`, "Charts"), so the resource policy is proven by render tests
+only.
