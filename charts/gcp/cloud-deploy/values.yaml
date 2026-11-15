@@ -1,0 +1,66 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values mirror the Terraform variables of fabric's cloud-deploy module
+# (v60.0.0): same names, types and defaults, so a module block's arguments
+# become this file one to one (README.md, "From Terraform").
+# values.schema.json carries the types.
+
+# Names, labels and tags (docs/design.md, "Names, labels and tags"). Not
+# Terraform variables: Bundt supplies names from a team's naming convention
+# and stamps its identity labels; the chart takes them and computes none.
+#
+# names.pipeline sets the delivery pipeline's name in full (else name).
+names: {}
+# An optional convenience: "<namePrefix>-" in front of the pipeline's name
+# (unless set under names), and of every target and deploy policy the chart
+# makes. Automations live in the pipeline and keep their keys. Empty (the
+# default) changes nothing.
+namePrefix: ""
+# fabric's own variable (the pipeline's labels), with the catalog's
+# meaning: labels on every object; an unprefixed one is a Google Cloud
+# label too (Config Connector copies it to the pipeline).
+labels: {}
+# Cloud labels on every object.
+tags: {}
+
+# Resource annotations (the pipeline's).
+annotations: {}
+# Automations of the pipeline, in a name => attributes format.
+automations: {}
+# Deploy policies, in a name => attributes format.
+deploy_policies: {}
+# Cloud Deploy Delivery Pipeline description.
+description: Terraform managed.
+# Cloud Deploy Delivery Pipeline name.
+name: ""
+# Project id used for resources, if not explicitly specified.
+project_id: ""
+# Region used for resources, if not explicitly specified.
+region: ""
+# Configuration to suspend a delivery pipeline.
+suspended: false
+# Targets of the pipeline, in order: each a stage, and a target the chart
+# makes unless create_target is false.
+targets: []
+# IAM bindings in {ROLE => [MEMBERS]} format, on the pipeline.
+iam: {}
+# Authoritative IAM bindings in {KEY => {role = ROLE, members = [],
+# condition = {}}}. Keys are arbitrary.
+iam_bindings: {}
+# Individual additive IAM bindings. Keys are arbitrary. IAMMember is
+# v1alpha1: needs allow_alpha.
+iam_bindings_additive: {}
+# Authoritative IAM binding in {PRINCIPAL => [ROLES]} format. Merged with
+# iam.
+iam_by_principals: {}
+
+# Not a fabric variable: iam_bindings_additive (the pipeline's and each
+# target's) renders config-connector-extensions' IAMMember, which is
+# v1alpha1; set true to accept that its schema may change (docs/design.md,
+# "Alpha kinds").
+allow_alpha: false
+# Not a fabric variable: DELETE (the default) or ABANDON, which keeps the
+# pipeline, targets, automations and deploy policies when the component is
+# deleted. PREVENT has no Config Connector equivalent.
+deletion_policy: null

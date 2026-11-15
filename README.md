@@ -129,18 +129,18 @@ How much of the Terraform modules people use today the catalog carries, counted 
 
 ![All tracked modules](docs/coverage/total.svg)
 
-**177 modules tracked**: 15 ported, 108 partial, 49 blocked, 5 not started. Green is ported, amber partial (some variables refused with a message that names the gap), dark grey blocked (a resource type of the module has no stable kind: none, or only an alpha one), light grey not started.
+**177 modules tracked**: 15 ported, 116 partial, 41 blocked, 5 not started. Green is ported, amber partial (some variables refused with a message that names the gap), dark grey blocked (a resource type of the module has no stable kind: none, or only an alpha one), light grey not started.
 
 | Source | Modules | Bar | Variables covered |
 | --- | ---: | --- | ---: |
-| Google Cloud: Cloud Foundation Fabric and terraform-google-modules | 98 | ![gcp](docs/coverage/gcp.svg) | 1008 of 1478 (68.2%) |
-| AWS: terraform-aws-modules | 42 | ![aws](docs/coverage/aws.svg) | 533 of 2348 (22.7%) |
+| Google Cloud: Cloud Foundation Fabric and terraform-google-modules | 98 | ![gcp](docs/coverage/gcp.svg) | 1063 of 1478 (71.9%) |
+| AWS: terraform-aws-modules | 42 | ![aws](docs/coverage/aws.svg) | 575 of 2348 (24.5%) |
 | Azure: Azure Verified Modules | 37 | ![azure](docs/coverage/azure.svg) | 1053 of 1170 (90.0%) |
-| **All** | **177** | | **2594 of 4996 (51.9%)** |
+| **All** | **177** | | **2691 of 4996 (53.9%)** |
 
 ### Google Cloud: Cloud Foundation Fabric and terraform-google-modules
 
-9 ported, 62 partial, 24 blocked, 3 not started.
+9 ported, 68 partial, 18 blocked, 3 not started.
 
 **Ported and partial**
 
@@ -194,10 +194,15 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | [`ncc-spoke-ra`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/ncc-spoke-ra) ([chart](charts/gcp/ncc-spoke-ra)) | ![ncc-spoke-ra](docs/coverage/bars/gcp-ncc-spoke-ra.svg) 8 of 8 | 2 of 5 | 5 of 6 | partial |
 | [`gke-hub`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/gke-hub) ([chart](charts/gcp/gke-hub)) | ![gke-hub](docs/coverage/bars/gcp-gke-hub.svg) 7 of 8 | 1 of 1 | 3 of 3 | partial |
 | [`binauthz`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/binauthz) ([chart](charts/gcp/binauthz)) | ![binauthz](docs/coverage/bars/gcp-binauthz.svg) 5 of 5 | 3 of 3 | 3 of 4 | ported |
+| [`certificate-authority-service`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/certificate-authority-service) ([chart](charts/gcp/certificate-authority-service)) | ![certificate-authority-service](docs/coverage/bars/gcp-certificate-authority-service.svg) 8 of 9 | 5 of 5 | 2 of 4 | partial |
 | [`backup-dr`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/backup-dr) ([chart](charts/gcp/backup-dr)) | ![backup-dr](docs/coverage/bars/gcp-backup-dr.svg) 7 of 7 | 4 of 4 | 2 of 3 | partial |
+| [`cloud-deploy`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/cloud-deploy) ([chart](charts/gcp/cloud-deploy)) | ![cloud-deploy](docs/coverage/bars/gcp-cloud-deploy.svg) 14 of 14 | 4 of 4 | 1 of 8 | partial |
 | [`cloud-build-v2-connection`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/cloud-build-v2-connection) ([chart](charts/gcp/cloud-build-v2-connection)) | ![cloud-build-v2-connection](docs/coverage/bars/gcp-cloud-build-v2-connection.svg) 12 of 13 | 3 of 5 | 1 of 5 | partial |
 | [`source-repository`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/source-repository) ([chart](charts/gcp/source-repository)) | ![source-repository](docs/coverage/bars/gcp-source-repository.svg) 7 of 7 | 3 of 3 | 4 of 4 | partial |
+| [`bigquery-connection`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/bigquery-connection) ([chart](charts/gcp/bigquery-connection)) | ![bigquery-connection](docs/coverage/bars/gcp-bigquery-connection.svg) 10 of 12 | 4 of 4 | 1 of 3 | partial |
+| [`analytics-hub`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/analytics-hub) ([chart](charts/gcp/analytics-hub)) | ![analytics-hub](docs/coverage/bars/gcp-analytics-hub.svg) 12 of 14 | 2 of 2 | 2 of 5 | partial |
 | [`biglake-catalog`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/biglake-catalog) ([chart](charts/gcp/biglake-catalog)) | ![biglake-catalog](docs/coverage/bars/gcp-biglake-catalog.svg) 4 of 4 | 6 of 6 | 1 of 3 | ported |
+| [`dataform-repository`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/dataform-repository) ([chart](charts/gcp/dataform-repository)) | ![dataform-repository](docs/coverage/bars/gcp-dataform-repository.svg) 8 of 8 | 0 of 0 | 1 of 3 | partial |
 | [`dataproc`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/dataproc) ([chart](charts/gcp/dataproc)) | ![dataproc](docs/coverage/bars/gcp-dataproc.svg) 9 of 9 | 2 of 2 | 3 of 3 | partial |
 | [`datafusion`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/datafusion) ([chart](charts/gcp/datafusion)) | ![datafusion](docs/coverage/bars/gcp-datafusion.svg) 14 of 14 | 5 of 6 | 4 of 4 | partial |
 | [`dataplex`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/dataplex) ([chart](charts/gcp/dataplex)) | ![dataplex](docs/coverage/bars/gcp-dataplex.svg) 7 of 7 | 4 of 4 | 0 of 5 | ported |
@@ -210,6 +215,7 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | [`geap-agent-gateway`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/geap-agent-gateway) ([chart](charts/gcp/geap-agent-gateway)) | ![geap-agent-gateway](docs/coverage/bars/gcp-geap-agent-gateway.svg) 14 of 15 | 6 of 7 | 0 of 6 | partial |
 | [`geap-agent-runtime`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/geap-agent-runtime) ([chart](charts/gcp/geap-agent-runtime)) | ![geap-agent-runtime](docs/coverage/bars/gcp-geap-agent-runtime.svg) 12 of 14 | 2 of 3 | 3 of 5 | partial |
 | [`secops-rules`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/secops-rules) ([chart](charts/gcp/secops-rules)) | ![secops-rules](docs/coverage/bars/gcp-secops-rules.svg) 5 of 5 | 0 of 0 | 0 of 3 | partial |
+| [`container-registry`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/container-registry) ([chart](charts/gcp/container-registry)) | ![container-registry](docs/coverage/bars/gcp-container-registry.svg) 3 of 3 | 1 of 1 | 2 of 2 | partial |
 | [`kubernetes-engine-beta-private-cluster`](https://github.com/terraform-google-modules/terraform-google-kubernetes-engine/tree/v47.0.0/modules/beta-private-cluster) ([chart](charts/gcp/gke-cluster)) | ![kubernetes-engine-beta-private-cluster](docs/coverage/bars/gcp-kubernetes-engine-beta-private-cluster.svg) 137 of 162 | 30 of 36 | 0 of 0 | partial |
 | [`network-firewall-rules`](https://github.com/terraform-google-modules/terraform-google-network/tree/v18.3.1/modules/firewall-rules) ([chart](charts/gcp/firewall-rules)) | ![network-firewall-rules](docs/coverage/bars/gcp-network-firewall-rules.svg) 5 of 5 | 2 of 2 | 0 of 0 | ported |
 | [`network-network-firewall-policy`](https://github.com/terraform-google-modules/terraform-google-network/tree/v18.3.1/modules/network-firewall-policy) ([chart](charts/gcp/network-firewall-policy)) | ![network-network-firewall-policy](docs/coverage/bars/gcp-network-network-firewall-policy.svg) 6 of 8 | 3 of 3 | 0 of 0 | partial |
@@ -218,7 +224,7 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | [`iam-folders-iam`](https://github.com/terraform-google-modules/terraform-google-iam/tree/v8.3.0/modules/folders_iam) ([chart](charts/gcp/folders-iam)) | ![iam-folders-iam](docs/coverage/bars/gcp-iam-folders-iam.svg) 4 of 4 | 3 of 3 | 0 of 0 | partial |
 | [`org-policy-v2`](https://github.com/terraform-google-modules/terraform-google-org-policy/tree/v7.4.0/modules/org_policy_v2) ([chart](charts/gcp/org-policy-v2)) | ![org-policy-v2](docs/coverage/bars/gcp-org-policy-v2.svg) 8 of 8 | 3 of 3 | 0 of 0 | partial |
 
-**Blocked: a resource type has no stable kind (first 10 of 24, by rank)**
+**Blocked: a resource type has no stable kind (first 10 of 18, by rank)**
 
 | Module | Variables covered | Outputs | Resource types with a stable kind | Status |
 | --- | --- | ---: | ---: | --- |
@@ -231,7 +237,7 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | [`managed-kafka`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/managed-kafka) | ![managed-kafka](docs/coverage/bars/gcp-managed-kafka.svg) 0 of 11 | 0 of 4 | 2 of 4 | blocked |
 | [`net-lb-app-ext-regional`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/net-lb-app-ext-regional) | ![net-lb-app-ext-regional](docs/coverage/bars/gcp-net-lb-app-ext-regional.svg) 0 of 19 | 0 of 10 | 10 of 12 | blocked |
 | [`net-lb-proxy-int`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/net-lb-proxy-int) | ![net-lb-proxy-int](docs/coverage/bars/gcp-net-lb-proxy-int.svg) 0 of 14 | 0 of 13 | 8 of 10 | blocked |
-| [`certificate-authority-service`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/certificate-authority-service) | ![certificate-authority-service](docs/coverage/bars/gcp-certificate-authority-service.svg) 0 of 9 | 0 of 5 | 2 of 4 | blocked |
+| [`secure-source-manager-instance`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/secure-source-manager-instance) | ![secure-source-manager-instance](docs/coverage/bars/gcp-secure-source-manager-instance.svg) 0 of 11 | 0 of 4 | 2 of 7 | blocked |
 
 **Not started**
 
@@ -243,7 +249,7 @@ How much of the Terraform modules people use today the catalog carries, counted 
 
 ### AWS: terraform-aws-modules
 
-0 ported, 15 partial, 25 blocked, 2 not started.
+0 ported, 17 partial, 23 blocked, 2 not started.
 
 **Ported and partial**
 
@@ -258,14 +264,16 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | [`ec2-instance`](https://github.com/terraform-aws-modules/terraform-aws-ec2-instance/tree/v6.4.1) ([chart](charts/aws/ec2-instance)) | ![ec2-instance](docs/coverage/bars/aws-ec2-instance.svg) 56 of 83 | 20 of 30 | 8 of 12 | partial |
 | [`sqs`](https://github.com/terraform-aws-modules/terraform-aws-sqs/tree/v5.2.2) ([chart](charts/aws/sqs)) | ![sqs](docs/coverage/bars/aws-sqs.svg) 22 of 42 | 5 of 10 | 4 of 4 | partial |
 | [`dynamodb-table`](https://github.com/terraform-aws-modules/terraform-aws-dynamodb-table/tree/v5.5.2) ([chart](charts/aws/dynamodb-table)) | ![dynamodb-table](docs/coverage/bars/aws-dynamodb-table.svg) 27 of 39 | 4 of 8 | 4 of 4 | partial |
+| [`secrets-manager`](https://github.com/terraform-aws-modules/terraform-aws-secrets-manager/tree/v2.2.0) ([chart](charts/aws/secrets-manager)) | ![secrets-manager](docs/coverage/bars/aws-secrets-manager.svg) 15 of 29 | 5 of 7 | 3 of 4 | partial |
 | [`eks-pod-identity`](https://github.com/terraform-aws-modules/terraform-aws-eks-pod-identity/tree/v2.10.0) ([chart](charts/aws/eks-pod-identity)) | ![eks-pod-identity](docs/coverage/bars/aws-eks-pod-identity.svg) 19 of 82 | 7 of 8 | 4 of 4 | partial |
+| [`ecr`](https://github.com/terraform-aws-modules/terraform-aws-ecr/tree/v3.2.0) ([chart](charts/aws/ecr)) | ![ecr](docs/coverage/bars/aws-ecr.svg) 27 of 30 | 4 of 4 | 10 of 13 | partial |
 | [`sns`](https://github.com/terraform-aws-modules/terraform-aws-sns/tree/v7.2.0) ([chart](charts/aws/sns)) | ![sns](docs/coverage/bars/aws-sns.svg) 27 of 29 | 4 of 6 | 4 of 4 | partial |
 | [`ssm-parameter`](https://github.com/terraform-aws-modules/terraform-aws-ssm-parameter/tree/v2.1.2) ([chart](charts/aws/ssm-parameter)) | ![ssm-parameter](docs/coverage/bars/aws-ssm-parameter.svg) 14 of 16 | 8 of 9 | 1 of 1 | partial |
 | [`step-functions`](https://github.com/terraform-aws-modules/terraform-aws-step-functions/tree/v5.1.1) ([chart](charts/aws/step-functions)) | ![step-functions](docs/coverage/bars/aws-step-functions.svg) 40 of 42 | 9 of 10 | 6 of 6 | partial |
 | [`iam-role`](https://github.com/terraform-aws-modules/terraform-aws-iam/tree/v6.8.2/modules/iam-role) ([chart](charts/aws/iam-role)) | ![iam-role](docs/coverage/bars/aws-iam-role.svg) 31 of 31 | 7 of 7 | 4 of 4 | partial |
 | [`iam-policy`](https://github.com/terraform-aws-modules/terraform-aws-iam/tree/v6.8.2/modules/iam-policy) ([chart](charts/aws/iam-policy)) | ![iam-policy](docs/coverage/bars/aws-iam-policy.svg) 6 of 7 | 4 of 4 | 1 of 1 | partial |
 
-**Blocked: a resource type has no stable kind (first 10 of 25, by rank)**
+**Blocked: a resource type has no stable kind (first 10 of 23, by rank)**
 
 | Module | Variables covered | Outputs | Resource types with a stable kind | Status |
 | --- | --- | ---: | ---: | --- |
@@ -278,7 +286,7 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | [`eventbridge`](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/tree/v4.3.3) | ![eventbridge](docs/coverage/bars/aws-eventbridge.svg) 0 of 83 | 0 of 34 | 13 of 18 | blocked |
 | [`cloudwatch`](https://github.com/terraform-aws-modules/terraform-aws-cloudwatch/tree/v6.0.0) | ![cloudwatch](docs/coverage/bars/aws-cloudwatch.svg) 0 of 0 | 0 of 0 | 5 of 11 | blocked |
 | [`autoscaling`](https://github.com/terraform-aws-modules/terraform-aws-autoscaling/tree/v9.3.2) | ![autoscaling](docs/coverage/bars/aws-autoscaling.svg) 0 of 96 | 0 of 27 | 6 of 8 | blocked |
-| [`secrets-manager`](https://github.com/terraform-aws-modules/terraform-aws-secrets-manager/tree/v2.2.0) | ![secrets-manager](docs/coverage/bars/aws-secrets-manager.svg) 0 of 29 | 0 of 7 | 3 of 4 | blocked |
+| [`cloudfront`](https://github.com/terraform-aws-modules/terraform-aws-cloudfront/tree/v6.7.1) | ![cloudfront](docs/coverage/bars/aws-cloudfront.svg) 0 of 41 | 0 of 22 | 10 of 13 | blocked |
 
 **Not started**
 

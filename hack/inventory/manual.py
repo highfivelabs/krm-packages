@@ -1,7 +1,10 @@
 # Copyright 2026 High Five Labs
 # SPDX-License-Identifier: Apache-2.0
 # Terraform resource type -> (KCC kind or None, note). IAM types are handled by rule.
-# "via:<Kind>" means covered by a field of another kind, not a kind of its own.
+# "via:<Kind>" means covered by a field of another kind, not a kind of its own,
+# or (google_container_registry) by another kind that replaces a shut-down
+# product: Container Registry hosts are Artifact Registry gcr.io repositories
+# (config-connector-extensions docs/design.md, decision 30).
 # None also where Config Connector's kind cannot make what the module makes:
 # google_network_services_gateway is net-swp's SECURE_WEB_GATEWAY, and
 # NetworkServicesGateway (v1beta1 at 1.160.0) has no network, subnetwork,
@@ -54,7 +57,7 @@ M = {
  "google_compute_region_security_policy_rule": "via:ComputeSecurityPolicy (spec.rule)", "google_compute_region_target_tcp_proxy": "ComputeTargetTCPProxy",
  "google_compute_router_route_policy": None, "google_compute_security_policy_rule": "via:ComputeSecurityPolicy (spec.rule)",
  "google_compute_service_attachment": "ComputeServiceAttachment",
- "google_container_analysis_note": "ContainerAnalysisNote", "google_container_registry": None,
+ "google_container_analysis_note": "ContainerAnalysisNote", "google_container_registry": "via:ArtifactRegistryRepository (a gcr.io repository; Container Registry is shut down, decision 30)",
  "google_data_catalog_policy_tag": "DataCatalogPolicyTag", "google_data_catalog_tag": "DataCatalogTag", "google_data_catalog_tag_template": "DataCatalogTagTemplate",
  "google_data_catalog_taxonomy": "DataCatalogTaxonomy", "google_data_fusion_instance": "DataFusionInstance",
  "google_data_loss_prevention_deidentify_template": "DLPDeidentifyTemplate", "google_data_loss_prevention_inspect_template": "DLPInspectTemplate",

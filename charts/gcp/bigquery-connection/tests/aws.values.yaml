@@ -1,0 +1,7 @@
+# A BigQuery Omni connection to AWS.
+project_id: my-project
+location: aws-us-east-1
+connection_id: aws
+connection_config:
+  aws:
+    access_role: {iam_role_id: "arn:aws:iam::123456789012:role/bigquery-omni"}

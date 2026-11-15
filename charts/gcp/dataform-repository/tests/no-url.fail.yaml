@@ -1,0 +1,5 @@
+# expect: dataform-repository: remote_repository_settings.url is required
+project_id: my-project
+name: r
+region: europe-west1
+remote_repository_settings: {secret_version: projects/p/secrets/s/versions/1}

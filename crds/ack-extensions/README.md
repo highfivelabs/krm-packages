@@ -18,3 +18,7 @@ only with `allow_alpha: true` (`docs/design.md`, "Alpha kinds";
 | `ec2.cloudcontrol.aws.hfl.dev_vpcblockpublicaccessexclusions.yaml` | `VPCBlockPublicAccessExclusion` (`ec2.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `2cdca6ca` (2026-11-12) |
 | `ec2.cloudcontrol.aws.hfl.dev_securitygroupvpcassociations.yaml` | `SecurityGroupVpcAssociation` (`ec2.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `2cdca6ca` (2026-11-12) |
 | `ec2.cloudcontrol.aws.hfl.dev_eipassociations.yaml` | `EIPAssociation` (`ec2.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `2cdca6ca` (2026-11-12) |
+| `secretsmanager.cloudcontrol.aws.hfl.dev_resourcepolicies.yaml` | `ResourcePolicy` (`secretsmanager.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `2cdca6ca` (2026-11-15) |
+| `ecr.cloudcontrol.aws.hfl.dev_registrypolicies.yaml` | `RegistryPolicy` (`ecr.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `2cdca6ca` (2026-11-15) |
+| `ecr.cloudcontrol.aws.hfl.dev_registryscanningconfigurations.yaml` | `RegistryScanningConfiguration` (`ecr.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `2cdca6ca` (2026-11-15) |
+| `ecr.aws.hfl.dev_replicationconfigurations.yaml` | `ReplicationConfiguration` (`ecr.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `2cdca6ca` (2026-11-15) |

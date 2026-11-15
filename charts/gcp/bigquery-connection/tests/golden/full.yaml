@@ -1,0 +1,140 @@
+---
+# Source: bigquery-connection/templates/main.yaml
+apiVersion: bigqueryconnection.cnrm.cloud.google.com/v1beta1
+kind: BigQueryConnectionConnection
+metadata:
+  name: full
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: bigquery-connection
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "connection"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "my_spark"
+  friendlyName: "Spark"
+  description: "Spark with a metastore and a history server."
+  spark:
+    metastoreService:
+      metastoreServiceRef:
+        external: "projects/my-project/locations/europe-west1/services/my-metastore"
+    sparkHistoryServer:
+      dataprocClusterRef:
+        external: "projects/my-project/regions/europe-west1/clusters/my-history"
+---
+# Source: bigquery-connection/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: full-iam-roles-bigquery-connectionadmin-d9b42b92
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: bigquery-connection
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam:roles/bigquery.connectionAdmin"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/connections/my_spark
+    kind: BigQueryConnectionConnection
+  role: "roles/bigquery.connectionAdmin"
+  members:
+    - "group:admins@example.com"
+---
+# Source: bigquery-connection/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: full-iam-roles-bigquery-connectionuser-82acc86d
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: bigquery-connection
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam:roles/bigquery.connectionUser"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/connections/my_spark
+    kind: BigQueryConnectionConnection
+  role: "roles/bigquery.connectionUser"
+  members:
+    - "group:admins@example.com"
+    - "group:analysts@example.com"
+---
+# Source: bigquery-connection/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: full-iam-binding-conditional
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: bigquery-connection
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam-binding:conditional"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/connections/my_spark
+    kind: BigQueryConnectionConnection
+  role: "roles/bigquery.connectionUser"
+  members:
+    - "user:ada@example.com"
+  condition:
+    title: "until-2030"
+    expression: "request.time < timestamp('2030-01-01T00:00:00Z')"
+    description: "Expires in 2030."
+---
+# Source: bigquery-connection/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1alpha1
+kind: IAMMember
+metadata:
+  name: full-iam-member-conditional
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: bigquery-connection
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam-member:conditional"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/connections/my_spark
+    kind: BigQueryConnectionConnection
+  role: "roles/bigquery.connectionAdmin"
+  member: "user:bob@example.com"
+  condition:
+    title: "until-2030"
+    expression: "request.time < timestamp('2030-01-01T00:00:00Z')"
+---
+# Source: bigquery-connection/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1alpha1
+kind: IAMMember
+metadata:
+  name: full-iam-member-one
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: bigquery-connection
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam-member:one"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/connections/my_spark
+    kind: BigQueryConnectionConnection
+  role: "roles/bigquery.connectionUser"
+  member: "serviceAccount:etl@my-project.iam.gserviceaccount.com"

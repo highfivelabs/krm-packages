@@ -1,0 +1,132 @@
+---
+# Source: analytics-hub/templates/main.yaml
+apiVersion: bigqueryanalyticshub.cnrm.cloud.google.com/v1beta1
+kind: BigQueryAnalyticsHubDataExchange
+metadata:
+  name: basic
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: analytics-hub
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "data_exchange"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "test_exchange"
+  displayName: "test_exchange"
+  description: "Test Data Exchange"
+  primaryContact: "exchange-owner-group@domain.com"
+---
+# Source: analytics-hub/templates/main.yaml
+apiVersion: bigqueryanalyticshub.cnrm.cloud.google.com/v1beta1
+kind: BigQueryAnalyticsHubListing
+metadata:
+  name: basic-listing-listing-id-6b13fd6a
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: analytics-hub
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "listing:listing_id"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  dataExchangeRef:
+    name: basic
+  resourceID: "listing_id"
+  displayName: "listing_id"
+  source:
+    bigQueryDatasetSource:
+      datasetRef:
+        external: "projects/my-project/datasets/my_dataset"
+---
+# Source: analytics-hub/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: basic-iam-roles-analyticshub-publisher-d5818d36
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: analytics-hub
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam:roles/analyticshub.publisher"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/dataExchanges/test_exchange
+    kind: BigQueryAnalyticsHubDataExchange
+  role: "roles/analyticshub.publisher"
+  members:
+    - "group:publisher@domain.com"
+---
+# Source: analytics-hub/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: basic-iam-roles-analyticshub-viewer-adf119ca
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: analytics-hub
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam:roles/analyticshub.viewer"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/dataExchanges/test_exchange
+    kind: BigQueryAnalyticsHubDataExchange
+  role: "roles/analyticshub.viewer"
+  members:
+    - "group:viewer@domain.com"
+---
+# Source: analytics-hub/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: basic-listing-listing-id-iam-roles-analyticshub-subscr-2fe09d90
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: analytics-hub
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "listing:listing_id:iam:roles/analyticshub.subscriber"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/dataExchanges/test_exchange/listings/listing_id
+    kind: BigQueryAnalyticsHubListing
+  role: "roles/analyticshub.subscriber"
+  members:
+    - "group:subscriber@domain.com"
+---
+# Source: analytics-hub/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: basic-listing-listing-id-iam-roles-analyticshub-subscr-ed613e8a
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: analytics-hub
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "listing:listing_id:iam:roles/analyticshub.subscriptionOwner"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/dataExchanges/test_exchange/listings/listing_id
+    kind: BigQueryAnalyticsHubListing
+  role: "roles/analyticshub.subscriptionOwner"
+  members:
+    - "group:subscription-owner@domain.com"

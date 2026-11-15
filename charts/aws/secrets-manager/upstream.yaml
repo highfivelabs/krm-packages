@@ -1,0 +1,67 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Where this chart came from: the Terraform module it ports and the release
+# it was ported from. Machine-readable; `task upstream-check` keeps it equal
+# to upstream/modules.yaml and Chart.yaml. To take a newer release, see
+# UPSTREAM.md ("Moving the pins").
+module: aws/secrets-manager
+repo: https://github.com/terraform-aws-modules/terraform-aws-secrets-manager
+path: .
+version: v2.2.0
+commit: f3d3da1c801816563080065c5f37f212c8dee444
+license: Apache-2.0
+copyright: null
+module_url: https://github.com/terraform-aws-modules/terraform-aws-secrets-manager/tree/v2.2.0
+registry_url: https://registry.terraform.io/modules/terraform-aws-modules/secrets-manager/aws
+synced: 2026-11-15
+# Module variables the chart keeps in values.yaml (so tfvars convert one to
+# one) but refuses when set (to anything but the module's default), or
+# accepts only in part. Read by `task coverage`; `task coverage-verify`
+# renders the chart to check that each one is refused. kind: gap (no ACK or
+# ack-extensions kind or field), not-ported (ACK has it, the chart does not
+# map it yet) or by-design (Bundt replaces it). partial: the variable is
+# accepted, the reason says what is not carried.
+refused:
+- variable: name_prefix
+  kind: gap
+  reason: "a secret name with Terraform's random suffix (name_prefix) would change between renders; set name (the namePrefix value keeps two Instances' secrets apart)"
+- variable: secret_string
+  kind: gap
+  reason: "a secret's value in values would be written into the rendered objects; ACK's Secret takes its value from a Kubernetes Secret: set secret_string_ref (name, key) to one the team provides"
+- variable: secret_string_wo
+  kind: gap
+  reason: "a secret's value in values would be written into the rendered objects; ACK's Secret takes its value from a Kubernetes Secret: set secret_string_ref (name, key) to one the team provides"
+- variable: secret_string_wo_version
+  kind: gap
+  reason: "it triggers an update of secret_string_wo, which is refused; ACK's Secret rereads the Kubernetes Secret secret_string_ref names"
+- variable: secret_binary
+  kind: gap
+  reason: "a secret's value in values would be written into the rendered objects, and ACK's Secret has no binary value field (secretsmanager-controller v1.8.2); store it base64-encoded in the Kubernetes Secret secret_string_ref names"
+- variable: version_stages
+  kind: gap
+  reason: "ACK's Secret has no field for a version's staging labels (secretsmanager-controller v1.8.2); its value always gets AWSCURRENT"
+- variable: ignore_secret_changes
+  kind: gap
+  reason: "ACK's Secret has no way to leave a value changed outside it alone: it writes the value of the Kubernetes Secret secret_string_ref names"
+- variable: create_random_password
+  kind: gap
+  reason: "a chart cannot make a random value without writing it into the rendered objects, and ACK's Secret has no field that generates one; generate the password into a Kubernetes Secret and set secret_string_ref"
+- variable: random_password_length
+  kind: gap
+  reason: "a chart cannot make a random value without writing it into the rendered objects, and ACK's Secret has no field that generates one; generate the password into a Kubernetes Secret and set secret_string_ref"
+- variable: random_password_override_special
+  kind: gap
+  reason: "a chart cannot make a random value without writing it into the rendered objects, and ACK's Secret has no field that generates one; generate the password into a Kubernetes Secret and set secret_string_ref"
+- variable: enable_rotation
+  kind: gap
+  reason: "rotation (aws_secretsmanager_secret_rotation) has no ACK field or kind: ACK's Secret has none (secretsmanager-controller v1.8.2), and ack-extensions has no rotation kind at the catalog's ACKX_COMMIT"
+- variable: rotate_immediately
+  kind: gap
+  reason: "rotation (aws_secretsmanager_secret_rotation) has no ACK field or kind: ACK's Secret has none (secretsmanager-controller v1.8.2), and ack-extensions has no rotation kind at the catalog's ACKX_COMMIT"
+- variable: rotation_lambda_arn
+  kind: gap
+  reason: "rotation (aws_secretsmanager_secret_rotation) has no ACK field or kind: ACK's Secret has none (secretsmanager-controller v1.8.2), and ack-extensions has no rotation kind at the catalog's ACKX_COMMIT"
+- variable: rotation_rules
+  kind: gap
+  reason: "rotation (aws_secretsmanager_secret_rotation) has no ACK field or kind: ACK's Secret has none (secretsmanager-controller v1.8.2), and ack-extensions has no rotation kind at the catalog's ACKX_COMMIT"

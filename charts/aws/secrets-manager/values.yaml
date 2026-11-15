@@ -1,0 +1,150 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values mirror the Terraform variables of terraform-aws-modules'
+# secrets-manager module (v2.2.0): same names, types and defaults, so a
+# module block's arguments become a values file one to one.
+# values.schema.json carries the types. A variable the chart cannot carry
+# stays here and stops the render when set (upstream.yaml lists them;
+# README.md says why).
+
+# Names, labels and tags (docs/design.md, "Names, labels and tags"). Not
+# Terraform variables, except tags, which is the module's own.
+#
+# The secret's name in full, {secret}. A name set here takes no
+# namePrefix. Unset, the secret is named name.
+names: {}
+# An optional convenience: "<namePrefix>-" in front of the secret's name
+# (never one set under names). Empty (the default) changes nothing.
+namePrefix: ""
+# Kubernetes labels on every object. They stay in Kubernetes: ACK does not
+# copy labels to AWS (AWS tags are the module's tags variable).
+labels: {}
+# DELETE (default): deleting the component deletes the secret (after
+# recovery_window_in_days). ABANDON keeps it
+# (services.k8s.aws/deletion-policy: retain).
+deletion_policy: DELETE
+# The resource policy (create_policy) is ack-extensions' Cloud Control
+# ResourcePolicy, outside ACK's releases: it needs allow_alpha: true
+# (docs/design.md, "Alpha kinds").
+allow_alpha: false
+# The secret's value: a key of a Kubernetes Secret in the component's
+# namespace (or namespace), {name, key, namespace}, which ACK copies into
+# the secret's version (secretString). Not a Terraform variable: it takes
+# the place of secret_string, secret_string_wo and create_random_password,
+# whose values the chart would otherwise write into the rendered objects.
+# Null: the secret has no value until something else writes one.
+secret_string_ref: null
+
+# The module's variables, in alphabetical order, with its defaults.
+
+# Makes an optional API call to Zelkova to validate the Resource Policy to
+# prevent broad access to your secret
+block_public_policy: null
+# Determines whether resources will be created (affects all resources)
+create: true
+# Determines whether a policy will be created
+create_policy: false
+# Determines whether an ephemeral random password will be generated for
+# `secret_string_wo`
+# Not supported (gap): a chart cannot make a random value without writing
+# it into the render; generate it into a Kubernetes Secret and set
+# secret_string_ref.
+create_random_password: false
+# Determines whether a secret version is created. Set to `false` when secret
+# values are managed externally (manually, by CI, or by a rotation process
+# outside Terraform)
+create_secret_version: true
+# A description of the secret
+description: null
+# Determines whether secret rotation is enabled
+# Not supported (gap), with rotate_immediately, rotation_lambda_arn and
+# rotation_rules: ACK's Secret has no rotation field and ack-extensions no
+# rotation kind.
+enable_rotation: false
+# Accepts boolean value to specify whether to overwrite a secret with the
+# same name in the destination Region
+force_overwrite_replica_secret: null
+# Determines whether or not Terraform will ignore changes made externally to
+# `secret_string` or `secret_binary`. Changing this value after creation is
+# a destructive operation
+# Not supported (gap): ACK writes the Kubernetes Secret's value.
+ignore_secret_changes: false
+# ARN or Id of the AWS KMS key to be used to encrypt the secret values in
+# the versions stored in this secret. If you need to reference a CMK in a
+# different account, you can use only the key ARN. If you don't specify this
+# value, then Secrets Manager defaults to using the AWS account's default
+# KMS key (the one named `aws/secretsmanager`
+kms_key_id: null
+# Friendly name of the new secret. The secret name can consist of uppercase
+# letters, lowercase letters, digits, and any of the following characters:
+# `/_+=.@-` (the chart requires it, or names.secret)
+name: null
+# Creates a unique name beginning with the specified prefix
+# Not supported (gap): Terraform's random suffix would change between
+# renders; set name.
+name_prefix: null
+# List of IAM policy documents that are merged together into the exported
+# document. In merging, statements with non-blank `sid`s will override
+# statements with the same `sid`
+override_policy_documents: []
+# A map of IAM policy statements for custom permission usage
+policy_statements: null
+# The length of the generated random password
+# Not supported (gap): see create_random_password.
+random_password_length: 32
+# Supply your own list of special characters to use for string generation.
+# This overrides the default character list in the special argument
+# Not supported (gap): see create_random_password.
+random_password_override_special: "!@#$%&*()-_=+[]{}<>:?"
+# Number of days that AWS Secrets Manager waits before it can delete the
+# secret. This value can be `0` to force deletion without recovery or range
+# from `7` to `30` days. The default value is `30`
+recovery_window_in_days: null
+# Region where the resource(s) will be managed. Defaults to the Region set in
+# the provider configuration (on ACK: the namespace's or the controller's)
+region: null
+# Configuration block to support secret replication
+replica: null
+# Specifies whether to rotate the secret immediately or wait until the next
+# scheduled rotation window. The rotation schedule is defined in
+# `rotation_rules`
+# Not supported (gap): see enable_rotation.
+rotate_immediately: null
+# Specifies the ARN of the Lambda function that can rotate the secret
+# Not supported (gap): see enable_rotation.
+rotation_lambda_arn: ""
+# A structure that defines the rotation configuration for this secret
+# Not supported (gap): see enable_rotation.
+rotation_rules: null
+# Specifies binary data that you want to encrypt and store in this version
+# of the secret. This is required if `secret_string` or `secret_string_wo` is
+# not set. Needs to be encoded to base64
+# Not supported (gap): a value in values would be written into the render,
+# and ACK's Secret has no binary field; use secret_string_ref.
+secret_binary: null
+# Specifies text data that you want to encrypt and store in this version of
+# the secret. This is required if `secret_binary` or `secret_string_wo` is
+# not set
+# Not supported (gap): a value in values would be written into the render;
+# use secret_string_ref.
+secret_string: null
+# Specifies text data that you want to encrypt and store in this version of
+# the secret. This is required if `secret_binary` or `secret_string` is not
+# set
+# Not supported (gap): as secret_string.
+secret_string_wo: null
+# Used together with `secret_string_wo` to trigger an update. Increment this
+# value when an update to `secret_string_wo` is required
+# Not supported (gap): as secret_string_wo.
+secret_string_wo_version: null
+# List of IAM policy documents that are merged together into the exported
+# document. Statements must have unique `sid`s
+source_policy_documents: []
+# A map of tags to add to all resources
+tags: {}
+# Specifies a list of staging labels that are attached to this version of
+# the secret. A staging label must be unique to a single version of the
+# secret
+# Not supported (gap): ACK's Secret has no staging labels field.
+version_stages: null

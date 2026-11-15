@@ -1,0 +1,15 @@
+---
+# Source: secrets-manager/templates/secret.yaml
+apiVersion: secretsmanager.services.k8s.aws/v1alpha1
+kind: Secret
+metadata:
+  name: default-secret
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "default"
+    app.kubernetes.io/name: secrets-manager
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "secret"
+spec:
+  name: "default"

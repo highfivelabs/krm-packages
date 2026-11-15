@@ -1,0 +1,42 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values mirror the Terraform variables of fabric's container-registry
+# module (v60.0.0): same names, types and defaults, so a module block's
+# arguments become this file one to one (README.md, "From Terraform").
+# values.schema.json carries the types.
+#
+# Google's Container Registry is shut down. The chart makes what replaces a
+# registry host: an Artifact Registry repository with gcr.io domain support
+# (config-connector-extensions docs/design.md, decision 30; README.md).
+
+# Names, labels and tags (docs/design.md, "Names, labels and tags"). Not
+# Terraform variables. Google fixes a gcr.io repository's name by its host
+# (gcr.io, us.gcr.io, eu.gcr.io, asia.gcr.io), so the chart gives no cloud
+# name of its own: names takes no key and namePrefix changes nothing
+# (tests/name-prefix.yaml).
+names: {}
+# An optional convenience every chart takes; it has nothing to prefix here.
+namePrefix: ""
+# Kubernetes labels on every object. A prefixed key (hfl.dev/team) stays in
+# Kubernetes; an unprefixed one also becomes a Google Cloud label on the
+# repository, since Config Connector copies it to the resource.
+labels: {}
+# Cloud labels on every resource: Google Cloud labels on the repository
+# (Config Connector carries them as unprefixed metadata.labels).
+tags: {}
+
+# IAM bindings for the registry in {ROLE => [MEMBERS]} format. On Artifact
+# Registry these are Artifact Registry roles (roles/artifactregistry.reader,
+# .writer, .repoAdmin); a Cloud Storage role is refused (README.md, "Values").
+iam: {}
+# Registry location: US, EU, ASIA or empty, as fabric takes it. Empty is
+# gcr.io, US us.gcr.io, EU eu.gcr.io, ASIA asia.gcr.io.
+location: ""
+# Registry project id.
+project_id: ""
+
+# Not a fabric variable: DELETE (the default) or ABANDON, which keeps the
+# repository and its images when the component is deleted. PREVENT has no
+# Config Connector equivalent.
+deletion_policy: null

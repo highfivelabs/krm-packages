@@ -1,0 +1,13 @@
+# Applied to the fake cloud by hack/mock-apply.sh: a DevOps pool, a
+# self-signed root CA with fabric's defaults (deletion_protection has no
+# effect: Config Connector deletes it), and a role on the pool (IAMBinding;
+# config-connector-extensions' fake cloud serves any getIamPolicy path).
+project_id: mock-project
+location: us-central1
+labels: {env: test}
+ca_pool_config:
+  create_pool: {name: catalog-mock-pool}
+ca_configs:
+  catalog-mock-root: {}
+iam:
+  roles/privateca.certificateRequester: ["group:requesters@example.com"]

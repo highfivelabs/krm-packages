@@ -80,7 +80,7 @@ modules:
     copyright: Google LLC
     registry_url: null
     url: https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/analytics-hub
-    chart: null
+    chart: charts/gcp/analytics-hub
   - id: gcp/api-gateway
     cloud: gcp
     module: api-gateway
@@ -164,7 +164,7 @@ modules:
     copyright: Google LLC
     registry_url: null
     url: https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/bigquery-connection
-    chart: null
+    chart: charts/gcp/bigquery-connection
   - id: gcp/bigquery-dataset
     cloud: gcp
     module: bigquery-dataset
@@ -234,7 +234,7 @@ modules:
     copyright: Google LLC
     registry_url: null
     url: https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/certificate-authority-service
-    chart: null
+    chart: charts/gcp/certificate-authority-service
   - id: gcp/certificate-manager
     cloud: gcp
     module: certificate-manager
@@ -290,7 +290,7 @@ modules:
     copyright: Google LLC
     registry_url: null
     url: https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/cloud-deploy
-    chart: null
+    chart: charts/gcp/cloud-deploy
   - id: gcp/cloud-function-v1
     cloud: gcp
     module: cloud-function-v1
@@ -402,7 +402,7 @@ modules:
     copyright: Google LLC
     registry_url: null
     url: https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/container-registry
-    chart: null
+    chart: charts/gcp/container-registry
   - id: gcp/data-catalog-policy-tag
     cloud: gcp
     module: data-catalog-policy-tag
@@ -458,7 +458,7 @@ modules:
     copyright: Google LLC
     registry_url: null
     url: https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/dataform-repository
-    chart: null
+    chart: charts/gcp/dataform-repository
   - id: gcp/datafusion
     cloud: gcp
     module: datafusion
@@ -1690,7 +1690,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/secrets-manager/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-secrets-manager/tree/v2.2.0
-    chart: null
+    chart: charts/aws/secrets-manager
   - id: aws/cloudfront
     cloud: aws
     module: cloudfront
@@ -1732,7 +1732,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/ecr/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-ecr/tree/v3.2.0
-    chart: null
+    chart: charts/aws/ecr
   - id: aws/sns
     cloud: aws
     module: sns

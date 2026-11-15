@@ -1,0 +1,13 @@
+# Names in full, labels and tags, as Bundt passes them from a team's naming
+# convention (docs/design.md, "Names, labels and tags"): the connection
+# takes its ID as given, with no prefix.
+project_id: my-project
+location: US
+connection_id: lake
+names: {connection: shop-dev-lake}
+labels: {hfl.dev/team: shop, hfl.dev/environment: dev}
+tags: {team: shop, environment: dev}
+connection_config:
+  cloud_resource: {}
+iam:
+  roles/bigquery.connectionUser: ["group:shop@example.com"]

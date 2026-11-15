@@ -1,0 +1,10 @@
+# The module's README usage (examples/complete, "standard"), with the value
+# from a Kubernetes Secret the team provides (secret_string_ref) in place of
+# secret_string, and a replica.
+name: example
+description: Example Secrets Manager secret
+recovery_window_in_days: 0
+replica:
+  us-west-2: {}
+secret_string_ref: {name: example-secret, key: value}
+tags: {Environment: Development, Project: Example}

@@ -254,8 +254,10 @@ kubectl -n ack-extensions-system patch deploy ack-extensions-operator --type=jso
 ]' >/dev/null
 kubectl -n ack-extensions-system rollout status deploy/ack-extensions-operator --timeout=180s >/dev/null
 # A manager for each service whose ack-extensions kinds the charts render
-# (crds/ack-extensions/<service>.aws.hfl.dev_*.yaml).
-for svc in $(find crds/ack-extensions -name '*.aws.hfl.dev_*.yaml' -exec basename {} \; | sed 's/\..*//' | sort -u); do
+# (crds/ack-extensions/<service>.aws.hfl.dev_*.yaml). Cloud Control kinds
+# (<service>.cloudcontrol.aws.hfl.dev) have no such manager: a Cloud
+# Control manager per namespace serves them (cc_context).
+for svc in $(find crds/ack-extensions -name '*.aws.hfl.dev_*.yaml' ! -name '*.cloudcontrol.aws.hfl.dev_*' -exec basename {} \; | sed 's/\..*//' | sort -u); do
   end=$(( $(date +%s) + 180 ))
   until kubectl -n "${ACK_NS}" rollout status "deploy/ack-extensions-${svc}-manager" --timeout=5s >/dev/null 2>&1; do
     (( $(date +%s) < end )) || { echo "mock-apply-aws: no ack-extensions ${svc} manager in ${ACK_NS} within 180s" >&2; kubectl -n ack-extensions-system logs deploy/ack-extensions-operator --tail=40 >&2 || true; exit 1; }
@@ -393,8 +395,13 @@ run_chart() {
   sets=()
   if [[ -f "${needs}" ]]; then
     kubectl apply --server-side -n "${ns}" -f "${needs}" >"${out}/needs.log"
-    kubectl wait -n "${ns}" --for=condition=Ready -f "${needs}" --timeout="${TIMEOUT}s" >>"${out}/needs.log" 2>&1 \
-      || echo "   ${chart}: tests/mock.needs.yaml not Ready in ${TIMEOUT}s" >&2
+    # Kubernetes' own objects (a Secret a case reads a value from) have no
+    # Ready condition: wait for the others.
+    mapfile -t waitfor < <(kubectl get -n "${ns}" -f "${needs}" -o name | grep -Ev '^(secret|configmap)/' || true)
+    if [[ ${#waitfor[@]} -gt 0 ]]; then
+      kubectl wait -n "${ns}" --for=condition=Ready "${waitfor[@]}" --timeout="${TIMEOUT}s" >>"${out}/needs.log" 2>&1 \
+        || echo "   ${chart}: tests/mock.needs.yaml not Ready in ${TIMEOUT}s" >&2
+    fi
   fi
   if [[ -f "${dir}/tests/mock.set.yaml" ]]; then
     while read -r key obj path; do

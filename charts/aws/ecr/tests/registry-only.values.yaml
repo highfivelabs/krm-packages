@@ -1,0 +1,8 @@
+# The module's registry settings without a repository (create_repository
+# false), as its examples/complete does for the registry.
+create_repository: false
+registry_pull_through_cache_rules:
+  quay: {ecr_repository_prefix: quay, upstream_registry_url: quay.io}
+allow_alpha: true
+manage_registry_scanning_configuration: true
+registry_scan_type: BASIC

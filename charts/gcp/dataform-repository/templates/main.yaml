@@ -1,0 +1,47 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/dataform-repository/main.tf
+(v60.0.0), Copyright 2024 Google LLC, Apache-2.0.
+
+google_dataform_repository.default: one DataformRepository (Config
+Connector, v1beta1), with gitRemoteSettings when remote_repository_settings
+is set: url, branch as defaultBranch, and secret_version (the Secret
+Manager secret version holding the token) as
+authenticationTokenSecretVersionRef. secret_name is accepted and not sent,
+as fabric does; token is refused (it would be in the manifest). IAM is in
+iam.yaml.
+*/ -}}
+{{- $v := .Values }}
+{{- include "kcc.names" (list $ (list "repository")) }}
+{{- $abandon := include "kcc.abandon" . }}
+{{- $r := $v.remote_repository_settings }}
+---
+apiVersion: dataform.cnrm.cloud.google.com/v1beta1
+kind: DataformRepository
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" .Release.Name "id" "repository" "project" $v.project_id "abandon" $abandon) | nindent 2 }}
+spec:
+  projectRef:
+    external: {{ $v.project_id | quote }}
+  region: {{ $v.region | quote }}
+  resourceID: {{ include "dataformRepo.name" . | quote }}
+  {{- with $v.service_account }}
+  serviceAccountRef:
+    external: {{ . | quote }}
+  {{- end }}
+  {{- if not (kindIs "invalid" $r) }}
+  {{- include "kcc.unsupported" (list $ "remote_repository_settings.token" $r.token "a token given here would be in the rendered manifest (fabric's module does not send it either): store it in Secret Manager and set secret_version to its version") }}
+  {{- if not $r.url }}
+  {{- fail (printf "%s: remote_repository_settings.url is required: DataformRepository's gitRemoteSettings needs the remote repository's URL" $.Chart.Name) }}
+  {{- end }}
+  {{- $sv := $r.secret_version | default "v1" }}
+  {{- if not (regexMatch "^projects/[^/]+/secrets/[^/]+/versions/[^/]+$" $sv) }}
+  {{- fail (printf "%s: remote_repository_settings.secret_version %q must be a Secret Manager secret version's full name (projects/<project>/secrets/<secret>/versions/<version>): the repository reads the remote's token from it" $.Chart.Name $sv) }}
+  {{- end }}
+  gitRemoteSettings:
+    url: {{ $r.url | quote }}
+    defaultBranch: {{ $r.branch | default "main" | quote }}
+    authenticationTokenSecretVersionRef:
+      external: {{ $sv | quote }}
+  {{- end }}

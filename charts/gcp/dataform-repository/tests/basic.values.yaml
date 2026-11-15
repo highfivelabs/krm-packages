@@ -1,0 +1,6 @@
+# fabric's README example: a repository with an authoritative role.
+project_id: my-project
+name: my-repository
+region: europe-west1
+iam:
+  roles/dataform.editor: ["group:data-eng@example.com"]

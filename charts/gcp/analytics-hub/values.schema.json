@@ -1,0 +1,371 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "analytics-hub values (fabric analytics-hub v60.0.0)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_id",
+    "region",
+    "name"
+  ],
+  "definitions": {
+    "condition": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "expression",
+        "title"
+      ],
+      "properties": {
+        "expression": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  },
+  "properties": {
+    "names": {
+      "description": "The data exchange's ID in full (not a Terraform variable; docs/design.md, \"Names, labels and tags\"). Letters, digits and underscores. A name set here takes no prefix.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "data_exchange": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[A-Za-z0-9_]+$"
+        }
+      }
+    },
+    "namePrefix": {
+      "description": "Optional convenience (not a Terraform variable): <namePrefix>- in front of the data exchange's ID (unless set under names), as <namePrefix>_ with its hyphens as underscores. A DNS label. Empty changes nothing.",
+      "type": "string",
+      "pattern": "^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+    },
+    "labels": {
+      "description": "Kubernetes labels on every object (not a Terraform variable); an unprefixed one also becomes a Google Cloud label where the resource takes labels.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 63
+      }
+    },
+    "tags": {
+      "description": "Cloud labels (not a Terraform variable; Google Cloud labels: lower-case letters, digits, _ and -).",
+      "type": [
+        "object",
+        "null"
+      ],
+      "propertyNames": {
+        "pattern": "^[a-z]([a-z0-9_-]{0,61}[a-z0-9])?$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^([a-z0-9]([a-z0-9_-]{0,61}[a-z0-9])?)?$"
+      }
+    },
+    "allow_alpha": {
+      "description": "Accept v1alpha1 kinds (IAMMember, for iam_bindings_additive). Not a Terraform variable.",
+      "type": "boolean"
+    },
+    "deletion_policy": {
+      "description": "DELETE (default) or ABANDON (not a fabric variable).",
+      "enum": [
+        "DELETE",
+        "ABANDON",
+        "PREVENT",
+        null
+      ]
+    },
+    "iam": {
+      "description": "IAM bindings in {ROLE => [MEMBERS]} format.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "iam_bindings": {
+      "description": "Authoritative IAM bindings in {KEY => {role = ROLE, members = []}}. Keys are arbitrary; merged by role with iam, as fabric merges them.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "members",
+          "role"
+        ],
+        "properties": {
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "role": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "iam_bindings_additive": {
+      "description": "Individual additive IAM bindings. Keys are arbitrary. IAMMember is v1alpha1: needs allow_alpha.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "member",
+          "role"
+        ],
+        "properties": {
+          "member": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "iam_by_principals": {
+      "description": "Authoritative IAM binding in {PRINCIPAL => [ROLES]} format. Merged internally with the iam variable.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "description": {
+      "description": "Resource description for data exchange.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "documentation": {
+      "description": "Documentation describing the data exchange.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "factories_config": {
+      "description": "Paths to data files and folders that enable factory functionality (listings). Refused when set: a component has no files.",
+      "type": "object",
+      "properties": {
+        "listings": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "icon": {
+      "description": "Base64 encoded image representing the data exchange. Refused when set.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "listings": {
+      "description": "Listings definitions in the form {LISTING_ID => LISTING_CONFIGS}. LISTING_ID must contain only Unicode letters, numbers (0-9), underscores (_).",
+      "type": [
+        "object",
+        "null"
+      ],
+      "propertyNames": {
+        "pattern": "^[A-Za-z0-9_]+$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "bigquery_dataset"
+        ],
+        "properties": {
+          "bigquery_dataset": {
+            "type": "string",
+            "pattern": "^projects/[^/]+/datasets/[^/]+$"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "documentation": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "categories": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "icon": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "primary_contact": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "request_access": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "data_provider": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "primary_contact": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "iam": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "publisher": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "primary_contact": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "restricted_export_config": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "enabled": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "restrict_query_result": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "name": {
+      "description": "The ID of the data exchange. Must contain only Unicode letters, numbers (0-9), underscores (_).",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9_]+$"
+    },
+    "prefix": {
+      "description": "Optional prefix for data exchange ID.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "primary_contact": {
+      "description": "Email or URL of the primary point of contact of the data exchange.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "project_id": {
+      "description": "The ID of the project where the data exchange will be created.",
+      "type": "string",
+      "minLength": 1
+    },
+    "region": {
+      "description": "Region for the data exchange.",
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

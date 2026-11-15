@@ -1,0 +1,4 @@
+# Only a name and the account: the module's defaults (immutable tags, scan
+# on push, the default read-only policy for the account's root).
+repository_name: default
+account_id: "111122223333"
