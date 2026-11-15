@@ -160,7 +160,7 @@ leftovers() {
   "${G[@]}" container clusters list --filter="name~^${RUN}" --format='value(name)' 2>/dev/null
   "${G[@]}" iam service-accounts list --filter="email~^${RUN}" --format='value(email)' 2>/dev/null
   if [[ -n "${PARENT:-}" ]]; then
-    gcloud resource-manager folders list --folder="${PARENT#folders/}" --filter="displayName~^${RUN} AND lifecycleState=ACTIVE" --format='value(name)' 2>/dev/null
+    gcloud resource-manager folders list --folder="${PARENT#folders/}" --filter="displayName~^${RUN}" --format='value(name)' 2>/dev/null
     gcloud projects list --filter="parent.id=${PARENT#folders/} AND name~^${RUN} AND lifecycleState=ACTIVE" --format='value(projectId)' 2>/dev/null
   fi
 }
