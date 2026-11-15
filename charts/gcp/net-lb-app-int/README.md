@@ -25,7 +25,7 @@ with purpose `REGIONAL_MANAGED_PROXY` in the region (net-vpc's
 
 The URL map, backend services, health checks, groups, NEGs and SSL
 certificates are rendered by `templates/_netlbapp.tpl`, which
-`net-lb-app-ext` carries an identical copy of; each chart's
+`net-lb-app-ext` and `net-lb-app-ext-regional` carry identical copies of; each chart's
 `netlbapp.cfg` says what differs (global or regional, the scheme).
 
 ## Example

@@ -1,0 +1,156 @@
+---
+# Source: net-lb-app-ext-regional/templates/backend-service.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeBackendService
+metadata:
+  name: https-bs-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "https"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "backend_service:default"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-default"
+  location: "europe-west8"
+  description: "Terraform managed."
+  loadBalancingScheme: "EXTERNAL_MANAGED"
+  protocol: "HTTP"
+  healthChecks:
+    - healthCheckRef:
+        name: https-hc-default
+  portName: "http"
+  backend:
+    - balancingMode: "UTILIZATION"
+      capacityScaler: 1
+      description: "Terraform managed."
+      group:
+        instanceGroupRef:
+          external: "projects/my-project/zones/europe-west8-b/instanceGroups/my-ig-b"
+---
+# Source: net-lb-app-ext-regional/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeForwardingRule
+metadata:
+  name: https-fr
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "https"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "forwarding_rule"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: "europe-west8"
+  description: "Terraform managed."
+  ipAddress:
+    addressRef:
+      external: "projects/my-project/regions/europe-west8/addresses/rlb"
+  ipProtocol: TCP
+  loadBalancingScheme: EXTERNAL_MANAGED
+  networkRef:
+    external: "projects/my-project/global/networks/my-vpc"
+  networkTier: PREMIUM
+  portRange: "443"
+  target:
+    targetHTTPSProxyRef:
+      name: https
+---
+# Source: net-lb-app-ext-regional/templates/health-check.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeHealthCheck
+metadata:
+  name: https-hc-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "https"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "health_check:default"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-default"
+  location: "europe-west8"
+  description: "Terraform managed."
+  httpHealthCheck:
+    portSpecification: USE_SERVING_PORT
+---
+# Source: net-lb-app-ext-regional/templates/ssl-certificates.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeSSLCertificate
+metadata:
+  name: https-cert-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "https"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "ssl_certificate:default"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-default"
+  location: "europe-west8"
+  certificate:
+    value: "-----BEGIN CERTIFICATE-----\nMIIBPUBLICCERTIFICATEONLY\n-----END CERTIFICATE-----"
+  privateKey:
+    valueFrom:
+      secretKeyRef:
+        name: "rlb-tls"
+        key: "tls.key"
+---
+# Source: net-lb-app-ext-regional/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeTargetHTTPSProxy
+metadata:
+  name: https
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "https"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "target_proxy"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: "europe-west8"
+  description: "Terraform managed."
+  certificateManagerCertificates:
+    - external: "projects/my-project/locations/europe-west8/certificates/cm"
+  httpKeepAliveTimeoutSec: 610
+  serverTlsPolicyRef:
+    external: "projects/my-project/locations/europe-west8/serverTlsPolicies/mtls"
+  sslCertificates:
+    - external: "projects/my-project/regions/europe-west8/sslCertificates/my-cert"
+    - name: https-cert-default
+  sslPolicyRef:
+    external: "projects/my-project/regions/europe-west8/sslPolicies/modern"
+  urlMapRef:
+    name: https
+---
+# Source: net-lb-app-ext-regional/templates/urlmap.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeURLMap
+metadata:
+  name: https
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "https"
+    app.kubernetes.io/name: net-lb-app-ext-regional
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "url_map"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: "europe-west8"
+  description: "Terraform managed."
+  defaultService:
+    backendServiceRef:
+      name: https-bs-default

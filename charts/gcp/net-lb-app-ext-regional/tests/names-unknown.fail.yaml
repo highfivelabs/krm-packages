@@ -1,0 +1,6 @@
+# expect: names: Additional property bucket is not allowed
+name: lb
+project_id: my-project
+region: europe-west1
+vpc_config: {network: projects/my-project/global/networks/my-vpc}
+names: {bucket: x}

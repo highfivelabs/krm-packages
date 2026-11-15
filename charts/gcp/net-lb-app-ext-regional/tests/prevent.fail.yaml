@@ -1,0 +1,6 @@
+# expect: net-lb-app-ext-regional: deletion_policy PREVENT has no Config Connector equivalent
+name: lb
+project_id: my-project
+region: europe-west1
+vpc_config: {network: projects/my-project/global/networks/my-vpc}
+deletion_policy: PREVENT

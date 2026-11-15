@@ -1,0 +1,6 @@
+# expect: net-lb-app-ext-regional: backend_service_configs.default.log_config.optional_mode is not supported
+name: lb
+project_id: my-project
+region: europe-west1
+vpc_config: {network: projects/my-project/global/networks/my-vpc}
+backend_service_configs: {default: {backends: [], log_config: {enable: true, optional_mode: CUSTOM}}}

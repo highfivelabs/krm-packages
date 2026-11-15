@@ -129,18 +129,18 @@ How much of the Terraform modules people use today the catalog carries, counted 
 
 ![All tracked modules](docs/coverage/total.svg)
 
-**177 modules tracked**: 14 ported, 111 partial, 47 blocked, 5 not started. Green is ported, amber partial (some variables refused with a message that names the gap), dark grey blocked (a resource type of the module has no stable kind: none, or only an alpha one), light grey not started.
+**177 modules tracked**: 14 ported, 112 partial, 46 blocked, 5 not started. Green is ported, amber partial (some variables refused with a message that names the gap), dark grey blocked (a resource type of the module has no stable kind: none, or only an alpha one), light grey not started.
 
 | Source | Modules | Bar | Variables covered |
 | --- | ---: | --- | ---: |
-| Google Cloud: Cloud Foundation Fabric and terraform-google-modules | 98 | ![gcp](docs/coverage/gcp.svg) | 1038 of 1478 (70.2%) |
+| Google Cloud: Cloud Foundation Fabric and terraform-google-modules | 98 | ![gcp](docs/coverage/gcp.svg) | 1056 of 1478 (71.4%) |
 | AWS: terraform-aws-modules | 42 | ![aws](docs/coverage/aws.svg) | 533 of 2348 (22.7%) |
 | Azure: Azure Verified Modules | 37 | ![azure](docs/coverage/azure.svg) | 1053 of 1170 (90.0%) |
-| **All** | **177** | | **2624 of 4996 (52.5%)** |
+| **All** | **177** | | **2642 of 4996 (52.9%)** |
 
 ### Google Cloud: Cloud Foundation Fabric and terraform-google-modules
 
-8 ported, 65 partial, 22 blocked, 3 not started.
+8 ported, 66 partial, 21 blocked, 3 not started.
 
 **Ported and partial**
 
@@ -187,6 +187,7 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | [`bigtable-instance`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/bigtable-instance) ([chart](charts/gcp/bigtable-instance)) | ![bigtable-instance](docs/coverage/bars/gcp-bigtable-instance.svg) 11 of 11 | 2 of 4 | 4 of 4 | partial |
 | [`net-cloud-armor`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/net-cloud-armor) ([chart](charts/gcp/net-cloud-armor)) | ![net-cloud-armor](docs/coverage/bars/gcp-net-cloud-armor.svg) 12 of 16 | 3 of 3 | 4 of 7 | partial |
 | [`net-swp`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/net-swp) ([chart](charts/gcp/net-swp)) | ![net-swp](docs/coverage/bars/gcp-net-swp.svg) 14 of 14 | 4 of 4 | 1 of 6 | partial |
+| [`net-lb-app-ext-regional`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/net-lb-app-ext-regional) ([chart](charts/gcp/net-lb-app-ext-regional)) | ![net-lb-app-ext-regional](docs/coverage/bars/gcp-net-lb-app-ext-regional.svg) 18 of 19 | 9 of 10 | 10 of 12 | partial |
 | [`net-lb-app-int-cross-region`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/net-lb-app-int-cross-region) ([chart](charts/gcp/net-lb-app-int-cross-region)) | ![net-lb-app-int-cross-region](docs/coverage/bars/gcp-net-lb-app-int-cross-region.svg) 16 of 18 | 11 of 12 | 10 of 11 | partial |
 | [`net-lb-proxy-int-cross-region`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/net-lb-proxy-int-cross-region) ([chart](charts/gcp/net-lb-proxy-int-cross-region)) | ![net-lb-proxy-int-cross-region](docs/coverage/bars/gcp-net-lb-proxy-int-cross-region.svg) 13 of 14 | 10 of 15 | 7 of 8 | partial |
 | [`net-vpn-static`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/net-vpn-static) ([chart](charts/gcp/net-vpn-static)) | ![net-vpn-static](docs/coverage/bars/gcp-net-vpn-static.svg) 8 of 9 | 4 of 9 | 5 of 5 | partial |
@@ -220,7 +221,7 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | [`iam-folders-iam`](https://github.com/terraform-google-modules/terraform-google-iam/tree/v8.3.0/modules/folders_iam) ([chart](charts/gcp/folders-iam)) | ![iam-folders-iam](docs/coverage/bars/gcp-iam-folders-iam.svg) 4 of 4 | 3 of 3 | 0 of 0 | partial |
 | [`org-policy-v2`](https://github.com/terraform-google-modules/terraform-google-org-policy/tree/v7.4.0/modules/org_policy_v2) ([chart](charts/gcp/org-policy-v2)) | ![org-policy-v2](docs/coverage/bars/gcp-org-policy-v2.svg) 8 of 8 | 3 of 3 | 0 of 0 | partial |
 
-**Blocked: a resource type has no stable kind (first 10 of 22, by rank)**
+**Blocked: a resource type has no stable kind (first 10 of 21, by rank)**
 
 | Module | Variables covered | Outputs | Resource types with a stable kind | Status |
 | --- | --- | ---: | ---: | --- |
@@ -229,11 +230,11 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | [`workflows`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/workflows) | ![workflows](docs/coverage/bars/gcp-workflows.svg) 0 of 18 | 0 of 13 | 4 of 6 | blocked |
 | [`firestore`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/firestore) | ![firestore](docs/coverage/bars/gcp-firestore.svg) 0 of 7 | 0 of 7 | 2 of 5 | blocked |
 | [`managed-kafka`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/managed-kafka) | ![managed-kafka](docs/coverage/bars/gcp-managed-kafka.svg) 0 of 11 | 0 of 4 | 2 of 4 | blocked |
-| [`net-lb-app-ext-regional`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/net-lb-app-ext-regional) | ![net-lb-app-ext-regional](docs/coverage/bars/gcp-net-lb-app-ext-regional.svg) 0 of 19 | 0 of 10 | 10 of 12 | blocked |
 | [`net-lb-proxy-int`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/net-lb-proxy-int) | ![net-lb-proxy-int](docs/coverage/bars/gcp-net-lb-proxy-int.svg) 0 of 14 | 0 of 13 | 8 of 10 | blocked |
 | [`certificate-authority-service`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/certificate-authority-service) | ![certificate-authority-service](docs/coverage/bars/gcp-certificate-authority-service.svg) 0 of 9 | 0 of 5 | 2 of 4 | blocked |
 | [`cloud-deploy`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/cloud-deploy) | ![cloud-deploy](docs/coverage/bars/gcp-cloud-deploy.svg) 0 of 14 | 0 of 4 | 1 of 8 | blocked |
 | [`secure-source-manager-instance`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/secure-source-manager-instance) | ![secure-source-manager-instance](docs/coverage/bars/gcp-secure-source-manager-instance.svg) 0 of 11 | 0 of 4 | 2 of 7 | blocked |
+| [`bigquery-connection`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/bigquery-connection) | ![bigquery-connection](docs/coverage/bars/gcp-bigquery-connection.svg) 0 of 12 | 0 of 4 | 1 of 3 | blocked |
 
 **Not started**
 

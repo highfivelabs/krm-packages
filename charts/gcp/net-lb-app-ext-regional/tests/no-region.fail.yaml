@@ -1,0 +1,4 @@
+# expect: region: String length must be greater than or equal to 1
+name: lb
+project_id: my-project
+vpc_config: {network: "net"}
