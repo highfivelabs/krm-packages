@@ -1,0 +1,70 @@
+---
+# Source: looker-core/templates/main.yaml
+apiVersion: looker.gcp.hfl.dev/v1alpha1
+kind: LookerInstance
+metadata:
+  name: full
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: looker-core
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "instance"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "analytics-looker"
+  platformEdition: "LOOKER_CORE_ENTERPRISE_ANNUAL"
+  consumerNetwork: "projects/my-project/global/networks/my-network"
+  privateIpEnabled: true
+  reservedRange: "looker"
+  publicIpEnabled: true
+  pscEnabled: false
+  fipsEnabled: true
+  geminiEnabled: true
+  oauthConfig:
+    clientId: "xxxxxxxxx"
+    clientSecret: {"valueFrom":{"secretKeyRef":{"key":"client-secret","name":"looker-oauth"}}}
+  adminSettings:
+    allowedEmailDomains: ["google.com"]
+  customDomain:
+    domain: "looker.example.com"
+  controlledEgressEnabled: true
+  controlledEgressConfig:
+    marketplaceEnabled: false
+    egressFqdns: ["github.com"]
+  periodicExportConfig:
+    kmsKey: "projects/my-project/locations/europe-west1/keyRings/keyring/cryptoKeys/key-export"
+    gcsUri: "gs://my-looker-export"
+    startTime:
+      hours: 3
+      minutes: 0
+      seconds: 0
+      nanos: 0
+  denyMaintenancePeriod:
+    startDate:
+      year: 2026
+      month: 12
+      day: 20
+    endDate:
+      year: 2027
+      month: 1
+      day: 5
+    time:
+      hours: 23
+      minutes: 0
+      seconds: 0
+      nanos: 0
+  encryptionConfig:
+    kmsKeyName: "projects/my-project/locations/europe-west1/keyRings/keyring/cryptoKeys/key-regional"
+  maintenanceWindow:
+    dayOfWeek: "SATURDAY"
+    startTime:
+      hours: 2
+      minutes: 0
+      seconds: 0
+      nanos: 0

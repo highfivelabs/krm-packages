@@ -7,7 +7,7 @@ Fabric's
 at v60.0.0 (`f706bc3b`), Apache-2.0, Copyright Google LLC. Bundt Package
 `gcp-looker-core` (`package.yaml`). Config Connector has no kind for a
 Looker instance; the chart uses config-connector-extensions'
-`LookerInstance` (`looker.gcp.hfl.dev/v1alpha1`), at `CCE_PIN`.
+`LookerInstance` (`looker.gcp.hfl.dev/v1alpha1`), at `069e4211`.
 
 **The chart needs `allow_alpha: true`.** `LookerInstance` is `v1alpha1`,
 so every render without it stops (`docs/design.md`, "Alpha kinds").

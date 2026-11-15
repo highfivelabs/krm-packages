@@ -244,7 +244,7 @@ Rank 1. Terraform module: [`modules/project`](https://github.com/GoogleCloudPlat
 | --- | --- | --- |
 | `google_access_context_manager_service_perimeter_dry_run_resource` | AccessContextManagerServicePerimeter (spec.spec.resources) |  |
 | `google_access_context_manager_service_perimeter_resource` | AccessContextManagerServicePerimeterResource |  |
-| `google_bigquery_dataset_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on BigQueryDataset | gap kind (config-connector-extensions) |
+| `google_bigquery_dataset_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on BigQueryDataset | gap kind (config-connector-extensions) |
 | `google_bigquery_reservation` | BigQueryReservationReservation |  |
 | `google_bigquery_reservation_assignment` | BigQueryReservationAssignment |  |
 | `google_cloud_asset_project_feed` | AssetFeed |  |
@@ -282,7 +282,7 @@ Rank 1. Terraform module: [`modules/project`](https://github.com/GoogleCloudPlat
 | `google_pubsub_topic_iam_member` | IAMPolicyMember -> PubSubTopic |  |
 | `google_resource_manager_lien` | ResourceManagerLien |  |
 | `google_scc_management_project_security_health_analytics_custom_module` | SecurityCenterManagementSecurityHealthAnalyticsCustomModule | alpha only |
-| `google_scc_v2_project_mute_config` | SecurityCenterMuteConfig (securitycenter.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_scc_v2_project_mute_config` | SecurityCenterMuteConfig (securitycenter.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_storage_bucket_iam_member` | IAMPolicyMember -> StorageBucket |  |
 | `google_tags_tag_binding` | TagsTagBinding |  |
 | `google_tags_tag_key` | TagsTagKey |  |
@@ -301,7 +301,7 @@ Rank 2. Terraform module: [`modules/folder`](https://github.com/GoogleCloudPlatf
 | Terraform resource | Config Connector | |
 | --- | --- | --- |
 | `google_assured_workloads_workload` | AssuredWorkloadsWorkload | alpha only |
-| `google_bigquery_dataset_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on BigQueryDataset | gap kind (config-connector-extensions) |
+| `google_bigquery_dataset_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on BigQueryDataset | gap kind (config-connector-extensions) |
 | `google_cloud_asset_folder_feed` | AssetFeed |  |
 | `google_compute_firewall_policy_association` | ComputeFirewallPolicyAssociation |  |
 | `google_compute_organization_security_policy_association` | ComputeOrganizationSecurityPolicyAssociation (compute.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
@@ -314,14 +314,14 @@ Rank 2. Terraform module: [`modules/folder`](https://github.com/GoogleCloudPlatf
 | `google_iam_deny_policy` | IAMDenyPolicy (iam.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_kms_autokey_config` | KMSAutokeyConfig |  |
 | `google_logging_folder_exclusion` | LoggingLogExclusion |  |
-| `google_logging_folder_settings` | LoggingSettings (logging.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_logging_folder_settings` | LoggingSettings (logging.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_logging_folder_sink` | LoggingLogSink |  |
 | `google_org_policy_policy` | OrgPolicyPolicy |  |
 | `google_privileged_access_manager_entitlement` | PrivilegedAccessManagerEntitlement |  |
 | `google_project_iam_member` | IAMPolicyMember -> Project |  |
 | `google_pubsub_topic_iam_member` | IAMPolicyMember -> PubSubTopic |  |
 | `google_scc_management_folder_security_health_analytics_custom_module` | SecurityCenterManagementSecurityHealthAnalyticsCustomModule | alpha only |
-| `google_scc_v2_folder_mute_config` | SecurityCenterMuteConfig (securitycenter.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_scc_v2_folder_mute_config` | SecurityCenterMuteConfig (securitycenter.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_storage_bucket_iam_member` | IAMPolicyMember -> StorageBucket |  |
 | `google_tags_tag_binding` | TagsTagBinding |  |
 
@@ -335,7 +335,7 @@ Rank 3. Terraform module: [`modules/organization`](https://github.com/GoogleClou
 | --- | --- | --- |
 | `google_access_context_manager_access_level` | AccessContextManagerAccessLevel |  |
 | `google_access_context_manager_gcp_user_access_binding` | AccessContextManagerGCPUserAccessBinding | alpha only |
-| `google_bigquery_dataset_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on BigQueryDataset | gap kind (config-connector-extensions) |
+| `google_bigquery_dataset_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on BigQueryDataset | gap kind (config-connector-extensions) |
 | `google_cloud_asset_organization_feed` | AssetFeed |  |
 | `google_compute_firewall_policy_association` | ComputeFirewallPolicyAssociation |  |
 | `google_compute_organization_security_policy_association` | ComputeOrganizationSecurityPolicyAssociation (compute.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
@@ -345,7 +345,7 @@ Rank 3. Terraform module: [`modules/organization`](https://github.com/GoogleClou
 | `google_iam_workforce_pool_provider` | IAMWorkforcePoolProvider |  |
 | `google_iam_workforce_pool_provider_scim_tenant` | IAMWorkforcePoolProviderScimTenant (iam.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
 | `google_logging_organization_exclusion` | LoggingLogExclusion |  |
-| `google_logging_organization_settings` | LoggingSettings (logging.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_logging_organization_settings` | LoggingSettings (logging.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_logging_organization_sink` | LoggingLogSink |  |
 | `google_model_armor_floorsetting` | ModelArmorFloorSetting | alpha only |
 | `google_org_policy_custom_constraint` | OrgPolicyCustomConstraint |  |
@@ -359,7 +359,7 @@ Rank 3. Terraform module: [`modules/organization`](https://github.com/GoogleClou
 | `google_project_iam_member` | IAMPolicyMember -> Project |  |
 | `google_pubsub_topic_iam_member` | IAMPolicyMember -> PubSubTopic |  |
 | `google_scc_management_organization_security_health_analytics_custom_module` | SecurityCenterManagementSecurityHealthAnalyticsCustomModule | alpha only |
-| `google_scc_v2_organization_mute_config` | SecurityCenterMuteConfig (securitycenter.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_scc_v2_organization_mute_config` | SecurityCenterMuteConfig (securitycenter.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_storage_bucket_iam_member` | IAMPolicyMember -> StorageBucket |  |
 | `google_tags_tag_binding` | TagsTagBinding |  |
 | `google_tags_tag_key` | TagsTagKey |  |
@@ -401,7 +401,7 @@ Rank 5. Terraform module: [`modules/net-vpc`](https://github.com/GoogleCloudPlat
 | `google_compute_network_firewall_policy_association` | ComputeNetworkFirewallPolicyAssociation |  |
 | `google_compute_network_peering` | ComputeNetworkPeering |  |
 | `google_compute_network_peering_routes_config` | ComputeNetworkPeeringRoutesConfig | alpha only |
-| `google_compute_region_network_firewall_policy_association` | ComputeRegionNetworkFirewallPolicyAssociation (compute.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_compute_region_network_firewall_policy_association` | ComputeRegionNetworkFirewallPolicyAssociation (compute.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_compute_route` | ComputeRoute |  |
 | `google_compute_shared_vpc_host_project` | ComputeSharedVPCHostProject |  |
 | `google_compute_shared_vpc_service_project` | ComputeSharedVPCServiceProject |  |
@@ -477,10 +477,10 @@ Rank 10. Terraform module: [`modules/gcs`](https://github.com/GoogleCloudPlatfor
 | `google_storage_bucket` | StorageBucket |  |
 | `google_storage_bucket_iam_binding` | IAMPartialPolicy -> StorageBucket |  |
 | `google_storage_bucket_iam_member` | IAMPolicyMember -> StorageBucket |  |
-| `google_storage_bucket_object` | StorageBucketObject (storage.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_storage_bucket_object` | StorageBucketObject (storage.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_storage_managed_folder` | StorageManagedFolder | alpha only |
 | `google_storage_managed_folder_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on StorageManagedFolder | gap kind (config-connector-extensions) |
-| `google_storage_managed_folder_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on StorageManagedFolder | gap kind (config-connector-extensions) |
+| `google_storage_managed_folder_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on StorageManagedFolder | gap kind (config-connector-extensions) |
 | `google_storage_notification` | StorageNotification |  |
 | `google_tags_location_tag_binding` | TagsLocationTagBinding |  |
 
@@ -507,7 +507,7 @@ Rank 12. Terraform module: [`modules/secret-manager`](https://github.com/GoogleC
 | --- | --- | --- |
 | `google_secret_manager_regional_secret` | SecretManagerSecret (secretmanager.gcp.hfl.dev, spec.location) | gap kind (config-connector-extensions) |
 | `google_secret_manager_regional_secret_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on SecretManagerSecret | gap kind (config-connector-extensions) |
-| `google_secret_manager_regional_secret_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on SecretManagerSecret | gap kind (config-connector-extensions) |
+| `google_secret_manager_regional_secret_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on SecretManagerSecret | gap kind (config-connector-extensions) |
 | `google_secret_manager_regional_secret_version` | SecretManagerSecretVersion (secretmanager.gcp.hfl.dev) | gap kind (config-connector-extensions) |
 | `google_secret_manager_secret` | SecretManagerSecret |  |
 | `google_secret_manager_secret_iam_binding` | IAMPartialPolicy -> SecretManagerSecret |  |
@@ -598,7 +598,7 @@ Rank 18. Terraform module: [`modules/bigquery-dataset`](https://github.com/Googl
 | `google_bigquery_dataset` | BigQueryDataset |  |
 | `google_bigquery_dataset_access` | BigQueryDatasetAccess | alpha only |
 | `google_bigquery_dataset_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on BigQueryDataset | gap kind (config-connector-extensions) |
-| `google_bigquery_dataset_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on BigQueryDataset | gap kind (config-connector-extensions) |
+| `google_bigquery_dataset_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on BigQueryDataset | gap kind (config-connector-extensions) |
 | `google_bigquery_routine` | BigQueryRoutine |  |
 | `google_bigquery_table` | BigQueryTable |  |
 | `google_tags_location_tag_binding` | TagsLocationTagBinding |  |
@@ -619,7 +619,7 @@ Rank 19. Terraform module: [`modules/cloud-run-v2`](https://github.com/GoogleClo
 | `google_cloud_run_v2_worker_pool_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on RunWorkerPool | gap kind (config-connector-extensions) |
 | `google_eventarc_trigger` | EventarcTrigger |  |
 | `google_iap_web_cloud_run_service_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on IAPWebCloudRunService | gap kind (config-connector-extensions) |
-| `google_iap_web_cloud_run_service_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on IAPWebCloudRunService | gap kind (config-connector-extensions) |
+| `google_iap_web_cloud_run_service_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on IAPWebCloudRunService | gap kind (config-connector-extensions) |
 | `google_project_iam_member` | IAMPolicyMember -> Project |  |
 | `google_service_account` | IAMServiceAccount |  |
 | `google_tags_location_tag_binding` | TagsLocationTagBinding |  |
@@ -633,7 +633,7 @@ Rank 20. Terraform module: [`modules/billing-account`](https://github.com/Google
 
 | Terraform resource | Config Connector | |
 | --- | --- | --- |
-| `google_bigquery_dataset_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on BigQueryDataset | gap kind (config-connector-extensions) |
+| `google_bigquery_dataset_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on BigQueryDataset | gap kind (config-connector-extensions) |
 | `google_billing_account_iam_binding` | IAMPartialPolicy -> BillingAccount |  |
 | `google_billing_account_iam_member` | IAMPolicyMember -> BillingAccount |  |
 | `google_billing_budget` | BillingBudgetsBudget |  |
@@ -657,7 +657,7 @@ Rank 21. Terraform module: [`modules/logging-bucket`](https://github.com/GoogleC
 | `google_logging_linked_dataset` | LoggingLink |  |
 | `google_logging_log_view` | LoggingLogView |  |
 | `google_logging_log_view_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on LoggingLogView | gap kind (config-connector-extensions) |
-| `google_logging_log_view_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on LoggingLogView | gap kind (config-connector-extensions) |
+| `google_logging_log_view_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on LoggingLogView | gap kind (config-connector-extensions) |
 | `google_logging_organization_bucket_config` | LoggingLogBucket |  |
 | `google_logging_project_bucket_config` | LoggingLogBucket |  |
 | `google_tags_tag_binding` | TagsTagBinding |  |
@@ -677,9 +677,9 @@ Rank 22. Terraform module: [`modules/net-firewall-policy`](https://github.com/Go
 | `google_compute_network_firewall_policy_association` | ComputeNetworkFirewallPolicyAssociation |  |
 | `google_compute_network_firewall_policy_packet_mirroring_rule` | ComputeNetworkFirewallPolicyPacketMirroringRule (compute.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
 | `google_compute_network_firewall_policy_rule` | ComputeNetworkFirewallPolicyRule (compute.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
-| `google_compute_region_network_firewall_policy` | ComputeRegionNetworkFirewallPolicy (compute.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
-| `google_compute_region_network_firewall_policy_association` | ComputeRegionNetworkFirewallPolicyAssociation (compute.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
-| `google_compute_region_network_firewall_policy_rule` | ComputeRegionNetworkFirewallPolicyRule (compute.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_compute_region_network_firewall_policy` | ComputeRegionNetworkFirewallPolicy (compute.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
+| `google_compute_region_network_firewall_policy_association` | ComputeRegionNetworkFirewallPolicyAssociation (compute.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
+| `google_compute_region_network_firewall_policy_rule` | ComputeRegionNetworkFirewallPolicyRule (compute.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_tags_location_tag_binding` | TagsLocationTagBinding |  |
 
 ### vpc-sc
@@ -756,7 +756,7 @@ Rank 28. Terraform module: [`modules/net-vpn-ha`](https://github.com/GoogleCloud
 | `google_compute_router` | ComputeRouter |  |
 | `google_compute_router_interface` | ComputeRouterInterface |  |
 | `google_compute_router_peer` | ComputeRouterPeer |  |
-| `google_compute_router_route_policy` | ComputeRouterRoutePolicy (compute.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_compute_router_route_policy` | ComputeRouterRoutePolicy (compute.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_compute_vpn_tunnel` | ComputeVPNTunnel |  |
 | `random_id` | n/a | not Google Cloud |
 
@@ -863,7 +863,7 @@ Rank 35. Terraform module: [`modules/net-lb-app-int`](https://github.com/GoogleC
 | `google_compute_network_endpoint_group` | ComputeNetworkEndpointGroup |  |
 | `google_compute_region_backend_service` | ComputeBackendService |  |
 | `google_compute_region_health_check` | ComputeHealthCheck |  |
-| `google_compute_region_network_endpoint` | ComputeRegionNetworkEndpoint (compute.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_compute_region_network_endpoint` | ComputeRegionNetworkEndpoint (compute.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_compute_region_network_endpoint_group` | ComputeRegionNetworkEndpointGroup |  |
 | `google_compute_region_ssl_certificate` | ComputeSSLCertificate |  |
 | `google_compute_region_target_http_proxy` | ComputeTargetHTTPProxy |  |
@@ -891,7 +891,7 @@ Rank 36. Terraform module: [`modules/compute-vm`](https://github.com/GoogleCloud
 | `google_compute_region_instance_template` | ComputeRegionInstanceTemplate (compute.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
 | `google_compute_resource_policy` | ComputeResourcePolicy |  |
 | `google_iap_tunnel_instance_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on IAPTunnelInstance | gap kind (config-connector-extensions) |
-| `google_iap_tunnel_instance_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on IAPTunnelInstance | gap kind (config-connector-extensions) |
+| `google_iap_tunnel_instance_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on IAPTunnelInstance | gap kind (config-connector-extensions) |
 | `google_kms_key_handle` | KMSKeyHandle |  |
 | `google_service_account` | IAMServiceAccount |  |
 | `google_tags_location_tag_binding` | TagsLocationTagBinding |  |
@@ -958,7 +958,7 @@ Rank 40. Terraform module: [`modules/cloud-function-v2`](https://github.com/Goog
 | `google_project_iam_member` | IAMPolicyMember -> Project |  |
 | `google_service_account` | IAMServiceAccount |  |
 | `google_storage_bucket` | StorageBucket |  |
-| `google_storage_bucket_object` | StorageBucketObject (storage.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_storage_bucket_object` | StorageBucketObject (storage.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_vpc_access_connector` | VPCAccessConnector |  |
 
 ### alloydb
@@ -1076,7 +1076,7 @@ Rank 48. Terraform module: [`modules/net-lb-app-ext-regional`](https://github.co
 | `google_compute_network_endpoint_group` | ComputeNetworkEndpointGroup |  |
 | `google_compute_region_backend_service` | ComputeBackendService |  |
 | `google_compute_region_health_check` | ComputeHealthCheck |  |
-| `google_compute_region_network_endpoint` | ComputeRegionNetworkEndpoint (compute.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_compute_region_network_endpoint` | ComputeRegionNetworkEndpoint (compute.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_compute_region_network_endpoint_group` | ComputeRegionNetworkEndpointGroup |  |
 | `google_compute_region_ssl_certificate` | ComputeSSLCertificate |  |
 | `google_compute_region_target_http_proxy` | ComputeTargetHTTPProxy |  |
@@ -1117,7 +1117,7 @@ Rank 50. Terraform module: [`modules/net-lb-proxy-int`](https://github.com/Googl
 | `google_compute_network_endpoint_group` | ComputeNetworkEndpointGroup |  |
 | `google_compute_region_backend_service` | ComputeBackendService |  |
 | `google_compute_region_health_check` | ComputeHealthCheck |  |
-| `google_compute_region_network_endpoint` | ComputeRegionNetworkEndpoint (compute.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_compute_region_network_endpoint` | ComputeRegionNetworkEndpoint (compute.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_compute_region_network_endpoint_group` | ComputeRegionNetworkEndpointGroup |  |
 | `google_compute_region_target_tcp_proxy` | ComputeTargetTCPProxy |  |
 | `google_compute_service_attachment` | ComputeServiceAttachment |  |
@@ -1168,7 +1168,7 @@ Rank 53. Terraform module: [`modules/net-vpn-dynamic`](https://github.com/Google
 | `google_compute_router` | ComputeRouter |  |
 | `google_compute_router_interface` | ComputeRouterInterface |  |
 | `google_compute_router_peer` | ComputeRouterPeer |  |
-| `google_compute_router_route_policy` | ComputeRouterRoutePolicy (compute.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_compute_router_route_policy` | ComputeRouterRoutePolicy (compute.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_compute_vpn_gateway` | ComputeTargetVPNGateway |  |
 | `google_compute_vpn_tunnel` | ComputeVPNTunnel |  |
 | `random_id` | n/a | not Google Cloud |
@@ -1186,7 +1186,7 @@ Rank 54. Terraform module: [`modules/net-vlan-attachment`](https://github.com/Go
 | `google_compute_router` | ComputeRouter |  |
 | `google_compute_router_interface` | ComputeRouterInterface |  |
 | `google_compute_router_peer` | ComputeRouterPeer |  |
-| `google_compute_router_route_policy` | ComputeRouterRoutePolicy (compute.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_compute_router_route_policy` | ComputeRouterRoutePolicy (compute.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `random_id` | n/a | not Google Cloud |
 
 ### net-ipsec-over-interconnect
@@ -1202,7 +1202,7 @@ Rank 55. Terraform module: [`modules/net-ipsec-over-interconnect`](https://githu
 | `google_compute_router` | ComputeRouter |  |
 | `google_compute_router_interface` | ComputeRouterInterface |  |
 | `google_compute_router_peer` | ComputeRouterPeer |  |
-| `google_compute_router_route_policy` | ComputeRouterRoutePolicy (compute.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_compute_router_route_policy` | ComputeRouterRoutePolicy (compute.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_compute_vpn_tunnel` | ComputeVPNTunnel |  |
 | `random_id` | n/a | not Google Cloud |
 
@@ -1217,7 +1217,7 @@ Rank 56. Terraform module: [`modules/ncc-spoke-ra`](https://github.com/GoogleClo
 | `google_compute_router` | ComputeRouter |  |
 | `google_compute_router_interface` | ComputeRouterInterface |  |
 | `google_compute_router_peer` | ComputeRouterPeer |  |
-| `google_compute_router_route_policy` | ComputeRouterRoutePolicy (compute.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_compute_router_route_policy` | ComputeRouterRoutePolicy (compute.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_network_connectivity_hub` | NetworkConnectivityHub |  |
 | `google_network_connectivity_spoke` | NetworkConnectivitySpoke |  |
 
@@ -1256,7 +1256,7 @@ Rank 59. Terraform module: [`modules/certificate-authority-service`](https://git
 | --- | --- | --- |
 | `google_privateca_ca_pool` | PrivateCACAPool |  |
 | `google_privateca_ca_pool_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on PrivateCACAPool | gap kind (config-connector-extensions) |
-| `google_privateca_ca_pool_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on PrivateCACAPool | gap kind (config-connector-extensions) |
+| `google_privateca_ca_pool_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on PrivateCACAPool | gap kind (config-connector-extensions) |
 | `google_privateca_certificate_authority` | PrivateCACertificateAuthority |  |
 
 ### backup-dr
@@ -1282,11 +1282,11 @@ Rank 61. Terraform module: [`modules/cloud-deploy`](https://github.com/GoogleClo
 | `google_clouddeploy_automation` | CloudDeployAutomation (clouddeploy.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_clouddeploy_delivery_pipeline` | CloudDeployDeliveryPipeline |  |
 | `google_clouddeploy_delivery_pipeline_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on CloudDeployDeliveryPipeline | gap kind (config-connector-extensions) |
-| `google_clouddeploy_delivery_pipeline_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on CloudDeployDeliveryPipeline | gap kind (config-connector-extensions) |
+| `google_clouddeploy_delivery_pipeline_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on CloudDeployDeliveryPipeline | gap kind (config-connector-extensions) |
 | `google_clouddeploy_deploy_policy` | CloudDeployDeployPolicy (clouddeploy.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_clouddeploy_target` | CloudDeployTarget (clouddeploy.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_clouddeploy_target_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on CloudDeployTarget | gap kind (config-connector-extensions) |
-| `google_clouddeploy_target_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on CloudDeployTarget | gap kind (config-connector-extensions) |
+| `google_clouddeploy_target_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on CloudDeployTarget | gap kind (config-connector-extensions) |
 
 ### cloud-build-v2-connection
 
@@ -1299,7 +1299,7 @@ Rank 62. Terraform module: [`modules/cloud-build-v2-connection`](https://github.
 | `google_cloudbuild_trigger` | CloudBuildTrigger |  |
 | `google_cloudbuildv2_connection` | CloudBuildConnection (cloudbuild.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_cloudbuildv2_connection_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on CloudBuildConnection | gap kind (config-connector-extensions) |
-| `google_cloudbuildv2_connection_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on CloudBuildConnection | gap kind (config-connector-extensions) |
+| `google_cloudbuildv2_connection_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on CloudBuildConnection | gap kind (config-connector-extensions) |
 | `google_cloudbuildv2_repository` | CloudBuildRepository (cloudbuild.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
 
 ### secure-source-manager-instance
@@ -1313,10 +1313,10 @@ Rank 63. Terraform module: [`modules/secure-source-manager-instance`](https://gi
 | `google_secure_source_manager_branch_rule` | SecureSourceManagerBranchRule | alpha only |
 | `google_secure_source_manager_instance` | SecureSourceManagerInstance |  |
 | `google_secure_source_manager_instance_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on SecureSourceManagerInstance | gap kind (config-connector-extensions) |
-| `google_secure_source_manager_instance_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on SecureSourceManagerInstance | gap kind (config-connector-extensions) |
+| `google_secure_source_manager_instance_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on SecureSourceManagerInstance | gap kind (config-connector-extensions) |
 | `google_secure_source_manager_repository` | SecureSourceManagerRepository |  |
 | `google_secure_source_manager_repository_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on SecureSourceManagerRepository | gap kind (config-connector-extensions) |
-| `google_secure_source_manager_repository_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on SecureSourceManagerRepository | gap kind (config-connector-extensions) |
+| `google_secure_source_manager_repository_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on SecureSourceManagerRepository | gap kind (config-connector-extensions) |
 
 ### source-repository
 
@@ -1341,7 +1341,7 @@ Rank 65. Terraform module: [`modules/bigquery-connection`](https://github.com/Go
 | --- | --- | --- |
 | `google_bigquery_connection` | BigQueryConnectionConnection |  |
 | `google_bigquery_connection_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on BigQueryConnectionConnection | gap kind (config-connector-extensions) |
-| `google_bigquery_connection_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on BigQueryConnectionConnection | gap kind (config-connector-extensions) |
+| `google_bigquery_connection_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on BigQueryConnectionConnection | gap kind (config-connector-extensions) |
 
 ### analytics-hub
 
@@ -1353,7 +1353,7 @@ Rank 66. Terraform module: [`modules/analytics-hub`](https://github.com/GoogleCl
 | --- | --- | --- |
 | `google_bigquery_analytics_hub_data_exchange` | BigQueryAnalyticsHubDataExchange |  |
 | `google_bigquery_analytics_hub_data_exchange_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on BigQueryAnalyticsHubDataExchange | gap kind (config-connector-extensions) |
-| `google_bigquery_analytics_hub_data_exchange_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on BigQueryAnalyticsHubDataExchange | gap kind (config-connector-extensions) |
+| `google_bigquery_analytics_hub_data_exchange_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on BigQueryAnalyticsHubDataExchange | gap kind (config-connector-extensions) |
 | `google_bigquery_analytics_hub_listing` | BigQueryAnalyticsHubListing |  |
 | `google_bigquery_analytics_hub_listing_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on BigQueryAnalyticsHubListing | gap kind (config-connector-extensions) |
 
@@ -1379,7 +1379,7 @@ Rank 68. Terraform module: [`modules/dataform-repository`](https://github.com/Go
 | --- | --- | --- |
 | `google_dataform_repository` | DataformRepository |  |
 | `google_dataform_repository_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on DataformRepository | gap kind (config-connector-extensions) |
-| `google_dataform_repository_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on DataformRepository | gap kind (config-connector-extensions) |
+| `google_dataform_repository_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on DataformRepository | gap kind (config-connector-extensions) |
 
 ### dataproc
 
@@ -1430,7 +1430,7 @@ Rank 72. Terraform module: [`modules/dataplex-datascan`](https://github.com/Goog
 | --- | --- | --- |
 | `google_dataplex_datascan` | DataplexDataScan (dataplex.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_dataplex_datascan_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on DataplexDataScan | gap kind (config-connector-extensions) |
-| `google_dataplex_datascan_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on DataplexDataScan | gap kind (config-connector-extensions) |
+| `google_dataplex_datascan_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on DataplexDataScan | gap kind (config-connector-extensions) |
 
 ### dataplex-aspect-types
 
@@ -1442,7 +1442,7 @@ Rank 73. Terraform module: [`modules/dataplex-aspect-types`](https://github.com/
 | --- | --- | --- |
 | `google_dataplex_aspect_type` | DataplexAspectType (dataplex.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_dataplex_aspect_type_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on DataplexAspectType | gap kind (config-connector-extensions) |
-| `google_dataplex_aspect_type_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on DataplexAspectType | gap kind (config-connector-extensions) |
+| `google_dataplex_aspect_type_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on DataplexAspectType | gap kind (config-connector-extensions) |
 
 ### data-catalog-policy-tag
 
@@ -1479,7 +1479,7 @@ Rank 76. Terraform module: [`modules/data-catalog-tag-template`](https://github.
 | --- | --- | --- |
 | `google_data_catalog_tag_template` | DataCatalogTagTemplate | alpha only |
 | `google_data_catalog_tag_template_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on DataCatalogTagTemplate | gap kind (config-connector-extensions) |
-| `google_data_catalog_tag_template_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on DataCatalogTagTemplate | gap kind (config-connector-extensions) |
+| `google_data_catalog_tag_template_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on DataCatalogTagTemplate | gap kind (config-connector-extensions) |
 
 ### api-gateway
 
@@ -1547,7 +1547,7 @@ Rank 80. Terraform module: [`modules/cloud-function-v1`](https://github.com/Goog
 | `google_project_iam_member` | IAMPolicyMember -> Project |  |
 | `google_service_account` | IAMServiceAccount |  |
 | `google_storage_bucket` | StorageBucket |  |
-| `google_storage_bucket_object` | StorageBucketObject (storage.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_storage_bucket_object` | StorageBucketObject (storage.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_vpc_access_connector` | VPCAccessConnector |  |
 
 ### workstation-cluster
@@ -1562,9 +1562,9 @@ Rank 81. Terraform module: [`modules/workstation-cluster`](https://github.com/Go
 | `google_workstations_workstation_cluster` | WorkstationCluster |  |
 | `google_workstations_workstation_config` | WorkstationConfig |  |
 | `google_workstations_workstation_config_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on WorkstationConfig | gap kind (config-connector-extensions) |
-| `google_workstations_workstation_config_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on WorkstationConfig | gap kind (config-connector-extensions) |
+| `google_workstations_workstation_config_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on WorkstationConfig | gap kind (config-connector-extensions) |
 | `google_workstations_workstation_iam_binding` | IAMBinding (iam.gcp.hfl.dev/v1beta1) on Workstation | gap kind (config-connector-extensions) |
-| `google_workstations_workstation_iam_member` | IAMMember (iam.gcp.hfl.dev/v1alpha1) on Workstation | gap kind (config-connector-extensions) |
+| `google_workstations_workstation_iam_member` | IAMMember (iam.gcp.hfl.dev/v1beta1) on Workstation | gap kind (config-connector-extensions) |
 
 ### gcve-private-cloud
 
@@ -1636,7 +1636,7 @@ Rank 86. Terraform module: [`modules/geap-agent-runtime`](https://github.com/Goo
 | `google_project_iam_member` | IAMPolicyMember -> Project |  |
 | `google_service_account` | IAMServiceAccount |  |
 | `google_storage_bucket` | StorageBucket |  |
-| `google_storage_bucket_object` | StorageBucketObject (storage.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_storage_bucket_object` | StorageBucketObject (storage.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_vertex_ai_reasoning_engine` | AIPlatformReasoningEngine (aiplatform.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 
 ### geap-workbench
