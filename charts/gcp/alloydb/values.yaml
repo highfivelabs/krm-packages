@@ -69,7 +69,9 @@ encryption_config: null
 flags: null
 # The GCE zone the instance serves from; ZONAL instances only.
 gce_zone: null
-# The cluster's initial user {user, password}: refused (a password).
+# The cluster's initial user {user, password}: user defaults to postgres;
+# password is required, a reference to a Kubernetes Secret, {secretName,
+# key} (docs/secrets.md).
 initial_user: null
 # Name of the primary instance.
 instance_name: ""
@@ -101,6 +103,8 @@ skip_await_major_version_upgrade: true
 subscription_type: STANDARD
 # Tag bindings for the clusters, in key => tag value id format.
 tag_bindings: {}
-# Users of the primary cluster, by name: {password, roles, type}. Only
-# ALLOYDB_IAM_USER and ALLOYDB_IAM_GROUP users are accepted.
+# Users of the primary cluster, by name: {password, roles, type}. An
+# ALLOYDB_BUILT_IN user (the default type) needs password, a reference to
+# a Kubernetes Secret, {secretName, key} (docs/secrets.md): the catalog
+# never generates one. ALLOYDB_IAM_USER and ALLOYDB_IAM_GROUP have none.
 users: {}

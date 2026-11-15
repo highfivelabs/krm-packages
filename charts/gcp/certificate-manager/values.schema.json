@@ -103,12 +103,27 @@
             ],
             "properties": {
               "pem_certificate": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
               },
               "pem_private_key": {
-                "type": "string"
+                "description": "A reference to a Kubernetes Secret in the component's namespace (docs/secrets.md); a string, the secret itself, is refused",
+                "type": [
+                  "object",
+                  "string"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "secretName": {
+                    "type": "string"
+                  },
+                  "key": {
+                    "type": "string"
+                  }
+                }
               }
-            }
+            },
+            "description": "A self-managed certificate: pem_certificate, the certificate chain in PEM (public, a plain value), and pem_private_key, a reference to a Kubernetes Secret, {secretName, key}, whose value is the leaf's private key in PEM (docs/secrets.md)."
           },
           "managed": {
             "type": [

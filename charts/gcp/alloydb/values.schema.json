@@ -576,13 +576,25 @@
           ]
         },
         "password": {
+          "description": "A reference to a Kubernetes Secret in the component's namespace (docs/secrets.md); a string, the secret itself, is refused",
           "type": [
+            "object",
             "string",
             "null"
-          ]
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "secretName": {
+              "type": "string"
+            },
+            "key": {
+              "type": "string"
+            }
+          }
         }
       },
-      "description": "Initial user credentials: refused (a password)."
+      "description": "The cluster's initial user, {user, password}: user defaults to postgres; password is required, a reference to a Kubernetes Secret, {secretName, key} (docs/secrets.md).",
+      "additionalProperties": false
     },
     "instance_name": {
       "description": "Name of primary instance.",
@@ -1127,10 +1139,21 @@
         "additionalProperties": false,
         "properties": {
           "password": {
+            "description": "An ALLOYDB_BUILT_IN user's password, required for one: a reference to a Kubernetes Secret, {secretName, key} (docs/secrets.md). An IAM user or group has none.",
             "type": [
+              "object",
               "string",
               "null"
-            ]
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "secretName": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              }
+            }
           },
           "roles": {
             "type": [

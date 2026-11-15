@@ -6,17 +6,18 @@
 # the chart ports: id and name of the gateway (id from the gateway's name, as
 # fabric builds it from var.name), self_link (the new gateway's, else
 # vpn_gateway), router_name (the new router's, else router_config.name) and
-# route_policies, each policy's ID keyed as fabric keys them. Not outputs:
-# md5_keys, random_secret, shared_secrets, tunnel_names and
-# tunnel_self_links (tunnels is refused, so there are none and no secret),
-# and fabric's whole objects (bgp_peers, external_gateway, gateway, router,
-# tunnels; docs/design.md, "Outputs").
+# route_policies, each policy's ID keyed as fabric keys them, and
+# tunnel_names and tunnel_self_links, keyed by tunnel. Not outputs:
+# md5_keys, random_secret and shared_secrets (secrets: the chart makes none
+# and takes them from Kubernetes Secrets, docs/secrets.md), and fabric's
+# whole objects (bgp_peers, external_gateway, gateway, router, tunnels;
+# docs/design.md, "Outputs").
 apiVersion: hfl.dev/v1
 kind: Package
 metadata:
   name: gcp-net-vpn-ha
 spec:
-  version: 0.1.0
+  version: 0.2.0
   engine: helm
   providers: [kcc]
   outputs:
@@ -38,3 +39,7 @@ spec:
           ? v.spec.routerRef.external + '/routePolicies/' + v.spec.resourceID
           : 'projects/' + inputs.project_id + '/regions/' + inputs.region
             + '/routers/' + resources.router.spec.resourceID + '/routePolicies/' + v.spec.resourceID})
+    tunnel_names: >-
+      resources.transformMapEntry(k, v, k.startsWith('tunnel:'), {k.substring(7): v.spec.resourceID})
+    tunnel_self_links: >-
+      resources.transformMapEntry(k, v, k.startsWith('tunnel:'), {k.substring(7): dyn(v.status.selfLink)})

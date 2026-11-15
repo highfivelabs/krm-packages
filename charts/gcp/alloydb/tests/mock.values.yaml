@@ -1,5 +1,8 @@
 # For the fake cloud (hack/mock-apply.sh): a small zonal cluster and
-# instance with one read pool, deletable.
+# instance with one read pool, deletable; the initial user and a built-in
+# user, their passwords from the Secret below, which hack/test-secret.sh
+# makes in the test's namespace before the apply (docs/secrets.md).
+# secret: catalog-mock-adb random
 project_id: mock-project
 prefix: catalog
 cluster_name: mock-adb
@@ -11,3 +14,8 @@ network_config:
     network: projects/mock-project/global/networks/default
 read_pool:
   ro: {}
+initial_user:
+  user: admin
+  password: {secretName: catalog-mock-adb, key: value}
+users:
+  app: {password: {secretName: catalog-mock-adb, key: value}}

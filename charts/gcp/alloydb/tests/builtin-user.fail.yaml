@@ -1,4 +1,4 @@
-# expect: alloydb: users.app (type ALLOYDB_BUILT_IN) is not supported
+# expect: alloydb: users.app is an ALLOYDB_BUILT_IN user without a password
 project_id: p
 cluster_name: db
 instance_name: db

@@ -5,13 +5,15 @@ Ported from cloud-foundation-fabric modules/cloudsql-instance/main.tf
 (v60.0.0), Copyright 2026 Google LLC, Apache-2.0.
 
 google_sql_database.databases: one SQLDatabase per entry of databases;
-google_sql_user.users: one SQLUser per entry of users (IAM users only:
-README.md, "Values"); google_sql_ssl_cert.client_certificates: one
+google_sql_user.users: one SQLUser per entry of users, a BUILT_IN user's
+password a reference to a Kubernetes Secret (docs/secrets.md);
+google_sql_ssl_cert.client_certificates: one
 SQLSSLCert per common name. All on the primary.
 */ -}}
 {{- $v := .Values }}
 {{- $abandon := include "kcc.abandon" . }}
 {{- $isPostgres := hasPrefix "POSTGRES" $v.database_version }}
+{{- $isMysql := hasPrefix "MYSQL" $v.database_version }}
 {{- range $db := ($v.databases | default list) | uniq | sortAlpha }}
 ---
 apiVersion: sql.cnrm.cloud.google.com/v1beta1
@@ -26,16 +28,26 @@ spec:
 {{- range $key := keys ($v.users | default dict) | sortAlpha }}
 {{- $u := index $v.users $key | default dict }}
 {{- $type := $u.type | default "BUILT_IN" }}
-{{- if eq $type "BUILT_IN" }}
-{{- fail (printf "cloudsql-instance: users.%s is a BUILT_IN user, which is not supported: its password would be in the rendered manifest, or made by Terraform's random_password, which has no Config Connector equivalent; use a CLOUD_IAM_USER or CLOUD_IAM_SERVICE_ACCOUNT user (README.md, \"Values\")" $key) }}
+{{- $builtin := eq $type "BUILT_IN" }}
+{{- $password := "" }}
+{{- if $builtin }}
+{{- if kindIs "invalid" $u.password }}
+{{- fail (printf "cloudsql-instance: users.%s is a BUILT_IN user without a password: fabric would generate one (random_password), and the catalog never generates a secret; give users.%s.password as a reference to a Kubernetes Secret, {secretName, key} (docs/secrets.md)" $key $key) }}
+{{- end }}
+{{- $password = include "kcc.secretRef" (list $ (printf "users.%s.password" $key) $u.password) }}
+{{- else }}
+{{- include "kcc.unsupported" (list $ (printf "users.%s.password" $key) $u.password "an IAM user has no password") }}
 {{- end }}
 {{- include "kcc.unsupported" (list $ (printf "users.%s.database_roles" $key) $u.database_roles "SQLUser has no database roles") }}
-{{- include "kcc.unsupported" (list $ (printf "users.%s.password" $key) $u.password "an IAM user has no password") }}
-{{- include "kcc.unsupported" (list $ (printf "users.%s.password_version" $key) $u.password_version "SQLUser has no password version") }}
-{{- /* fabric: on PostgreSQL a service account's user drops
-".gserviceaccount.com"; elsewhere the key is the name. */}}
+{{- /* fabric: on MySQL a BUILT_IN user's key is name@host; on PostgreSQL
+a user's name drops ".gserviceaccount.com"; elsewhere the key is the name.
+password_version is not used by fabric's module either. */}}
 {{- $name := $key }}
-{{- if $isPostgres }}{{ $name = trimSuffix ".gserviceaccount.com" $key }}{{ end }}
+{{- $host := "" }}
+{{- if and $isMysql $builtin (contains "@" $key) }}
+{{- $parts := splitn "@" 2 $key }}
+{{- $name = $parts._0 }}{{ $host = $parts._1 }}
+{{- else if $isPostgres }}{{ $name = trimSuffix ".gserviceaccount.com" $key }}{{ end }}
 ---
 apiVersion: sql.cnrm.cloud.google.com/v1beta1
 kind: SQLUser
@@ -46,6 +58,12 @@ spec:
   instanceRef:
     name: {{ $.Release.Name }}
   type: {{ $type }}
+  {{- with $host }}
+  host: {{ . | quote }}
+  {{- end }}
+  {{- with $password }}
+  password: {{ . }}
+  {{- end }}
 {{- end }}
 {{- range $cn := ($v.ssl.client_certificates | default list) | uniq | sortAlpha }}
 ---

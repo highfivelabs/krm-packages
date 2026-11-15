@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "gcp-to-gcp"
     app.kubernetes.io/name: net-vpn-ha
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "router"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -27,6 +27,98 @@ spec:
 ---
 # Source: net-vpn-ha/templates/main.yaml
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterInterface
+metadata:
+  name: gcp-to-gcp-interface-remote-0
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "gcp-to-gcp"
+    app.kubernetes.io/name: net-vpn-ha
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "router_interface:remote-0"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "net1-to-net-2-remote-0"
+  region: "europe-west4"
+  routerRef:
+    name: gcp-to-gcp
+  ipRange: "169.254.1.2/30"
+  vpnTunnelRef:
+    name: gcp-to-gcp-tunnel-remote-0
+---
+# Source: net-vpn-ha/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterInterface
+metadata:
+  name: gcp-to-gcp-interface-remote-1
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "gcp-to-gcp"
+    app.kubernetes.io/name: net-vpn-ha
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "router_interface:remote-1"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "net1-to-net-2-remote-1"
+  region: "europe-west4"
+  routerRef:
+    name: gcp-to-gcp
+  ipRange: "169.254.2.2/30"
+  vpnTunnelRef:
+    name: gcp-to-gcp-tunnel-remote-1
+---
+# Source: net-vpn-ha/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterPeer
+metadata:
+  name: gcp-to-gcp-bgp-peer-remote-0
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "gcp-to-gcp"
+    app.kubernetes.io/name: net-vpn-ha
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "bgp_peer:remote-0"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "net1-to-net-2-remote-0"
+  region: "europe-west4"
+  routerRef: {"name":"gcp-to-gcp"}
+  routerInterfaceRef:
+    name: gcp-to-gcp-interface-remote-0
+  peerIpAddress: "169.254.1.1"
+  peerAsn: 64513
+  advertisedRoutePriority: 1000
+  advertiseMode: DEFAULT
+---
+# Source: net-vpn-ha/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterPeer
+metadata:
+  name: gcp-to-gcp-bgp-peer-remote-1
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "gcp-to-gcp"
+    app.kubernetes.io/name: net-vpn-ha
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "bgp_peer:remote-1"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "net1-to-net-2-remote-1"
+  region: "europe-west4"
+  routerRef: {"name":"gcp-to-gcp"}
+  routerInterfaceRef:
+    name: gcp-to-gcp-interface-remote-1
+  peerIpAddress: "169.254.2.1"
+  peerAsn: 64513
+  advertisedRoutePriority: 1000
+  advertiseMode: DEFAULT
+---
+# Source: net-vpn-ha/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeVPNGateway
 metadata:
   name: gcp-to-gcp
@@ -34,7 +126,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "gcp-to-gcp"
     app.kubernetes.io/name: net-vpn-ha
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "gateway"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -45,3 +137,55 @@ spec:
   networkRef:
     external: "projects/my-project/global/networks/vpc1"
   stackType: IPV4_ONLY
+---
+# Source: net-vpn-ha/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeVPNTunnel
+metadata:
+  name: gcp-to-gcp-tunnel-remote-0
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "gcp-to-gcp"
+    app.kubernetes.io/name: net-vpn-ha
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "tunnel:remote-0"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "net1-to-net-2-remote-0"
+  region: "europe-west4"
+  vpnGatewayRef:
+    name: gcp-to-gcp
+  vpnGatewayInterface: 0
+  peerGCPGatewayRef:
+    external: "projects/my-project/regions/europe-west4/vpnGateways/net2-to-net1"
+  ikeVersion: 2
+  routerRef:
+    name: gcp-to-gcp
+  sharedSecret: {"valueFrom":{"secretKeyRef":{"key":"shared-secret","name":"net1-to-net2-vpn"}}}
+---
+# Source: net-vpn-ha/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeVPNTunnel
+metadata:
+  name: gcp-to-gcp-tunnel-remote-1
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "gcp-to-gcp"
+    app.kubernetes.io/name: net-vpn-ha
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "tunnel:remote-1"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "net1-to-net-2-remote-1"
+  region: "europe-west4"
+  vpnGatewayRef:
+    name: gcp-to-gcp
+  vpnGatewayInterface: 1
+  peerGCPGatewayRef:
+    external: "projects/my-project/regions/europe-west4/vpnGateways/net2-to-net1"
+  ikeVersion: 2
+  routerRef:
+    name: gcp-to-gcp
+  sharedSecret: {"valueFrom":{"secretKeyRef":{"key":"shared-secret","name":"net1-to-net2-vpn"}}}
