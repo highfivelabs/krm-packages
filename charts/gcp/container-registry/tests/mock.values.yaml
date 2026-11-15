@@ -1,0 +1,6 @@
+# Applied to the fake cloud by hack/mock-apply.sh: the us.gcr.io repository
+# and its IAM.
+project_id: mock-project
+location: US
+iam:
+  roles/artifactregistry.reader: ["user:dev@example.com"]

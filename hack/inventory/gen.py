@@ -30,7 +30,7 @@ mods={m:v for m,v in c["mods"].items() if m!="__experimental_deprecated"}
 assert set(RANK)==set(mods), (set(mods)-set(RANK), set(RANK)-set(mods))
 COMPOSITE={"project-factory":"composes folder, project, iam-service-account, gcs, kms, pubsub, bigquery-dataset, logging-bucket, billing-account, data-catalog-policy-tag, dataplex-aspect-types",
            "net-vpc-factory":"composes net-vpc and net-vpc-firewall"}
-NONE_PRIMARY={"looker-core","endpoints","container-registry"}
+NONE_PRIMARY={"looker-core","endpoints"}
 NA={"projects-data-source":"data sources only (a read, not a resource)","cloud-config-container":"generates cloud-init text; no resources"}
 def size(v):
     l=v["tf_lines"]

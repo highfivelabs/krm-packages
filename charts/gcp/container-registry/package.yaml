@@ -1,0 +1,24 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (see iam-service-account/package.yaml).
+# Outputs are fabric's declared outputs (docs/design.md, "Outputs"),
+# computed from inputs. fabric's id is the registry's Cloud Storage bucket;
+# the registry is now an Artifact Registry repository (decision 30), so id
+# is that repository's full resource name
+# (projects/<project>/locations/<us|europe|asia>/repositories/<host>).
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: gcp-container-registry
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [kcc]
+  outputs:
+    id: >-
+      'projects/' + inputs.project_id + '/locations/' +
+      (inputs.location == null || inputs.location == '' ? 'us/repositories/gcr.io'
+        : inputs.location.upperAscii() == 'US' ? 'us/repositories/us.gcr.io'
+        : inputs.location.upperAscii() == 'EU' ? 'europe/repositories/eu.gcr.io'
+        : 'asia/repositories/asia.gcr.io')

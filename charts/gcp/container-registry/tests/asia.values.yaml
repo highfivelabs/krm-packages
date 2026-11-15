@@ -1,0 +1,3 @@
+# The asia.gcr.io host, location given in lower case.
+project_id: my-project
+location: asia

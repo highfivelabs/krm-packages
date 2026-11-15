@@ -672,7 +672,7 @@ gcp,geap-workbench,service_account,no
 gcp,geap-workbench,service_account_email,no
 gcp,geap-workbench,service_account_iam_email,no
 gcp,geap-workbench,state,no
-gcp,container-registry,id,no
+gcp,container-registry,id,yes
 gcp,projects-data-source,project_numbers,no
 gcp,projects-data-source,projects,no
 gcp,kubernetes-engine-beta-private-cluster,ca_certificate,yes

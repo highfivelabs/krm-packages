@@ -75,6 +75,20 @@ The decisions of 2026-11-09, applied in the sections below.
     Bundt's plan blocks; outputs are bare CEL, never `${...}` ("Outputs").
 12. **A Template version is only recorded rows** (2026-11-10, K7), not an
     OCI parent artifact ("Versioning and the OCI layout").
+13. **Container Registry maps to Artifact Registry** (the builder,
+    2026-11-13: "Container Registry: map to Artifact Registry";
+    config-connector-extensions `docs/design.md`, decision 30). Google's
+    Container Registry is shut down, so no kind is built for
+    `google_container_registry`. The inventory maps it to Config
+    Connector's `ArtifactRegistryRepository` (`hack/inventory/manual.py`),
+    and the `container-registry` chart ports fabric's module as the
+    `DOCKER` repository with gcr.io domain support that Google defines for
+    the module's `location`: empty is `gcr.io` in `us`, `US` `us.gcr.io` in
+    `us`, `EU` `eu.gcr.io` in `europe`, `ASIA` `asia.gcr.io` in `asia`.
+    The repository's IAM replaces the bucket's; a Cloud Storage role in
+    `iam` is refused with the Artifact Registry role to use, and the `id`
+    output is the repository's resource name, not a bucket
+    (`charts/gcp/container-registry/README.md`).
 
 ## Summary
 
