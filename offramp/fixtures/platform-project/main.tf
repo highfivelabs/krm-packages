@@ -23,9 +23,9 @@
 # design's "Gaps"), so `default_service_account` stays at "keep".
 #
 # Needs, on the parent folder, roles/resourcemanager.projectCreator, and on
-# the billing account roles/billing.user. The live-test account holds
-# neither (register items O33, O34): this shape is validated and converted
-# offline only.
+# the billing account roles/billing.user. The live-test account holds both
+# on the new organization's live-tests folder and the spectacle billing
+# account (register item O34c, 2026-11-15).
 
 terraform {
   required_version = ">= 1.12.2"

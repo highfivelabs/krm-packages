@@ -13,7 +13,9 @@
 #
 # Shapes: shared-vpc, folders, platform-project, gke. For folders and
 # platform-project set PARENT (folders/<n>, the live-tests folder) and
-# ORG_ID; for platform-project BILLING_ACCOUNT too. FIXTURES is the
+# ORG_ID; for platform-project BILLING_ACCOUNT too. ORG_POLICIES=false
+# leaves the folders shape's organization policies (orgpolicy.tf) out, for
+# an account without roles/orgpolicy.policyAdmin. FIXTURES is the
 # directory of root modules (default offramp/fixtures; they may move to the
 # terraform-offramp-demo repository).
 #
@@ -160,6 +162,10 @@ trap cleanup EXIT
 log "1. terraform apply (${SHAPE}, prefix ${RUN})"
 mkdir -p "${OUT}/tf"
 cp "${FIXTURES}/${SHAPE}"/*.tf "${OUT}/tf/"
+if [[ "${SHAPE}" == folders && "${ORG_POLICIES:-true}" == false ]]; then
+  rm -f "${OUT}/tf/orgpolicy.tf"
+  row "organization policies" "left out" "ORG_POLICIES=false: orgpolicy.tf (three policies) not applied"
+fi
 case "${SHAPE}" in
   shared-vpc)
     cat >"${OUT}/tf/terraform.tfvars" <<EOF
@@ -201,12 +207,21 @@ EOF
 esac
 "${TF[@]}" init -input=false -no-color >"${OUT}/init.log" 2>&1 || { row "terraform init" failed "$(grep -m1 Error "${OUT}/init.log")"; exit 1; }
 "${TF[@]}" version -json >"${OUT}/terraform-version.json"
-if ! "${TF[@]}" apply -auto-approve -input=false -no-color >"${OUT}/apply.log" 2>&1; then
+# The folders shape's firewall policy associations are keyed by folder IDs
+# the cloud assigns, so its first apply creates the folders alone
+# (Terraform's own advice for a for_each over unknown keys).
+applied=yes
+if [[ "${SHAPE}" == folders ]] &&
+  ! "${TF[@]}" apply -auto-approve -input=false -no-color -target=module.environments >"${OUT}/apply-target.log" 2>&1; then
+  cp "${OUT}/apply-target.log" "${OUT}/apply.log"
+  applied=no
+fi
+if [[ "${applied}" == no ]] || ! "${TF[@]}" apply -auto-approve -input=false -no-color >"${OUT}/apply.log" 2>&1; then
   grep -A3 '^Error' "${OUT}/apply.log" >"${OUT}/apply-errors.txt" || true
   row "terraform apply" "**blocked**" "$(grep -m3 -oE 'Error[^│]*|Permission [^ ]+ denied[^│]*|IAM_PERMISSION_DENIED[^│]*|SERVICE_DISABLED[^│]*' "${OUT}/apply.log" | tr '\n|' '  ' | cut -c1-400)"
   exit 3
 fi
-row "terraform apply" ok "$(grep -oE 'Apply complete! Resources: [0-9]+ added' "${OUT}/apply.log")"
+row "terraform apply" ok "$(cat "${OUT}/apply-target.log" "${OUT}/apply.log" 2>/dev/null | grep -oE 'Apply complete! Resources: [0-9]+ added' | tr '\n' ' ')"
 "${TF[@]}" state pull >"${OUT}/state.json"
 set +o errexit
 "${TF[@]}" plan -detailed-exitcode -input=false -no-color >"${OUT}/plan-before.txt" 2>&1; rc=$?
@@ -217,7 +232,15 @@ kcc_tools
 
 # ---- 2. scan and export ----------------------------------------------------
 log "2. scan"
-"${OFF}/hack/scan.sh" --scope "projects/${PROJECT}" --match "${RUN}" --billing-project "${PROJECT}" >"${OUT}/assets.json" 2>"${OUT}/scan.log" || true
+# The scope that holds the run: the run's root folder (everything below it
+# is the run's), the run's project, or the live-test project filtered by
+# the run's prefix.
+case "${SHAPE}" in
+  folders) SCAN=(--scope "$("${TF[@]}" output -raw root)") ;;
+  platform-project) SCAN=(--scope "projects/${RUN}-platform") ;;
+  *) SCAN=(--scope "projects/${PROJECT}" --match "${RUN}") ;;
+esac
+"${OFF}/hack/scan.sh" "${SCAN[@]}" --billing-project "${PROJECT}" >"${OUT}/assets.json" 2>"${OUT}/scan.log" || true
 row "scan" "$(jq length "${OUT}/assets.json" 2>/dev/null || echo 0) assets" "$(grep -m1 -E 'Cloud Asset Inventory (refused|answered)' "${OUT}/scan.log" | cut -c1-250)"
 "${OFFRAMP}" names --assets "${OUT}/assets.json" >"${OUT}/names.txt" 2>"${OUT}/names-skipped.txt"
 mkdir -p "${OUT}/export"
@@ -340,10 +363,23 @@ echo "T0=${T0} T1=${T1} T2=${T2} RUNNER=${RUNNER} RUN=${RUN}" >"${OUT}/windows.t
 # ---- 10. audit logs ----------------------------------------------------------------------------
 log "10. audit logs (they arrive within a minute or two)"
 sleep 120
-FILTER="logName=\"projects/${PROJECT}/logs/cloudaudit.googleapis.com%2Factivity\" AND protoPayload.authenticationInfo.principalEmail=\"${RUNNER}\" AND timestamp>=\"${T0}\" AND timestamp<=\"${T2}\""
-if "${G[@]}" logging read "${FILTER}" --format=json --limit=1000 >"${OUT}/audit.json" 2>"${OUT}/audit.err"; then
-  row "Admin Activity audit entries by ${RUNNER}, T0 to T2" "$(jq length "${OUT}/audit.json")" "$(jq -r '[.[] | .protoPayload.methodName] | group_by(.) | map("\(.[0]) \(length)") | join(", ")' "${OUT}/audit.json" | cut -c1-300)"
-else
-  row "Admin Activity audit entries" "not readable here" "$(head -c 200 "${OUT}/audit.err" | tr '\n|' '  '); read them with: gcloud logging read '${FILTER}' --project ${PROJECT}"
-fi
+# The live-test project's log, and where the run's resources log: the
+# parent folder (folders and their policies) or the run's own project.
+AUDIT=("projects/${PROJECT}")
+# A folder's entries are in its own log, so every folder of the run.
+[[ "${SHAPE}" == folders ]] && mapfile -t -O 1 AUDIT < <(echo "${PARENT}"; "${TF[@]}" output -json | jq -r '.root.value, .environments.value[], .teams.value[]')
+[[ "${SHAPE}" == platform-project ]] && AUDIT+=("projects/${RUN}-platform")
+for a in "${AUDIT[@]}"; do
+  f="${OUT}/audit-${a//\//-}"
+  FILTER="logName=\"${a}/logs/cloudaudit.googleapis.com%2Factivity\" AND protoPayload.authenticationInfo.principalEmail=\"${RUNNER}\" AND timestamp>=\"${T0}\" AND timestamp<=\"${T2}\""
+  case "${a}" in
+    folders/*) where=(--folder "${a#folders/}") ;;
+    *) where=(--project "${a#projects/}") ;;
+  esac
+  if gcloud --quiet logging read "${FILTER}" "${where[@]}" --format=json --limit=1000 >"${f}.json" 2>"${f}.err"; then
+    row "Admin Activity audit entries in ${a} by ${RUNNER}, T0 to T2" "$(jq length "${f}.json")" "$(jq -r '[.[] | .protoPayload.methodName] | group_by(.) | map("\(.[0]) \(length)") | join(", ")' "${f}.json" | cut -c1-300)"
+  else
+    row "Admin Activity audit entries in ${a}" "not readable here" "$(head -c 200 "${f}.err" | tr '\n|' '  '); read them with: gcloud logging read '${FILTER}' ${where[*]}"
+  fi
+done
 log "done; cleanup follows"
