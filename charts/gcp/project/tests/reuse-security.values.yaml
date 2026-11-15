@@ -1,0 +1,10 @@
+# 0.10.0 on a reused project with its number: the project in a VPC-SC
+# perimeter by number, and (behind allow_alpha) a hierarchical Cloud Armor
+# policy association named project-<number>.
+name: existing-project
+project_reuse: {attributes: {name: existing-project, number: 123456789012}}
+allow_alpha: true
+vpc_sc:
+  perimeter_name: accessPolicies/1234/servicePerimeters/default
+cloud_armor_policy:
+  policy_id: "987654321"

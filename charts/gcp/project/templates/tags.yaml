@@ -15,7 +15,7 @@ with project_reuse, project_reuse.attributes.number.
 {{- $reuse := not (kindIs "invalid" $v.project_reuse) }}
 {{- $number := "" }}
 {{- if $reuse }}
-{{- $number = (($v.project_reuse | default dict).attributes | default dict).number | default "" | toString }}
+{{- $number = include "project.reuseNumber" $ }}
 {{- if not $number }}
 {{- fail "project: tag_bindings on a reused project need project_reuse.attributes.number: a tag binding names the project by its number, which the chart cannot read" }}
 {{- end }}

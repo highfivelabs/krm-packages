@@ -1,0 +1,4 @@
+# expect: cloud_armor_policy needs the alpha Config Connector kind ComputeOrganizationSecurityPolicyAssociation
+name: existing-project
+project_reuse: {attributes: {number: 123456789012}}
+cloud_armor_policy: {policy_id: "123"}

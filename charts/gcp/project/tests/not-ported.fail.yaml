@@ -1,4 +1,4 @@
-# expect: asset_feeds is not supported: Config Connector's kind CloudAssetProjectFeed is v1alpha1 and not ported to this chart yet
+# expect: scc_mute_configs is not supported: Config Connector's and config-connector-extensions' SecurityCenterMuteConfig is a v1 API mute config
 name: my-project
 parent: folders/1
-asset_feeds: {f: {pubsub_topic: projects/p/topics/t}}
+scc_mute_configs: {m: {filter: severity="LOW"}}

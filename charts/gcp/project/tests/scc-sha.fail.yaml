@@ -1,0 +1,5 @@
+# expect: scc_sha_custom_modules is not supported: SecurityCenterManagementSecurityHealthAnalyticsCustomModule takes an organization only
+name: my-project
+parent: folders/1
+allow_alpha: true
+scc_sha_custom_modules: {m: {predicate: {expression: "true"}, recommendation: r, resource_selector: {resource_types: [x]}, severity: LOW}}

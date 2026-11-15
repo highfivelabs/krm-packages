@@ -1,0 +1,4 @@
+# expect: vpc_sc.is_dry_run is not supported: Config Connector has no dry-run perimeter resource kind
+name: my-project
+parent: folders/1
+vpc_sc: {perimeter_name: accessPolicies/1/servicePerimeters/p, is_dry_run: true}

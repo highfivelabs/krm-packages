@@ -133,10 +133,10 @@ How much of the Terraform modules people use today the catalog carries, counted 
 
 | Source | Modules | Bar | Variables covered |
 | --- | ---: | --- | ---: |
-| Google Cloud: Cloud Foundation Fabric and terraform-google-modules | 98 | ![gcp](docs/coverage/gcp.svg) | 1005 of 1478 (68.0%) |
+| Google Cloud: Cloud Foundation Fabric and terraform-google-modules | 98 | ![gcp](docs/coverage/gcp.svg) | 1009 of 1478 (68.3%) |
 | AWS: terraform-aws-modules | 42 | ![aws](docs/coverage/aws.svg) | 575 of 2348 (24.5%) |
 | Azure: Azure Verified Modules | 37 | ![azure](docs/coverage/azure.svg) | 1053 of 1170 (90.0%) |
-| **All** | **177** | | **2633 of 4996 (52.7%)** |
+| **All** | **177** | | **2637 of 4996 (52.8%)** |
 
 ### Google Cloud: Cloud Foundation Fabric and terraform-google-modules
 
@@ -146,7 +146,7 @@ How much of the Terraform modules people use today the catalog carries, counted 
 
 | Module | Variables covered | Outputs | Resource types with a stable kind | Status |
 | --- | --- | ---: | ---: | --- |
-| [`project`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/project) ([chart](charts/gcp/project)) | ![project](docs/coverage/bars/gcp-project.svg) 41 of 58 | 14 of 27 | 41 of 49 | partial |
+| [`project`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/project) ([chart](charts/gcp/project)) | ![project](docs/coverage/bars/gcp-project.svg) 45 of 58 | 14 of 27 | 41 of 49 | partial |
 | [`folder`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/folder) ([chart](charts/gcp/folder)) | ![folder](docs/coverage/bars/gcp-folder.svg) 22 of 31 | 4 of 9 | 16 of 24 | partial |
 | [`organization`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/organization) ([chart](charts/gcp/organization)) | ![organization](docs/coverage/bars/gcp-organization.svg) 29 of 35 | 12 of 23 | 25 of 35 | partial |
 | [`iam-service-account`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/iam-service-account) ([chart](charts/gcp/iam-service-account)) | ![iam-service-account](docs/coverage/bars/gcp-iam-service-account.svg) 24 of 28 | 5 of 6 | 9 of 9 | partial |

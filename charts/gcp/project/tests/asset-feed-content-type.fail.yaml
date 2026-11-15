@@ -1,0 +1,4 @@
+# expect: Content type must be one of RESOURCE, IAM_POLICY, ORG_POLICY, ACCESS_POLICY, OS_INVENTORY, RELATIONSHIP.
+name: my-project
+parent: folders/1
+asset_feeds: {f: {content_type: NOPE, feed_output_config: {pubsub_destination: {topic: projects/p/topics/t}}}}

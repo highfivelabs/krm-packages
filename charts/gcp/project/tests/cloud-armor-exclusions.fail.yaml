@@ -1,0 +1,5 @@
+# expect: Exclusions are not supported for project-level Cloud Armor policy associations.
+name: existing-project
+project_reuse: {attributes: {number: 123456789012}}
+allow_alpha: true
+cloud_armor_policy: {policy_id: "123", excluded_projects: [projects/1]}

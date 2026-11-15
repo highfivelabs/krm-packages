@@ -64,7 +64,11 @@ org_policies:
 | `pam_entitlements` | one `PrivilegedAccessManagerEntitlement` each on the project, with fabric's default justification (unstructured), its approvals and notification targets |
 | `bigquery_reservations` | one `BigQueryReservationReservation` each and one `BigQueryReservationAssignment` per job type and assignee (`projects/`, `folders/` or `organizations/`), keyed as fabric keys them; fabric's `scaling_mode` is not read by its resource either |
 | `kms_autokeys` | one `KMSKeyHandle` each |
-| `allow_alpha` | not a fabric variable: accept `log_scopes`, whose kind is `v1alpha1` |
+| `iam_deny_policies` | one `IAMDenyPolicy` of config-connector-extensions (`iam.gcp.hfl.dev/v1beta1`) each on the project, named by its key, with its rules (denied and exception principals and permissions, the denial condition) and fabric's check that every rule denies a principal a permission |
+| `asset_feeds` | one `AssetFeed` (`v1beta1`) each on the project, its ID the key, to the Pub/Sub topic `projects/<project>/topics/<topic>`, with its content type (fabric's check), asset types and names and condition. `billing_project` is not carried: `AssetFeed` has no field for it, and Config Connector bills the call to the project its controller is configured with (as the `organization` chart) |
+| `vpc_sc` | one `AccessContextManagerServicePerimeterResource` (`v1beta1`) putting the project in `perimeter_name` (`accessPolicies/<n>/servicePerimeters/<name>`), by the `Project` object (Config Connector reads its number), or with `project_reuse` by `project_reuse.attributes.number`, which it then needs. `is_dry_run` is refused: Config Connector has no dry-run perimeter resource kind |
+| `cloud_armor_policy` | alpha: needs `allow_alpha: true`. One `ComputeOrganizationSecurityPolicyAssociation` (`v1alpha1`) of the hierarchical policy with `projects/<number>`, named `project-<number>` unless named, as the `folder` chart. The number must be known, so it needs `project_reuse` with `attributes.number` (a new project's number exists only after apply). Exclusions are refused with fabric's message |
+| `allow_alpha` | not a fabric variable: accept `log_scopes` and `cloud_armor_policy`, whose kinds are `v1alpha1` |
 | `tag_bindings` | one `TagsTagBinding` each on the project: the `Project` object (Config Connector reads its number), or with `project_reuse` the number in `project_reuse.attributes.number`, which it then needs |
 
 ## Not ported
@@ -73,7 +77,8 @@ Refused when set:
 
 | Variable | Why |
 | --- | --- |
-| `asset_feeds`, `iam_deny_policies`, `scc_mute_configs`, `scc_sha_custom_modules`, `vpc_sc` | their Config Connector kinds are `v1alpha1` (`CloudAssetProjectFeed`, `IAMDenyPolicy`, `SecurityCenterMuteConfig`, the SCC custom module, `AccessContextManagerServicePerimeterResource`); not ported yet, even with `allow_alpha` |
+| `scc_mute_configs` | Config Connector's and config-connector-extensions' `SecurityCenterMuteConfig` is a v1 API mute config (`projects/<id>/muteConfigs`); fabric's is a Security Command Center v2 one at location `global`, which has no kind (as the `organization` chart) |
+| `scc_sha_custom_modules` | `SecurityCenterManagementSecurityHealthAnalyticsCustomModule` takes an organization only (no `projectRef`); no kind makes a project's custom module |
 | `service_agents_config`, `service_agents_folder_bindings`, `service_agents_project_bindings`, `service_encryption_key_ids` | they grant roles to the project's service agents, whose emails name the project number, known only after apply (gap 8); fabric's default grants to service agents are not made either |
 | `factories_config` | a chart cannot read the caller's files: their entries go in the variables they feed |
 
@@ -84,7 +89,6 @@ Refused because Config Connector cannot express them:
 | `compute_metadata` | `ComputeProjectMetadata` owns all of a project's metadata; fabric sets single keys (gap 10) |
 | `default_network_tier`, `default_service_account` other than `keep` | no kind (gap 10) |
 | `shared_vpc_service_config.service_agent_iam`, `service_agent_subnet_iam`, `service_iam_grants`, `network_subnet_users` | grants to service agents name the project number, known only after apply (gap 8) |
-| `cloud_armor_policy` | `ComputeOrganizationSecurityPolicyAssociation` is alpha |
 | `asset_search` | a read, not a resource |
 | `universe`, `skip_delete`, `context` | other universes are not supported; `skip_delete` is deprecated in fabric; use Bundt expressions |
 
@@ -110,9 +114,10 @@ have no value.
 ## Alpha
 
 `allow_alpha: true` accepts `log_scopes` (`LoggingLogScope` is
-`v1alpha1`), render-tested only (docs/design.md, "Alpha kinds").
-`iam_deny_policies`, `scc_mute_configs` and `scc_sha_custom_modules` need
-alpha kinds too and are not ported yet, even with `allow_alpha`.
+`v1alpha1`) and `cloud_armor_policy`
+(`ComputeOrganizationSecurityPolicyAssociation` is `v1alpha1`), both
+render-tested only (docs/design.md, "Alpha kinds"). Without it each is
+refused with the kind it needs.
 
 ## Upstream
 
@@ -126,9 +131,10 @@ with every other module the catalog tracks. To take a newer release, see
 
 ## Tests
 
-`task test CHART=project`: eleven render cases (`extras` carries the
+`task test CHART=project`: thirteen render cases (`extras` carries the
 0.5.0 variables, `logging` the 0.6.0 ones, `monitoring` the 0.7.0 ones, `tags` the 0.8.0 ones, `identity` the 0.9.0 ones, `reuse-tags` tag bindings on a
-reused project), thirty-one refusals. `tests/mock.values.yaml` (no lien and no Shared VPC: mockgcp has
+reused project, `security` the 0.10.0 variables on a new project and
+`reuse-security` on a reused one), thirty-nine refusals. `tests/mock.values.yaml` (no lien and no Shared VPC: mockgcp has
 neither) is applied to the fake cloud.
 
 On 2026-11-12 (`task test-mock MOCK_CHARTS=project`, offload VM), with the
@@ -161,6 +167,15 @@ provisioner").
 
 ## Changes
 
+- **0.10.0** (2026-11-15): `iam_deny_policies` (config-connector-extensions'
+  `IAMDenyPolicy`, as the `folder` chart), `asset_feeds` (`AssetFeed`, as
+  the `organization` chart; `billing_project` not carried), `vpc_sc`
+  (`AccessContextManagerServicePerimeterResource`; `is_dry_run` refused) and,
+  behind `allow_alpha`, `cloud_armor_policy` on a reused project with its
+  number. `scc_mute_configs` and `scc_sha_custom_modules` stay refused, now
+  as gaps (a v1 API mute config; an organization-only custom module). A
+  `project_reuse.attributes.number` written unquoted renders whole (it
+  rendered as `1.23456789012e+11` in tag bindings).
 - **0.9.1** (2026-11-13): `tag_keys`, `tag_values`, `network_tag_keys` and
   `network_tag_values` are `tagKeys/<n>` and `tagValues/<n>`, as documented:
   `TagsTagKey`'s and `TagsTagValue`'s `status.name` is the bare number,
