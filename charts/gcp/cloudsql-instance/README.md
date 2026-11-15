@@ -136,8 +136,10 @@ kinds named inside their instance.
 
 `tests/mock.values.yaml` (a small PostgreSQL instance, one database, a
 `BUILT_IN` user, its password and the root password from a Secret that
-`hack/test-secret.sh` makes at run time) is for the fake cloud (`task
-test-mock`).
+`hack/test-secret.sh` makes at run time) was applied to the fake cloud on
+2026-11-15 (`task test-mock MOCK_CHARTS=cloudsql-instance`, run
+`off-catalog-1115101141-17661`): the instance, the database and the user
+Ready, the outputs evaluated, all deleted.
 
 ## Changes
 

@@ -154,7 +154,8 @@ Applied to the fake cloud on 2026-11-12 (`task test-mock
 MOCK_CHARTS=alloydb`, `tests/mock.values.yaml`: a zonal cluster and
 instance with one read pool; since 0.2.0 also the initial user and a
 built-in user, their passwords from a Secret `hack/test-secret.sh` makes
-at run time): every object Ready, the outputs evaluated
+at run time; run `off-catalog-1115101141-17661`, 2026-11-15, with the
+user Ready too): every object Ready, the outputs evaluated
 against the live objects, every object deleted at once and gone. The first
 run found that deleting the component left both instances' objects behind
 ("reference AlloyDBCluster ... is not found"): Config Connector resolves an
