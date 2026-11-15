@@ -50,10 +50,18 @@ Only shared-vpc has run live end to end (on the old organization). Since
 organization's live-tests folder (`OFFRAMP_*` in `.env`, see
 `.env.example`), and each still stops at `terraform apply`:
 
-- folders: the organization's domain-restricted sharing
-  (`iam.allowedPolicyMemberDomains`) refuses the live-test service
-  account, whose project was made in the old organization, even at folder
-  create (register item O34f); its organization policies need
+- folders: applied, `terraform plan` empty, the folder-scope scan
+  answered by Cloud Asset Inventory, export 6 of 6, and the four calls
+  graduated to their charts with matching renders (run
+  `ofr-11152324-1c64`); it stops applying the objects to kind, because the
+  folders chart renders authoritative bindings as config-connector-
+  extensions' `IAMBinding` (`iam.gcp.hfl.dev`), whose CRD and controller
+  live.sh does not install yet. Google Cloud grants a folder's creator
+  `folderAdmin` and `folderEditor` on it, so the new organization's
+  domain-restricted sharing (`iam.allowedPolicyMemberDomains`) sometimes
+  refuses the create itself for the live-test service account, whose
+  project was made in the old organization (register item O34f); the
+  fixtures' own grants go to `OFFRAMP_MEMBER`. Its organization policies need
   `orgpolicy.policyAdmin` (`OFFRAMP_ORG_POLICIES=false` leaves them out);
   its hierarchical firewall policy needs `compute.globalOperations.get` on
   the organization (O34d; `OFFRAMP_FOLDER_FIREWALL=false` leaves it out).
