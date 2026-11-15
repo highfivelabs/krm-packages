@@ -1,0 +1,19 @@
+# fabric's README, "PSC service attachment" (without the two refused
+# fields).
+name: ilb-test
+project_id: my-project
+region: europe-west1
+backend_service_configs:
+  default:
+    backends:
+      - group: projects/my-project/zones/europe-west1-b/instanceGroups/my-ig
+service_attachment:
+  nat_subnets: [projects/my-project/regions/europe-west1/subnetworks/psc-nat]
+  automatic_connection: false
+  consumer_accept_lists: {other-project: 10}
+  consumer_reject_lists: [bad-project]
+  description: The attachment.
+  enable_proxy_protocol: true
+vpc_config:
+  network: projects/my-project/global/networks/my-vpc
+  subnetwork: projects/my-project/regions/europe-west1/subnetworks/my-subnet

@@ -1,0 +1,18 @@
+# An HTTPS ILB on Certificate Manager certificates, on port 8443, standard
+# tier.
+name: ilb-test
+project_id: my-project
+region: europe-west1
+protocol: HTTPS
+ports: [8443]
+network_tier_premium: false
+backend_service_configs:
+  default:
+    backends:
+      - group: projects/my-project/zones/europe-west1-b/instanceGroups/my-ig
+https_proxy_config:
+  certificate_manager_certificates:
+    - projects/my-project/locations/europe-west1/certificates/my-cert
+vpc_config:
+  network: projects/my-project/global/networks/my-vpc
+  subnetwork: projects/my-project/regions/europe-west1/subnetworks/my-subnet

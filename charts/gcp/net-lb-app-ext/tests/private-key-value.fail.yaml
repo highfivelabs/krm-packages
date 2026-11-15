@@ -1,0 +1,5 @@
+# expect: net-lb-app-ext: ssl_certificates.create_configs.a.private_key takes a reference to a Kubernetes Secret, {secretName, key}, never the secret's value (docs/secrets.md)
+name: lb
+project_id: my-project
+protocol: HTTPS
+ssl_certificates: {create_configs: {a: {certificate: CERT, private_key: KEY}}}

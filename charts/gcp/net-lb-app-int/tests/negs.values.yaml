@@ -1,0 +1,64 @@
+# fabric's README, "Network Endpoint Groups": zonal (the chart's
+# subnetwork), hybrid, serverless with a tag, PSC in another project, and
+# internet NEGs with their endpoints (alpha).
+name: ilb-test
+project_id: my-project
+region: europe-west1
+allow_alpha: true
+backend_service_configs:
+  default:
+    backends:
+      - {group: zonal, balancing_mode: RATE, max_rate: {per_endpoint: 10}}
+  hybrid:
+    backends:
+      - {group: hybrid, balancing_mode: RATE, max_rate: {per_endpoint: 10}}
+  run:
+    backends: [{group: run}]
+    health_checks: []
+  psc:
+    backends: [{group: psc}]
+    health_checks: []
+  web:
+    backends: [{group: web}]
+    health_checks: []
+  ip:
+    backends: [{group: ip}]
+    health_checks: []
+neg_configs:
+  zonal:
+    gce:
+      zone: europe-west1-b
+      endpoints:
+        e-0: {instance: my-vm, ip_address: 10.0.0.10, port: 80}
+  hybrid:
+    project_id: other-project
+    hybrid:
+      zone: europe-west1-b
+      network: projects/other-project/global/networks/other-vpc
+      endpoints:
+        e-0: {ip_address: 192.168.0.3, port: 80}
+  run:
+    cloudrun:
+      region: europe-west1
+      tag: blue
+      target_service: {name: my-run-service}
+  psc:
+    project_id: other-project
+    psc:
+      region: europe-west1
+      target_service: europe-west1-cloudkms.googleapis.com
+  web:
+    description: By name.
+    internet:
+      region: europe-west1
+      endpoints:
+        e-0: {destination: www.example.org, port: 443}
+  ip:
+    internet:
+      region: europe-west1
+      use_fqdn: false
+      endpoints:
+        e-0: {destination: 203.0.113.10, port: 80}
+vpc_config:
+  network: projects/my-project/global/networks/my-vpc
+  subnetwork: projects/my-project/regions/europe-west1/subnetworks/my-subnet

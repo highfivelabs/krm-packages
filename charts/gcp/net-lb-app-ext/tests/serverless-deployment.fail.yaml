@@ -1,0 +1,4 @@
+# expect: net-lb-app-ext: neg_configs.a.serverless_deployment is not supported: ComputeRegionNetworkEndpointGroup has no serverlessDeployment field
+name: lb
+project_id: my-project
+neg_configs: {a: {serverless_deployment: {region: europe-west1, platform: apigateway.googleapis.com, resource: gw}}}

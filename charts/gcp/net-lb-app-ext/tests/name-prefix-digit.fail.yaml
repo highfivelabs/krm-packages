@@ -1,0 +1,4 @@
+# expect: net-lb-app-ext: URL map name "1shop-lb" must start with a lower-case letter
+name: lb
+project_id: my-project
+namePrefix: 1shop

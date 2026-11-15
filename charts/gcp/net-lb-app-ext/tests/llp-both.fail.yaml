@@ -1,0 +1,4 @@
+# expect: net-lb-app-ext: When specified, all locality lb policies must have EITHER policy or custom_policy filled, not both.
+name: lb
+project_id: my-project
+backend_service_configs: {default: {backends: [], locality_lb_policies: [{policy: {name: RING_HASH}, custom_policy: {name: x}}]}}

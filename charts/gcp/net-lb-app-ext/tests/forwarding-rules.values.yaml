@@ -1,0 +1,22 @@
+# fabric's README, "Multiple forwarding rules": IPv4 and IPv6, one on a
+# reserved address, non-classic.
+name: glb-test-0
+project_id: my-project
+use_classic_version: false
+http_proxy_config: {name: glb-proxy, description: The proxy., http_keepalive_timeout: "300"}
+forwarding_rules_config:
+  "":
+    ipv6: false
+    ports: [8080]
+  ipv6:
+    ipv6: true
+    description: IPv6.
+  reserved:
+    name: glb-reserved
+    address: projects/my-project/global/addresses/glb-ip
+  ip:
+    address: 203.0.113.20
+backend_service_configs:
+  default:
+    backends:
+      - group: projects/my-project/zones/europe-west8-b/instanceGroups/my-ig-b

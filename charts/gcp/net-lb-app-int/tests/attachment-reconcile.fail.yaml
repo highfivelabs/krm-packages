@@ -1,0 +1,6 @@
+# expect: net-lb-app-int: service_attachment.reconcile_connections is not supported
+name: lb
+project_id: my-project
+region: europe-west1
+vpc_config: {network: projects/my-project/global/networks/my-vpc, subnetwork: projects/my-project/regions/europe-west1/subnetworks/my-subnet}
+service_attachment: {nat_subnets: [projects/my-project/regions/europe-west1/subnetworks/nat], reconcile_connections: false}

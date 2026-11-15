@@ -1,0 +1,4 @@
+# expect: net-lb-app-ext: backend_service_configs.default.tls_settings is not supported
+name: lb
+project_id: my-project
+backend_service_configs: {default: {backends: [], tls_settings: {sni: example.com}}}

@@ -1,0 +1,4 @@
+# expect: net-lb-app-ext: deletion_policy PREVENT has no Config Connector equivalent
+name: lb
+project_id: my-project
+deletion_policy: PREVENT

@@ -1,0 +1,194 @@
+---
+# Source: net-lb-app-ext/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeBackendBucket
+metadata:
+  name: buckets-bucket-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "buckets"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "backend_bucket:default"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-default"
+  bucketRef:
+    external: "my-bucket"
+  compressionMode: "AUTOMATIC"
+  customResponseHeaders: ["X-Cache: {cdn_cache_status}"]
+  edgeSecurityPolicy: "projects/my-project/global/securityPolicies/edge"
+  enableCdn: true
+  cdnPolicy:
+    cacheMode: "CACHE_ALL_STATIC"
+    clientTtl: 3600
+    defaultTtl: 3600
+    maxTtl: 86400
+    negativeCaching: true
+    requestCoalescing: true
+    serveWhileStale: 60
+    signedUrlCacheMaxAgeSec: 0
+    bypassCacheOnRequestHeaders:
+      - headerName: "x-no-cache"
+    cacheKeyPolicy:
+      includeHttpHeaders: ["x-variant"]
+      queryStringWhitelist: ["v"]
+    negativeCachingPolicy:
+      - code: 404
+        ttl: 60
+---
+# Source: net-lb-app-ext/templates/backend-service.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeBackendService
+metadata:
+  name: buckets-bs-app
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "buckets"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "backend_service:app"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-app"
+  location: "global"
+  description: "Terraform managed."
+  loadBalancingScheme: "EXTERNAL"
+  protocol: "HTTP"
+  healthChecks:
+    - healthCheckRef:
+        name: buckets-hc-default
+  portName: "http"
+  backend:
+    - balancingMode: "UTILIZATION"
+      capacityScaler: 1
+      description: "Terraform managed."
+      group:
+        instanceGroupRef:
+          external: "projects/my-project/zones/europe-west8-b/instanceGroups/my-ig-b"
+---
+# Source: net-lb-app-ext/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeForwardingRule
+metadata:
+  name: buckets-fr
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "buckets"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "forwarding_rule:"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: global
+  description: "Terraform managed."
+  ipVersion: IPV4
+  ipProtocol: TCP
+  loadBalancingScheme: EXTERNAL
+  portRange: "80"
+  target:
+    targetHTTPProxyRef:
+      name: buckets
+---
+# Source: net-lb-app-ext/templates/health-check.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeHealthCheck
+metadata:
+  name: buckets-hc-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "buckets"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "health_check:default"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-default"
+  location: "global"
+  description: "Terraform managed."
+  httpHealthCheck:
+    portSpecification: USE_SERVING_PORT
+---
+# Source: net-lb-app-ext/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeTargetHTTPProxy
+metadata:
+  name: buckets
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "buckets"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "target_proxy"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: global
+  description: "Terraform managed."
+  urlMapRef:
+    name: buckets
+---
+# Source: net-lb-app-ext/templates/urlmap.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeURLMap
+metadata:
+  name: buckets
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "buckets"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "url_map"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: "global"
+  description: "Terraform managed."
+  defaultService:
+    backendBucketRef:
+      name: buckets-bucket-default
+  defaultCustomErrorResponsePolicy:
+    errorServiceRef:
+      name: buckets-bucket-default
+    errorResponseRule:
+      - matchResponseCodes:
+        - 5xx
+        overrideResponseCode: 502
+        path: /errors/5xx.html
+  hostRule:
+    - hosts: ["*"]
+      pathMatcher: "main"
+  pathMatcher:
+    - name: "main"
+      defaultService:
+        backendServiceRef:
+          name: buckets-bs-app
+      defaultCustomErrorResponsePolicy:
+        errorServiceRef:
+          name: buckets-bucket-default
+        errorResponseRule:
+          - matchResponseCodes:
+            - "404"
+            path: /errors/404.html
+      pathRule:
+        - paths: ["/static/*"]
+          service:
+            backendBucketRef:
+              name: buckets-bucket-default
+        - paths: ["/legacy/*"]
+          service:
+            backendBucketRef:
+              external: "projects/my-project/global/backendBuckets/legacy"
+  test:
+    - host: "example.org"
+      path: "/static/a.css"
+      service:
+        backendBucketRef:
+          name: buckets-bucket-default

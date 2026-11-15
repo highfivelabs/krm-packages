@@ -1,0 +1,4 @@
+# expect: net-lb-app-ext: backend_service_configs.default.log_config.optional_mode is not supported
+name: lb
+project_id: my-project
+backend_service_configs: {default: {backends: [], log_config: {enable: true, optional_mode: CUSTOM}}}

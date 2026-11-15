@@ -1,0 +1,6 @@
+# expect: net-lb-app-int: URL map name "shop-dev-
+name: lbaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+project_id: my-project
+region: europe-west1
+namePrefix: shop-dev
+vpc_config: {network: "net", subnetwork: "sn"}

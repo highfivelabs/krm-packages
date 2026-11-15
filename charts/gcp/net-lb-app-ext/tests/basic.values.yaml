@@ -1,0 +1,8 @@
+# fabric's README, "Minimal example" (context lookups written out).
+name: glb-test-0
+project_id: my-project
+backend_service_configs:
+  default:
+    backends:
+      - group: projects/my-project/zones/europe-west8-b/instanceGroups/my-ig-b
+      - group: projects/my-project/zones/europe-west8-c/instanceGroups/my-ig-c

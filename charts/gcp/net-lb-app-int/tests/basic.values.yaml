@@ -1,0 +1,11 @@
+# fabric's README, "Minimal Example" (context lookups written out).
+name: ilb-test
+project_id: my-project
+region: europe-west1
+backend_service_configs:
+  default:
+    backends:
+      - group: projects/my-project/zones/europe-west1-b/instanceGroups/my-ig
+vpc_config:
+  network: projects/my-project/global/networks/my-vpc
+  subnetwork: projects/my-project/regions/europe-west1/subnetworks/my-subnet
