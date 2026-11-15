@@ -11,12 +11,6 @@ variable "billing_account" {
   description = "The billing account the project is linked to."
 }
 
-variable "billing_project" {
-  type        = string
-  default     = null
-  description = "The project API calls bill to (user_project_override); null bills each call to its own project."
-}
-
 variable "prefix" {
   type        = string
   description = "Prefix of every name, the live run's ID."

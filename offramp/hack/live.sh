@@ -202,7 +202,6 @@ EOF
     cat >"${OUT}/tf/terraform.tfvars" <<EOF
 folder_id       = "${PARENT}"
 billing_account = "${BILLING_ACCOUNT:?set BILLING_ACCOUNT}"
-billing_project = "${PROJECT}"
 prefix          = "${RUN}"
 platform_admins = ["${MEMBER}"]
 region          = "${REGION}"

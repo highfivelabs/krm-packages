@@ -41,20 +41,6 @@ terraform {
   }
 }
 
-# Calls bill to billing_project when it is set (user_project_override), as
-# the folders shape's do: a project's first calls, such as deleting its
-# default network, otherwise bill to the project itself before its
-# Compute Engine API is usable. Live runs: the live-test project.
-provider "google" {
-  billing_project       = var.billing_project
-  user_project_override = var.billing_project != null
-}
-
-provider "google-beta" {
-  billing_project       = var.billing_project
-  user_project_override = var.billing_project != null
-}
-
 locals {
   # The project's ID, known before it exists (fabric's project module takes
   # it from name and prefix). Map keys use it: a key cannot be a module
