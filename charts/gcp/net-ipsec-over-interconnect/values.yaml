@@ -49,7 +49,9 @@ region: null
 # router, set create to false and use name to specify it. Required, as in
 # fabric.
 router_config: null
-# VPN tunnel configurations, keyed. Refused when set: see README.md.
+# VPN tunnel configurations, keyed (README.md, "Values"). Each tunnel's
+# shared_secret is required: a reference to a Kubernetes Secret,
+# {secretName, key} (docs/secrets.md); the catalog never generates one.
 tunnels: {}
 
 # Not a fabric variable: DELETE (the default) or ABANDON, which keeps the

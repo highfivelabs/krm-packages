@@ -29,5 +29,7 @@ refused:
     partial: true
     alpha_fields: [route_policies]
   - variable: tunnels
-    kind: not-ported
-    reason: "a tunnel needs a shared secret: one given here would be in the rendered manifest, and Terraform's random_id has no Config Connector equivalent; ComputeVPNTunnel takes it from a Kubernetes Secret (sharedSecret.valueFrom), which the chart does not take yet (the SECV question). With no tunnel there is no router interface or BGP peer either; ComputeVPNTunnel also has no cipherSuite field, and ComputeRouterPeer no md5AuthenticationKey, importPolicies, exportPolicies or customLearnedIpRanges (gaps)"
+    kind: gap
+    reason: "bgp_peer's md5_authentication_key, export_policies and import_policies are refused (ComputeRouterPeer has no such fields). A tunnel's shared_secret is a reference to a Kubernetes Secret (sharedSecret.valueFrom, docs/secrets.md) and is required: fabric's generated secret (random_id) is refused, the catalog never generates one"
+    partial: true
+    fields: [md5_authentication_key, export_policies, import_policies]

@@ -12,9 +12,9 @@ replicas, its masterInstanceRef the primary.
 {{- include "kcc.unsupported" (list $ "context" $v.context "use Bundt expressions (${...}) and valueFrom in the component's inputs instead") }}
 {{- include "kcc.unsupported" (list $ "data_api_access" $v.data_api_access "SQLInstance has no Data API access field") }}
 {{- include "kcc.unsupported" (list $ "enable_dataplex_integration" $v.enable_dataplex_integration "SQLInstance has no Dataplex integration field") }}
-{{- $rp := dict }}
-{{- range $k, $x := ($v.root_password | default dict) }}{{ if $x }}{{ $_ := set $rp $k $x }}{{ end }}{{ end }}
-{{- include "kcc.unsupported" (list $ "root_password" $rp "a password given here would be in the rendered manifest, and Terraform's random_password has no Config Connector equivalent (README.md, \"Values\")") }}
+{{- $rp := $v.root_password | default dict }}
+{{- include "kcc.unsupported" (list $ "root_password.random_password" (eq (toString $rp.random_password) "true") "the catalog never generates a secret; give root_password.password as a reference to a Kubernetes Secret, {secretName, key} (docs/secrets.md)") }}
+{{- $rootPassword := include "kcc.secretRef" (list $ "root_password.password" $rp.password) }}
 {{- $isPostgres := hasPrefix "POSTGRES" $v.database_version }}
 {{- $isMysql := hasPrefix "MYSQL" $v.database_version }}
 {{- $plus := eq $v.edition "ENTERPRISE_PLUS" }}
@@ -46,6 +46,9 @@ spec:
   resourceID: {{ $name }}
   region: {{ $v.region | quote }}
   databaseVersion: {{ $v.database_version | quote }}
+  {{- with $rootPassword }}
+  rootPassword: {{ . }}
+  {{- end }}
   {{- with $v.encryption_key_name }}
   encryptionKMSCryptoKeyRef:
     external: {{ . | quote }}

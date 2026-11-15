@@ -29,7 +29,9 @@ tags: {}
 
 # Certificates, keyed by name: {description, labels, location, scope,
 # self_managed: {pem_certificate, pem_private_key}, managed: {domains,
-# dns_authorizations, issuance_config}}. self_managed is refused (README.md).
+# dns_authorizations, issuance_config}}. A self-managed certificate's
+# pem_private_key is a reference to a Kubernetes Secret, {secretName, key}
+# (docs/secrets.md); pem_certificate (public) is a plain value.
 certificates: {}
 # DNS authorizations, keyed by name: {domain, description, location, type,
 # labels}. As in fabric, labels are accepted and not applied.

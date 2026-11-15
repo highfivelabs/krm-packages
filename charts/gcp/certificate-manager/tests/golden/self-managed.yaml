@@ -1,0 +1,23 @@
+---
+# Source: certificate-manager/templates/main.yaml
+apiVersion: certificatemanager.cnrm.cloud.google.com/v1beta1
+kind: CertificateManagerCertificate
+metadata:
+  name: self-managed-certificate-uploaded
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "self-managed"
+    app.kubernetes.io/name: certificate-manager
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "certificate:uploaded"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "uploaded"
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  description: "uploaded by the team"
+  selfManaged:
+    pemCertificate: "-----BEGIN CERTIFICATE-----\nplaceholder\n-----END CERTIFICATE-----\n"
+    pemPrivateKey: {"valueFrom":{"secretKeyRef":{"key":"tls.key","name":"uploaded-tls"}}}

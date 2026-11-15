@@ -26,9 +26,6 @@ refused:
   - variable: client_connection_config
     kind: gap
     reason: "AlloyDBInstance has no clientConnectionConfig (require_connectors, ssl_mode)"
-  - variable: initial_user
-    kind: not-ported
-    reason: "a password given here would be in the rendered manifest; AlloyDBCluster takes the initial user's password from a Kubernetes Secret (initialUser.password.valueFrom), which the chart does not take yet (an open question, as cloudsql-instance's root_password)"
   - variable: annotations
     kind: gap
     reason: "the annotations go on the instances only: AlloyDBCluster has no annotations field"
@@ -54,8 +51,7 @@ refused:
     partial: true
     values: [TRIAL]
   - variable: users
-    kind: not-ported
-    reason: "only ALLOYDB_IAM_USER and ALLOYDB_IAM_GROUP users are accepted: an ALLOYDB_BUILT_IN user's password would be in the rendered manifest or made by Terraform's random_password (the same open question as initial_user)"
+    kind: by-design
+    reason: "an ALLOYDB_BUILT_IN user's password is a reference to a Kubernetes Secret (password.valueFrom, docs/secrets.md) and is required: fabric's generated password (random_password) is refused, the catalog never generates a secret"
     partial: true
     fields: [password]
-    values: [ALLOYDB_BUILT_IN]

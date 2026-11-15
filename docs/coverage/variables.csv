@@ -309,12 +309,12 @@ gcp,cloudsql-instance,prefix,string,yes,,
 gcp,cloudsql-instance,project_id,string,yes,,
 gcp,cloudsql-instance,region,string,yes,,
 gcp,cloudsql-instance,replicas,"map(object({availability_type, encryption_key_name, region, tier}))",yes,,
-gcp,cloudsql-instance,root_password,"object({password, random_password})",no,"a password given here would be in the rendered manifest, and Terraform's random_password has no Config Connector equivalent; SQLInstance takes the password from a Kubernetes Secret (rootPassword.valueFrom), which the chart does not take yet (an open question)",not-ported
+gcp,cloudsql-instance,root_password,"object({password, random_password})",partial,"password is a reference to a Kubernetes Secret (rootPassword.valueFrom, docs/secrets.md); random_password: true is refused: the catalog never generates a secret",by-design
 gcp,cloudsql-instance,ssl,"object({client_certificates, mode})",yes,,
 gcp,cloudsql-instance,terraform_deletion_protection,bool,yes,,
 gcp,cloudsql-instance,tier,string,yes,,
 gcp,cloudsql-instance,time_zone,string,yes,,
-gcp,cloudsql-instance,users,"map(object({database_roles, password, password_version, type}))",partial,only CLOUD_IAM_USER and CLOUD_IAM_SERVICE_ACCOUNT users are accepted: a BUILT_IN user's password would be in the rendered manifest or made by Terraform's random_password (the same open question as root_password); database_roles and password_version are refused (SQLUser has no such field),gap
+gcp,cloudsql-instance,users,"map(object({database_roles, password, password_version, type}))",partial,"database_roles is refused: SQLUser has no such field. A BUILT_IN user's password is a reference to a Kubernetes Secret (password.valueFrom, docs/secrets.md) and is required: fabric's generated password (random_password) is refused, the catalog never generates a secret",gap
 gcp,gke-cluster-standard,access_config,"object({dns_access, ip_access, master_ipv4_cidr_block, private_nodes})",partial,accepted; dns_access.enable_k8s_certs and ip_access.private_endpoint_authorized_ranges_enforcement are refused when true: ContainerCluster has no enableK8sCertsViaDns or privateEndpointEnforcementEnabled,gap
 gcp,gke-cluster-standard,backup_configs,"object({backup_channels, backup_plans, enable_backup_agent, restore_channels, restore_plans})",partial,accepted; a channel's deletion_policy PREVENT is refused (no Config Connector equivalent; ABANDON is carried),gap
 gcp,gke-cluster-standard,cluster_autoscaling,"object({accelerator_resources, auto_provisioning_defaults, auto_provisioning_locations, autoscaling_profile, cpu_limits, enabled, +1})",partial,"accepted; auto_provisioning_locations, and a disk_type other than pd-standard, are refused: clusterAutoscaling has no autoProvisioningLocations, autoProvisioningDefaults no diskType",gap
@@ -523,7 +523,7 @@ gcp,net-vpn-ha,peer_gateways,"map(object({external, gcp}))",yes,,
 gcp,net-vpn-ha,project_id,string,yes,,
 gcp,net-vpn-ha,region,string,yes,,
 gcp,net-vpn-ha,router_config,"object({asn, create, custom_advertise, keepalive, name, override_name, +1})",partial,accepted; route_policies need config-connector-extensions' v1alpha1 ComputeRouterRoutePolicy: set allow_alpha: true,alpha
-gcp,net-vpn-ha,tunnels,"map(object({bgp_peer, bgp_session_range, cipher_suite, ike_version, name, peer_external_gateway_interface, +5}))",no,"a tunnel needs a shared secret: one given here would be in the rendered manifest, and Terraform's random_id has no Config Connector equivalent; ComputeVPNTunnel takes it from a Kubernetes Secret (sharedSecret.valueFrom), which the chart does not take yet (the SECV question). With no tunnel there is no router interface or BGP peer either; ComputeVPNTunnel also has no cipherSuite field, and ComputeRouterPeer no md5AuthenticationKey, importPolicies, exportPolicies or customLearnedIpRanges (gaps)",not-ported
+gcp,net-vpn-ha,tunnels,"map(object({bgp_peer, bgp_session_range, cipher_suite, ike_version, name, peer_external_gateway_interface, +5}))",partial,"cipher_suite is refused (ComputeVPNTunnel has no cipherSuite field), and bgp_peer's md5_authentication_key, export_policies, import_policies and custom_learned_ip_ranges (ComputeRouterPeer has no such fields). A tunnel's shared_secret is a reference to a Kubernetes Secret (sharedSecret.valueFrom, docs/secrets.md) and is required: fabric's generated secret (random_id) is refused, the catalog never generates one",gap
 gcp,net-vpn-ha,vpn_gateway,string,yes,,
 gcp,net-vpn-ha,vpn_gateway_create,"object({description, ipv6})",yes,,
 gcp,cloud-identity-group,customer_id,string,yes,,
@@ -541,7 +541,7 @@ gcp,dns-response-policy,networks,map(string),yes,,
 gcp,dns-response-policy,policy_create,bool,yes,,
 gcp,dns-response-policy,project_id,string,yes,,
 gcp,dns-response-policy,rules,"map(object({behavior, dns_name, local_data}))",yes,,
-gcp,certificate-manager,certificates,"map(object({description, labels, location, managed, scope, self_managed}))",partial,"self_managed is refused: its private key given here would be in the rendered manifest; CertificateManagerCertificate takes it from a Kubernetes Secret (pemPrivateKey.valueFrom), which the chart does not take yet (the open question of cloudsql-instance's root_password)",not-ported
+gcp,certificate-manager,certificates,"map(object({description, labels, location, managed, scope, self_managed}))",yes,,
 gcp,certificate-manager,dns_authorizations,"map(object({description, domain, labels, location, type}))",yes,,
 gcp,certificate-manager,issuance_configs,"map(object({ca_pool, description, key_algorithm, labels, lifetime, location, +1}))",yes,,
 gcp,certificate-manager,map,"object({description, entries, labels, name})",yes,,
@@ -742,7 +742,7 @@ gcp,alloydb,display_name,string,yes,,
 gcp,alloydb,encryption_config,"object({primary_kms_key_name, secondary_kms_key_name})",yes,,
 gcp,alloydb,flags,map(string),yes,,
 gcp,alloydb,gce_zone,string,yes,,
-gcp,alloydb,initial_user,"object({password, user})",no,"a password given here would be in the rendered manifest; AlloyDBCluster takes the initial user's password from a Kubernetes Secret (initialUser.password.valueFrom), which the chart does not take yet (an open question, as cloudsql-instance's root_password)",not-ported
+gcp,alloydb,initial_user,"object({password, user})",yes,,
 gcp,alloydb,instance_name,string,yes,,
 gcp,alloydb,labels,map(string),yes,,
 gcp,alloydb,location,string,yes,,
@@ -758,7 +758,7 @@ gcp,alloydb,read_pool,"map(object({client_connection_config, display_name, flags
 gcp,alloydb,skip_await_major_version_upgrade,bool,yes,,
 gcp,alloydb,subscription_type,string,partial,"TRIAL is refused: AlloyDBCluster has no subscriptionType field (clusters are STANDARD, the default)",gap
 gcp,alloydb,tag_bindings,map(string),yes,,
-gcp,alloydb,users,"map(object({password, roles, type}))",partial,only ALLOYDB_IAM_USER and ALLOYDB_IAM_GROUP users are accepted: an ALLOYDB_BUILT_IN user's password would be in the rendered manifest or made by Terraform's random_password (the same open question as initial_user),not-ported
+gcp,alloydb,users,"map(object({password, roles, type}))",partial,"an ALLOYDB_BUILT_IN user's password is a reference to a Kubernetes Secret (password.valueFrom, docs/secrets.md) and is required: fabric's generated password (random_password) is refused, the catalog never generates a secret",by-design
 gcp,spanner-instance,databases,"map(object({database_dialect, ddl, default_time_zone, deletion_protection, enable_drop_protection, iam, +4}))",partial,default_time_zone: SpannerDatabase has no defaultTimeZone field,gap
 gcp,spanner-instance,iam,map(list(string)),yes,,
 gcp,spanner-instance,iam_bindings,"map(object({members, role}))",yes,,
@@ -898,7 +898,7 @@ gcp,net-vpn-static,project_id,string,yes,,
 gcp,net-vpn-static,region,string,yes,,
 gcp,net-vpn-static,remote_ranges,list(string),yes,,
 gcp,net-vpn-static,route_priority,number,yes,,
-gcp,net-vpn-static,tunnels,"map(object({cipher_suite, ike_version, peer_ip, shared_secret, traffic_selectors}))",no,"a tunnel needs a shared secret: one given here would be in the rendered manifest, and Terraform's random_id has no Config Connector equivalent; ComputeVPNTunnel takes it from a Kubernetes Secret (sharedSecret.valueFrom), which the chart does not take yet (cloudsql-instance's root_password question); ComputeVPNTunnel also has no cipherSuite field (gap)",not-ported
+gcp,net-vpn-static,tunnels,"map(object({cipher_suite, ike_version, peer_ip, shared_secret, traffic_selectors}))",partial,"cipher_suite is refused (ComputeVPNTunnel has no cipherSuite field). A tunnel's shared_secret is a reference to a Kubernetes Secret (sharedSecret.valueFrom, docs/secrets.md) and is required: fabric's generated secret (random_id) is refused, the catalog never generates one",gap
 gcp,net-vpn-dynamic,gateway_address,string,yes,,
 gcp,net-vpn-dynamic,gateway_address_create,bool,yes,,
 gcp,net-vpn-dynamic,name,string,yes,,
@@ -906,7 +906,7 @@ gcp,net-vpn-dynamic,network,string,yes,,
 gcp,net-vpn-dynamic,project_id,string,yes,,
 gcp,net-vpn-dynamic,region,string,yes,,
 gcp,net-vpn-dynamic,router_config,"object({asn, create, custom_advertise, keepalive, name, route_policies})",partial,accepted; route_policies need config-connector-extensions' v1alpha1 ComputeRouterRoutePolicy: set allow_alpha: true,alpha
-gcp,net-vpn-dynamic,tunnels,"map(object({bgp_peer, bgp_session_range, cipher_suite, ike_version, peer_ip, router, +1}))",no,"a tunnel needs a shared secret: one given here would be in the rendered manifest, and Terraform's random_id has no Config Connector equivalent; ComputeVPNTunnel takes it from a Kubernetes Secret (sharedSecret.valueFrom), which the chart does not take yet (the SECV question). With no tunnel there is no router interface or BGP peer either; ComputeVPNTunnel also has no cipherSuite field, and ComputeRouterPeer no md5AuthenticationKey, importPolicies, exportPolicies or customLearnedIpRanges (gaps)",not-ported
+gcp,net-vpn-dynamic,tunnels,"map(object({bgp_peer, bgp_session_range, cipher_suite, ike_version, peer_ip, router, +1}))",partial,"cipher_suite is refused (ComputeVPNTunnel has no cipherSuite field), and bgp_peer's export_policies and import_policies (ComputeRouterPeer has no such fields). A tunnel's shared_secret is a reference to a Kubernetes Secret (sharedSecret.valueFrom, docs/secrets.md) and is required: fabric's generated secret (random_id) is refused, the catalog never generates one",gap
 gcp,net-vlan-attachment,admin_enabled,bool,yes,,
 gcp,net-vlan-attachment,bgp_peer,"object({bfd, custom_advertise, custom_learned_ip_ranges, export_policies, import_policies, md5_authentication_key})",partial,"accepted for a dedicated attachment's BGP peer (custom_advertise, bfd); export_policies, import_policies, custom_learned_ip_ranges and md5_authentication_key are refused: ComputeRouterPeer has no exportPolicies, importPolicies, customLearnedIpRanges or md5AuthenticationKey",gap
 gcp,net-vlan-attachment,context,"object({locations, networks, project_ids, routers})",no,Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs,by-design
@@ -929,7 +929,7 @@ gcp,net-ipsec-over-interconnect,peer_gateway_config,"object({create, description
 gcp,net-ipsec-over-interconnect,project_id,string,yes,,
 gcp,net-ipsec-over-interconnect,region,string,yes,,
 gcp,net-ipsec-over-interconnect,router_config,"object({asn, create, custom_advertise, keepalive, name, route_policies})",partial,accepted; route_policies need config-connector-extensions' v1alpha1 ComputeRouterRoutePolicy: set allow_alpha: true,alpha
-gcp,net-ipsec-over-interconnect,tunnels,"map(object({bgp_peer, bgp_session_range, ike_version, peer_external_gateway_interface, peer_gateway_id, router, +2}))",no,"a tunnel needs a shared secret: one given here would be in the rendered manifest, and Terraform's random_id has no Config Connector equivalent; ComputeVPNTunnel takes it from a Kubernetes Secret (sharedSecret.valueFrom), which the chart does not take yet (the SECV question). With no tunnel there is no router interface or BGP peer either; ComputeVPNTunnel also has no cipherSuite field, and ComputeRouterPeer no md5AuthenticationKey, importPolicies, exportPolicies or customLearnedIpRanges (gaps)",not-ported
+gcp,net-ipsec-over-interconnect,tunnels,"map(object({bgp_peer, bgp_session_range, ike_version, peer_external_gateway_interface, peer_gateway_id, router, +2}))",partial,"bgp_peer's md5_authentication_key, export_policies and import_policies are refused (ComputeRouterPeer has no such fields). A tunnel's shared_secret is a reference to a Kubernetes Secret (sharedSecret.valueFrom, docs/secrets.md) and is required: fabric's generated secret (random_id) is refused, the catalog never generates one",gap
 gcp,ncc-spoke-ra,data_transfer,bool,yes,,
 gcp,ncc-spoke-ra,hub,"object({create, description, id, name})",yes,,
 gcp,ncc-spoke-ra,name,string,yes,,
