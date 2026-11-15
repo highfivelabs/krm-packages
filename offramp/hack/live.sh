@@ -15,7 +15,12 @@
 # platform-project set PARENT (folders/<n>, the live-tests folder) and
 # ORG_ID; for platform-project BILLING_ACCOUNT too. ORG_POLICIES=false
 # leaves the folders shape's organization policies (orgpolicy.tf) out, for
-# an account without roles/orgpolicy.policyAdmin. FIXTURES is the
+# an account without roles/orgpolicy.policyAdmin. MEMBER is the principal
+# the fixtures grant their roles to (default the VM's service account); an
+# organization that restricts members to its own customer
+# (iam.allowedPolicyMemberDomains) refuses a service account from a
+# project made elsewhere, so set it to a principal of that customer.
+# FIXTURES is the
 # directory of root modules (default offramp/fixtures; they may move to the
 # terraform-offramp-demo repository).
 #
@@ -71,6 +76,7 @@ md() { curl -sf -H 'Metadata-Flavor: Google' "http://metadata.google.internal/co
 RUNNER="$(md instance/service-accounts/default/email || true)"
 [[ "${RUNNER}" == *.iam.gserviceaccount.com ]] || { echo "live.sh: not on a VM acting as a service account (got '${RUNNER}')" >&2; exit 2; }
 G=(gcloud --quiet --project "${PROJECT}")
+MEMBER="${MEMBER:-serviceAccount:${RUNNER}}"
 RUN="ofr-$(date -u +%m%d%H%M)-$(od -An -N2 -tx1 /dev/urandom | tr -d ' \n')"
 OUT="${ROOT}/offload-artifacts/offramp/${SHAPE}-${RUN}"
 mkdir -p "${OUT}"
@@ -172,8 +178,8 @@ case "${SHAPE}" in
 project_id        = "${PROJECT}"
 prefix            = "${RUN}"
 region            = "${REGION}"
-apps_subnet_users = ["serviceAccount:${RUNNER}"]
-gke_subnet_users  = ["serviceAccount:${RUNNER}"]
+apps_subnet_users = ["${MEMBER}"]
+gke_subnet_users  = ["${MEMBER}"]
 EOF
     ;;
   folders)
@@ -182,8 +188,8 @@ parent          = "${PARENT:?set PARENT}"
 org_id          = "${ORG_ID:?set ORG_ID}"
 billing_project = "${PROJECT}"
 prefix          = "${RUN}"
-prod_admins     = ["serviceAccount:${RUNNER}"]
-auditor         = "serviceAccount:${RUNNER}"
+prod_admins     = ["${MEMBER}"]
+auditor         = "${MEMBER}"
 EOF
     ;;
   platform-project)
@@ -191,7 +197,7 @@ EOF
 folder_id       = "${PARENT}"
 billing_account = "${BILLING_ACCOUNT:?set BILLING_ACCOUNT}"
 prefix          = "${RUN}"
-platform_admins = ["serviceAccount:${RUNNER}"]
+platform_admins = ["${MEMBER}"]
 region          = "${REGION}"
 EOF
     ;;
