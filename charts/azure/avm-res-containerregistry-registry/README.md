@@ -53,6 +53,7 @@ Every module variable is a value of the same name, type and default
 | Module input | ASO |
 | --- | --- |
 | `name` (required), `location` (required) | `azureName`, `location` |
+| `customer_managed_key` | the registry's `encryption`: `status: enabled`, `keyVaultProperties.keyIdentifier` `https://<vault>.vault.azure.net/keys/<key_name>[/<key_version>]` (the vault's name from `key_vault_resource_id`; versionless without `key_version`, as the module's key ID; the public cloud's Key Vault suffix), and `identityFromConfig` from `user_assigned_identity.client_id_from_config` (below). `user_assigned_identity.resource_id` is required and must also be in `managed_identities.user_assigned_resource_ids` |
 | `resource_group_name` (required) | `owner.armId`: `/subscriptions/<subscription_id>/resourceGroups/<resource_group_name>`, or `resource_group_name` itself when it is a resource group's ID |
 | `sku` | `sku.name` |
 | `admin_enabled`, `anonymous_pull_enabled`, `data_endpoint_enabled` | `adminUserEnabled`, `anonymousPullEnabled`, `dataEndpointEnabled` |
@@ -98,13 +99,13 @@ ignoring case; a `credential_set_key` that is not a key of
 | `namePrefix` | an optional convenience: the namePrefix without its hyphens in front of `name` (a registry name is letters and digits), never of a name under `names`; checked against the 50-character limit |
 | `labels` | Kubernetes labels on every object. ASO never copies labels to Azure |
 | `deletion_policy` | `DELETE` (default) or `ABANDON` (ASO's `detach-on-delete` on every object). `PREVENT` is refused: use `lock` |
+| `customer_managed_key.user_assigned_identity.client_id_from_config` | `{name, key}` of a ConfigMap in the component's namespace that holds the key identity's client ID, read by ASO's `identityFromConfig` (required with `customer_managed_key`). The module reads the client ID from Azure, which a render cannot; another component exports it, for example `avm-res-managedidentity-userassignedidentity` (its `<release>-id-outputs` ConfigMap, key `clientId`), joined by the Template's `valueFrom`. Decided by the builder on 2026-11-15 (RECWEB) |
 
 ### Refused when set
 
 | Variable | Why |
 | --- | --- |
 | a token's `passwords` (`scope_maps.<key>.registry_tokens.<key>.passwords`) | secrets Azure generates and returns once, from the `generateCredentials` action, which no kind performs; whether a component may hold one is the builder's decision (a gap) |
-| `customer_managed_key` | ASO's `Registry` takes the key's URI and the identity's client ID (`identity`, or `identityFromConfig`, a ConfigMap only an ASO `UserAssignedIdentity` in the cluster writes); the module looks the client ID up from the identity's resource ID, which a render cannot (a gap) |
 | `resource_types`, `retry`, `timeouts` | ASO's kinds fix the API versions; ASO retries itself; Bundt sets a component's time limit |
 
 ## Outputs
@@ -157,6 +158,8 @@ Ready and deleted, the outputs evaluated.
 
 ## Changes
 
+- **0.3.0** (2026-11-15): `customer_managed_key` is mapped (it was refused),
+  with the chart input `customer_managed_key.user_assigned_identity.client_id_from_config`.
 - **0.2.0** (2026-11-13): `private_endpoints` (with
   `private_endpoints_inherit_lock` and
   `private_endpoints_manage_dns_zone_group`) render ASO `PrivateEndpoint`,

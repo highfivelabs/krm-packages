@@ -321,7 +321,50 @@
       "type": [
         "object",
         "null"
-      ]
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "key_vault_resource_id": {
+          "type": "string"
+        },
+        "key_name": {
+          "type": "string"
+        },
+        "key_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "user_assigned_identity": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "resource_id": {
+              "type": "string"
+            },
+            "client_id_from_config": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": false,
+              "description": "Not a module variable (chart addition, RECWEB 2026-11-15): the ConfigMap holding the identity's client ID, read by ASO's identityFromConfig.",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "key": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "diagnostic_settings": {
       "type": "object",
