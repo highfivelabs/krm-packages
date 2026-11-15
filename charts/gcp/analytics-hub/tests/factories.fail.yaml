@@ -1,0 +1,5 @@
+# expect: analytics-hub: factories_config is not supported
+project_id: my-project
+region: europe-west1
+name: x
+factories_config: {listings: data/listings}

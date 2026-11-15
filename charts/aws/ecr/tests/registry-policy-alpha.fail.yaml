@@ -1,0 +1,4 @@
+# expect: ecr: create_registry_policy needs the alpha kind RegistryPolicy
+create_repository: false
+create_registry_policy: true
+registry_policy: "{}"

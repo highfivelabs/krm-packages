@@ -33,8 +33,10 @@ refused:
     kind: gap
     reason: "SQLInstance has no Dataplex integration field"
   - variable: root_password
-    kind: not-ported
-    reason: "a password given here would be in the rendered manifest, and Terraform's random_password has no Config Connector equivalent; SQLInstance takes the password from a Kubernetes Secret (rootPassword.valueFrom), which the chart does not take yet (an open question)"
+    kind: by-design
+    reason: "password is a reference to a Kubernetes Secret (rootPassword.valueFrom, docs/secrets.md); random_password: true is refused: the catalog never generates a secret"
+    partial: true
+    fields: [random_password]
   - variable: backup_configuration
     kind: gap
     reason: "retain_backups_on_delete and final_backup are refused: SQLInstance has no field for either"
@@ -57,6 +59,6 @@ refused:
     fields: [network_attachment_uri, psc_auto_connection_policy_enabled, psc_auto_connections, psc_auto_dns_enabled, psc_write_endpoint_dns_enabled]
   - variable: users
     kind: gap
-    reason: "only CLOUD_IAM_USER and CLOUD_IAM_SERVICE_ACCOUNT users are accepted: a BUILT_IN user's password would be in the rendered manifest or made by Terraform's random_password (the same open question as root_password); database_roles and password_version are refused (SQLUser has no such field)"
+    reason: "database_roles is refused: SQLUser has no such field. A BUILT_IN user's password is a reference to a Kubernetes Secret (password.valueFrom, docs/secrets.md) and is required: fabric's generated password (random_password) is refused, the catalog never generates a secret"
     partial: true
-    fields: [password, password_version, database_roles]
+    fields: [database_roles]

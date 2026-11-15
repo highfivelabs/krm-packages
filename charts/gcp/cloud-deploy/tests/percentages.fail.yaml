@@ -1,0 +1,5 @@
+# expect: cloud-deploy: For canary strategy, deployment percentages must be in ascending order
+project_id: my-project
+region: europe-west1
+name: p
+targets: [{name: t, strategy: CANARY, deployment_percentages: [50, 10], cloud_run_configs: {}}]

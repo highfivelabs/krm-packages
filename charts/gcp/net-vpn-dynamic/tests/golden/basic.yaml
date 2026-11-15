@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "basic"
     app.kubernetes.io/name: net-vpn-dynamic
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "address"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -25,7 +25,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "basic"
     app.kubernetes.io/name: net-vpn-dynamic
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "esp"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -49,7 +49,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "basic"
     app.kubernetes.io/name: net-vpn-dynamic
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "udp_500"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -74,7 +74,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "basic"
     app.kubernetes.io/name: net-vpn-dynamic
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "udp_4500"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -99,7 +99,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "basic"
     app.kubernetes.io/name: net-vpn-dynamic
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "router"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -114,6 +114,52 @@ spec:
 ---
 # Source: net-vpn-dynamic/templates/main.yaml
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterInterface
+metadata:
+  name: basic-interface-remote-1
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: net-vpn-dynamic
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "router_interface:remote-1"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "gateway-1-remote-1"
+  region: "europe-west1"
+  routerRef:
+    name: basic
+  ipRange: "169.254.139.133/30"
+  vpnTunnelRef:
+    name: basic-tunnel-remote-1
+---
+# Source: net-vpn-dynamic/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterPeer
+metadata:
+  name: basic-bgp-peer-remote-1
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: net-vpn-dynamic
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "bgp_peer:remote-1"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "gateway-1-remote-1"
+  region: "europe-west1"
+  routerRef: {"name":"basic"}
+  routerInterfaceRef:
+    name: basic-interface-remote-1
+  peerIpAddress: "169.254.139.134"
+  peerAsn: 64513
+  advertisedRoutePriority: 1000
+  advertiseMode: DEFAULT
+---
+# Source: net-vpn-dynamic/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeTargetVPNGateway
 metadata:
   name: basic
@@ -121,7 +167,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "basic"
     app.kubernetes.io/name: net-vpn-dynamic
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "gateway"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -130,3 +176,27 @@ spec:
   region: "europe-west1"
   networkRef:
     external: "projects/my-project/global/networks/my-network"
+---
+# Source: net-vpn-dynamic/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeVPNTunnel
+metadata:
+  name: basic-tunnel-remote-1
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: net-vpn-dynamic
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "tunnel:remote-1"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "gateway-1-remote-1"
+  region: "europe-west1"
+  targetVPNGatewayRef:
+    name: basic
+  peerIp: "1.1.1.1"
+  ikeVersion: 2
+  routerRef:
+    name: basic
+  sharedSecret: {"valueFrom":{"secretKeyRef":{"key":"remote-1","name":"gateway-1-vpn"}}}

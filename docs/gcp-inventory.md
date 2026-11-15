@@ -15,15 +15,15 @@ resources (`*_iam_member`, `*_iam_binding`).
 
 | Coverage | Modules | Meaning |
 | --- | ---: | --- |
-| full | 23 | every resource type has a stable (`v1beta1`) Config Connector kind, or is IAM on a kind IAMPolicyMember can reference |
+| full | 24 | every resource type has a stable (`v1beta1`) Config Connector kind, or is IAM on a kind IAMPolicyMember can reference |
 | full, with alpha | 19 | as full, but at least one kind exists only as `v1alpha1` |
 | partial | 42 | at least one resource type has no kind; the module's main resource is covered |
-| none | 3 | the main resource has no kind: `looker-core`, `endpoints`, `container-registry` (deprecated upstream) |
+| none | 2 | the main resource has no kind: `looker-core`, `endpoints` (`container-registry` was a third until Container Registry mapped to Artifact Registry: `docs/design.md`, decision 13) |
 | composite | 2 | `project-factory`, `net-vpc-factory`: they only compose other modules |
 | n/a | 2 | `projects-data-source` (a read), `cloud-config-container` (cloud-init text) |
 
-By resource type: 259 of 433 (60%) have a stable kind, 96 (22%) only an
-alpha kind, 78 (18%) none; 2 of those 78 are covered by
+By resource type: 260 of 433 (60%) have a stable kind, 96 (22%) only an
+alpha kind, 77 (18%) none; 2 of those 77 are covered by
 config-connector-extensions' gap kinds (regional secrets and their
 versions).
 
@@ -95,8 +95,9 @@ Below the top ten, each needed by one module: Looker instances, Endpoints
 services, Cloud Build v2 repositories, regional instance templates,
 Secure Web Proxy policy rules, Chronicle rule deployments, the Discovery
 Engine CMEK config, Apigee DNS zones, Agent Gateway kinds, workforce pool
-SCIM tenants, project policy bindings. Container Registry is deprecated
-upstream and should not be built.
+SCIM tenants, project policy bindings. Container Registry is shut down
+and is not built: `google_container_registry` maps to an Artifact
+Registry gcr.io repository (`docs/design.md`, decision 13).
 
 ### Alpha kinds foundational modules depend on
 
@@ -227,7 +228,7 @@ not have. Each is refused by the chart when set.
 | 86 | [geap-agent-runtime](#geap-agent-runtime) | partial | L | 1132 | 14 | 3 / 0 / 2 |
 | 87 | [geap-workbench](#geap-workbench) | partial | M | 668 | 30 | 1 / 1 / 1 |
 | 88 | [secops-rules](#secops-rules) | partial | S | 180 | 5 | 0 / 0 / 3 |
-| 89 | [container-registry](#container-registry) | none | S | 113 | 3 | 1 / 0 / 1 |
+| 89 | [container-registry](#container-registry) | full | S | 113 | 3 | 2 / 0 / 0 |
 | 90 | [projects-data-source](#projects-data-source) | n/a | S | 169 | 5 | 0 / 0 / 0 |
 | 91 | [cloud-config-container](#cloud-config-container) | n/a | L | 1954 | 72 | 0 / 0 / 0 |
 
@@ -1666,11 +1667,11 @@ Rank 88. Terraform module: [`modules/secops-rules`](https://github.com/GoogleClo
 
 This module simplifies the creation of GCS buckets used by Google Container Registry.
 
-Rank 89. Terraform module: [`modules/container-registry`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/container-registry). Coverage: **none**. Size: S (113 lines of Terraform, 3 variables, 1 outputs).
+Rank 89. Terraform module: [`modules/container-registry`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/container-registry). Coverage: **full**. Size: S (113 lines of Terraform, 3 variables, 1 outputs).
 
 | Terraform resource | Config Connector | |
 | --- | --- | --- |
-| `google_container_registry` | none | **gap** |
+| `google_container_registry` | ArtifactRegistryRepository (a gcr.io repository; Container Registry is shut down, decision 30) |  |
 | `google_storage_bucket_iam_binding` | IAMPartialPolicy -> StorageBucket |  |
 
 ### projects-data-source

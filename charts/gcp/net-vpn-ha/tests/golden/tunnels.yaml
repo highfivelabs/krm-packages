@@ -1,0 +1,288 @@
+---
+# Source: net-vpn-ha/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeExternalVPNGateway
+metadata:
+  name: tunnels-peer-onprem
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "tunnels"
+    app.kubernetes.io/name: net-vpn-ha
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "external_gateway:onprem"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "vpn-onprem-onprem"
+  description: "Terraform managed external VPN gateway"
+  redundancyType: "TWO_IPS_REDUNDANCY"
+  interface:
+    - id: 0
+      ipAddress: "8.8.8.8"
+    - id: 1
+      ipAddress: "8.8.4.4"
+---
+# Source: net-vpn-ha/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouter
+metadata:
+  name: tunnels
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "tunnels"
+    app.kubernetes.io/name: net-vpn-ha
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "router"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "vpn-vpn-onprem"
+  region: "europe-west1"
+  networkRef:
+    external: "projects/my-project/global/networks/my-network"
+  bgp:
+    asn: 64514
+    advertiseMode: DEFAULT
+---
+# Source: net-vpn-ha/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterInterface
+metadata:
+  name: tunnels-interface-a
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "tunnels"
+    app.kubernetes.io/name: net-vpn-ha
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "router_interface:a"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "onprem-a-if"
+  region: "europe-west1"
+  routerRef:
+    name: tunnels
+  ipRange: "169.254.10.2/30"
+  vpnTunnelRef:
+    name: tunnels-tunnel-a
+---
+# Source: net-vpn-ha/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterInterface
+metadata:
+  name: tunnels-interface-b
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "tunnels"
+    app.kubernetes.io/name: net-vpn-ha
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "router_interface:b"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "vpn-onprem-b"
+  region: "europe-west1"
+  routerRef:
+    name: tunnels
+  vpnTunnelRef:
+    name: tunnels-tunnel-b
+---
+# Source: net-vpn-ha/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterInterface
+metadata:
+  name: tunnels-interface-c
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "tunnels"
+    app.kubernetes.io/name: net-vpn-ha
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "router_interface:c"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "vpn-onprem-c"
+  region: "europe-west1"
+  routerRef:
+    name: tunnels
+  ipRange: "169.254.12.2/30"
+  vpnTunnelRef:
+    name: tunnels-tunnel-c
+---
+# Source: net-vpn-ha/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterPeer
+metadata:
+  name: tunnels-bgp-peer-a
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "tunnels"
+    app.kubernetes.io/name: net-vpn-ha
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "bgp_peer:a"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "onprem-a-peer"
+  region: "europe-west1"
+  routerRef: {"name":"tunnels"}
+  routerInterfaceRef:
+    name: tunnels-interface-a
+  peerIpAddress: "169.254.10.1"
+  peerAsn: 65001
+  advertisedRoutePriority: 100
+  advertiseMode: CUSTOM
+  advertisedGroups: ["ALL_SUBNETS"]
+  advertisedIpRanges:
+    - range: "10.1.0.0/16"
+      description: "app"
+  enableIpv6: true
+  ipv6NexthopAddress: "2600:2d00:0:2::1"
+  peerIpv6NexthopAddress: "2600:2d00:0:2::2"
+---
+# Source: net-vpn-ha/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterPeer
+metadata:
+  name: tunnels-bgp-peer-b
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "tunnels"
+    app.kubernetes.io/name: net-vpn-ha
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "bgp_peer:b"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "vpn-onprem-b"
+  region: "europe-west1"
+  routerRef: {"external":"other-router"}
+  routerInterfaceRef:
+    name: tunnels-interface-b
+  peerIpAddress: "169.254.11.1"
+  peerAsn: 65001
+  advertisedRoutePriority: 1000
+  advertiseMode: DEFAULT
+---
+# Source: net-vpn-ha/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRouterPeer
+metadata:
+  name: tunnels-bgp-peer-c
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "tunnels"
+    app.kubernetes.io/name: net-vpn-ha
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "bgp_peer:c"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "vpn-onprem-c"
+  region: "europe-west1"
+  routerRef: {"name":"tunnels"}
+  routerInterfaceRef:
+    name: tunnels-interface-c
+  peerIpAddress: "169.254.12.1"
+  peerAsn: 65001
+  advertisedRoutePriority: 1000
+  advertiseMode: DEFAULT
+---
+# Source: net-vpn-ha/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeVPNGateway
+metadata:
+  name: tunnels
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "tunnels"
+    app.kubernetes.io/name: net-vpn-ha
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "gateway"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "vpn-onprem"
+  description: "Terraform managed external VPN gateway"
+  region: "europe-west1"
+  networkRef:
+    external: "projects/my-project/global/networks/my-network"
+  stackType: IPV4_IPV6
+---
+# Source: net-vpn-ha/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeVPNTunnel
+metadata:
+  name: tunnels-tunnel-a
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "tunnels"
+    app.kubernetes.io/name: net-vpn-ha
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "tunnel:a"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "onprem-a"
+  region: "europe-west1"
+  vpnGatewayRef:
+    name: tunnels
+  vpnGatewayInterface: 0
+  peerExternalGatewayRef:
+    name: tunnels-peer-onprem
+  peerExternalGatewayInterface: 0
+  ikeVersion: 1
+  routerRef:
+    name: tunnels
+  sharedSecret: {"valueFrom":{"secretKeyRef":{"key":"a","name":"vpn-onprem"}}}
+---
+# Source: net-vpn-ha/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeVPNTunnel
+metadata:
+  name: tunnels-tunnel-b
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "tunnels"
+    app.kubernetes.io/name: net-vpn-ha
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "tunnel:b"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "vpn-onprem-b"
+  region: "europe-west1"
+  vpnGatewayRef:
+    name: tunnels
+  vpnGatewayInterface: 1
+  peerExternalGatewayRef:
+    name: tunnels-peer-onprem
+  peerExternalGatewayInterface: 1
+  ikeVersion: 2
+  routerRef:
+    name: tunnels
+  sharedSecret: {"valueFrom":{"secretKeyRef":{"key":"b","name":"vpn-onprem"}}}
+---
+# Source: net-vpn-ha/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeVPNTunnel
+metadata:
+  name: tunnels-tunnel-c
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "tunnels"
+    app.kubernetes.io/name: net-vpn-ha
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "tunnel:c"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "vpn-onprem-c"
+  region: "europe-west1"
+  vpnGatewayRef:
+    name: tunnels
+  vpnGatewayInterface: 0
+  ikeVersion: 2
+  routerRef:
+    name: tunnels
+  sharedSecret: {"valueFrom":{"secretKeyRef":{"key":"c","name":"vpn-onprem"}}}

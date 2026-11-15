@@ -8,8 +8,8 @@ google_certificate_manager_certificate_map.map and .._map_entry.entries:
 a CertificateManagerCertificateMap and one
 CertificateManagerCertificateMapEntry per entry, referring to the chart's
 certificates by name. google_certificate_manager_certificate.certificates:
-a CertificateManagerCertificate each (managed; self_managed is refused,
-README.md). google_certificate_manager_dns_authorization.dns_authorizations:
+a CertificateManagerCertificate each (managed, or self_managed with its
+private key a reference to a Kubernetes Secret: docs/secrets.md). google_certificate_manager_dns_authorization.dns_authorizations:
 a CertificateManagerDNSAuthorization each.
 google_certificate_manager_certificate_issuance_config.default: a
 CertificateManagerCertificateIssuanceConfig each, config-connector-extensions'
@@ -34,9 +34,6 @@ v1beta1 kind (Config Connector's own is v1alpha1).
 {{- fail "certificate-manager: Either hostname or matcher must be specified for an entry." }}
 {{- end }}
 {{- end }}
-{{- end }}
-{{- range $key, $c := $v.certificates }}
-{{- include "kcc.unsupported" (list $ (printf "certificates.%s.self_managed" $key) $c.self_managed "its private key would be in the rendered manifest; CertificateManagerCertificate takes it from a Kubernetes Secret (pemPrivateKey.valueFrom), which the chart does not take yet") }}
 {{- end }}
 {{- $cert := dict }}
 {{- range $key, $c := $v.certificates }}
@@ -107,6 +104,12 @@ spec:
   {{- with $c.scope }}
   scope: {{ . | quote }}
   {{- end }}
+  {{- with $c.self_managed }}
+  selfManaged:
+    pemCertificate: {{ .pem_certificate | quote }}
+    pemPrivateKey: {{ include "kcc.secretRef" (list $ (printf "certificates.%s.self_managed.pem_private_key" $key) .pem_private_key) }}
+  {{- end }}
+  {{- with $c.managed }}
   managed:
     domains:
       {{- toYaml $c.managed.domains | nindent 6 }}
@@ -126,6 +129,7 @@ spec:
       external: {{ printf "projects/%s/locations/%s/certificateIssuanceConfigs/%s" $p ($ic.location | default "global") (include "kcc.cloudName" (list $ "issuance config" . 63 "letter")) | quote }}
     {{- end }}
     {{- end }}
+  {{- end }}
 {{- end }}
 {{- range $key, $d := $v.dns_authorizations }}
 ---

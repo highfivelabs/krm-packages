@@ -1,0 +1,79 @@
+---
+# Source: certificate-authority-service/templates/main.yaml
+apiVersion: privateca.cnrm.cloud.google.com/v1beta1
+kind: PrivateCACAPool
+metadata:
+  name: names
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: certificate-authority-service
+    app.kubernetes.io/version: "0.1.0"
+    environment: "dev"
+    hfl.dev/environment: "dev"
+    hfl.dev/team: "shop"
+    team: "shop"
+  annotations:
+    hfl.dev/id: "ca_pool"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "shop-dev-pki"
+  tier: "DEVOPS"
+---
+# Source: certificate-authority-service/templates/main.yaml
+apiVersion: privateca.cnrm.cloud.google.com/v1beta1
+kind: PrivateCACertificateAuthority
+metadata:
+  name: names-ca-root
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: certificate-authority-service
+    app.kubernetes.io/version: "0.1.0"
+    environment: "dev"
+    hfl.dev/environment: "dev"
+    hfl.dev/team: "shop"
+    team: "shop"
+  annotations:
+    hfl.dev/id: "ca:root"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "root"
+  caPoolRef:
+    name: names
+  type: "SELF_SIGNED"
+  lifetime: "315360000s"
+  keySpec:
+    algorithm: "RSA_PKCS1_2048_SHA256"
+  config:
+    subjectConfig:
+      subject:
+        commonName: "test.example.com"
+        organization: "Test Example"
+    x509Config:
+      caOptions:
+        isCa: true
+      keyUsage:
+        baseKeyUsage:
+          certSign: true
+          contentCommitment: false
+          crlSign: true
+          dataEncipherment: false
+          decipherOnly: false
+          digitalSignature: false
+          encipherOnly: false
+          keyAgreement: false
+          keyEncipherment: true
+        extendedKeyUsage:
+          clientAuth: false
+          codeSigning: false
+          emailProtection: false
+          ocspSigning: false
+          serverAuth: true
+          timeStamping: false

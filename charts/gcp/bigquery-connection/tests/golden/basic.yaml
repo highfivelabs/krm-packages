@@ -1,0 +1,51 @@
+---
+# Source: bigquery-connection/templates/main.yaml
+apiVersion: bigqueryconnection.cnrm.cloud.google.com/v1beta1
+kind: BigQueryConnectionConnection
+metadata:
+  name: basic
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: bigquery-connection
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "connection"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  location: "EU"
+  resourceID: "my-connection"
+  friendlyName: "My connection"
+  description: "A Cloud SQL connection."
+  cloudSQL:
+    instanceRef:
+      external: "my-project:europe-west1:my-instance"
+    databaseRef:
+      external: "my-database"
+    type: "POSTGRES"
+    credential:
+      secretRef:
+        name: "my-connection-credential"
+---
+# Source: bigquery-connection/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: basic-iam-roles-bigquery-connectionuser-095f59b7
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: bigquery-connection
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam:roles/bigquery.connectionUser"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/EU/connections/my-connection
+    kind: BigQueryConnectionConnection
+  role: "roles/bigquery.connectionUser"
+  members:
+    - "group:analysts@example.com"

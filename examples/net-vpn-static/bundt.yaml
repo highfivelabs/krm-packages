@@ -8,7 +8,7 @@ spec:
     - name: vpn
       package:
         name: gcp-net-vpn-static
-        version: "0.1.0"
+        version: "0.2.0"
       inputs:
         region: europe-west1
         network: projects/my-project/global/networks/my-network

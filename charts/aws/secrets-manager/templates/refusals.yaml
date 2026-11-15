@@ -1,0 +1,26 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+The module variables this chart keeps in its values but cannot carry
+(upstream.yaml, "refused"): each stops the render, naming the gap, when it
+is set to anything but its Terraform default. Renders nothing.
+*/ -}}
+{{- $v := .Values }}
+{{- include "ack.unsupported" (list $ "name_prefix" $v.name_prefix "a secret name with Terraform's random suffix (name_prefix) would change between renders; set name (the namePrefix value keeps two Instances' secrets apart)") }}
+{{- $value := "a secret's value in values would be written into the rendered objects; ACK's Secret takes its value from a Kubernetes Secret: set secret_string_ref (name, key) to one the team provides" }}
+{{- include "ack.unsupported" (list $ "secret_string" $v.secret_string $value) }}
+{{- include "ack.unsupported" (list $ "secret_string_wo" $v.secret_string_wo $value) }}
+{{- include "ack.unsupported" (list $ "secret_string_wo_version" $v.secret_string_wo_version "it triggers an update of secret_string_wo, which is refused; ACK's Secret rereads the Kubernetes Secret secret_string_ref names") }}
+{{- include "ack.unsupported" (list $ "secret_binary" $v.secret_binary "a secret's value in values would be written into the rendered objects, and ACK's Secret has no binary value field (secretsmanager-controller v1.8.2); store it base64-encoded in the Kubernetes Secret secret_string_ref names") }}
+{{- include "ack.unsupported" (list $ "version_stages" $v.version_stages "ACK's Secret has no field for a version's staging labels (secretsmanager-controller v1.8.2); its value always gets AWSCURRENT") }}
+{{- include "ack.unsupported" (list $ "ignore_secret_changes" $v.ignore_secret_changes "ACK's Secret has no way to leave a value changed outside it alone: it writes the value of the Kubernetes Secret secret_string_ref names") }}
+{{- $random := "a chart cannot make a random value without writing it into the rendered objects, and ACK's Secret has no field that generates one; generate the password into a Kubernetes Secret and set secret_string_ref" }}
+{{- include "ack.unsupported" (list $ "create_random_password" $v.create_random_password $random) }}
+{{- include "ack.unchanged" (list $ "random_password_length" $v.random_password_length "32" $random) }}
+{{- include "ack.unchanged" (list $ "random_password_override_special" $v.random_password_override_special (toJson "!@#$%&*()-_=+[]{}<>:?") $random) }}
+{{- $rotation := "rotation (aws_secretsmanager_secret_rotation) has no ACK field or kind: ACK's Secret has none (secretsmanager-controller v1.8.2), and ack-extensions has no rotation kind at the catalog's ACKX_COMMIT" }}
+{{- include "ack.unsupported" (list $ "enable_rotation" $v.enable_rotation $rotation) }}
+{{- include "ack.unsupported" (list $ "rotate_immediately" $v.rotate_immediately $rotation) }}
+{{- include "ack.unsupported" (list $ "rotation_lambda_arn" $v.rotation_lambda_arn $rotation) }}
+{{- include "ack.unsupported" (list $ "rotation_rules" $v.rotation_rules $rotation) }}

@@ -138,11 +138,7 @@ spec:
         seconds: 3600
   iap:
     oauth2ClientId: "client-id"
-    oauth2ClientSecret:
-      valueFrom:
-        secretKeyRef:
-          name: "iap"
-          key: "secret"
+    oauth2ClientSecret: {"valueFrom":{"secretKeyRef":{"key":"secret","name":"iap"}}}
     oauth2ClientSecretSha256: "abc"
   logConfig:
     enable: true
@@ -517,11 +513,7 @@ spec:
   location: "europe-west1"
   certificate:
     value: "-----BEGIN CERTIFICATE-----\nPUBLIC\n-----END CERTIFICATE-----"
-  privateKey:
-    valueFrom:
-      secretKeyRef:
-        name: "ilb-tls"
-        key: "tls.key"
+  privateKey: {"valueFrom":{"secretKeyRef":{"key":"tls.key","name":"ilb-tls"}}}
 ---
 # Source: net-lb-app-ext-regional/templates/main.yaml
 apiVersion: compute.cnrm.cloud.google.com/v1beta1

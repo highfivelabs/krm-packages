@@ -1,0 +1,7 @@
+# Every names key, labels and tags (docs/design.md, "Names, labels and tags").
+repository_name: ignored
+names: {repository: shop-dev/api}
+account_id: "111122223333"
+region: us-east-1
+labels: {hfl.dev/team: shop}
+tags: {team: shop}

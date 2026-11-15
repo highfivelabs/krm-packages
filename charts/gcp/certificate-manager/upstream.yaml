@@ -18,11 +18,6 @@ synced: 2026-11-12
 # Module variables the chart keeps in values.yaml (so tfvars convert one to
 # one) but refuses when set, or accepts only in part. Read by `task
 # coverage`; `task coverage-verify` renders the chart to check that each one
-# is refused. The chart refuses a part of certificates: self-managed
-# certificates.
-refused:
-  - variable: certificates
-    kind: not-ported
-    reason: "self_managed is refused: its private key given here would be in the rendered manifest; CertificateManagerCertificate takes it from a Kubernetes Secret (pemPrivateKey.valueFrom), which the chart does not take yet (the open question of cloudsql-instance's root_password)"
-    partial: true
-    fields: [self_managed]
+# is refused. The chart refuses none: a self-managed certificate's private
+# key is a reference to a Kubernetes Secret (docs/secrets.md).
+refused: []

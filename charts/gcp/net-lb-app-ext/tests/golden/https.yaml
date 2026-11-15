@@ -115,11 +115,7 @@ spec:
   location: "global"
   certificate:
     value: "-----BEGIN CERTIFICATE-----\nMIIBPUBLICCERTIFICATEONLY\n-----END CERTIFICATE-----"
-  privateKey:
-    valueFrom:
-      secretKeyRef:
-        name: "glb-tls"
-        key: "tls.key"
+  privateKey: {"valueFrom":{"secretKeyRef":{"key":"tls.key","name":"glb-tls"}}}
 ---
 # Source: net-lb-app-ext/templates/main.yaml
 apiVersion: compute.cnrm.cloud.google.com/v1beta1

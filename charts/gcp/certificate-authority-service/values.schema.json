@@ -1,0 +1,595 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "certificate-authority-service values (fabric certificate-authority-service v60.0.0)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_id",
+    "location",
+    "ca_pool_config"
+  ],
+  "definitions": {
+    "condition": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "expression",
+        "title"
+      ],
+      "properties": {
+        "expression": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  },
+  "properties": {
+    "names": {
+      "description": "The CA pool's name in full (not a Terraform variable; docs/design.md, \"Names, labels and tags\"). A name set here takes no prefix.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ca_pool": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63,
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        }
+      }
+    },
+    "namePrefix": {
+      "description": "Optional convenience (not a Terraform variable): <namePrefix>- in front of the CA pool's name (unless set under names). A DNS label. Empty changes nothing.",
+      "type": "string",
+      "pattern": "^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+    },
+    "labels": {
+      "description": "Kubernetes labels on every object (not a Terraform variable); an unprefixed one also becomes a Google Cloud label where the resource takes labels.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 63
+      }
+    },
+    "tags": {
+      "description": "Cloud labels (not a Terraform variable; Google Cloud labels: lower-case letters, digits, _ and -).",
+      "type": [
+        "object",
+        "null"
+      ],
+      "propertyNames": {
+        "pattern": "^[a-z]([a-z0-9_-]{0,61}[a-z0-9])?$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^([a-z0-9]([a-z0-9_-]{0,61}[a-z0-9])?)?$"
+      }
+    },
+    "context": {
+      "description": "Context-specific interpolations. Refused when set (use Bundt expressions).",
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "allow_alpha": {
+      "description": "Accept v1alpha1 kinds (IAMMember, for iam_bindings_additive). Not a Terraform variable.",
+      "type": "boolean"
+    },
+    "deletion_policy": {
+      "description": "DELETE (default) or ABANDON (not a fabric variable).",
+      "enum": [
+        "DELETE",
+        "ABANDON",
+        "PREVENT",
+        null
+      ]
+    },
+    "iam": {
+      "description": "IAM bindings in {ROLE => [MEMBERS]} format.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "iam_bindings": {
+      "description": "Authoritative IAM bindings in {KEY => {role = ROLE, members = [], condition = {}}}. Keys are arbitrary.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "members",
+          "role"
+        ],
+        "properties": {
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "role": {
+            "type": "string"
+          },
+          "condition": {
+            "$ref": "#/definitions/condition"
+          }
+        }
+      }
+    },
+    "iam_bindings_additive": {
+      "description": "Individual additive IAM bindings. Keys are arbitrary. IAMMember is v1alpha1: needs allow_alpha.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "member",
+          "role"
+        ],
+        "properties": {
+          "member": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "condition": {
+            "$ref": "#/definitions/condition"
+          }
+        }
+      }
+    },
+    "iam_by_principals": {
+      "description": "Authoritative IAM binding in {PRINCIPAL => [ROLES]} format. Merged internally with the iam variable.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "ca_configs": {
+      "description": "The CA configurations, by CA ID. Unset (null) is fabric's default: one CA, test-ca, with every default.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "deletion_protection": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "is_ca": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "is_self_signed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "lifetime": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "pem_ca_certificate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ignore_active_certificates_on_deletion": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "skip_grace_period": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "labels": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "gcs_bucket": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "key_spec": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "algorithm": {
+                "description": "Algorithm can only be SIGN_HASH_ALGORITHM_UNSPECIFIED, RSA_PSS_2048_SHA256, RSA_PSS_3072_SHA256, RSA_PSS_4096_SHA256, RSA_PKCS1_2048_SHA256, RSA_PKCS1_3072_SHA256, RSA_PKCS1_4096_SHA256, EC_P256_SHA256, EC_P384_SHA384.",
+                "enum": [
+                  "EC_P256_SHA256",
+                  "EC_P384_SHA384",
+                  "RSA_PSS_2048_SHA256",
+                  "RSA_PSS_3072_SHA256",
+                  "RSA_PSS_4096_SHA256",
+                  "RSA_PKCS1_2048_SHA256",
+                  "RSA_PKCS1_3072_SHA256",
+                  "RSA_PKCS1_4096_SHA256",
+                  "SIGN_HASH_ALGORITHM_UNSPECIFIED",
+                  null
+                ]
+              },
+              "kms_key_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "key_usage": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "cert_sign": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "client_auth": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "code_signing": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "content_commitment": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "crl_sign": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "data_encipherment": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "decipher_only": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "digital_signature": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "email_protection": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "encipher_only": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "key_agreement": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "key_encipherment": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "ocsp_signing": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "server_auth": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "time_stamping": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              }
+            }
+          },
+          "subject": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "required": [
+              "common_name",
+              "organization"
+            ],
+            "properties": {
+              "common_name": {
+                "type": "string"
+              },
+              "organization": {
+                "type": "string"
+              },
+              "country_code": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "locality": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "organizational_unit": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "postal_code": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "province": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "street_address": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "subject_alt_name": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "dns_names": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              },
+              "email_addresses": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              },
+              "ip_addresses": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              },
+              "uris": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "subordinate_config": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "root_ca_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "pem_issuer_certificates": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "propertyNames": {
+        "pattern": "^[a-zA-Z0-9_-]{1,63}$"
+      }
+    },
+    "ca_pool_config": {
+      "description": "The CA pool config. Either use_pool or create_pool need to be used. Use pool takes precedence if both are defined.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create_pool": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "enterprise_tier": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "publishing_options": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": false,
+              "required": [
+                "publish_ca_cert",
+                "publish_crl"
+              ],
+              "properties": {
+                "encoding_format": {
+                  "description": "Encoding format must be one of PEM or DER.",
+                  "enum": [
+                    "PEM",
+                    "DER",
+                    null
+                  ]
+                },
+                "publish_ca_cert": {
+                  "type": "boolean"
+                },
+                "publish_crl": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "use_pool": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^projects/[^/]+/locations/[^/]+/caPools/[^/]+$"
+            }
+          }
+        }
+      }
+    },
+    "location": {
+      "description": "The location of the CAs.",
+      "type": "string",
+      "minLength": 1
+    },
+    "project_id": {
+      "description": "Project id.",
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

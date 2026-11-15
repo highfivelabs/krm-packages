@@ -1,0 +1,71 @@
+---
+# Source: certificate-authority-service/templates/main.yaml
+apiVersion: privateca.cnrm.cloud.google.com/v1beta1
+kind: PrivateCACAPool
+metadata:
+  name: basic
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: certificate-authority-service
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "ca_pool"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "test-ca"
+  tier: "DEVOPS"
+---
+# Source: certificate-authority-service/templates/main.yaml
+apiVersion: privateca.cnrm.cloud.google.com/v1beta1
+kind: PrivateCACertificateAuthority
+metadata:
+  name: basic-ca-test-ca
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: certificate-authority-service
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "ca:test-ca"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "test-ca"
+  caPoolRef:
+    name: basic
+  type: "SELF_SIGNED"
+  lifetime: "315360000s"
+  keySpec:
+    algorithm: "RSA_PKCS1_2048_SHA256"
+  config:
+    subjectConfig:
+      subject:
+        commonName: "test.example.com"
+        organization: "Test Example"
+    x509Config:
+      caOptions:
+        isCa: true
+      keyUsage:
+        baseKeyUsage:
+          certSign: true
+          contentCommitment: false
+          crlSign: true
+          dataEncipherment: false
+          decipherOnly: false
+          digitalSignature: false
+          encipherOnly: false
+          keyAgreement: false
+          keyEncipherment: true
+        extendedKeyUsage:
+          clientAuth: false
+          codeSigning: false
+          emailProtection: false
+          ocspSigning: false
+          serverAuth: true
+          timeStamping: false

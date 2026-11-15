@@ -1,0 +1,14 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The namePrefix convention (docs/design.md, "Names, labels and tags"): the
+# repository's name and each pull through cache rule's repository prefix,
+# unique in the registry, carry the namePrefix. The registry policy and the
+# scanning and replication configurations are one per registry.
+exempt:
+  RegistryPolicy: "one per registry (account and Region); it has no name"
+  RegistryScanningConfiguration: "one per registry (account and Region); it has no name"
+  ReplicationConfiguration: "one per registry (account); it has no name"
+nameFields:
+  Repository: name
+  PullThroughCacheRule: ecrRepositoryPrefix

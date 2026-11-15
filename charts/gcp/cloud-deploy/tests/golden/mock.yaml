@@ -1,0 +1,162 @@
+---
+# Source: cloud-deploy/templates/automation.yaml
+apiVersion: clouddeploy.gcp.hfl.dev/v1beta1
+kind: CloudDeployAutomation
+metadata:
+  name: mock-automation-catalog-mock-promote
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "automation:catalog-mock-promote"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  projectRef:
+    external: "mock-project"
+  location: "us-central1"
+  resourceID: "catalog-mock-promote"
+  deliveryPipeline: "catalog-mock-pipeline"
+  serviceAccount: "deployer@mock-project.iam.gserviceaccount.com"
+  suspended: false
+  rules:
+    - promoteReleaseRule:
+        id: "promote-release"
+        destinationTargetId: "@next"
+  selector:
+    targets:
+      - id: "*"
+---
+# Source: cloud-deploy/templates/delivery-pipeline.yaml
+apiVersion: clouddeploy.cnrm.cloud.google.com/v1beta1
+kind: CloudDeployDeliveryPipeline
+metadata:
+  name: mock
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "pipeline"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  projectRef:
+    external: "mock-project"
+  location: "us-central1"
+  resourceID: "catalog-mock-pipeline"
+  description: "Terraform managed."
+  suspended: false
+  serialPipeline:
+    stages:
+      - targetID: "catalog-mock-dev"
+        strategy:
+          standard:
+            verify: false
+---
+# Source: cloud-deploy/templates/deploy-policy.yaml
+apiVersion: clouddeploy.gcp.hfl.dev/v1beta1
+kind: CloudDeployDeployPolicy
+metadata:
+  name: mock-policy-catalog-mock-freeze
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "deploy_policy:catalog-mock-freeze"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  projectRef:
+    external: "mock-project"
+  location: "us-central1"
+  resourceID: "catalog-mock-freeze"
+  suspended: false
+  rules:
+    - rolloutRestriction:
+        id: "weekends"
+        timeWindows:
+          timeZone: "America/New_York"
+          weeklyWindows:
+            -
+              daysOfWeek:
+                - "SATURDAY"
+                - "SUNDAY"
+              startTime:
+                hours: 0
+              endTime:
+                hours: 23
+                minutes: 59
+  selectors:
+    - deliveryPipeline:
+        id: "*"
+---
+# Source: cloud-deploy/templates/target.yaml
+apiVersion: clouddeploy.gcp.hfl.dev/v1beta1
+kind: CloudDeployTarget
+metadata:
+  name: mock-target-catalog-mock-dev
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "target:catalog-mock-dev"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  projectRef:
+    external: "mock-project"
+  location: "us-central1"
+  resourceID: "catalog-mock-dev"
+  requireApproval: false
+---
+# Source: cloud-deploy/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: mock-iam-roles-clouddeploy-releaser-4228f122
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "iam:roles/clouddeploy.releaser"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  resourceRef:
+    external: projects/mock-project/locations/us-central1/deliveryPipelines/catalog-mock-pipeline
+    kind: CloudDeployDeliveryPipeline
+  role: "roles/clouddeploy.releaser"
+  members:
+    - "group:releasers@example.com"
+---
+# Source: cloud-deploy/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: mock-target-catalog-mock-dev-iam-roles-clouddeploy-ope-9c2d0089
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "target:catalog-mock-dev:iam:roles/clouddeploy.operator"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  resourceRef:
+    external: projects/mock-project/locations/us-central1/targets/catalog-mock-dev
+    kind: CloudDeployTarget
+  role: "roles/clouddeploy.operator"
+  members:
+    - "group:operators@example.com"

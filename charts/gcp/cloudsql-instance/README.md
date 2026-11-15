@@ -1,6 +1,6 @@
 # cloudsql-instance
 
-A Cloud SQL instance with its read replicas, databases, IAM users and client
+A Cloud SQL instance with its read replicas, databases, users and client
 certificates, as Config Connector objects. A port of Cloud Foundation
 Fabric's
 [`modules/cloudsql-instance`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/f706bc3b6166787df01402f73a96f1de57097477/modules/cloudsql-instance)
@@ -55,7 +55,8 @@ The module's variables, with the same names, types and defaults.
 | `password_validation_policy` | `settings.passwordValidationPolicy`; `default_complexity: true` is `COMPLEXITY_DEFAULT`, otherwise unset as fabric leaves it; `change_interval` (seconds) becomes `"<n>s"` |
 | `replicas` | one `SQLInstance` per entry, `hfl.dev/id` `replica:<key>`, named `<prefix>-<key>`, its `masterInstanceRef` the primary: its own `region`, `encryption_key_name`, `availability_type` and `tier` (the primary's when unset), and the primary's disk, flags, network and SSL settings, as fabric copies them |
 | `databases` | one `SQLDatabase` each on the primary, `hfl.dev/id` `database:<name>` |
-| `users` | one `SQLUser` each on the primary, `hfl.dev/id` `user:<key>`, for `CLOUD_IAM_USER` and `CLOUD_IAM_SERVICE_ACCOUNT` users; on PostgreSQL a user's name drops `.gserviceaccount.com`, as fabric's (below for `BUILT_IN`) |
+| `users` | one `SQLUser` each on the primary, `hfl.dev/id` `user:<key>`. A `BUILT_IN` user (the default type) needs `password`, a reference to a Kubernetes Secret, `{secretName, key}` ([secrets](../../../docs/secrets.md)), rendered as `password.valueFrom.secretKeyRef`; a string is refused, and so is no password (fabric would generate one). On MySQL a `BUILT_IN` user's key is `NAME` or `NAME@HOST` (`host`); on PostgreSQL a user's name drops `.gserviceaccount.com`, as fabric's. `password_version` is accepted and ignored, as fabric's module ignores it |
+| `root_password` | `password`, a reference to a Kubernetes Secret, `{secretName, key}`: the primary's `rootPassword.valueFrom.secretKeyRef` (SQL Server needs one). A string is refused |
 | `terraform_deletion_protection` | accepted and ignored, whatever its value (below, "Differences from the module") |
 | `deletion_policy` | not a fabric variable; `ABANDON` keeps the instances, databases and users when the component is deleted |
 
@@ -63,8 +64,10 @@ Refused when set:
 
 | Variable | Why |
 | --- | --- |
-| `root_password`, `users` of type `BUILT_IN` (the default type) | a password given in values would be in the rendered manifest, and Terraform's `random_password` has no Config Connector equivalent. `SQLInstance` and `SQLUser` take a password from a Kubernetes Secret (`valueFrom.secretKeyRef`), which the chart does not take yet: how a component gets a database password is an open question. SQL Server needs a root password, so it cannot be created with this chart yet |
-| `users[].database_roles`, `users[].password_version` | `SQLUser` has no such fields |
+| `root_password.random_password: true`, a `BUILT_IN` user without `password` | the catalog never generates a secret ([secrets](../../../docs/secrets.md)): give a reference to a Secret that External Secrets Operator fills |
+| a password given as a string | the secret would be in the rendered manifest: give `{secretName, key}` |
+| `users[].password` on an IAM user | an IAM user has no password |
+| `users[].database_roles` | `SQLUser` has no such field |
 | `data_api_access`, `enable_dataplex_integration` | `SQLInstance` has no such fields |
 | `backup_configuration.retain_backups_on_delete`, `backup_configuration.final_backup` | `SQLInstance` has no such fields |
 | `insights_config.enhanced_query_insights_enabled: true` | `insightsConfig` has no such field |
@@ -97,7 +100,11 @@ makes no passwords.
   `true`) is Google's, and is carried: while it is on, deleting the
   component fails at the cloud and the instance stays, so set it to
   `false` first, or use `deletion_policy: ABANDON` to keep the instance.
-- **Passwords**: no `BUILT_IN` users and no root password (above).
+- **Passwords** come from Kubernetes Secrets in the component's
+  namespace (above): Config Connector reads the Secret when it reconciles,
+  and the instance or user is not Ready until the Secret exists. A
+  rotation is a change to the Secret. The chart generates no password, so
+  there is no `user_passwords` output.
 - **Client certificates**: Config Connector keeps a `SQLSSLCert`'s private
   key in the object's `status`, where Terraform keeps it in its state:
   whoever can read the object in the cluster can read the key.
@@ -121,14 +128,20 @@ module the catalog tracks. To take a newer release, see
 README's example), `full` (every accepted input: regional MySQL with
 backups, insights, maintenance, a password policy, two replicas, databases,
 IAM users, a client certificate, ABANDON), `postgres-iam` (PostgreSQL,
-Private Service Connect, backups off, service account users), `names` and
-`mock`, each validated against Config Connector v1.160.0's CRD schemas, and
+Private Service Connect, backups off, service account users), `passwords`
+(SQL Server with its root password and a `BUILT_IN` user from a Secret),
+`mysql-users` (`NAME@HOST` users), `names` and `mock`, each validated against Config Connector v1.160.0's CRD schemas, and
 the refusals in `tests/*.fail.yaml`. `tests/name-prefix.yaml` exempts the
 kinds named inside their instance.
 
-`tests/mock.values.yaml` (a small PostgreSQL instance and one database) is
-for the fake cloud (`task test-mock`); it has not run yet.
+`tests/mock.values.yaml` (a small PostgreSQL instance, one database, a
+`BUILT_IN` user, its password and the root password from a Secret that
+`hack/test-secret.sh` makes at run time) was applied to the fake cloud on
+2026-11-15 (`task test-mock MOCK_CHARTS=cloudsql-instance`, run
+`off-catalog-1115101141-17661`): the instance, the database and the user
+Ready, the outputs evaluated, all deleted.
 
 ## Changes
 
+- **0.2.0** (2026-11-15): `root_password.password` and a `BUILT_IN` user's `password` are references to a Kubernetes Secret; `BUILT_IN` users (`NAME@HOST` on MySQL) are accepted; `password_version` is accepted and ignored, as in fabric.
 - **0.1.0** (2026-11-12): the port.

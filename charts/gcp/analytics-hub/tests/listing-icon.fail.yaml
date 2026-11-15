@@ -1,0 +1,5 @@
+# expect: analytics-hub: listings.l.icon is not supported
+project_id: my-project
+region: europe-west1
+name: x
+listings: {l: {bigquery_dataset: projects/p/datasets/d, icon: aWNvbg==}}

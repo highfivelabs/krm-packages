@@ -5,15 +5,15 @@
 # Outputs are fabric's declared outputs, selected from the live objects
 # (resources.gateway, resources.address when the chart makes it) and the
 # component's values (inputs). id is built from the spec as Terraform's is.
-# Not outputs: random_secret (the chart makes no secret), tunnel_names and
-# tunnel_self_links (tunnels is refused, so there are none), and fabric's
-# whole objects (gateway, tunnels).
+# tunnel_names and tunnel_self_links are keyed by tunnel. Not outputs:
+# random_secret (the chart makes no secret), and fabric's whole objects
+# (gateway, tunnels).
 apiVersion: hfl.dev/v1
 kind: Package
 metadata:
   name: gcp-net-vpn-static
 spec:
-  version: 0.1.0
+  version: 0.2.0
   engine: helm
   providers: [kcc]
   outputs:
@@ -29,3 +29,7 @@ spec:
       + '/targetVpnGateways/' + resources.gateway.spec.resourceID
     name: resources.gateway.spec.resourceID
     self_link: resources.gateway.status.selfLink
+    tunnel_names: >-
+      resources.transformMapEntry(k, v, k.startsWith('tunnel:'), {k.substring(7): v.spec.resourceID})
+    tunnel_self_links: >-
+      resources.transformMapEntry(k, v, k.startsWith('tunnel:'), {k.substring(7): dyn(v.status.selfLink)})

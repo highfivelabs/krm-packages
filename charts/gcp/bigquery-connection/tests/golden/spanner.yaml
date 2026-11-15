@@ -1,0 +1,26 @@
+---
+# Source: bigquery-connection/templates/main.yaml
+apiVersion: bigqueryconnection.cnrm.cloud.google.com/v1beta1
+kind: BigQueryConnectionConnection
+metadata:
+  name: spanner
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "spanner"
+    app.kubernetes.io/name: bigquery-connection
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "connection"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  location: "us"
+  resourceID: "spanner"
+  cloudSpanner:
+    databaseRef:
+      external: "projects/my-project/instances/my-instance/databases/my-db"
+    useParallelism: true
+    useDataBoost: true
+    maxParallelism: 4
+    databaseRole: "reader"

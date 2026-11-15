@@ -35,7 +35,7 @@ The module's variables, with the same names, types and defaults.
 | `namePrefix` | not a fabric variable: an optional convenience; when set, every name the chart gives (the map's, and each certificate's, DNS authorization's, issuance config's and map entry's key) starts with `<namePrefix>-`; empty changes nothing |
 | `labels`, `tags` | labels on every object (Kubernetes labels; unprefixed ones and `tags` reach Google Cloud); an issuance config, a config-connector-extensions kind, also carries `tags` and its own labels as `spec.labels` |
 | `project_id` | `projectRef` of every object, and the project annotation |
-| `certificates` | a `CertificateManagerCertificate` per key: description, labels, location (`global` unless set, as the API defaults it), scope, and a managed certificate's domains, DNS authorizations (by reference to this chart's) and issuance config (by its ID, as fabric: a key `issuance_configs` does not have is dropped, as fabric's `try` drops it). fabric's checks: either `managed` or `self_managed`; DNS authorizations or an issuance config, not both; a scope Certificate Manager knows. `self_managed` is refused (below) |
+| `certificates` | a `CertificateManagerCertificate` per key: description, labels, location (`global` unless set, as the API defaults it), scope, and a managed certificate's domains, DNS authorizations (by reference to this chart's) and issuance config (by its ID, as fabric: a key `issuance_configs` does not have is dropped, as fabric's `try` drops it), or a self-managed certificate's `selfManaged`: `pem_certificate` (the chain in PEM, public) as `pemCertificate`, and `pem_private_key`, a reference to a Kubernetes Secret, `{secretName, key}` ([secrets](../../../docs/secrets.md)), as `pemPrivateKey.valueFrom.secretKeyRef`. fabric's checks: either `managed` or `self_managed`; DNS authorizations or an issuance config, not both; a scope Certificate Manager knows |
 | `dns_authorizations` | a `CertificateManagerDNSAuthorization` per key: domain, description, location, type. Its `labels` are accepted and not applied, as fabric's module does not apply them |
 | `issuance_configs` | a `CertificateManagerCertificateIssuanceConfig` (config-connector-extensions, `certificatemanager.gcp.hfl.dev/v1beta1`; Config Connector's own kind is `v1alpha1`) per key: CA pool, description, key algorithm, labels, lifetime, location (`global` unless set), rotation window |
 | `map` | a `CertificateManagerCertificateMap` (name, description, labels) and a `CertificateManagerCertificateMapEntry` per entry (description, labels, hostname or matcher, as fabric checks, and the certificates by reference to this chart's) |
@@ -45,7 +45,7 @@ Refused (the render stops, naming the reason):
 
 | Variable | Why |
 | --- | --- |
-| `certificates.<key>.self_managed` | the private key given here would be in the rendered manifest. `CertificateManagerCertificate` can take it from a Kubernetes Secret (`pemPrivateKey.valueFrom`), which the chart does not take yet: the same open question as `cloudsql-instance`'s `root_password` |
+| `certificates.<key>.self_managed.pem_private_key` given as a string | the private key would be in the rendered manifest: give `{secretName, key}`, a Secret that External Secrets Operator fills ([secrets](../../../docs/secrets.md)) |
 
 ## Outputs
 
@@ -78,14 +78,18 @@ with every other module the catalog tracks. To take a newer release, see
 ## Tests
 
 `task test CHART=certificate-manager`: render cases `basic`, `full`,
-`names` and `mock`, each validated against Config Connector v1.160.0's CRD
+`self-managed` (a regional self-managed certificate, its private key from
+a Secret), `names` and `mock`, each validated against Config Connector v1.160.0's CRD
 schemas (and the issuance config against config-connector-extensions'
 CRD), and the refusals in `tests/*.fail.yaml`.
 
 Fake cloud (`task test-mock MOCK_CHARTS=certificate-manager`, offload run
 `off-catalog-1112225005-24178`, 2026-11-12): `tests/mock.values.yaml`'s DNS
 authorization, the certificate it authorizes, the map and its entry all
-Ready; the outputs evaluated; all four deleted at once and gone.
+Ready; the outputs evaluated; all four deleted at once and gone. A
+self-managed certificate is render-tested only: its chain would have to be
+committed to match a key made at run time, and the catalog commits no key
+material.
 
 Live (`hack/live-apply.sh` `LIVE_CHARTS=certificate-manager`, `tests/live.yaml`;
 2026-11-14, run `cat-11140046-902f`, offload VM
@@ -101,4 +105,5 @@ so the live case does not make one.
 
 ## Changes
 
+- **0.2.0** (2026-11-15): self-managed certificates, the private key a reference to a Kubernetes Secret.
 - **0.1.0** (2026-11-12): the port.

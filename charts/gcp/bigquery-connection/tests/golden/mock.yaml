@@ -1,0 +1,44 @@
+---
+# Source: bigquery-connection/templates/main.yaml
+apiVersion: bigqueryconnection.cnrm.cloud.google.com/v1beta1
+kind: BigQueryConnectionConnection
+metadata:
+  name: mock
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: bigquery-connection
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "connection"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  projectRef:
+    external: "mock-project"
+  location: "us"
+  resourceID: "catalog_mock_bqconn"
+  friendlyName: "catalog mock"
+  cloudResource: {}
+---
+# Source: bigquery-connection/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: mock-iam-roles-bigquery-connectionuser-d0359f43
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: bigquery-connection
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "iam:roles/bigquery.connectionUser"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  resourceRef:
+    external: projects/mock-project/locations/us/connections/catalog_mock_bqconn
+    kind: BigQueryConnectionConnection
+  role: "roles/bigquery.connectionUser"
+  members:
+    - "group:viewers@example.com"

@@ -1,0 +1,3 @@
+# expect: ecr: attach_repository_policy with create_repository_policy false needs repository_policy
+repository_name: x
+create_repository_policy: false

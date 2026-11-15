@@ -1,0 +1,81 @@
+---
+# Source: cloud-deploy/templates/delivery-pipeline.yaml
+apiVersion: clouddeploy.cnrm.cloud.google.com/v1beta1
+kind: CloudDeployDeliveryPipeline
+metadata:
+  name: basic
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "pipeline"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "deployment-pipeline"
+  description: "Terraform managed."
+  suspended: false
+  serialPipeline:
+    stages:
+      - targetID: "dev-target"
+        profiles:
+          - "dev"
+        strategy:
+          standard:
+            verify: false
+      - targetID: "prod-target"
+        profiles:
+          - "prod"
+        strategy:
+          standard:
+            verify: false
+---
+# Source: cloud-deploy/templates/target.yaml
+apiVersion: clouddeploy.gcp.hfl.dev/v1beta1
+kind: CloudDeployTarget
+metadata:
+  name: basic-target-dev-target
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "target:dev-target"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "dev-target"
+  description: "Dev Target"
+  requireApproval: false
+  run:
+    location: "projects/my-project/locations/europe-west1"
+---
+# Source: cloud-deploy/templates/target.yaml
+apiVersion: clouddeploy.gcp.hfl.dev/v1beta1
+kind: CloudDeployTarget
+metadata:
+  name: basic-target-prod-target
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: cloud-deploy
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "target:prod-target"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "prod-target"
+  description: "Prod Target"
+  requireApproval: true
+  run:
+    location: "projects/my-project/locations/europe-west1"

@@ -1,0 +1,24 @@
+---
+# Source: ecr/templates/repository.yaml
+apiVersion: ecr.services.k8s.aws/v1alpha1
+kind: Repository
+metadata:
+  name: names-repository
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: ecr
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "repository"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "shop-dev/api"
+  imageScanningConfiguration:
+    scanOnPush: true
+  imageTagMutability: "IMMUTABLE"
+  policy: "{\"Statement\":[{\"Action\":[\"ecr:GetAuthorizationToken\",\"ecr:BatchCheckLayerAvailability\",\"ecr:BatchGetImage\",\"ecr:DescribeImageScanFindings\",\"ecr:DescribeImages\",\"ecr:DescribeRepositories\",\"ecr:GetDownloadUrlForLayer\",\"ecr:GetLifecyclePolicy\",\"ecr:GetLifecyclePolicyPreview\",\"ecr:GetRepositoryPolicy\",\"ecr:ListImages\",\"ecr:ListTagsForResource\"],\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam::111122223333:root\"]},\"Sid\":\"PrivateReadOnly\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "team"
+      value: "shop"

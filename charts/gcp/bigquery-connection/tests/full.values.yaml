@@ -1,0 +1,36 @@
+# A Spark connection and every IAM variable.
+project_id: my-project
+location: europe-west1
+connection_id: my_spark
+friendly_name: Spark
+description: Spark with a metastore and a history server.
+allow_alpha: true
+deletion_policy: ABANDON
+connection_config:
+  spark:
+    metastore_service_config:
+      metastore_service: projects/my-project/locations/europe-west1/services/my-metastore
+    spark_history_server_config:
+      dataproc_cluster: projects/my-project/regions/europe-west1/clusters/my-history
+iam:
+  roles/bigquery.connectionUser: ["group:analysts@example.com"]
+iam_by_principals:
+  "group:admins@example.com": [roles/bigquery.connectionAdmin, roles/bigquery.connectionUser]
+iam_bindings:
+  conditional:
+    role: roles/bigquery.connectionUser
+    members: ["user:ada@example.com"]
+    condition:
+      title: until-2030
+      expression: request.time < timestamp('2030-01-01T00:00:00Z')
+      description: Expires in 2030.
+iam_bindings_additive:
+  one:
+    role: roles/bigquery.connectionUser
+    member: "serviceAccount:etl@my-project.iam.gserviceaccount.com"
+  conditional:
+    role: roles/bigquery.connectionAdmin
+    member: "user:bob@example.com"
+    condition:
+      title: until-2030
+      expression: request.time < timestamp('2030-01-01T00:00:00Z')

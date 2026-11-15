@@ -1,0 +1,59 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/cloud-deploy/target.tf (v60.0.0),
+Copyright 2025 Google LLC, Apache-2.0.
+
+google_clouddeploy_target.default: one CloudDeployTarget
+(config-connector-extensions, clouddeploy.gcp.hfl.dev/v1beta1; Config
+Connector's own is v1alpha1) per target with create_target (the default),
+in its own project and region or the module's: annotations, deploy
+parameters, description, labels, approval, execution configuration, and a
+multi-target or a Cloud Run location.
+*/ -}}
+{{- $v := .Values }}
+{{- $abandon := include "kcc.abandon" . }}
+{{- range $i, $t := ($v.targets | default list) }}
+{{- if or (not (kindIs "bool" $t.create_target)) $t.create_target }}
+{{- $project := $t.project_id | default $v.project_id }}
+{{- $region := $t.region | default $v.region }}
+---
+apiVersion: clouddeploy.gcp.hfl.dev/v1beta1
+kind: CloudDeployTarget
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "target" $t.name)) "id" (printf "target:%s" $t.name) "project" $project "abandon" $abandon) | nindent 2 }}
+spec:
+  projectRef:
+    external: {{ $project | quote }}
+  location: {{ $region | quote }}
+  resourceID: {{ include "cloudDeploy.target" (list $ $t.name) | quote }}
+  {{- with $t.description }}
+  description: {{ . | quote }}
+  {{- end }}
+  {{- with (include "cloudDeploy.strmap" (list "annotations" $t.annotations)) }}{{ . | nindent 2 }}{{ end }}
+  {{- with (include "cloudDeploy.strmap" (list "labels" $t.labels)) }}{{ . | nindent 2 }}{{ end }}
+  {{- with (include "cloudDeploy.strmap" (list "deployParameters" $t.target_deploy_parameters)) }}{{ . | nindent 2 }}{{ end }}
+  requireApproval: {{ $t.require_approval | default false }}
+  {{- if or $t.execution_configs_usages $t.execution_configs_timeout }}
+  {{- if not $t.execution_configs_usages }}
+  {{- fail (printf "%s: targets[%d].execution_configs_usages is required with execution_configs_timeout: the API and CloudDeployTarget require an execution configuration's usages" $.Chart.Name $i) }}
+  {{- end }}
+  executionConfigs:
+    - {{- with (include "cloudDeploy.strlist" (list "usages" $t.execution_configs_usages)) }}{{ . | nindent 6 }}{{ end }}
+      {{- with $t.execution_configs_timeout }}
+      executionTimeout: {{ . | quote }}
+      {{- end }}
+  {{- end }}
+  {{- with $t.multi_target_target_ids }}
+  multiTarget:
+    targetIds:
+      {{- range . }}
+      - {{ include "cloudDeploy.target" (list $ .) | quote }}
+      {{- end }}
+  {{- end }}
+  {{- with $t.cloud_run_configs }}
+  run:
+    location: {{ printf "projects/%s/locations/%s" (.project_id | default $project) (.region | default $region) | quote }}
+  {{- end }}
+{{- end }}
+{{- end }}

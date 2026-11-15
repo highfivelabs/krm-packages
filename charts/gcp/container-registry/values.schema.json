@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "container-registry values (fabric container-registry v60.0.0)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "location",
+    "project_id"
+  ],
+  "properties": {
+    "names": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "description": "Not a Terraform variable. Google fixes a gcr.io repository's name by its host, so this chart gives no cloud name and takes no key here (docs/design.md, \"Names, labels and tags\")."
+    },
+    "namePrefix": {
+      "description": "Optional convenience (not a Terraform variable). This chart gives no cloud name, so it changes nothing. A DNS label.",
+      "type": "string",
+      "pattern": "^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+    },
+    "labels": {
+      "description": "Kubernetes labels on every object.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 63
+      }
+    },
+    "tags": {
+      "description": "Cloud labels on every resource (Google Cloud labels on the repository: lower-case letters, digits, _ and -).",
+      "type": [
+        "object",
+        "null"
+      ],
+      "propertyNames": {
+        "pattern": "^[a-z]([a-z0-9_-]{0,61}[a-z0-9])?$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^([a-z0-9]([a-z0-9_-]{0,61}[a-z0-9])?)?$"
+      }
+    },
+    "iam": {
+      "description": "IAM bindings for the registry in {ROLE => [MEMBERS]} format. Artifact Registry roles; a Cloud Storage role is refused.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "location": {
+      "description": "Registry location. Can be US, EU, ASIA or empty (gcr.io).",
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^(|[Uu][Ss]|[Ee][Uu]|[Aa][Ss][Ii][Aa])$"
+    },
+    "project_id": {
+      "description": "Registry project id.",
+      "type": "string",
+      "minLength": 1
+    },
+    "deletion_policy": {
+      "description": "Not a fabric variable: DELETE (default) or ABANDON. PREVENT has no Config Connector equivalent.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        null,
+        "DELETE",
+        "ABANDON",
+        "PREVENT"
+      ]
+    }
+  }
+}

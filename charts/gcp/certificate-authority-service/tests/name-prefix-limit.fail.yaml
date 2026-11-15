@@ -1,0 +1,5 @@
+# expect: certificate-authority-service: CA pool name "shop-dev-
+project_id: my-project
+location: europe-west1
+namePrefix: shop-dev
+ca_pool_config: {create_pool: {name: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}}

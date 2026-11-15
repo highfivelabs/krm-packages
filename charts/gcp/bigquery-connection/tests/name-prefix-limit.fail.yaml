@@ -1,0 +1,6 @@
+# expect: bigquery-connection: connection name "shop-dev-
+project_id: my-project
+location: US
+connection_config: {cloud_resource: {}}
+namePrefix: shop-dev
+connection_id: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

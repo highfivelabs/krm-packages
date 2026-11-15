@@ -1,0 +1,15 @@
+# Applied to the fake cloud by hack/mock-apply.sh: an exchange, a listing
+# sharing a dataset, and a role on each (IAMBinding;
+# config-connector-extensions' fake cloud serves any getIamPolicy path).
+project_id: mock-project
+region: us
+name: catalog_mock_exchange
+description: catalog mock
+labels: {env: test}
+iam:
+  roles/analyticshub.viewer: ["group:viewers@example.com"]
+listings:
+  catalog_mock_listing:
+    bigquery_dataset: projects/mock-project/datasets/catalog_mock_ah
+    iam:
+      roles/analyticshub.subscriber: ["group:subscribers@example.com"]

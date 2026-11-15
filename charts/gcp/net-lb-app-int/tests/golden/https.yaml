@@ -100,11 +100,7 @@ spec:
   location: "europe-west1"
   certificate:
     value: "-----BEGIN CERTIFICATE-----\nMIIBPUBLICCERTIFICATEONLY\n-----END CERTIFICATE-----"
-  privateKey:
-    valueFrom:
-      secretKeyRef:
-        name: "ilb-tls"
-        key: "tls.key"
+  privateKey: {"valueFrom":{"secretKeyRef":{"key":"tls.key","name":"ilb-tls"}}}
 ---
 # Source: net-lb-app-int/templates/main.yaml
 apiVersion: compute.cnrm.cloud.google.com/v1beta1

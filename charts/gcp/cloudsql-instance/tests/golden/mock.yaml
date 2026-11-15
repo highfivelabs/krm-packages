@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: cloudsql-instance
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "database:app"
     cnrm.cloud.google.com/project-id: "mock-project"
@@ -26,7 +26,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: cloudsql-instance
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "instance"
     cnrm.cloud.google.com/project-id: "mock-project"
@@ -34,6 +34,7 @@ spec:
   resourceID: catalog-mock-sql
   region: "us-central1"
   databaseVersion: "POSTGRES_16"
+  rootPassword: {"valueFrom":{"secretKeyRef":{"key":"value","name":"catalog-mock-sql"}}}
   settings:
     tier: "db-custom-1-3840"
     edition: ENTERPRISE
@@ -46,3 +47,23 @@ spec:
     ipConfiguration:
       ipv4Enabled: true
       enablePrivatePathForGoogleCloudServices: false
+---
+# Source: cloudsql-instance/templates/databases.yaml
+apiVersion: sql.cnrm.cloud.google.com/v1beta1
+kind: SQLUser
+metadata:
+  name: mock-user-app
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: cloudsql-instance
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "user:app"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  resourceID: "app"
+  instanceRef:
+    name: mock
+  type: BUILT_IN
+  password: {"valueFrom":{"secretKeyRef":{"key":"value","name":"catalog-mock-sql"}}}

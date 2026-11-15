@@ -1,0 +1,5 @@
+# expect: dataform-repository: deletion_policy PREVENT has no Config Connector equivalent
+project_id: my-project
+name: r
+region: europe-west1
+deletion_policy: PREVENT

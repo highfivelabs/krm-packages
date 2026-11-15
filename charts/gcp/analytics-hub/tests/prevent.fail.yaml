@@ -1,0 +1,5 @@
+# expect: analytics-hub: deletion_policy PREVENT has no Config Connector equivalent
+project_id: my-project
+region: europe-west1
+name: x
+deletion_policy: PREVENT

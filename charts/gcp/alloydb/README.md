@@ -2,7 +2,7 @@
 
 An AlloyDB for PostgreSQL cluster with its primary instance, read pools,
 an optional cross-region secondary cluster with its instance and read
-pools, IAM users and tag bindings, as Config Connector objects. A port of
+pools, users and tag bindings, as Config Connector objects. A port of
 Cloud Foundation Fabric's
 [`modules/alloydb`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/f706bc3b6166787df01402f73a96f1de57097477/modules/alloydb)
 at v60.0.0 (`f706bc3b`), Apache-2.0, Copyright Google LLC. Bundt Package
@@ -50,7 +50,8 @@ The module's variables, with the same names, types and defaults.
 | `query_insights_config`, `observability_config` | `queryInsightsConfig` (by default) or, when `observability_config.enabled`, `observabilityConfig` instead, on the primary; the secondary takes `queryInsightsConfig`, as in fabric |
 | `read_pool` | one `READ_POOL` `AlloyDBInstance` per entry in the primary cluster, `hfl.dev/id` `read-pool:<key>`, named `<prefix>-<key>`: its `node_count`, `flags`, `machine_config`, public IP, insights or observability |
 | `cross_region_replication` | with `enabled`, the secondary `AlloyDBCluster` (`SECONDARY`, following the primary, or `PRIMARY` with `promote_secondary`) in `region`, its `AlloyDBInstance` and one read pool per `read_pool` entry (`secondary-read-pool:<key>`); with `switchover_mode`, the primary becomes the `SECONDARY` of the secondary (fabric's checks: a region, not both modes) |
-| `users` | one `AlloyDBUser` per `ALLOYDB_IAM_USER` or `ALLOYDB_IAM_GROUP` user, `hfl.dev/id` `user:<key>`, with its `roles` (`alloydbsuperuser` by default) |
+| `users` | one `AlloyDBUser` per user, `hfl.dev/id` `user:<key>`, with its `type` and `roles` (`alloydbsuperuser` by default). An `ALLOYDB_BUILT_IN` user (the default type) needs `password`, a reference to a Kubernetes Secret, `{secretName, key}` ([secrets](../../../docs/secrets.md)), rendered as `password.valueFrom.secretKeyRef` |
+| `initial_user` | the primary cluster's `initialUser`: `user` (`postgres` by default, as fabric's) and `password`, required, a reference to a Kubernetes Secret, `{secretName, key}`, rendered as `password.valueFrom.secretKeyRef` |
 | `tag_bindings`, `project_number` | one `TagsLocationTagBinding` per tag on each cluster, its parent `//alloydb.googleapis.com/projects/<project_number>/locations/<l>/clusters/<id>`, as fabric writes it. fabric reads the number with a data source when `project_number` is null; a chart cannot, so `tag_bindings` needs `project_number` |
 | `deletion_protection`, `skip_await_major_version_upgrade` | accepted and ignored, whatever their values (below, "Differences from the module") |
 | `subscription_type` | `STANDARD` (the default, and the cloud's) only (below) |
@@ -59,7 +60,9 @@ Refused when set:
 
 | Variable | Why |
 | --- | --- |
-| `initial_user`, `users` of type `ALLOYDB_BUILT_IN` (the default type), `users[].password` | a password given in values would be in the rendered manifest, and Terraform's `random_password` has no Config Connector equivalent. `AlloyDBCluster` and `AlloyDBUser` take a password from a Kubernetes Secret (`valueFrom.secretKeyRef`), which the chart does not take yet: how a component gets a database password is an open question (as `cloudsql-instance`'s root password) |
+| an `ALLOYDB_BUILT_IN` user without `password` | fabric would generate one (`random_password`); the catalog never generates a secret ([secrets](../../../docs/secrets.md)): give a reference to a Secret that External Secrets Operator fills |
+| a password given as a string | the secret would be in the rendered manifest: give `{secretName, key}` |
+| `users[].password` on an IAM user or group | an IAM user has no password |
 | `client_connection_config`, `read_pool[].client_connection_config`, `cross_region_replication.read_pool[].client_connection_config` | `AlloyDBInstance` has no `clientConnectionConfig` (`require_connectors`, `ssl_mode`) |
 | `network_config.psc_config` | `AlloyDBCluster` has no `pscConfig` and `AlloyDBInstance` no `pscInstanceConfig`, so Private Service Connect cannot be set up |
 | `subscription_type: TRIAL` | `AlloyDBCluster` has no subscription type field |
@@ -121,8 +124,9 @@ report (`docs/design.md`, "Outputs").
 A `module "x" { source = ".../modules/alloydb" ... }` block's arguments
 become the values unchanged (`examples/alloydb/`). To adopt an existing
 cluster, keep its names: Config Connector acquires the cluster and
-instances of those IDs (`docs/design.md`, "From Terraform"). Built-in users
-stay managed outside the component until passwords are settled.
+instances of those IDs (`docs/design.md`, "From Terraform"). A password
+given in tfvars becomes a reference to the Kubernetes Secret that holds it
+([secrets](../../../docs/secrets.md)).
 
 ## Upstream
 
@@ -140,14 +144,18 @@ with every other module the catalog tracks. To take a newer release, see
 input on the primary side: a zonal instance with public IP, backups,
 maintenance, KMS, flags, pooling, observability, two read pools, IAM users,
 a tag binding, ABANDON), `cross-region` (a secondary with a read pool and
-its own KMS key), `promote`, `switchover`, `names` and `mock`, each
+its own KMS key), `promote`, `switchover`, `passwords` (the initial user and a built-in
+user, their passwords from a Secret), `names` and `mock`, each
 validated against Config Connector v1.160.0's CRD schemas, and the
 refusals in `tests/*.fail.yaml`. `tests/name-prefix.yaml` exempts users
 and tag bindings.
 
 Applied to the fake cloud on 2026-11-12 (`task test-mock
 MOCK_CHARTS=alloydb`, `tests/mock.values.yaml`: a zonal cluster and
-instance with one read pool): every object Ready, the outputs evaluated
+instance with one read pool; since 0.2.0 also the initial user and a
+built-in user, their passwords from a Secret `hack/test-secret.sh` makes
+at run time; run `off-catalog-1115101141-17661`, 2026-11-15, with the
+user Ready too): every object Ready, the outputs evaluated
 against the live objects, every object deleted at once and gone. The first
 run found that deleting the component left both instances' objects behind
 ("reference AlloyDBCluster ... is not found"): Config Connector resolves an
@@ -163,4 +171,5 @@ AlloyDB cluster bills while it exists.
 
 ## Changes
 
+- **0.2.0** (2026-11-15): `initial_user` and an `ALLOYDB_BUILT_IN` user, their passwords references to a Kubernetes Secret.
 - **0.1.0** (2026-11-12): the port.

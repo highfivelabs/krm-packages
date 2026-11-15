@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "basic"
     app.kubernetes.io/name: certificate-manager
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "certificate:mycert"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -30,7 +30,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "basic"
     app.kubernetes.io/name: certificate-manager
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "map"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -49,7 +49,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "basic"
     app.kubernetes.io/name: certificate-manager
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "entry:mycertentry"
     cnrm.cloud.google.com/project-id: "my-project"

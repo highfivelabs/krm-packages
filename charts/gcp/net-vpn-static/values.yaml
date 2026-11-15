@@ -43,7 +43,9 @@ region: null
 remote_ranges: []
 # Route priority, defaults to 1000.
 route_priority: 1000
-# VPN tunnel configurations, keyed. Refused when set: see README.md.
+# VPN tunnel configurations, keyed (README.md, "Values"). Each tunnel's
+# shared_secret is required: a reference to a Kubernetes Secret,
+# {secretName, key} (docs/secrets.md); the catalog never generates one.
 tunnels: {}
 
 # Not a fabric variable: DELETE (the default) or ABANDON, which keeps the

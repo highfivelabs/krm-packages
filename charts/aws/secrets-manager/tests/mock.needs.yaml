@@ -1,0 +1,13 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# What tests/mock.values.yaml needs and the chart does not make: the
+# Kubernetes Secret ACK reads the secret's value from (a test value, not a
+# credential).
+apiVersion: v1
+kind: Secret
+metadata:
+  name: catalog-test-secret
+type: Opaque
+stringData:
+  value: catalog-fake-aws-test-value

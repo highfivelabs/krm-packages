@@ -1,0 +1,123 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values mirror the Terraform variables of terraform-aws-modules' ecr module
+# (v3.2.0): same names, types and defaults, so a module block's arguments
+# become a values file one to one. values.schema.json carries the types. A
+# variable the chart cannot carry stays here and stops the render when set
+# (upstream.yaml lists them; README.md says why).
+
+# Names, labels and tags (docs/design.md, "Names, labels and tags"). Not
+# Terraform variables, except tags, which is the module's own.
+#
+# The repository's name in full, {repository}. A name set here takes no
+# namePrefix. Unset, the repository is named repository_name.
+names: {}
+# An optional convenience: "<namePrefix>-" in front of the repository's name
+# and each pull through cache rule's repository prefix (never one set under
+# names). Empty (the default) changes nothing.
+namePrefix: ""
+# Kubernetes labels on every object. They stay in Kubernetes: ACK does not
+# copy labels to AWS (AWS tags are the module's tags variable).
+labels: {}
+# The AWS account and partition, which the module reads from the provider
+# (aws_caller_identity, aws_partition) for the default repository policy's
+# principal, arn:<partition>:iam::<account_id>:root. A chart cannot read
+# them, so Bundt fills account_id from the Environment. Needed only for the
+# default policy with no repository_read_access_arns and no
+# repository_read_write_access_arns.
+account_id: null
+partition: aws
+# DELETE (default): deleting the component deletes the repository and the
+# registry settings. ABANDON keeps them (services.k8s.aws/deletion-policy:
+# retain).
+deletion_policy: DELETE
+# The registry policy, scanning configuration and replication configuration
+# are ack-extensions kinds, outside ACK's releases: each needs
+# allow_alpha: true (docs/design.md, "Alpha kinds").
+allow_alpha: false
+
+# The module's variables, in alphabetical order, with its defaults.
+
+# Determines whether a repository policy will be attached to the repository
+attach_repository_policy: true
+# Determines whether resources will be created (affects all resources)
+create: true
+# Determines whether a lifecycle policy will be created
+create_lifecycle_policy: true
+# Determines whether a registry policy will be created
+create_registry_policy: false
+# Determines whether a registry replication configuration will be created
+create_registry_replication_configuration: false
+# Determines whether a repository will be created
+create_repository: true
+# Determines whether a repository policy will be created
+create_repository_policy: true
+# Determines whether the registry scanning configuration will be managed
+manage_registry_scanning_configuration: false
+# Catalog data configuration for the repository
+# Not supported (gap): ECR Public (see repository_type).
+public_repository_catalog_data: null
+# Region where this resource will be managed. Defaults to the Region set in
+# the provider configuration (on ACK: the namespace's or the controller's)
+region: null
+# The policy document. This is a JSON formatted string
+registry_policy: null
+# List of pull through cache rules to create
+registry_pull_through_cache_rules: {}
+# The replication rules for a replication configuration. A maximum of 10 are
+# allowed
+registry_replication_rules: null
+# One or multiple blocks specifying scanning rules to determine which
+# repository filters are used and at what frequency scanning will occur
+registry_scan_rules: null
+# the scanning type to set for the registry. Can be either `ENHANCED` or
+# `BASIC`
+registry_scan_type: ENHANCED
+# The encryption type for the repository. Must be one of: `KMS` or `AES256`.
+# Defaults to `AES256`
+repository_encryption_type: null
+# If `true`, will delete the repository even if it contains images. Defaults
+# to `false`
+# Not supported (gap): ACK's Repository has no force delete field.
+repository_force_delete: null
+# Indicates whether images are scanned after being pushed to the repository
+# (`true`) or not scanned (`false`)
+repository_image_scan_on_push: true
+# The tag mutability setting for the repository. Must be one of: `MUTABLE`,
+# `MUTABLE_WITH_EXCLUSION`, `IMMUTABLE`, or `IMMUTABLE_WITH_EXCLUSION`.
+# Defaults to `IMMUTABLE`
+repository_image_tag_mutability: IMMUTABLE
+# Configuration block that defines filters to specify which image tags can
+# override the default tag mutability setting. Only applicable when
+# image_tag_mutability is set to IMMUTABLE_WITH_EXCLUSION or
+# MUTABLE_WITH_EXCLUSION.
+repository_image_tag_mutability_exclusion_filter: null
+# The ARN of the KMS key to use when encryption_type is `KMS`. If not
+# specified, uses the default AWS managed key for ECR
+repository_kms_key: null
+# The ARNs of the Lambda service roles that have read access to the
+# repository
+repository_lambda_read_access_arns: []
+# The policy document. This is a JSON formatted string. See more details
+# about Policy Parameters in the official AWS docs (empty: no lifecycle
+# policy, where Terraform would fail)
+repository_lifecycle_policy: ""
+# The name of the repository (the chart requires it, or names.repository)
+repository_name: ""
+# The JSON policy to apply to the repository. If not specified, uses the
+# default policy
+repository_policy: null
+# A map of IAM policy statements for custom permission usage
+repository_policy_statements: null
+# The ARNs of the IAM users/roles that have read access to the repository
+repository_read_access_arns: []
+# The ARNs of the IAM users/roles that have read/write access to the
+# repository
+repository_read_write_access_arns: []
+# The type of repository to create. Either `public` or `private`
+# Not supported (gap) but for private: ACK's ecrpublic Repository has no
+# policy or catalog data field.
+repository_type: private
+# A map of tags to add to all resources
+tags: {}
