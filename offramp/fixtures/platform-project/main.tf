@@ -25,7 +25,8 @@
 # Needs, on the parent folder, roles/resourcemanager.projectCreator, and on
 # the billing account roles/billing.user. The live-test account holds both
 # on the new organization's live-tests folder and the spectacle billing
-# account (register item O34c, 2026-11-15).
+# account (register item O34c, 2026-11-15). Live runs there stop at the
+# provider's deletion of the default network (O34e).
 
 terraform {
   required_version = ">= 1.12.2"

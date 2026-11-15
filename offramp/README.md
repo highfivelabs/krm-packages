@@ -45,8 +45,24 @@ module at the same release.
 | gke | `network` | fabric `net-vpc` v60.0.0 | `net-vpc` | exists |
 | gke | `gke_standard` (`gke_autopilot` with `autopilot = true`) | tgm `kubernetes-engine//modules/beta-private-cluster` (`beta-autopilot-private-cluster`) 47.0.0 | `gke-cluster` (PR #16; `mode: autopilot`) | exists on its branch; its render sets `datapathProvider` and `initialNodeCount` where the planned state holds neither, so the call stays frozen until a live run settles it |
 
-Only shared-vpc runs live: the live-test account lacks the other shapes'
-grants (register items O33 and O34). The other three are validated
+Only shared-vpc has run live end to end (on the old organization). Since
+2026-11-15 the folders and platform-project shapes run against the new
+organization's live-tests folder (`OFFRAMP_*` in `.env`, see
+`.env.example`), and each still stops at `terraform apply`:
+
+- folders: the organization's domain-restricted sharing
+  (`iam.allowedPolicyMemberDomains`) refuses the live-test service
+  account, whose project was made in the old organization, even at folder
+  create (register item O34f); its organization policies need
+  `orgpolicy.policyAdmin` (`OFFRAMP_ORG_POLICIES=false` leaves them out);
+  its hierarchical firewall policy needs `compute.globalOperations.get` on
+  the organization (O34d; `OFFRAMP_FOLDER_FIREWALL=false` leaves it out).
+- platform-project: the project is created and linked to billing, then the
+  provider's deletion of its default network fails before the project's
+  Compute Engine API is usable (O34e: `compute.skipDefaultNetworkCreation`
+  on the folder).
+
+gke has not run live yet. The non-live shapes are validated
 (`task offramp-validate`) and converted offline from synthetic states.
 
 ## The converter
