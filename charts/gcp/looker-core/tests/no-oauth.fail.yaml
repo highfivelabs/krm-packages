@@ -1,0 +1,7 @@
+# expect: looker-core: oauth_config is required
+allow_alpha: true
+project_id: my-project
+region: europe-west1
+name: looker
+network_config:
+  public: true

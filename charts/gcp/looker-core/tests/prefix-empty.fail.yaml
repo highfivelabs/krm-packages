@@ -1,0 +1,11 @@
+# expect: looker-core: Prefix cannot be empty, please use null instead.
+allow_alpha: true
+prefix: ""
+project_id: my-project
+region: europe-west1
+name: looker
+network_config:
+  public: true
+oauth_config:
+  client_id: xxxxxxxxx
+  client_secret: {secretName: looker-oauth, key: client-secret}

@@ -1,0 +1,9 @@
+# expect: looker-core: name needs the alpha Config Connector kind LookerInstance
+project_id: my-project
+region: europe-west1
+name: looker
+network_config:
+  public: true
+oauth_config:
+  client_id: xxxxxxxxx
+  client_secret: {secretName: looker-oauth, key: client-secret}

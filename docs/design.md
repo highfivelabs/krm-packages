@@ -89,6 +89,17 @@ The decisions of 2026-11-09, applied in the sections below.
     `iam` is refused with the Artifact Registry role to use, and the `id`
     output is the repository's resource name, not a bucket
     (`charts/gcp/container-registry/README.md`).
+14. **A Looker instance's OAuth client secret comes from a Kubernetes
+    Secret** (the builder, 2026-11-15, RECLOOK: "RECLOOK: as recommended
+    (Yes. Add a secretKeyRef for oauthConfig.clientSecret, then the chart
+    takes client_secret from a Kubernetes Secret, as bigquery-connection
+    does.)"). config-connector-extensions' `LookerInstance` takes
+    `oauthConfig.clientSecret` as Config Connector's secret shape, `value`
+    or `valueFrom.secretKeyRef` (its decision 33), and the `looker-core`
+    chart takes `oauth_config.client_secret` as `{secretName, key}`
+    (`docs/secrets.md`), rendered as the `valueFrom.secretKeyRef`; the
+    secret itself, a string, stops the render
+    (`charts/gcp/looker-core/README.md`).
 
 ## Summary
 

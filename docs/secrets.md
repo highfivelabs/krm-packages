@@ -136,6 +136,7 @@ elsewhere, or a gateway without an identity.
 | `avm-res-sql-server` (0.4.0) | `administrator_login_password`, or `administrator_login_password_wo` with its `_version` | `Server` `administratorLoginPassword` |
 | `cloudsql-instance` (0.2.0) | `root_password.password` | `SQLInstance` `rootPassword` (SQL Server needs one) |
 | | `users[].password` (a `BUILT_IN` user's, required for one) | `SQLUser` `password` |
+| `looker-core` (0.1.0) | `oauth_config.client_secret` (required, as in fabric) | config-connector-extensions' `LookerInstance` `oauthConfig.clientSecret` |
 | `alloydb` (0.2.0) | `initial_user.password` | `AlloyDBCluster` `initialUser.password` |
 | | `users[].password` (an `ALLOYDB_BUILT_IN` user's, required for one) | `AlloyDBUser` `password` |
 | `net-vpn-ha`, `net-vpn-dynamic`, `net-vpn-static`, `net-ipsec-over-interconnect` (0.2.0) | `tunnels[].shared_secret` (required) | `ComputeVPNTunnel` `sharedSecret` |
