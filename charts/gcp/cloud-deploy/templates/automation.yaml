@@ -1,0 +1,117 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/cloud-deploy/automation.tf
+(v60.0.0), Copyright 2025 Google LLC, Apache-2.0.
+
+google_clouddeploy_automation.default: one CloudDeployAutomation
+(config-connector-extensions, clouddeploy.gcp.hfl.dev/v1beta1) per key of
+automations, its ID the key, on the pipeline: a rule per rule set (advance
+rollout, promote release, repair rollout, timed promote release), the
+target selector (default every target, "*"), and the service account,
+which must be set: fabric's default, the project's Compute Engine default
+service account, needs the project number.
+*/ -}}
+{{- $v := .Values }}
+{{- $abandon := include "kcc.abandon" . }}
+{{- range $key := keys ($v.automations | default dict) | sortAlpha }}
+{{- $a := index $v.automations $key }}
+{{- if and (kindIs "invalid" $a.advance_rollout_rule) (kindIs "invalid" $a.promote_release_rule) (kindIs "invalid" $a.repair_rollout_rule) (kindIs "invalid" $a.timed_promote_release_rule) }}
+{{- fail (printf "%s: At least one rule should be defined (promote_release_rule, advance_rollout_rule, repair_rollout_rule or timed_promote_release_rule). (automations.%s)" $.Chart.Name $key) }}
+{{- end }}
+{{- include "kcc.unsupported" (list $ (printf "automations.%s without service_account" $key) (ternary "" "unset" (not (empty $a.service_account))) "fabric then uses the project's Compute Engine default service account, whose email needs the project number, which a render does not have: set service_account") }}
+{{- $project := $a.project_id | default $v.project_id }}
+---
+apiVersion: clouddeploy.gcp.hfl.dev/v1beta1
+kind: CloudDeployAutomation
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "automation" $key)) "id" (printf "automation:%s" $key) "project" $project "abandon" $abandon) | nindent 2 }}
+spec:
+  projectRef:
+    external: {{ $project | quote }}
+  location: {{ $a.region | default $v.region | quote }}
+  resourceID: {{ $key | quote }}
+  deliveryPipeline: {{ include "cloudDeploy.pipeline" $ | quote }}
+  {{- with $a.description }}
+  description: {{ . | quote }}
+  {{- end }}
+  {{- with (include "cloudDeploy.strmap" (list "annotations" $a.annotations)) }}{{ . | nindent 2 }}{{ end }}
+  {{- with (include "cloudDeploy.strmap" (list "labels" $a.labels)) }}{{ . | nindent 2 }}{{ end }}
+  serviceAccount: {{ $a.service_account | quote }}
+  suspended: {{ $a.suspended | default false }}
+  rules:
+    {{- if not (kindIs "invalid" $a.advance_rollout_rule) }}
+    {{- with (ternary (dict "set" true) $a.advance_rollout_rule (empty $a.advance_rollout_rule)) }}
+    - advanceRolloutRule:
+        id: {{ .id | default "advance-rollout" | quote }}
+        {{- with (include "cloudDeploy.strlist" (list "sourcePhases" .source_phases)) }}{{ . | nindent 8 }}{{ end }}
+        {{- with .wait }}
+        wait: {{ . | quote }}
+        {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- if not (kindIs "invalid" $a.promote_release_rule) }}
+    {{- with (ternary (dict "set" true) $a.promote_release_rule (empty $a.promote_release_rule)) }}
+    - promoteReleaseRule:
+        id: {{ .id | default "promote-release" | quote }}
+        {{- with .wait }}
+        wait: {{ . | quote }}
+        {{- end }}
+        {{- with .destination_target_id }}
+        destinationTargetId: {{ . | quote }}
+        {{- end }}
+        {{- with .destination_phase }}
+        destinationPhase: {{ . | quote }}
+        {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- if not (kindIs "invalid" $a.repair_rollout_rule) }}
+    {{- with (ternary (dict "set" true) $a.repair_rollout_rule (empty $a.repair_rollout_rule)) }}
+    - repairRolloutRule:
+        id: {{ .id | default "repair-rollout" | quote }}
+        {{- with (include "cloudDeploy.strlist" (list "phases" .phases)) }}{{ . | nindent 8 }}{{ end }}
+        {{- with (include "cloudDeploy.strlist" (list "jobs" .jobs)) }}{{ . | nindent 8 }}{{ end }}
+        {{- if not (or .retry .rollback) }}
+        {{- fail (printf "%s: automations.%s.repair_rollout_rule needs retry or rollback: the API and CloudDeployAutomation require at least one repair phase" $.Chart.Name $key) }}
+        {{- end }}
+        repairPhases:
+          {{- with .retry }}
+          - retry:
+              attempts: {{ include "cloudDeploy.int" (list $ (printf "automations.%s.repair_rollout_rule.retry.attempts" $key) .attempts) }}
+              {{- with .wait }}
+              wait: {{ . | quote }}
+              {{- end }}
+              {{- with .backoff_mode }}
+              backoffMode: {{ . | quote }}
+              {{- end }}
+          {{- end }}
+          {{- with .rollback }}
+          - rollback:
+              {{- with .destination_phase }}
+              destinationPhase: {{ . | quote }}
+              {{- end }}
+              disableRollbackIfRolloutPending: {{ or (not (kindIs "bool" .disable_rollback_if_rollout_pending)) .disable_rollback_if_rollout_pending }}
+          {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- if not (kindIs "invalid" $a.timed_promote_release_rule) }}
+    {{- with (ternary (dict "set" true) $a.timed_promote_release_rule (empty $a.timed_promote_release_rule)) }}
+    - timedPromoteReleaseRule:
+        id: {{ .id | default "timed-promote-release" | quote }}
+        schedule: {{ .schedule | quote }}
+        timeZone: {{ .time_zone | quote }}
+        {{- with .destination_target_id }}
+        destinationTargetId: {{ . | quote }}
+        {{- end }}
+        {{- with .destination_phase }}
+        destinationPhase: {{ . | quote }}
+        {{- end }}
+    {{- end }}
+    {{- end }}
+  selector:
+    targets:
+      {{- range $s := ($a.selector | default (list (dict "id" "*"))) }}
+      - id: {{ $s.id | default "*" | quote }}
+        {{- with (include "cloudDeploy.strmap" (list "labels" $s.labels)) }}{{ . | nindent 8 }}{{ end }}
+      {{- end }}
+{{- end }}

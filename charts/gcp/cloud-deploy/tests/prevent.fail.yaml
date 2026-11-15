@@ -1,0 +1,5 @@
+# expect: cloud-deploy: deletion_policy PREVENT has no Config Connector equivalent
+project_id: my-project
+region: europe-west1
+name: p
+deletion_policy: PREVENT

@@ -1,0 +1,5 @@
+# expect: cloud-deploy: automations.a without service_account is not supported
+project_id: my-project
+region: europe-west1
+name: p
+automations: {a: {promote_release_rule: {}}}

@@ -1,0 +1,4 @@
+# expect: encoding_format must be one of the following: "PEM", "DER"
+project_id: my-project
+location: europe-west1
+ca_pool_config: {create_pool: {name: p, publishing_options: {encoding_format: XML, publish_ca_cert: true, publish_crl: true}}}

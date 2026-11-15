@@ -1,0 +1,46 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (see iam-service-account/package.yaml).
+# Outputs are fabric's declared outputs, selected (docs/design.md,
+# "Outputs"). ca_pool_id is computed from the inputs as fabric computes it
+# (a pool made here, or use_pool's id); ca_ids from the rendered CAs;
+# ca_chains from each CA's status.pemCaCertificates, joined with newlines
+# as fabric joins them, null until reported. ca_pool and cas are whole
+# Terraform objects in fabric; here they are the pool's ID (null when the
+# chart makes none, as fabric's) and the CAs' IDs.
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: gcp-certificate-authority-service
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [kcc]
+  outputs:
+    ca_pool_id: >-
+      has(inputs.ca_pool_config.use_pool) && inputs.ca_pool_config.use_pool != null
+        ? inputs.ca_pool_config.use_pool.id
+        : 'projects/' + resources.ca_pool.spec.projectRef.external + '/locations/'
+          + resources.ca_pool.spec.location + '/caPools/' + resources.ca_pool.spec.resourceID
+    ca_pool: >-
+      'ca_pool' in resources
+        ? dyn('projects/' + resources.ca_pool.spec.projectRef.external + '/locations/'
+          + resources.ca_pool.spec.location + '/caPools/' + resources.ca_pool.spec.resourceID)
+        : null
+    ca_ids: >-
+      resources.transformMapEntry(k, v, v.kind == 'PrivateCACertificateAuthority',
+        {k.substring(3): 'projects/' + v.spec.projectRef.external + '/locations/' + v.spec.location
+          + '/caPools/' + (has(v.spec.caPoolRef.name) ? resources.ca_pool.spec.resourceID
+            : v.spec.caPoolRef.external.split('/')[5])
+          + '/certificateAuthorities/' + v.spec.resourceID})
+    cas: >-
+      resources.transformMapEntry(k, v, v.kind == 'PrivateCACertificateAuthority',
+        {k.substring(3): 'projects/' + v.spec.projectRef.external + '/locations/' + v.spec.location
+          + '/caPools/' + (has(v.spec.caPoolRef.name) ? resources.ca_pool.spec.resourceID
+            : v.spec.caPoolRef.external.split('/')[5])
+          + '/certificateAuthorities/' + v.spec.resourceID})
+    ca_chains: >-
+      resources.transformMapEntry(k, v, v.kind == 'PrivateCACertificateAuthority',
+        {k.substring(3): has(v.status) && has(v.status.pemCaCertificates)
+          ? dyn(v.status.pemCaCertificates.join('\n')) : null})

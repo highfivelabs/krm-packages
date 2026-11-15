@@ -1,0 +1,21 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/bigquery-connection/iam.tf
+(v60.0.0), Copyright 2025 Google LLC, Apache-2.0.
+
+Config Connector's IAM kinds cannot reference a BigQueryConnectionConnection,
+so these are config-connector-extensions' (_iam.tpl):
+google_bigquery_connection_iam_binding.authoritative: one IAMBinding
+(iam.gcp.hfl.dev/v1beta1) per role of iam merged with iam_by_principals.
+google_bigquery_connection_iam_binding.bindings: one IAMBinding per entry
+of iam_bindings, with its condition.
+google_bigquery_connection_iam_member.bindings: one IAMMember
+(iam.gcp.hfl.dev/v1alpha1, so allow_alpha) per entry of
+iam_bindings_additive, with its condition.
+On the connection by its full name, so they can be deleted after the
+connection's object is gone.
+*/ -}}
+{{- $v := .Values }}
+{{- $ref := dict "kind" "BigQueryConnectionConnection" "external" (include "bqConnection.id" .) }}
+{{- include "bqConnection.iam" (dict "root" $ "ref" $ref "project" $v.project_id "v" $v "conditions" true) }}

@@ -1,0 +1,49 @@
+---
+# Source: bigquery-connection/templates/main.yaml
+apiVersion: bigqueryconnection.cnrm.cloud.google.com/v1beta1
+kind: BigQueryConnectionConnection
+metadata:
+  name: names
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: bigquery-connection
+    app.kubernetes.io/version: "0.1.0"
+    environment: "dev"
+    hfl.dev/environment: "dev"
+    hfl.dev/team: "shop"
+    team: "shop"
+  annotations:
+    hfl.dev/id: "connection"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  location: "US"
+  resourceID: "shop-dev-lake"
+  cloudResource: {}
+---
+# Source: bigquery-connection/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: names-iam-roles-bigquery-connectionuser-9c61d83a
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: bigquery-connection
+    app.kubernetes.io/version: "0.1.0"
+    environment: "dev"
+    hfl.dev/environment: "dev"
+    hfl.dev/team: "shop"
+    team: "shop"
+  annotations:
+    hfl.dev/id: "iam:roles/bigquery.connectionUser"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/US/connections/shop-dev-lake
+    kind: BigQueryConnectionConnection
+  role: "roles/bigquery.connectionUser"
+  members:
+    - "group:shop@example.com"

@@ -1,0 +1,5 @@
+# expect: cloud-deploy: At least one rule should be defined
+project_id: my-project
+region: europe-west1
+name: p
+automations: {a: {service_account: sa@p.iam.gserviceaccount.com}}

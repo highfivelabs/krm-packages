@@ -1,0 +1,12 @@
+# What tests/mock.values.yaml needs in the fake cloud: the dataset the
+# listing shares. hack/mock-apply.sh applies it first, waits for it, and
+# deletes it after the chart's objects. Not part of the chart.
+apiVersion: bigquery.cnrm.cloud.google.com/v1beta1
+kind: BigQueryDataset
+metadata:
+  name: catalog-mock-ah
+  annotations:
+    cnrm.cloud.google.com/project-id: mock-project
+spec:
+  resourceID: catalog_mock_ah
+  location: US
