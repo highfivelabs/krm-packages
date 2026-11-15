@@ -358,7 +358,7 @@ Secret (secrets.md).
 
 | Submodule | Creates | ASO |
 | --- | --- | --- |
-| root | Linux or Windows VM, managed disks and attachments, NICs and their associations (LB, App Gateway, ASG, NSG, NAT rule), public IP, admin password in Key Vault, maintenance configuration assignment, backup protected item, auto-shutdown schedule | `compute/VirtualMachine` (2022-03-01; data disks inline), `compute/Disk`, `network/NetworkInterface` (associations inline), `network/PublicIPAddress`, `aso-ext` `VaultSecret`; aso-extensions `ConfigurationAssignment` (`maintenance.azure.hfl.dev`, 2023-04-01) and `Schedule` (`devtestlab.azure.hfl.dev`, 2018-09-15). **GAP**: the backup protected item (aso-extensions has Recovery Services vaults and policies, not `vaults/backupFabrics/protectionContainers/protectedItems`) |
+| root | Linux or Windows VM, managed disks and attachments, NICs and their associations (LB, App Gateway, ASG, NSG, NAT rule), public IP, admin password in Key Vault, maintenance configuration assignment, backup protected item, auto-shutdown schedule | `compute/VirtualMachine` (2022-03-01; data disks inline), `compute/Disk`, `network/NetworkInterface` (associations inline), `network/PublicIPAddress`, `aso-ext` `VaultSecret`; aso-extensions `ConfigurationAssignment` (`maintenance.azure.hfl.dev`, 2023-04-01) and `Schedule` (`devtestlab.azure.hfl.dev`, 2018-09-15). The backup protected item is aso-extensions' `VaultsProtectedItem` (`recoveryservices.azure.hfl.dev`, 2026-07-01, `0f3403b`; by hand there since 2026-11-15, ASOQ Q14) |
 | `extension` | VM extension | `compute/VirtualMachinesExtension` |
 | `run-command` | VM run command | aso-extensions `VirtualMachinesRunCommand` (`compute.azure.hfl.dev`, 2022-03-01) |
 
@@ -727,8 +727,8 @@ Dapr components, storages, certificates, managed certificates and more),
 publishing policies), 5 (tables, data exports, linked services, linked
 storage, query packs, solutions), 6, 8 (management groups, Azure Policy,
 budgets, vWAN hub connections, tags), 9, 10 (run commands, DevTest Labs
-schedules, maintenance assignments, Recovery Services vaults and backup
-policies), 11, 12, 13 (Gremlin, dedicated gateway services), 14, 15, 16
+schedules, maintenance assignments, Recovery Services vaults, backup
+policies and, since 2026-11-15, protected items), 11, 12, 13 (Gremlin, dedicated gateway services), 14, 15, 16
 and the certificate import of 17. Still open: 7 (ASO's own `VaultKey`),
 Key Vault certificate contacts (17), App Service config sections and
 publishing policies (4) and the stale ARM versions (18).
@@ -1027,7 +1027,7 @@ which External Secrets Operator puts there, and `key_vault_secret_id` is
 a pointer, sent as it is ([secrets.md](secrets.md), the builder's
 decision of 2026-11-14).
 
-The virtual machine (`avm-res-compute-virtualmachine`) maps 64 of the
+The virtual machine (`avm-res-compute-virtualmachine`) maps 65 of the
 module's 74 variables and 9 of its 13 outputs (`disk_controller_type` and
 `bypass_platform_safety_checks_on_user_schedule_enabled` since 0.2.0, as
 aso-extensions' `VirtualMachine`, `compute.azure.hfl.dev/v20250401`, in
@@ -1037,7 +1037,8 @@ fields of the interface in ARM, and the data disk attachments entries of
 the machine's `storageProfile.dataDisks`. Run commands, the shutdown
 schedule and maintenance assignments are aso-extensions kinds
 (`VirtualMachinesRunCommand`, `Schedule`, `ConfigurationAssignment`, CRDs
-copied in `crds/aso-extensions`). Its admin password is a reference to a Kubernetes Secret since 0.4.0
+copied in `crds/aso-extensions`), and so is its backup
+(`azure_backup_configurations`: `VaultsProtectedItem`, since 2026-11-15). Its admin password is a reference to a Kubernetes Secret since 0.4.0
 (2026-11-14, `docs/secrets.md`), so a Windows machine renders its OS
 profile. It refuses generating an SSH key pair or password, protected run
 command parameters and extension settings, and unattend content (plain
@@ -1045,7 +1046,6 @@ text in the kind); and the gaps:
 
 | Chart | Variable | Missing |
 | --- | --- | --- |
-| `avm-res-compute-virtualmachine` | `azure_backup_configurations` | `Microsoft.RecoveryServices/vaults/backupFabrics/protectionContainers/protectedItems` (aso-extensions has the vault and its policies, not a protected item) |
 | `avm-res-compute-virtualmachine` | an extension's `provision_after_extensions`; a run command's managed identities | fields after the 2022-03-01 API version of ASO's `VirtualMachinesExtension` and aso-extensions' `VirtualMachinesRunCommand` |
 
 Like azurerm, the chart sends `securityProfile.encryptionAtHost` only when
