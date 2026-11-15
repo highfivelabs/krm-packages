@@ -1,0 +1,5 @@
+# expect: cloud-deploy: At least one window should be defined
+project_id: my-project
+region: europe-west1
+name: p
+deploy_policies: {d: {rollout_restrictions: {r: {time_zone: UTC}}}}

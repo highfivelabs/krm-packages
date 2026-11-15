@@ -4,7 +4,7 @@ Layout after specs/record/plans.md R2 (one change per object); not captured from
   create  Template   alloydb 1.0.0
   create  Stack      my-team/alloydb  (Template alloydb)
   create  Instance   my-team/dev/alloydb-dev  (Stack alloydb, Template version 1.0.0)
-  create  Component  alloydb-dev-alloydb  (gcp-alloydb 0.1.0)
+  create  Component  alloydb-dev-alloydb  (gcp-alloydb 0.2.0)
             create  AlloyDBCluster             alloydb-dev-alloydb  (named db in the cloud)
             create  AlloyDBInstance            alloydb-dev-alloydb  (named db in the cloud)
             create  AlloyDBInstance            alloydb-dev-alloydb-read-pool-ro  (named ro in the cloud)

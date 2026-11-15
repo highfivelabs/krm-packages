@@ -1,0 +1,145 @@
+# component compute-vm-dev-web-vm
+---
+# Source: compute-vm/templates/disks.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeDisk
+metadata:
+  name: compute-vm-dev-web-vm-disk-data
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "compute-vm-dev-web-vm"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    app: "web"
+    disk_name: "data"
+    disk_type: "pd-ssd"
+  annotations:
+    hfl.dev/id: "disk:data"
+    cnrm.cloud.google.com/project-id: "myproject"
+spec:
+  resourceID: "web-0-data"
+  location: "europe-west1-b"
+  type: "pd-ssd"
+  size: 20
+---
+# Source: compute-vm/templates/resource-policies.yaml
+apiVersion: compute.gcp.hfl.dev/v1beta1
+kind: ComputeDiskResourcePolicyAttachment
+metadata:
+  name: compute-vm-dev-web-vm-disk-data-snapshot-daily
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "compute-vm-dev-web-vm"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    app: "web"
+  annotations:
+    hfl.dev/id: "disk_snapshot:data-daily"
+    cnrm.cloud.google.com/project-id: "myproject"
+spec:
+  resourceID: "web-0-daily"
+  projectRef:
+    external: "myproject"
+  zone: "europe-west1-b"
+  diskRef:
+    name: compute-vm-dev-web-vm-disk-data
+---
+# Source: compute-vm/templates/instance.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeInstance
+metadata:
+  name: compute-vm-dev-web-vm
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "compute-vm-dev-web-vm"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    app: "web"
+  annotations:
+    hfl.dev/id: "instance"
+    cnrm.cloud.google.com/project-id: "myproject"
+    cnrm.cloud.google.com/allow-stopping-for-update: "true"
+spec:
+  resourceID: "web-0"
+  zone: "europe-west1-b"
+  machineType: "e2-micro"
+  description: "Managed by the compute-vm Terraform module."
+  tags: ["http-server","ssh"]
+  canIpForward: false
+  deletionProtection: false
+  enableDisplay: false
+  attachedDisk:
+    - deviceName: "data"
+      mode: "READ_WRITE"
+      sourceDiskRef:
+        name: compute-vm-dev-web-vm-disk-data
+  bootDisk:
+    autoDelete: true
+    initializeParams:
+      size: 10
+      type: "pd-balanced"
+      sourceImageRef:
+        external: "debian-cloud/debian-13"
+      labels:
+        app: "web"
+        disk_name: "boot"
+        disk_type: "pd-balanced"
+  networkInterface:
+    - networkRef:
+        external: "projects/myproject/global/networks/vpc"
+      subnetworkRef:
+        external: "projects/myproject/regions/europe-west1/subnetworks/apps"
+  scheduling:
+    automaticRestart: true
+    onHostMaintenance: "MIGRATE"
+    preemptible: false
+    provisioningModel: "STANDARD"
+  serviceAccount:
+    serviceAccountRef:
+      name: compute-vm-dev-web-vm-sa
+    scopes: ["https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+---
+# Source: compute-vm/templates/resource-policies.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeResourcePolicy
+metadata:
+  name: compute-vm-dev-web-vm-snapshot-daily
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "compute-vm-dev-web-vm"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    app: "web"
+  annotations:
+    hfl.dev/id: "snapshot_schedule:daily"
+    cnrm.cloud.google.com/project-id: "myproject"
+spec:
+  resourceID: "web-0-daily"
+  region: "europe-west1"
+  description: "Schedule policy daily for web-0."
+  snapshotSchedulePolicy:
+    schedule:
+      dailySchedule:
+        daysInCycle: 1
+        startTime: "03:00"
+    retentionPolicy:
+      maxRetentionDays: 7
+      onSourceDiskDelete: "KEEP_AUTO_SNAPSHOTS"
+---
+# Source: compute-vm/templates/main.yaml
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMServiceAccount
+metadata:
+  name: compute-vm-dev-web-vm-sa
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "compute-vm-dev-web-vm"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    app: "web"
+  annotations:
+    hfl.dev/id: "service_account"
+    cnrm.cloud.google.com/project-id: "myproject"
+spec:
+  resourceID: "tf-vm-web-0"
+  displayName: "Terraform VM web-0."

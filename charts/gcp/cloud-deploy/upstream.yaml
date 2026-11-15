@@ -1,0 +1,39 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Where this chart came from: the Terraform module it ports and the release
+# it was ported from. Machine-readable; `task upstream-check` keeps it equal
+# to upstream/modules.yaml and Chart.yaml. To take a newer release, see
+# UPSTREAM.md ("Moving the pins").
+module: gcp/cloud-deploy
+repo: https://github.com/GoogleCloudPlatform/cloud-foundation-fabric
+path: modules/cloud-deploy
+version: v60.0.0
+commit: f706bc3b6166787df01402f73a96f1de57097477
+license: Apache-2.0
+copyright: Google LLC
+module_url: https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/cloud-deploy
+registry_url: null
+synced: 2026-11-15
+# Module variables the chart keeps in values.yaml (so tfvars convert one to
+# one) but refuses when set, or accepts only in part. Read by `task
+# coverage`; `task coverage-verify` renders the chart to check that each one
+# is refused. kind: gap (no Config Connector kind or field), alpha (a
+# v1alpha1 kind, accepted with allow_alpha: true) or by-design (Bundt
+# replaces it). partial: the variable is accepted, the reason says what is
+# refused.
+refused:
+  - variable: automations
+    kind: gap
+    reason: "an automation without service_account is refused: fabric then reads the project's Compute Engine default service account, whose email needs the project number, which a render does not have; set service_account"
+    partial: true
+    fields: [service_account]
+  - variable: iam_bindings_additive
+    kind: alpha
+    reason: "config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true"
+    partial: true
+  - variable: targets
+    kind: alpha
+    reason: "accepted; a target's iam_bindings_additive renders config-connector-extensions' IAMMember, which is v1alpha1: set allow_alpha: true"
+    partial: true
+    alpha_fields: [iam_bindings_additive]

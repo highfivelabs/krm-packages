@@ -1,0 +1,5 @@
+# expect: analytics-hub: data exchange ID "a-_b" may contain only letters, digits and underscores
+project_id: my-project
+region: europe-west1
+name: b
+prefix: a-

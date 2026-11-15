@@ -1,0 +1,5 @@
+# expect: certificate-authority-service: ca_configs.s.subordinate_config is not supported
+project_id: my-project
+location: europe-west1
+ca_pool_config: {create_pool: {name: p}}
+ca_configs: {s: {is_self_signed: false, subordinate_config: {root_ca_id: projects/p/locations/l/caPools/x/certificateAuthorities/r}}}

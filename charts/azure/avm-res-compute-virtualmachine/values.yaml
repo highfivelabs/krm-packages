@@ -154,7 +154,9 @@ data_disk_existing_disks: {}
 
 extensions: {}
 run_commands: {}
-# Refused when set: protected parameters and run-as passwords are secrets.
+# By run_commands key: run_as_user, and run_as_password as a reference to a
+# Kubernetes Secret, {secretName, key} (docs/secrets.md). protected_parameters
+# are refused (the kind takes them only in plain text).
 run_commands_secrets: {}
 shutdown_schedules: {}
 maintenance_configuration_resource_ids: {}

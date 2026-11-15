@@ -1,0 +1,16 @@
+# An EXTERNAL_MANAGED HTTPS load balancer on a Certificate Manager map and
+# certificates, with an mTLS policy and a keep-alive timeout.
+name: glb-test-0
+project_id: my-project
+protocol: HTTPS
+use_classic_version: false
+backend_service_configs:
+  default:
+    backends:
+      - group: projects/my-project/zones/europe-west8-b/instanceGroups/my-ig-b
+https_proxy_config:
+  certificate_map: //certificatemanager.googleapis.com/projects/my-project/locations/global/certificateMaps/my-map
+  certificate_manager_certificates:
+    - projects/my-project/locations/global/certificates/my-cert
+  http_keepalive_timeout: "610"
+  mtls_policy: projects/my-project/locations/global/serverTlsPolicies/my-mtls

@@ -1,0 +1,11 @@
+# fabric's README example with an existing pool: CAs and IAM go on it, and
+# no pool is made.
+project_id: my-project
+location: europe-west1
+ca_pool_config:
+  use_pool:
+    id: projects/another-project/locations/europe-west1/caPools/existing
+ca_configs:
+  my-ca: {}
+iam:
+  roles/privateca.certificateRequester: ["group:requesters@example.com"]

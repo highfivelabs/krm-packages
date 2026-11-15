@@ -1,0 +1,28 @@
+# fabric's README, "HTTPS load balancers": an existing certificate, a
+# certificate made from a PEM whose private key is a Kubernetes Secret
+# (docs/secrets.md), and a Google-managed certificate.
+name: glb-test-0
+project_id: my-project
+protocol: HTTPS
+backend_service_configs:
+  default:
+    backends:
+      - group: projects/my-project/zones/europe-west8-b/instanceGroups/my-ig-b
+    protocol: HTTP
+https_proxy_config:
+  quic_override: ENABLE
+  ssl_policy: projects/my-project/global/sslPolicies/modern
+ssl_certificates:
+  certificate_ids:
+    - projects/my-project/global/sslCertificates/my-cert
+  create_configs:
+    default:
+      certificate: |
+        -----BEGIN CERTIFICATE-----
+        MIIBPUBLICCERTIFICATEONLY
+        -----END CERTIFICATE-----
+      private_key: {secretName: glb-tls, key: tls.key}
+  managed_configs:
+    managed:
+      domains: [glb-test.example.org]
+      description: Managed certificate.

@@ -103,8 +103,8 @@ ignoring case; a `credential_set_key` that is not a key of
 
 | Variable | Why |
 | --- | --- |
-| a token's `passwords` (`scope_maps.<key>.registry_tokens.<key>.passwords`) | secrets Azure generates and returns once (`generateCredentials`); whether a component may hold one is the builder's decision (not ported) |
-| `customer_managed_key` | ASO's `Registry` takes the key's URI and the identity's client ID; the module looks both up from the vault's and the identity's IDs, which a render cannot (not ported) |
+| a token's `passwords` (`scope_maps.<key>.registry_tokens.<key>.passwords`) | secrets Azure generates and returns once, from the `generateCredentials` action, which no kind performs; whether a component may hold one is the builder's decision (a gap) |
+| `customer_managed_key` | ASO's `Registry` takes the key's URI and the identity's client ID (`identity`, or `identityFromConfig`, a ConfigMap only an ASO `UserAssignedIdentity` in the cluster writes); the module looks the client ID up from the identity's resource ID, which a render cannot (a gap) |
 | `resource_types`, `retry`, `timeouts` | ASO's kinds fix the API versions; ASO retries itself; Bundt sets a component's time limit |
 
 ## Outputs

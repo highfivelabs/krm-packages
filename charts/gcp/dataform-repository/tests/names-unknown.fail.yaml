@@ -1,0 +1,5 @@
+# expect: names: Additional property bucket is not allowed
+project_id: my-project
+name: r
+region: europe-west1
+names: {bucket: x}

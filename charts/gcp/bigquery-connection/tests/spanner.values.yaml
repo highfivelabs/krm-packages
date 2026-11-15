@@ -1,0 +1,11 @@
+# Cloud Spanner, every field.
+project_id: my-project
+location: us
+connection_id: spanner
+connection_config:
+  cloud_spanner:
+    database: projects/my-project/instances/my-instance/databases/my-db
+    use_parallelism: true
+    use_data_boost: true
+    max_parallelism: 4
+    database_role: reader

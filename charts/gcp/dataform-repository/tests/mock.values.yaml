@@ -1,0 +1,9 @@
+# Applied to the fake cloud by hack/mock-apply.sh: a repository and a role
+# on it (IAMBinding; config-connector-extensions' fake cloud serves any
+# getIamPolicy path).
+project_id: mock-project
+name: catalog-mock-dataform
+region: us-central1
+labels: {env: test}
+iam:
+  roles/dataform.viewer: ["group:viewers@example.com"]

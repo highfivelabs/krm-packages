@@ -1,0 +1,48 @@
+---
+# Source: dataform-repository/templates/main.yaml
+apiVersion: dataform.cnrm.cloud.google.com/v1beta1
+kind: DataformRepository
+metadata:
+  name: names
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: dataform-repository
+    app.kubernetes.io/version: "0.1.0"
+    environment: "dev"
+    hfl.dev/environment: "dev"
+    hfl.dev/team: "shop"
+    team: "shop"
+  annotations:
+    hfl.dev/id: "repository"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  region: "europe-west1"
+  resourceID: "shop-dev-models"
+---
+# Source: dataform-repository/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: names-iam-roles-dataform-viewer-90d5b235
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: dataform-repository
+    app.kubernetes.io/version: "0.1.0"
+    environment: "dev"
+    hfl.dev/environment: "dev"
+    hfl.dev/team: "shop"
+    team: "shop"
+  annotations:
+    hfl.dev/id: "iam:roles/dataform.viewer"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/repositories/shop-dev-models
+    kind: DataformRepository
+  role: "roles/dataform.viewer"
+  members:
+    - "group:shop@example.com"

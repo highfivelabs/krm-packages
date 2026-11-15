@@ -1,0 +1,6 @@
+# expect: net-lb-app-ext-regional: Only one health check type can be configured at a time.
+name: lb
+project_id: my-project
+region: europe-west1
+vpc_config: {network: projects/my-project/global/networks/my-vpc}
+health_check_configs: {default: {http: {port: 80}, https: {port: 443}}}

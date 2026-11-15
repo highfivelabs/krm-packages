@@ -1,0 +1,7 @@
+# expect: net-lb-proxy-int: forwarding rule name "shop-dev-
+name: lb
+project_id: my-project
+region: europe-west1
+vpc_config: {network: projects/my-project/global/networks/my-vpc, subnetwork: projects/my-project/regions/europe-west1/subnetworks/my-subnet}
+namePrefix: shop-dev
+forwarding_rules_config: {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: {}}

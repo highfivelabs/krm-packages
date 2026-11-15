@@ -1,0 +1,6 @@
+# expect: namePrefix: Does not match pattern
+name: lb
+project_id: my-project
+region: europe-west1
+vpc_config: {network: projects/my-project/global/networks/my-vpc}
+namePrefix: Shop_Dev

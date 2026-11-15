@@ -1,0 +1,59 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values mirror the Terraform variables of fabric's
+# certificate-authority-service module (v60.0.0): same names, types and
+# defaults, so a module block's arguments become this file one to one
+# (README.md, "From Terraform"). values.schema.json carries the types.
+
+# Names, labels and tags (docs/design.md, "Names, labels and tags"). Not
+# Terraform variables: Bundt supplies names from a team's naming convention
+# and stamps its identity labels; the chart takes them and computes none.
+#
+# names.ca_pool sets the CA pool's name in full (else
+# ca_pool_config.create_pool.name). CAs are named by their keys, inside the
+# pool.
+names: {}
+# An optional convenience: "<namePrefix>-" in front of the CA pool's name
+# when names.ca_pool is not set. Empty (the default) changes nothing.
+namePrefix: ""
+# Kubernetes labels on every object; an unprefixed one is also a Google
+# Cloud label on the pool and the CAs.
+labels: {}
+# Cloud labels on the pool and the CAs.
+tags: {}
+
+# The CA configurations, by CA ID. Unset (null) is fabric's default, one
+# CA "test-ca" with every default: Helm would merge a map default here into
+# the component's own map, so the chart applies it.
+ca_configs: null
+# The CA pool config. Either use_pool or create_pool need to be used. Use
+# pool takes precedence if both are defined.
+ca_pool_config: {}
+# Context-specific interpolations. Refused when set: Bundt expressions
+# (${...}) and valueFrom replace fabric's $context lookups.
+context: {}
+# IAM bindings in {ROLE => [MEMBERS]} format, on the pool.
+iam: {}
+# Authoritative IAM bindings in {KEY => {role = ROLE, members = [],
+# condition = {}}}. Keys are arbitrary.
+iam_bindings: {}
+# Individual additive IAM bindings. Keys are arbitrary. IAMMember is
+# v1alpha1: needs allow_alpha.
+iam_bindings_additive: {}
+# Authoritative IAM binding in {PRINCIPAL => [ROLES]} format. Merged with
+# iam.
+iam_by_principals: {}
+# The location of the CAs.
+location: ""
+# Project id.
+project_id: ""
+
+# Not a fabric variable: iam_bindings_additive renders
+# config-connector-extensions' IAMMember, which is v1alpha1; set true to
+# accept that its schema may change (docs/design.md, "Alpha kinds").
+allow_alpha: false
+# Not a fabric variable: DELETE (the default) or ABANDON, which keeps the
+# pool and the CAs when the component is deleted. PREVENT has no Config
+# Connector equivalent.
+deletion_policy: null

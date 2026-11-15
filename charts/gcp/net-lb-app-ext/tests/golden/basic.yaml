@@ -1,0 +1,123 @@
+---
+# Source: net-lb-app-ext/templates/backend-service.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeBackendService
+metadata:
+  name: basic-bs-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "backend_service:default"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-default"
+  location: "global"
+  description: "Terraform managed."
+  loadBalancingScheme: "EXTERNAL"
+  protocol: "HTTP"
+  healthChecks:
+    - healthCheckRef:
+        name: basic-hc-default
+  portName: "http"
+  backend:
+    - balancingMode: "UTILIZATION"
+      capacityScaler: 1
+      description: "Terraform managed."
+      group:
+        instanceGroupRef:
+          external: "projects/my-project/zones/europe-west8-b/instanceGroups/my-ig-b"
+    - balancingMode: "UTILIZATION"
+      capacityScaler: 1
+      description: "Terraform managed."
+      group:
+        instanceGroupRef:
+          external: "projects/my-project/zones/europe-west8-c/instanceGroups/my-ig-c"
+---
+# Source: net-lb-app-ext/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeForwardingRule
+metadata:
+  name: basic-fr
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "forwarding_rule:"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: global
+  description: "Terraform managed."
+  ipVersion: IPV4
+  ipProtocol: TCP
+  loadBalancingScheme: EXTERNAL
+  portRange: "80"
+  target:
+    targetHTTPProxyRef:
+      name: basic
+---
+# Source: net-lb-app-ext/templates/health-check.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeHealthCheck
+metadata:
+  name: basic-hc-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "health_check:default"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0-default"
+  location: "global"
+  description: "Terraform managed."
+  httpHealthCheck:
+    portSpecification: USE_SERVING_PORT
+---
+# Source: net-lb-app-ext/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeTargetHTTPProxy
+metadata:
+  name: basic
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "target_proxy"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: global
+  description: "Terraform managed."
+  urlMapRef:
+    name: basic
+---
+# Source: net-lb-app-ext/templates/urlmap.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeURLMap
+metadata:
+  name: basic
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: net-lb-app-ext
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "url_map"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "glb-test-0"
+  location: "global"
+  description: "Terraform managed."
+  defaultService:
+    backendServiceRef:
+      name: basic-bs-default

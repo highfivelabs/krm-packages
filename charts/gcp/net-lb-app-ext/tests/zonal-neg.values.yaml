@@ -1,0 +1,24 @@
+# fabric's README, "Zonal NEG creation" and "Hybrid NEG creation".
+name: glb-test-0
+project_id: my-project
+backend_service_configs:
+  default:
+    backends:
+      - {balancing_mode: RATE, group: neg-0, max_rate: {per_endpoint: 10}}
+  hybrid:
+    backends:
+      - {balancing_mode: RATE, group: neg-1, max_rate: {per_endpoint: 10}}
+neg_configs:
+  neg-0:
+    gce:
+      network: projects/my-project/global/networks/my-vpc
+      subnetwork: projects/my-project/regions/europe-west8/subnetworks/my-subnet
+      zone: europe-west8-b
+      endpoints:
+        e-0: {instance: my-vm, ip_address: 10.0.0.10, port: 80}
+  neg-1:
+    hybrid:
+      network: projects/my-project/global/networks/my-vpc
+      zone: europe-west8-b
+      endpoints:
+        e-0: {ip_address: 10.0.0.10, port: 80}

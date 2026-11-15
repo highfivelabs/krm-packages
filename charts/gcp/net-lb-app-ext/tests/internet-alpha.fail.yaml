@@ -1,0 +1,4 @@
+# expect: net-lb-app-ext: neg_configs.a.internet.endpoints needs the alpha Config Connector kind ComputeGlobalNetworkEndpoint: set allow_alpha: true
+name: lb
+project_id: my-project
+neg_configs: {a: {internet: {endpoints: {e: {destination: example.com, port: 443}}}}}

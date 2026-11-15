@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "postgres-iam"
     app.kubernetes.io/name: cloudsql-instance
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "database:app"
     cnrm.cloud.google.com/project-id: "myproject"
@@ -26,7 +26,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "postgres-iam"
     app.kubernetes.io/name: cloudsql-instance
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "instance"
     cnrm.cloud.google.com/project-id: "myproject"
@@ -68,7 +68,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "postgres-iam"
     app.kubernetes.io/name: cloudsql-instance
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "user:app@myproject.iam.gserviceaccount.com"
     cnrm.cloud.google.com/project-id: "myproject"
@@ -87,7 +87,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "postgres-iam"
     app.kubernetes.io/name: cloudsql-instance
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "user:dev@example.com"
     cnrm.cloud.google.com/project-id: "myproject"

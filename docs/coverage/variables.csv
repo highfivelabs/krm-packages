@@ -309,12 +309,12 @@ gcp,cloudsql-instance,prefix,string,yes,,
 gcp,cloudsql-instance,project_id,string,yes,,
 gcp,cloudsql-instance,region,string,yes,,
 gcp,cloudsql-instance,replicas,"map(object({availability_type, encryption_key_name, region, tier}))",yes,,
-gcp,cloudsql-instance,root_password,"object({password, random_password})",no,"a password given here would be in the rendered manifest, and Terraform's random_password has no Config Connector equivalent; SQLInstance takes the password from a Kubernetes Secret (rootPassword.valueFrom), which the chart does not take yet (an open question)",not-ported
+gcp,cloudsql-instance,root_password,"object({password, random_password})",partial,"password is a reference to a Kubernetes Secret (rootPassword.valueFrom, docs/secrets.md); random_password: true is refused: the catalog never generates a secret",by-design
 gcp,cloudsql-instance,ssl,"object({client_certificates, mode})",yes,,
 gcp,cloudsql-instance,terraform_deletion_protection,bool,yes,,
 gcp,cloudsql-instance,tier,string,yes,,
 gcp,cloudsql-instance,time_zone,string,yes,,
-gcp,cloudsql-instance,users,"map(object({database_roles, password, password_version, type}))",partial,only CLOUD_IAM_USER and CLOUD_IAM_SERVICE_ACCOUNT users are accepted: a BUILT_IN user's password would be in the rendered manifest or made by Terraform's random_password (the same open question as root_password); database_roles and password_version are refused (SQLUser has no such field),gap
+gcp,cloudsql-instance,users,"map(object({database_roles, password, password_version, type}))",partial,"database_roles is refused: SQLUser has no such field. A BUILT_IN user's password is a reference to a Kubernetes Secret (password.valueFrom, docs/secrets.md) and is required: fabric's generated password (random_password) is refused, the catalog never generates a secret",gap
 gcp,gke-cluster-standard,access_config,"object({dns_access, ip_access, master_ipv4_cidr_block, private_nodes})",partial,accepted; dns_access.enable_k8s_certs and ip_access.private_endpoint_authorized_ranges_enforcement are refused when true: ContainerCluster has no enableK8sCertsViaDns or privateEndpointEnforcementEnabled,gap
 gcp,gke-cluster-standard,backup_configs,"object({backup_channels, backup_plans, enable_backup_agent, restore_channels, restore_plans})",partial,accepted; a channel's deletion_policy PREVENT is refused (no Config Connector equivalent; ABANDON is carried),gap
 gcp,gke-cluster-standard,cluster_autoscaling,"object({accelerator_resources, auto_provisioning_defaults, auto_provisioning_locations, autoscaling_profile, cpu_limits, enabled, +1})",partial,"accepted; auto_provisioning_locations, and a disk_type other than pd-standard, are refused: clusterAutoscaling has no autoProvisioningLocations, autoProvisioningDefaults no diskType",gap
@@ -523,7 +523,7 @@ gcp,net-vpn-ha,peer_gateways,"map(object({external, gcp}))",yes,,
 gcp,net-vpn-ha,project_id,string,yes,,
 gcp,net-vpn-ha,region,string,yes,,
 gcp,net-vpn-ha,router_config,"object({asn, create, custom_advertise, keepalive, name, override_name, +1})",partial,accepted; route_policies need config-connector-extensions' v1alpha1 ComputeRouterRoutePolicy: set allow_alpha: true,alpha
-gcp,net-vpn-ha,tunnels,"map(object({bgp_peer, bgp_session_range, cipher_suite, ike_version, name, peer_external_gateway_interface, +5}))",no,"a tunnel needs a shared secret: one given here would be in the rendered manifest, and Terraform's random_id has no Config Connector equivalent; ComputeVPNTunnel takes it from a Kubernetes Secret (sharedSecret.valueFrom), which the chart does not take yet (the SECV question). With no tunnel there is no router interface or BGP peer either; ComputeVPNTunnel also has no cipherSuite field, and ComputeRouterPeer no md5AuthenticationKey, importPolicies, exportPolicies or customLearnedIpRanges (gaps)",not-ported
+gcp,net-vpn-ha,tunnels,"map(object({bgp_peer, bgp_session_range, cipher_suite, ike_version, name, peer_external_gateway_interface, +5}))",partial,"cipher_suite is refused (ComputeVPNTunnel has no cipherSuite field), and bgp_peer's md5_authentication_key, export_policies, import_policies and custom_learned_ip_ranges (ComputeRouterPeer has no such fields). A tunnel's shared_secret is a reference to a Kubernetes Secret (sharedSecret.valueFrom, docs/secrets.md) and is required: fabric's generated secret (random_id) is refused, the catalog never generates one",gap
 gcp,net-vpn-ha,vpn_gateway,string,yes,,
 gcp,net-vpn-ha,vpn_gateway_create,"object({description, ipv6})",yes,,
 gcp,cloud-identity-group,customer_id,string,yes,,
@@ -541,28 +541,28 @@ gcp,dns-response-policy,networks,map(string),yes,,
 gcp,dns-response-policy,policy_create,bool,yes,,
 gcp,dns-response-policy,project_id,string,yes,,
 gcp,dns-response-policy,rules,"map(object({behavior, dns_name, local_data}))",yes,,
-gcp,certificate-manager,certificates,"map(object({description, labels, location, managed, scope, self_managed}))",partial,"self_managed is refused: its private key given here would be in the rendered manifest; CertificateManagerCertificate takes it from a Kubernetes Secret (pemPrivateKey.valueFrom), which the chart does not take yet (the open question of cloudsql-instance's root_password)",not-ported
+gcp,certificate-manager,certificates,"map(object({description, labels, location, managed, scope, self_managed}))",yes,,
 gcp,certificate-manager,dns_authorizations,"map(object({description, domain, labels, location, type}))",yes,,
 gcp,certificate-manager,issuance_configs,"map(object({ca_pool, description, key_algorithm, labels, lifetime, location, +1}))",yes,,
 gcp,certificate-manager,map,"object({description, entries, labels, name})",yes,,
 gcp,certificate-manager,project_id,string,yes,,
-gcp,net-lb-app-ext,backend_buckets_config,"map(object({bucket_name, cdn_policy, compression_mode, custom_response_headers, description, edge_security_policy, +3}))",no,,no-chart
-gcp,net-lb-app-ext,backend_service_configs,"map(object({affinity_cookie_ttl_sec, backends, cdn_policy, circuit_breakers, compression_mode, connection_draining_timeout_sec, +20}))",no,,no-chart
-gcp,net-lb-app-ext,context,"object({addresses, locations, networks, project_ids, security_policies, subnets})",no,,no-chart
-gcp,net-lb-app-ext,description,string,no,,no-chart
-gcp,net-lb-app-ext,forwarding_rules_config,"map(object({address, description, ipv6, name, ports}))",no,,no-chart
-gcp,net-lb-app-ext,group_configs,"map(object({description, instances, name, named_ports, project_id, zone}))",no,,no-chart
-gcp,net-lb-app-ext,health_check_configs,"map(object({check_interval_sec, description, enable_logging, grpc, healthy_threshold, http, +8}))",no,,no-chart
-gcp,net-lb-app-ext,http_proxy_config,"object({description, http_keepalive_timeout, name})",no,,no-chart
-gcp,net-lb-app-ext,https_proxy_config,"object({certificate_manager_certificates, certificate_map, description, http_keepalive_timeout, mtls_policy, name, +2})",no,,no-chart
-gcp,net-lb-app-ext,labels,map(string),no,,no-chart
-gcp,net-lb-app-ext,name,string,no,,no-chart
-gcp,net-lb-app-ext,neg_configs,"map(object({cloudfunction, cloudrun, description, gce, hybrid, internet, +3}))",no,,no-chart
-gcp,net-lb-app-ext,project_id,string,no,,no-chart
-gcp,net-lb-app-ext,protocol,string,no,,no-chart
-gcp,net-lb-app-ext,ssl_certificates,"object({certificate_ids, create_configs, managed_configs})",no,,no-chart
-gcp,net-lb-app-ext,urlmap_config,"object({default_custom_error_response_policy, default_route_action, default_service, default_url_redirect, description, header_action, +3})",no,,no-chart
-gcp,net-lb-app-ext,use_classic_version,bool,no,,no-chart
+gcp,net-lb-app-ext,backend_buckets_config,"map(object({bucket_name, cdn_policy, compression_mode, custom_response_headers, description, edge_security_policy, +3}))",yes,,
+gcp,net-lb-app-ext,backend_service_configs,"map(object({affinity_cookie_ttl_sec, backends, cdn_policy, circuit_breakers, compression_mode, connection_draining_timeout_sec, +20}))",partial,"ComputeBackendService has no tlsSettings, no backend preference, no awsV4Authentication in securitySettings, and no optionalMode or optionalFields in logConfig",gap
+gcp,net-lb-app-ext,context,"object({addresses, locations, networks, project_ids, security_policies, subnets})",no,Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs,by-design
+gcp,net-lb-app-ext,description,string,yes,,
+gcp,net-lb-app-ext,forwarding_rules_config,"map(object({address, description, ipv6, name, ports}))",yes,,
+gcp,net-lb-app-ext,group_configs,"map(object({description, instances, name, named_ports, project_id, zone}))",yes,,
+gcp,net-lb-app-ext,health_check_configs,"map(object({check_interval_sec, description, enable_logging, grpc, healthy_threshold, http, +8}))",yes,,
+gcp,net-lb-app-ext,http_proxy_config,"object({description, http_keepalive_timeout, name})",yes,,
+gcp,net-lb-app-ext,https_proxy_config,"object({certificate_manager_certificates, certificate_map, description, http_keepalive_timeout, mtls_policy, name, +2})",yes,,
+gcp,net-lb-app-ext,labels,map(string),yes,,
+gcp,net-lb-app-ext,name,string,yes,,
+gcp,net-lb-app-ext,neg_configs,"map(object({cloudfunction, cloudrun, description, gce, hybrid, internet, +3}))",partial,"ComputeRegionNetworkEndpointGroup has no serverlessDeployment; an internet NEG's endpoints are Config Connector's ComputeGlobalNetworkEndpoint, which is v1alpha1: needs allow_alpha: true",gap
+gcp,net-lb-app-ext,project_id,string,yes,,
+gcp,net-lb-app-ext,protocol,string,yes,,
+gcp,net-lb-app-ext,ssl_certificates,"object({certificate_ids, create_configs, managed_configs})",yes,,
+gcp,net-lb-app-ext,urlmap_config,"object({default_custom_error_response_policy, default_route_action, default_service, default_url_redirect, description, header_action, +3})",partial,ComputeURLMap's pathRule and routeRules have no customErrorResponsePolicy,gap
+gcp,net-lb-app-ext,use_classic_version,bool,yes,,
 gcp,net-lb-int,backend_service_config,"object({connection_draining_timeout_sec, connection_tracking, description, enable_subsetting, failover_config, log_config, +5})",partial,"ComputeBackendService's logConfig has no optionalMode or optionalFields, and it has no networkPassThroughLbTrafficPolicy",gap
 gcp,net-lb-int,backends,"list(object({description, failover, group}))",yes,,
 gcp,net-lb-int,context,"object({addresses, locations, networks, project_ids, subnets})",no,Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs,by-design
@@ -589,71 +589,71 @@ gcp,net-lb-ext,labels,map(string),yes,,
 gcp,net-lb-ext,name,string,yes,,
 gcp,net-lb-ext,project_id,string,yes,,
 gcp,net-lb-ext,region,string,yes,,
-gcp,net-lb-app-int,address,string,no,,no-chart
-gcp,net-lb-app-int,backend_service_configs,"map(object({affinity_cookie_ttl_sec, backends, circuit_breakers, connection_draining_timeout_sec, consistent_hash, description, +14}))",no,,no-chart
-gcp,net-lb-app-int,context,"object({addresses, locations, networks, project_ids, security_policies, subnets})",no,,no-chart
-gcp,net-lb-app-int,description,string,no,,no-chart
-gcp,net-lb-app-int,global_access,bool,no,,no-chart
-gcp,net-lb-app-int,group_configs,"map(object({description, instances, name, named_ports, project_id, zone}))",no,,no-chart
-gcp,net-lb-app-int,health_check_configs,"map(object({check_interval_sec, description, enable_logging, grpc, healthy_threshold, http, +9}))",no,,no-chart
-gcp,net-lb-app-int,http_proxy_config,"object({description, name})",no,,no-chart
-gcp,net-lb-app-int,https_proxy_config,"object({certificate_manager_certificates, description, name, ssl_policy})",no,,no-chart
-gcp,net-lb-app-int,labels,map(string),no,,no-chart
-gcp,net-lb-app-int,name,string,no,,no-chart
-gcp,net-lb-app-int,neg_configs,"map(object({cloudrun, description, gce, hybrid, internet, project_id, +1}))",no,,no-chart
-gcp,net-lb-app-int,network_tier_premium,bool,no,,no-chart
-gcp,net-lb-app-int,ports,list(string),no,,no-chart
-gcp,net-lb-app-int,project_id,string,no,,no-chart
-gcp,net-lb-app-int,protocol,string,no,,no-chart
-gcp,net-lb-app-int,region,string,no,,no-chart
-gcp,net-lb-app-int,service_attachment,"object({automatic_connection, consumer_accept_lists, consumer_reject_lists, description, domain_name, enable_proxy_protocol, +2})",no,,no-chart
-gcp,net-lb-app-int,service_directory_registration,"object({namespace, service})",no,,no-chart
-gcp,net-lb-app-int,ssl_certificates,"object({certificate_ids, create_configs})",no,,no-chart
-gcp,net-lb-app-int,urlmap_config,"object({default_route_action, default_service, default_url_redirect, description, header_action, host_rules, +2})",no,,no-chart
-gcp,net-lb-app-int,vpc_config,"object({network, subnetwork})",no,,no-chart
-gcp,compute-vm,attached_disks,"map(object({auto_delete, device_name, force_attach, initialize_params, mode, name, +3}))",no,,no-chart
-gcp,compute-vm,boot_disk,"object({architecture, auto_delete, force_attach, initialize_params, snapshot_schedule, source, +1})",no,,no-chart
-gcp,compute-vm,can_ip_forward,bool,no,,no-chart
-gcp,compute-vm,confidential_compute,string,no,,no-chart
-gcp,compute-vm,context,"object({addresses, condition_vars, custom_roles, iam_principals, kms_keys, locations, +5})",no,,no-chart
-gcp,compute-vm,create_template,object({regional}),no,,no-chart
-gcp,compute-vm,description,string,no,,no-chart
-gcp,compute-vm,enable_display,bool,no,,no-chart
-gcp,compute-vm,encryption,"object({disk_encryption_key_raw, encrypt_boot, kms_key_self_link})",no,,no-chart
-gcp,compute-vm,gpu,"object({count, type})",no,,no-chart
-gcp,compute-vm,group,"object({membership, named_ports})",no,,no-chart
-gcp,compute-vm,hostname,string,no,,no-chart
-gcp,compute-vm,iam,map(list(string)),no,,no-chart
-gcp,compute-vm,iap_tunnel_iam,map(list(string)),no,,no-chart
-gcp,compute-vm,iap_tunnel_iam_bindings,"map(object({condition, members, role}))",no,,no-chart
-gcp,compute-vm,iap_tunnel_iam_bindings_additive,"map(object({condition, member, role}))",no,,no-chart
-gcp,compute-vm,instance_schedule,"object({active, description, expiration_time, start_time, timezone, vm_start, +1})",no,,no-chart
-gcp,compute-vm,kms_autokeys,"map(object({location, resource_type_selector}))",no,,no-chart
-gcp,compute-vm,labels,map(string),no,,no-chart
-gcp,compute-vm,lifecycle_config,"object({allow_stopping_for_update, deletion_protection, graceful_shutdown, key_revocation_action_type})",no,,no-chart
-gcp,compute-vm,machine_features_config,"object({enable_nested_virtualization, enable_turbo_mode, enable_uefi_networking, performance_monitoring_unit, threads_per_core, visible_core_count})",no,,no-chart
-gcp,compute-vm,machine_type,string,no,,no-chart
-gcp,compute-vm,metadata,map(string),no,,no-chart
-gcp,compute-vm,metadata_startup_script,string,no,,no-chart
-gcp,compute-vm,min_cpu_platform,string,no,,no-chart
-gcp,compute-vm,name,string,no,,no-chart
-gcp,compute-vm,network_attached_interfaces,list(string),no,,no-chart
-gcp,compute-vm,network_interfaces,"list(object({addresses, alias_ips, external_ipv6, internal_ipv6_prefix_length, nat, network, +5}))",no,,no-chart
-gcp,compute-vm,network_performance_tier,string,no,,no-chart
-gcp,compute-vm,network_tag_bindings,map(string),no,,no-chart
-gcp,compute-vm,project_id,string,no,,no-chart
-gcp,compute-vm,project_number,string,no,,no-chart
-gcp,compute-vm,resource_policies,list(string),no,,no-chart
-gcp,compute-vm,scheduling_config,"object({automatic_restart, local_ssd_recovery_timeout, maintenance_interval, max_run_duration, min_node_cpus, node_affinities, +3})",no,,no-chart
-gcp,compute-vm,scratch_disks,"object({count, interface, size})",no,,no-chart
-gcp,compute-vm,service_account,"object({auto_create, email, scopes})",no,,no-chart
-gcp,compute-vm,shielded_config,"object({enable_integrity_monitoring, enable_secure_boot, enable_vtpm})",no,,no-chart
-gcp,compute-vm,snapshot_schedules,"map(object({description, retention_policy, schedule, snapshot_properties}))",no,,no-chart
-gcp,compute-vm,tag_bindings,map(string),no,,no-chart
-gcp,compute-vm,tag_bindings_immutable,map(string),no,,no-chart
-gcp,compute-vm,tags,list(string),no,,no-chart
-gcp,compute-vm,tpu_config,"object({queued, runtime_version})",no,,no-chart
-gcp,compute-vm,zone,string,no,,no-chart
+gcp,net-lb-app-int,address,string,yes,,
+gcp,net-lb-app-int,backend_service_configs,"map(object({affinity_cookie_ttl_sec, backends, circuit_breakers, connection_draining_timeout_sec, consistent_hash, description, +14}))",partial,"ComputeBackendService has no tlsSettings, and its logConfig has no optionalMode or optionalFields",gap
+gcp,net-lb-app-int,context,"object({addresses, locations, networks, project_ids, security_policies, subnets})",no,Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs,by-design
+gcp,net-lb-app-int,description,string,yes,,
+gcp,net-lb-app-int,global_access,bool,yes,,
+gcp,net-lb-app-int,group_configs,"map(object({description, instances, name, named_ports, project_id, zone}))",yes,,
+gcp,net-lb-app-int,health_check_configs,"map(object({check_interval_sec, description, enable_logging, grpc, healthy_threshold, http, +9}))",yes,,
+gcp,net-lb-app-int,http_proxy_config,"object({description, name})",yes,,
+gcp,net-lb-app-int,https_proxy_config,"object({certificate_manager_certificates, description, name, ssl_policy})",yes,,
+gcp,net-lb-app-int,labels,map(string),yes,,
+gcp,net-lb-app-int,name,string,yes,,
+gcp,net-lb-app-int,neg_configs,"map(object({cloudrun, description, gce, hybrid, internet, project_id, +1}))",partial,"an internet NEG's endpoints are config-connector-extensions' ComputeRegionNetworkEndpoint, which is v1alpha1: needs allow_alpha: true",alpha
+gcp,net-lb-app-int,network_tier_premium,bool,yes,,
+gcp,net-lb-app-int,ports,list(string),yes,,
+gcp,net-lb-app-int,project_id,string,yes,,
+gcp,net-lb-app-int,protocol,string,yes,,
+gcp,net-lb-app-int,region,string,yes,,
+gcp,net-lb-app-int,service_attachment,"object({automatic_connection, consumer_accept_lists, consumer_reject_lists, description, domain_name, enable_proxy_protocol, +2})",partial,ComputeServiceAttachment has no domainNames or reconcileConnections,gap
+gcp,net-lb-app-int,service_directory_registration,"object({namespace, service})",no,ComputeForwardingRule's serviceDirectoryRegistrations has no namespace,gap
+gcp,net-lb-app-int,ssl_certificates,"object({certificate_ids, create_configs})",yes,,
+gcp,net-lb-app-int,urlmap_config,"object({default_route_action, default_service, default_url_redirect, description, header_action, host_rules, +2})",yes,,
+gcp,net-lb-app-int,vpc_config,"object({network, subnetwork})",yes,,
+gcp,compute-vm,attached_disks,"map(object({auto_delete, device_name, force_attach, initialize_params, mode, name, +3}))",partial,"force_attach (ComputeInstance's attachedDisk has no such field) and hyperdisk.storage_pool (ComputeDisk has none) are refused, and with create_template so are provisioned_throughput and snapshot_schedule",gap
+gcp,compute-vm,boot_disk,"object({architecture, auto_delete, force_attach, initialize_params, snapshot_schedule, source, +1})",partial,"architecture and force_attach are refused (no such fields); the hyperdisk settings need use_independent_disk on an instance (a ComputeDisk takes provisioned_iops and provisioned_throughput, not storage_pool), and a template takes provisioned_iops only",gap
+gcp,compute-vm,can_ip_forward,bool,yes,,
+gcp,compute-vm,confidential_compute,string,yes,,
+gcp,compute-vm,context,"object({addresses, condition_vars, custom_roles, iam_principals, kms_keys, locations, +5})",no,Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs,by-design
+gcp,compute-vm,create_template,object({regional}),partial,"a global template is a ComputeInstanceTemplate; regional: true needs config-connector-extensions' ComputeRegionInstanceTemplate (v1alpha1), not ported yet, even with allow_alpha",alpha
+gcp,compute-vm,description,string,yes,,
+gcp,compute-vm,enable_display,bool,yes,,
+gcp,compute-vm,encryption,"object({disk_encryption_key_raw, encrypt_boot, kms_key_self_link})",partial,"kms_key_self_link is carried; disk_encryption_key_raw is refused: a raw key given here would be in the rendered manifest, and ComputeInstance and ComputeDisk take it from a Kubernetes Secret (valueFrom), which the chart does not take yet (the SECV question)",gap
+gcp,compute-vm,gpu,"object({count, type})",yes,,
+gcp,compute-vm,group,"object({membership, named_ports})",partial,named_ports makes an unmanaged ComputeInstanceGroup; membership (joining an existing group) is refused: ComputeInstanceGroup owns its group's whole instance list and there is no membership kind,gap
+gcp,compute-vm,hostname,string,yes,,
+gcp,compute-vm,iam,map(list(string)),yes,,
+gcp,compute-vm,iap_tunnel_iam,map(list(string)),yes,,
+gcp,compute-vm,iap_tunnel_iam_bindings,"map(object({condition, members, role}))",yes,,
+gcp,compute-vm,iap_tunnel_iam_bindings_additive,"map(object({condition, member, role}))",partial,"each entry is config-connector-extensions' IAMMember, which is v1alpha1: needs allow_alpha: true",alpha
+gcp,compute-vm,instance_schedule,"object({active, description, expiration_time, start_time, timezone, vm_start, +1})",yes,,
+gcp,compute-vm,kms_autokeys,"map(object({location, resource_type_selector}))",no,a key handle's key is known only after apply and neither ComputeInstance nor ComputeDisk can reference a handle (gap 8),gap
+gcp,compute-vm,labels,map(string),yes,,
+gcp,compute-vm,lifecycle_config,"object({allow_stopping_for_update, deletion_protection, graceful_shutdown, key_revocation_action_type})",partial,key_revocation_action_type and graceful_shutdown are refused: ComputeInstance and ComputeInstanceTemplate have no such fields,gap
+gcp,compute-vm,machine_features_config,"object({enable_nested_virtualization, enable_turbo_mode, enable_uefi_networking, performance_monitoring_unit, threads_per_core, visible_core_count})",partial,"enable_turbo_mode, enable_uefi_networking and performance_monitoring_unit are refused: advancedMachineFeatures has no such fields",gap
+gcp,compute-vm,machine_type,string,yes,,
+gcp,compute-vm,metadata,map(string),yes,,
+gcp,compute-vm,metadata_startup_script,string,yes,,
+gcp,compute-vm,min_cpu_platform,string,yes,,
+gcp,compute-vm,name,string,yes,,
+gcp,compute-vm,network_attached_interfaces,list(string),partial,carried on a template (ComputeInstanceTemplate's networkAttachment); refused on an instance: ComputeInstance's networkInterface has no networkAttachment field,gap
+gcp,compute-vm,network_interfaces,"list(object({addresses, alias_ips, external_ipv6, internal_ipv6_prefix_length, nat, network, +5}))",yes,,
+gcp,compute-vm,network_performance_tier,string,yes,,
+gcp,compute-vm,network_tag_bindings,map(string),no,"a VM's tag binding names its numeric ID, known only after apply, and TagsLocationTagBinding cannot reference a ComputeInstance (gap 8)",gap
+gcp,compute-vm,project_id,string,yes,,
+gcp,compute-vm,project_number,string,yes,,
+gcp,compute-vm,resource_policies,list(string),yes,,
+gcp,compute-vm,scheduling_config,"object({automatic_restart, local_ssd_recovery_timeout, maintenance_interval, max_run_duration, min_node_cpus, node_affinities, +3})",yes,,
+gcp,compute-vm,scratch_disks,"object({count, interface, size})",yes,,
+gcp,compute-vm,service_account,"object({auto_create, email, scopes})",yes,,
+gcp,compute-vm,shielded_config,"object({enable_integrity_monitoring, enable_secure_boot, enable_vtpm})",yes,,
+gcp,compute-vm,snapshot_schedules,"map(object({description, retention_policy, schedule, snapshot_properties}))",yes,,
+gcp,compute-vm,tag_bindings,map(string),no,"a VM's and its disks' tag bindings name their numeric IDs, known only after apply, and TagsLocationTagBinding cannot reference a ComputeInstance or ComputeDisk (gap 8)",gap
+gcp,compute-vm,tag_bindings_immutable,map(string),partial,carried on an instance (params and the boot disk's resourceManagerTags); refused with create_template: ComputeInstanceTemplate has no resourceManagerTags field,gap
+gcp,compute-vm,tags,list(string),yes,,
+gcp,compute-vm,tpu_config,"object({queued, runtime_version})",no,"TPUVirtualMachine and TPUQueuedResource are alpha in Config Connector v1.160.0 and not ported yet, even with allow_alpha",alpha
+gcp,compute-vm,zone,string,yes,,
 gcp,compute-mig,all_instances_config,"object({labels, metadata})",no,ComputeInstanceGroupManager has no allInstancesConfig field,gap
 gcp,compute-mig,auto_healing_policies,"object({health_check, initial_delay_sec})",yes,,
 gcp,compute-mig,autoscaler_config,"object({cooldown_period, max_replicas, min_replicas, mode, scaling_control, scaling_signals})",partial,"scaling_control.down beside scaling_control.in: Compute Engine v1, which the autoscaler kinds call, has one scale-in control",gap
@@ -742,7 +742,7 @@ gcp,alloydb,display_name,string,yes,,
 gcp,alloydb,encryption_config,"object({primary_kms_key_name, secondary_kms_key_name})",yes,,
 gcp,alloydb,flags,map(string),yes,,
 gcp,alloydb,gce_zone,string,yes,,
-gcp,alloydb,initial_user,"object({password, user})",no,"a password given here would be in the rendered manifest; AlloyDBCluster takes the initial user's password from a Kubernetes Secret (initialUser.password.valueFrom), which the chart does not take yet (an open question, as cloudsql-instance's root_password)",not-ported
+gcp,alloydb,initial_user,"object({password, user})",yes,,
 gcp,alloydb,instance_name,string,yes,,
 gcp,alloydb,labels,map(string),yes,,
 gcp,alloydb,location,string,yes,,
@@ -758,7 +758,7 @@ gcp,alloydb,read_pool,"map(object({client_connection_config, display_name, flags
 gcp,alloydb,skip_await_major_version_upgrade,bool,yes,,
 gcp,alloydb,subscription_type,string,partial,"TRIAL is refused: AlloyDBCluster has no subscriptionType field (clusters are STANDARD, the default)",gap
 gcp,alloydb,tag_bindings,map(string),yes,,
-gcp,alloydb,users,"map(object({password, roles, type}))",partial,only ALLOYDB_IAM_USER and ALLOYDB_IAM_GROUP users are accepted: an ALLOYDB_BUILT_IN user's password would be in the rendered manifest or made by Terraform's random_password (the same open question as initial_user),not-ported
+gcp,alloydb,users,"map(object({password, roles, type}))",partial,"an ALLOYDB_BUILT_IN user's password is a reference to a Kubernetes Secret (password.valueFrom, docs/secrets.md) and is required: fabric's generated password (random_password) is refused, the catalog never generates a secret",by-design
 gcp,spanner-instance,databases,"map(object({database_dialect, ddl, default_time_zone, deletion_protection, enable_drop_protection, iam, +4}))",partial,default_time_zone: SpannerDatabase has no defaultTimeZone field,gap
 gcp,spanner-instance,iam,map(list(string)),yes,,
 gcp,spanner-instance,iam_bindings,"map(object({members, role}))",yes,,
@@ -825,25 +825,25 @@ gcp,net-swp,service_attachment,"object({automatic_connection, consumer_accept_li
 gcp,net-swp,subnetwork,string,yes,,
 gcp,net-swp,tls_inspection_config,"object({create_config, id})",yes,,
 gcp,net-swp,url_lists,"map(object({description, values}))",yes,,
-gcp,net-lb-app-ext-regional,address,string,no,,no-chart
-gcp,net-lb-app-ext-regional,backend_service_configs,"map(object({affinity_cookie_ttl_sec, backends, cdn_policy, circuit_breakers, connection_draining_timeout_sec, consistent_hash, +15}))",no,,no-chart
-gcp,net-lb-app-ext-regional,context,"object({addresses, locations, networks, project_ids, security_policies, subnets})",no,,no-chart
-gcp,net-lb-app-ext-regional,description,string,no,,no-chart
-gcp,net-lb-app-ext-regional,group_configs,"map(object({description, instances, name, named_ports, project_id, zone}))",no,,no-chart
-gcp,net-lb-app-ext-regional,health_check_configs,"map(object({check_interval_sec, description, enable_logging, grpc, healthy_threshold, http, +8}))",no,,no-chart
-gcp,net-lb-app-ext-regional,http_proxy_config,"object({description, http_keepalive_timeout, name})",no,,no-chart
-gcp,net-lb-app-ext-regional,https_proxy_config,"object({certificate_manager_certificates, certificate_map, description, http_keepalive_timeout, name, quic_override, +2})",no,,no-chart
-gcp,net-lb-app-ext-regional,labels,map(string),no,,no-chart
-gcp,net-lb-app-ext-regional,name,string,no,,no-chart
-gcp,net-lb-app-ext-regional,neg_configs,"map(object({cloudfunction, cloudrun, description, gce, hybrid, internet, +2}))",no,,no-chart
-gcp,net-lb-app-ext-regional,network_tier_standard,bool,no,,no-chart
-gcp,net-lb-app-ext-regional,ports,list(string),no,,no-chart
-gcp,net-lb-app-ext-regional,project_id,string,no,,no-chart
-gcp,net-lb-app-ext-regional,protocol,string,no,,no-chart
-gcp,net-lb-app-ext-regional,region,string,no,,no-chart
-gcp,net-lb-app-ext-regional,ssl_certificates,"object({certificate_ids, create_configs})",no,,no-chart
-gcp,net-lb-app-ext-regional,urlmap_config,"object({default_route_action, default_service, default_url_redirect, description, header_action, host_rules, +2})",no,,no-chart
-gcp,net-lb-app-ext-regional,vpc_config,object({network}),no,,no-chart
+gcp,net-lb-app-ext-regional,address,string,yes,,
+gcp,net-lb-app-ext-regional,backend_service_configs,"map(object({affinity_cookie_ttl_sec, backends, cdn_policy, circuit_breakers, connection_draining_timeout_sec, consistent_hash, +15}))",partial,ComputeBackendService's logConfig has no optionalMode or optionalFields,gap
+gcp,net-lb-app-ext-regional,context,"object({addresses, locations, networks, project_ids, security_policies, subnets})",no,Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs,by-design
+gcp,net-lb-app-ext-regional,description,string,yes,,
+gcp,net-lb-app-ext-regional,group_configs,"map(object({description, instances, name, named_ports, project_id, zone}))",yes,,
+gcp,net-lb-app-ext-regional,health_check_configs,"map(object({check_interval_sec, description, enable_logging, grpc, healthy_threshold, http, +8}))",yes,,
+gcp,net-lb-app-ext-regional,http_proxy_config,"object({description, http_keepalive_timeout, name})",yes,,
+gcp,net-lb-app-ext-regional,https_proxy_config,"object({certificate_manager_certificates, certificate_map, description, http_keepalive_timeout, name, quic_override, +2})",yes,,
+gcp,net-lb-app-ext-regional,labels,map(string),yes,,
+gcp,net-lb-app-ext-regional,name,string,yes,,
+gcp,net-lb-app-ext-regional,neg_configs,"map(object({cloudfunction, cloudrun, description, gce, hybrid, internet, +2}))",partial,"an internet NEG's endpoints are config-connector-extensions' ComputeRegionNetworkEndpoint, which is v1alpha1: needs allow_alpha: true",alpha
+gcp,net-lb-app-ext-regional,network_tier_standard,bool,yes,,
+gcp,net-lb-app-ext-regional,ports,list(string),yes,,
+gcp,net-lb-app-ext-regional,project_id,string,yes,,
+gcp,net-lb-app-ext-regional,protocol,string,yes,,
+gcp,net-lb-app-ext-regional,region,string,yes,,
+gcp,net-lb-app-ext-regional,ssl_certificates,"object({certificate_ids, create_configs})",yes,,
+gcp,net-lb-app-ext-regional,urlmap_config,"object({default_route_action, default_service, default_url_redirect, description, header_action, host_rules, +2})",yes,,
+gcp,net-lb-app-ext-regional,vpc_config,object({network}),yes,,
 gcp,net-lb-app-int-cross-region,addresses,map(string),yes,,
 gcp,net-lb-app-int-cross-region,backend_service_configs,"map(object({affinity_cookie_ttl_sec, backends, circuit_breakers, connection_draining_timeout_sec, consistent_hash, description, +11}))",partial,ComputeBackendService's logConfig has no optionalMode or optionalFields,gap
 gcp,net-lb-app-int-cross-region,context,"object({addresses, locations, networks, project_ids, subnets})",no,Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs,by-design
@@ -862,20 +862,20 @@ gcp,net-lb-app-int-cross-region,service_attachment,"object({automatic_connection
 gcp,net-lb-app-int-cross-region,service_directory_registration,"object({namespace, service_directory_region})",no,ComputeForwardingRule's serviceDirectoryRegistrations has no namespace or serviceDirectoryRegion,gap
 gcp,net-lb-app-int-cross-region,urlmap_config,"object({default_route_action, default_service, default_url_redirect, description, header_action, host_rules, +2})",yes,,
 gcp,net-lb-app-int-cross-region,vpc_config,"object({network, subnetworks})",yes,,
-gcp,net-lb-proxy-int,backend_service_config,"object({affinity_cookie_ttl_sec, backends, connection_draining_timeout_sec, description, health_checks, log_config, +5})",no,,no-chart
-gcp,net-lb-proxy-int,context,"object({addresses, locations, networks, project_ids, subnets})",no,,no-chart
-gcp,net-lb-proxy-int,description,string,no,,no-chart
-gcp,net-lb-proxy-int,forwarding_rules_config,"map(object({address, description, global_access, ipv6, name, port, +1}))",no,,no-chart
-gcp,net-lb-proxy-int,group_configs,"map(object({description, instances, name, named_ports, project_id, zone}))",no,,no-chart
-gcp,net-lb-proxy-int,health_check,string,no,,no-chart
-gcp,net-lb-proxy-int,health_check_config,"object({check_interval_sec, description, enable_logging, grpc, healthy_threshold, http, +8})",no,,no-chart
-gcp,net-lb-proxy-int,labels,map(string),no,,no-chart
-gcp,net-lb-proxy-int,name,string,no,,no-chart
-gcp,net-lb-proxy-int,neg_configs,"map(object({gce, hybrid, internet, project_id, psc}))",no,,no-chart
-gcp,net-lb-proxy-int,project_id,string,no,,no-chart
-gcp,net-lb-proxy-int,region,string,no,,no-chart
-gcp,net-lb-proxy-int,service_attachment,"object({automatic_connection, consumer_accept_lists, consumer_reject_lists, description, domain_name, enable_proxy_protocol, +3})",no,,no-chart
-gcp,net-lb-proxy-int,vpc_config,"object({network, subnetwork})",no,,no-chart
+gcp,net-lb-proxy-int,backend_service_config,"object({affinity_cookie_ttl_sec, backends, connection_draining_timeout_sec, description, health_checks, log_config, +5})",partial,ComputeBackendService's logConfig has no optionalMode or optionalFields,gap
+gcp,net-lb-proxy-int,context,"object({addresses, locations, networks, project_ids, subnets})",no,Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs,by-design
+gcp,net-lb-proxy-int,description,string,yes,,
+gcp,net-lb-proxy-int,forwarding_rules_config,"map(object({address, description, global_access, ipv6, name, port, +1}))",yes,,
+gcp,net-lb-proxy-int,group_configs,"map(object({description, instances, name, named_ports, project_id, zone}))",yes,,
+gcp,net-lb-proxy-int,health_check,string,yes,,
+gcp,net-lb-proxy-int,health_check_config,"object({check_interval_sec, description, enable_logging, grpc, healthy_threshold, http, +8})",yes,,
+gcp,net-lb-proxy-int,labels,map(string),yes,,
+gcp,net-lb-proxy-int,name,string,yes,,
+gcp,net-lb-proxy-int,neg_configs,"map(object({gce, hybrid, internet, project_id, psc}))",partial,"ComputeRegionNetworkEndpointGroup has no pscData (producer_port); an internet NEG's endpoints are config-connector-extensions' ComputeRegionNetworkEndpoint, which is v1alpha1: needs allow_alpha: true",gap
+gcp,net-lb-proxy-int,project_id,string,yes,,
+gcp,net-lb-proxy-int,region,string,yes,,
+gcp,net-lb-proxy-int,service_attachment,"object({automatic_connection, consumer_accept_lists, consumer_reject_lists, description, domain_name, enable_proxy_protocol, +3})",partial,ComputeServiceAttachment has no domainNames or reconcileConnections,gap
+gcp,net-lb-proxy-int,vpc_config,"object({network, subnetwork})",yes,,
 gcp,net-lb-proxy-int-cross-region,addresses,map(string),yes,,
 gcp,net-lb-proxy-int-cross-region,backend_service_config,"object({affinity_cookie_ttl_sec, backends, connection_draining_timeout_sec, description, health_checks, log_config, +5})",partial,ComputeBackendService's logConfig has no optionalMode or optionalFields,gap
 gcp,net-lb-proxy-int-cross-region,context,"object({addresses, locations, networks, project_ids, subnets})",no,Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs,by-design
@@ -898,7 +898,7 @@ gcp,net-vpn-static,project_id,string,yes,,
 gcp,net-vpn-static,region,string,yes,,
 gcp,net-vpn-static,remote_ranges,list(string),yes,,
 gcp,net-vpn-static,route_priority,number,yes,,
-gcp,net-vpn-static,tunnels,"map(object({cipher_suite, ike_version, peer_ip, shared_secret, traffic_selectors}))",no,"a tunnel needs a shared secret: one given here would be in the rendered manifest, and Terraform's random_id has no Config Connector equivalent; ComputeVPNTunnel takes it from a Kubernetes Secret (sharedSecret.valueFrom), which the chart does not take yet (cloudsql-instance's root_password question); ComputeVPNTunnel also has no cipherSuite field (gap)",not-ported
+gcp,net-vpn-static,tunnels,"map(object({cipher_suite, ike_version, peer_ip, shared_secret, traffic_selectors}))",partial,"cipher_suite is refused (ComputeVPNTunnel has no cipherSuite field). A tunnel's shared_secret is a reference to a Kubernetes Secret (sharedSecret.valueFrom, docs/secrets.md) and is required: fabric's generated secret (random_id) is refused, the catalog never generates one",gap
 gcp,net-vpn-dynamic,gateway_address,string,yes,,
 gcp,net-vpn-dynamic,gateway_address_create,bool,yes,,
 gcp,net-vpn-dynamic,name,string,yes,,
@@ -906,7 +906,7 @@ gcp,net-vpn-dynamic,network,string,yes,,
 gcp,net-vpn-dynamic,project_id,string,yes,,
 gcp,net-vpn-dynamic,region,string,yes,,
 gcp,net-vpn-dynamic,router_config,"object({asn, create, custom_advertise, keepalive, name, route_policies})",partial,accepted; route_policies need config-connector-extensions' v1alpha1 ComputeRouterRoutePolicy: set allow_alpha: true,alpha
-gcp,net-vpn-dynamic,tunnels,"map(object({bgp_peer, bgp_session_range, cipher_suite, ike_version, peer_ip, router, +1}))",no,"a tunnel needs a shared secret: one given here would be in the rendered manifest, and Terraform's random_id has no Config Connector equivalent; ComputeVPNTunnel takes it from a Kubernetes Secret (sharedSecret.valueFrom), which the chart does not take yet (the SECV question). With no tunnel there is no router interface or BGP peer either; ComputeVPNTunnel also has no cipherSuite field, and ComputeRouterPeer no md5AuthenticationKey, importPolicies, exportPolicies or customLearnedIpRanges (gaps)",not-ported
+gcp,net-vpn-dynamic,tunnels,"map(object({bgp_peer, bgp_session_range, cipher_suite, ike_version, peer_ip, router, +1}))",partial,"cipher_suite is refused (ComputeVPNTunnel has no cipherSuite field), and bgp_peer's export_policies and import_policies (ComputeRouterPeer has no such fields). A tunnel's shared_secret is a reference to a Kubernetes Secret (sharedSecret.valueFrom, docs/secrets.md) and is required: fabric's generated secret (random_id) is refused, the catalog never generates one",gap
 gcp,net-vlan-attachment,admin_enabled,bool,yes,,
 gcp,net-vlan-attachment,bgp_peer,"object({bfd, custom_advertise, custom_learned_ip_ranges, export_policies, import_policies, md5_authentication_key})",partial,"accepted for a dedicated attachment's BGP peer (custom_advertise, bfd); export_policies, import_policies, custom_learned_ip_ranges and md5_authentication_key are refused: ComputeRouterPeer has no exportPolicies, importPolicies, customLearnedIpRanges or md5AuthenticationKey",gap
 gcp,net-vlan-attachment,context,"object({locations, networks, project_ids, routers})",no,Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs,by-design
@@ -929,7 +929,7 @@ gcp,net-ipsec-over-interconnect,peer_gateway_config,"object({create, description
 gcp,net-ipsec-over-interconnect,project_id,string,yes,,
 gcp,net-ipsec-over-interconnect,region,string,yes,,
 gcp,net-ipsec-over-interconnect,router_config,"object({asn, create, custom_advertise, keepalive, name, route_policies})",partial,accepted; route_policies need config-connector-extensions' v1alpha1 ComputeRouterRoutePolicy: set allow_alpha: true,alpha
-gcp,net-ipsec-over-interconnect,tunnels,"map(object({bgp_peer, bgp_session_range, ike_version, peer_external_gateway_interface, peer_gateway_id, router, +2}))",no,"a tunnel needs a shared secret: one given here would be in the rendered manifest, and Terraform's random_id has no Config Connector equivalent; ComputeVPNTunnel takes it from a Kubernetes Secret (sharedSecret.valueFrom), which the chart does not take yet (the SECV question). With no tunnel there is no router interface or BGP peer either; ComputeVPNTunnel also has no cipherSuite field, and ComputeRouterPeer no md5AuthenticationKey, importPolicies, exportPolicies or customLearnedIpRanges (gaps)",not-ported
+gcp,net-ipsec-over-interconnect,tunnels,"map(object({bgp_peer, bgp_session_range, ike_version, peer_external_gateway_interface, peer_gateway_id, router, +2}))",partial,"bgp_peer's md5_authentication_key, export_policies and import_policies are refused (ComputeRouterPeer has no such fields). A tunnel's shared_secret is a reference to a Kubernetes Secret (sharedSecret.valueFrom, docs/secrets.md) and is required: fabric's generated secret (random_id) is refused, the catalog never generates one",gap
 gcp,ncc-spoke-ra,data_transfer,bool,yes,,
 gcp,ncc-spoke-ra,hub,"object({create, description, id, name})",yes,,
 gcp,ncc-spoke-ra,name,string,yes,,
@@ -951,15 +951,15 @@ gcp,binauthz,attestors_config,"map(object({iam, note_reference, pgp_public_keys,
 gcp,binauthz,cluster_admission_rules,"map(object({attestors, enforcement_mode, evaluation_mode}))",yes,,
 gcp,binauthz,default_admission_rule,"object({attestors, enforcement_mode, evaluation_mode})",yes,,
 gcp,binauthz,project_id,string,yes,,
-gcp,certificate-authority-service,ca_configs,"map(object({deletion_protection, gcs_bucket, ignore_active_certificates_on_deletion, is_ca, is_self_signed, key_spec, +8}))",no,,no-chart
-gcp,certificate-authority-service,ca_pool_config,"object({create_pool, use_pool})",no,,no-chart
-gcp,certificate-authority-service,context,"object({ca_ids, ca_pools, condition_vars, custom_roles, iam_principals, kms_keys, +3})",no,,no-chart
-gcp,certificate-authority-service,iam,map(list(string)),no,,no-chart
-gcp,certificate-authority-service,iam_bindings,"map(object({condition, members, role}))",no,,no-chart
-gcp,certificate-authority-service,iam_bindings_additive,"map(object({condition, member, role}))",no,,no-chart
-gcp,certificate-authority-service,iam_by_principals,map(list(string)),no,,no-chart
-gcp,certificate-authority-service,location,string,no,,no-chart
-gcp,certificate-authority-service,project_id,string,no,,no-chart
+gcp,certificate-authority-service,ca_configs,"map(object({deletion_protection, gcs_bucket, ignore_active_certificates_on_deletion, is_ca, is_self_signed, key_spec, +8}))",partial,"pem_ca_certificate and subordinate_config are refused: PrivateCACertificateAuthority has no pemCaCertificate or subordinateConfig field (a subordinate CA is made, and waits for activation, without them); deletion_protection, ignore_active_certificates_on_deletion and skip_grace_period are accepted and have no effect: they are Terraform's own delete options, and Config Connector has none",gap
+gcp,certificate-authority-service,ca_pool_config,"object({create_pool, use_pool})",partial,"create_pool.publishing_options.encoding_format DER is refused: PrivateCACAPool's publishingOptions has no encodingFormat, so the pool publishes PEM (the API's default)",gap
+gcp,certificate-authority-service,context,"object({ca_ids, ca_pools, condition_vars, custom_roles, iam_principals, kms_keys, +3})",no,Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs,by-design
+gcp,certificate-authority-service,iam,map(list(string)),yes,,
+gcp,certificate-authority-service,iam_bindings,"map(object({condition, members, role}))",yes,,
+gcp,certificate-authority-service,iam_bindings_additive,"map(object({condition, member, role}))",partial,config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true,alpha
+gcp,certificate-authority-service,iam_by_principals,map(list(string)),yes,,
+gcp,certificate-authority-service,location,string,yes,,
+gcp,certificate-authority-service,project_id,string,yes,,
 gcp,backup-dr,backup_plans,"map(object({backup_rules, description, resource_type}))",yes,,
 gcp,backup-dr,location,string,yes,,
 gcp,backup-dr,management_server_config,"object({name, network_config, type})",yes,,
@@ -967,20 +967,20 @@ gcp,backup-dr,name,string,yes,,
 gcp,backup-dr,project_id,string,yes,,
 gcp,backup-dr,vault_config,"object({access_restriction, allow_missing, annotations, backup_minimum_enforced_retention_duration, backup_retention_inheritance, description, +4})",partial,"accepted; backup_retention_inheritance, and force_update, ignore_backup_plan_references and allow_missing set to true, are refused: BackupDRBackupVault has no backupRetentionInheritance field, and Config Connector sends none of the three request flags",gap
 gcp,backup-dr,vault_reuse,object({vault_id}),yes,,
-gcp,cloud-deploy,annotations,map(string),no,,no-chart
-gcp,cloud-deploy,automations,"map(object({advance_rollout_rule, annotations, description, labels, project_id, promote_release_rule, +6}))",no,,no-chart
-gcp,cloud-deploy,deploy_policies,"map(object({annotations, description, labels, project_id, region, rollout_restrictions, +2}))",no,,no-chart
-gcp,cloud-deploy,description,string,no,,no-chart
-gcp,cloud-deploy,iam,map(list(string)),no,,no-chart
-gcp,cloud-deploy,iam_bindings,"map(object({condition, members, role}))",no,,no-chart
-gcp,cloud-deploy,iam_bindings_additive,"map(object({condition, member, role}))",no,,no-chart
-gcp,cloud-deploy,iam_by_principals,map(list(string)),no,,no-chart
-gcp,cloud-deploy,labels,map(string),no,,no-chart
-gcp,cloud-deploy,name,string,no,,no-chart
-gcp,cloud-deploy,project_id,string,no,,no-chart
-gcp,cloud-deploy,region,string,no,,no-chart
-gcp,cloud-deploy,suspended,bool,no,,no-chart
-gcp,cloud-deploy,targets,"list(object({annotations, cloud_run_configs, create_target, custom_canary_phase_configs, delivery_pipeline_deploy_parameters, deployment_percentages, +20}))",no,,no-chart
+gcp,cloud-deploy,annotations,map(string),yes,,
+gcp,cloud-deploy,automations,"map(object({advance_rollout_rule, annotations, description, labels, project_id, promote_release_rule, +6}))",partial,"an automation without service_account is refused: fabric then reads the project's Compute Engine default service account, whose email needs the project number, which a render does not have; set service_account",gap
+gcp,cloud-deploy,deploy_policies,"map(object({annotations, description, labels, project_id, region, rollout_restrictions, +2}))",yes,,
+gcp,cloud-deploy,description,string,yes,,
+gcp,cloud-deploy,iam,map(list(string)),yes,,
+gcp,cloud-deploy,iam_bindings,"map(object({condition, members, role}))",yes,,
+gcp,cloud-deploy,iam_bindings_additive,"map(object({condition, member, role}))",partial,config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true,alpha
+gcp,cloud-deploy,iam_by_principals,map(list(string)),yes,,
+gcp,cloud-deploy,labels,map(string),yes,,
+gcp,cloud-deploy,name,string,yes,,
+gcp,cloud-deploy,project_id,string,yes,,
+gcp,cloud-deploy,region,string,yes,,
+gcp,cloud-deploy,suspended,bool,yes,,
+gcp,cloud-deploy,targets,"list(object({annotations, cloud_run_configs, create_target, custom_canary_phase_configs, delivery_pipeline_deploy_parameters, deployment_percentages, +20}))",partial,"accepted; a target's iam_bindings_additive renders config-connector-extensions' IAMMember, which is v1alpha1: set allow_alpha: true",alpha
 gcp,cloud-build-v2-connection,annotations,map(string),yes,,
 gcp,cloud-build-v2-connection,connection_config,"object({bitbucket_cloud, bitbucket_data_center, github, github_enterprise, gitlab})",partial,"github_enterprise is refused: config-connector-extensions' CloudBuildConnection requires githubEnterpriseConfig.apiKey, which the module's variable has no field for",gap
 gcp,cloud-build-v2-connection,connection_create,bool,yes,,
@@ -1012,44 +1012,44 @@ gcp,source-repository,iam_by_principals,map(list(string)),yes,,
 gcp,source-repository,name,string,yes,,
 gcp,source-repository,project_id,string,yes,,
 gcp,source-repository,triggers,"map(object({filename, included_files, service_account, substitutions, template}))",partial,"CloudBuildTrigger's triggerTemplate has no projectId, so a trigger builds a repository of its own project only",gap
-gcp,bigquery-connection,connection_config,"object({aws, azure, cloud_resource, cloud_spanner, cloud_sql, spark})",no,,no-chart
-gcp,bigquery-connection,connection_id,string,no,,no-chart
-gcp,bigquery-connection,context,object({iam_principals}),no,,no-chart
-gcp,bigquery-connection,description,string,no,,no-chart
-gcp,bigquery-connection,encryption_key,string,no,,no-chart
-gcp,bigquery-connection,friendly_name,string,no,,no-chart
-gcp,bigquery-connection,iam,map(list(string)),no,,no-chart
-gcp,bigquery-connection,iam_bindings,"map(object({condition, members, role}))",no,,no-chart
-gcp,bigquery-connection,iam_bindings_additive,"map(object({condition, member, role}))",no,,no-chart
-gcp,bigquery-connection,iam_by_principals,map(list(string)),no,,no-chart
-gcp,bigquery-connection,location,string,no,,no-chart
-gcp,bigquery-connection,project_id,string,no,,no-chart
-gcp,analytics-hub,description,string,no,,no-chart
-gcp,analytics-hub,documentation,string,no,,no-chart
-gcp,analytics-hub,factories_config,object({listings}),no,,no-chart
-gcp,analytics-hub,iam,map(list(string)),no,,no-chart
-gcp,analytics-hub,iam_bindings,"map(object({members, role}))",no,,no-chart
-gcp,analytics-hub,iam_bindings_additive,"map(object({member, role}))",no,,no-chart
-gcp,analytics-hub,iam_by_principals,map(list(string)),no,,no-chart
-gcp,analytics-hub,icon,string,no,,no-chart
-gcp,analytics-hub,listings,"map(object({bigquery_dataset, categories, data_provider, description, documentation, iam, +5}))",no,,no-chart
-gcp,analytics-hub,name,string,no,,no-chart
-gcp,analytics-hub,prefix,string,no,,no-chart
-gcp,analytics-hub,primary_contact,string,no,,no-chart
-gcp,analytics-hub,project_id,string,no,,no-chart
-gcp,analytics-hub,region,string,no,,no-chart
+gcp,bigquery-connection,connection_config,"object({aws, azure, cloud_resource, cloud_spanner, cloud_sql, spark})",partial,"cloud_sql.credential's username and password are refused: they would be in the rendered manifest; BigQueryConnectionConnection takes them from a Kubernetes Secret (cloudSQL.credential.secretRef), which the chart takes as cloud_sql.credential.secret_name instead",gap
+gcp,bigquery-connection,connection_id,string,yes,,
+gcp,bigquery-connection,context,object({iam_principals}),no,Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs,by-design
+gcp,bigquery-connection,description,string,yes,,
+gcp,bigquery-connection,encryption_key,string,no,BigQueryConnectionConnection has no kmsKeyName field,gap
+gcp,bigquery-connection,friendly_name,string,yes,,
+gcp,bigquery-connection,iam,map(list(string)),yes,,
+gcp,bigquery-connection,iam_bindings,"map(object({condition, members, role}))",yes,,
+gcp,bigquery-connection,iam_bindings_additive,"map(object({condition, member, role}))",partial,config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true,alpha
+gcp,bigquery-connection,iam_by_principals,map(list(string)),yes,,
+gcp,bigquery-connection,location,string,yes,,
+gcp,bigquery-connection,project_id,string,yes,,
+gcp,analytics-hub,description,string,yes,,
+gcp,analytics-hub,documentation,string,yes,,
+gcp,analytics-hub,factories_config,object({listings}),no,"fabric reads listings from YAML files on disk; a component has no files, so its listings go in listings",by-design
+gcp,analytics-hub,iam,map(list(string)),yes,,
+gcp,analytics-hub,iam_bindings,"map(object({members, role}))",yes,,
+gcp,analytics-hub,iam_bindings_additive,"map(object({member, role}))",partial,config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true,alpha
+gcp,analytics-hub,iam_by_principals,map(list(string)),yes,,
+gcp,analytics-hub,icon,string,no,BigQueryAnalyticsHubDataExchange has no icon field,gap
+gcp,analytics-hub,listings,"map(object({bigquery_dataset, categories, data_provider, description, documentation, iam, +5}))",partial,icon is refused: BigQueryAnalyticsHubListing has no icon field,gap
+gcp,analytics-hub,name,string,yes,,
+gcp,analytics-hub,prefix,string,yes,,
+gcp,analytics-hub,primary_contact,string,yes,,
+gcp,analytics-hub,project_id,string,yes,,
+gcp,analytics-hub,region,string,yes,,
 gcp,biglake-catalog,databases,"map(object({hive_options, tables, type}))",yes,,
 gcp,biglake-catalog,location,string,yes,,
 gcp,biglake-catalog,name,string,yes,,
 gcp,biglake-catalog,project_id,string,yes,,
-gcp,dataform-repository,iam,map(list(string)),no,,no-chart
-gcp,dataform-repository,iam_bindings,"map(object({condition, members, role}))",no,,no-chart
-gcp,dataform-repository,iam_bindings_additive,"map(object({condition, member, role}))",no,,no-chart
-gcp,dataform-repository,name,string,no,,no-chart
-gcp,dataform-repository,project_id,string,no,,no-chart
-gcp,dataform-repository,region,string,no,,no-chart
-gcp,dataform-repository,remote_repository_settings,"object({branch, secret_name, secret_version, token, url})",no,,no-chart
-gcp,dataform-repository,service_account,string,no,,no-chart
+gcp,dataform-repository,iam,map(list(string)),yes,,
+gcp,dataform-repository,iam_bindings,"map(object({condition, members, role}))",yes,,
+gcp,dataform-repository,iam_bindings_additive,"map(object({condition, member, role}))",partial,config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true,alpha
+gcp,dataform-repository,name,string,yes,,
+gcp,dataform-repository,project_id,string,yes,,
+gcp,dataform-repository,region,string,yes,,
+gcp,dataform-repository,remote_repository_settings,"object({branch, secret_name, secret_version, token, url})",partial,token is refused: a token given here would be in the rendered manifest (fabric's module does not send it either); the repository reads its token from the Secret Manager secret version secret_version names,gap
+gcp,dataform-repository,service_account,string,yes,,
 gcp,dataproc,dataproc_config,"object({cluster_config, graceful_decommission_timeout, virtual_cluster_config})",partial,"DataprocCluster has no graceful decommission timeout (it is a parameter of the update call, not of the cluster)",gap
 gcp,dataproc,iam,map(list(string)),yes,,
 gcp,dataproc,iam_bindings,"map(object({condition, members, role}))",yes,,
@@ -3887,7 +3887,7 @@ azure,avm-res-storage-storageaccount,immutability_policy,"object({allow_protecte
 azure,avm-res-storage-storageaccount,infrastructure_encryption_enabled,bool,yes,,
 azure,avm-res-storage-storageaccount,is_hns_enabled,bool,yes,,
 azure,avm-res-storage-storageaccount,large_file_share_enabled,bool,yes,,
-azure,avm-res-storage-storageaccount,local_user,"map(object({home_directory, name, permission_scope, ssh_authorized_key, ssh_key_enabled, ssh_password_enabled, +1}))",partial,"accepted as aso-extensions StorageAccountsLocalUser, but an entry's ssh_password_enabled is refused (Azure generates the password, returned once by regeneratePassword; the builder's decision) and its timeouts (Bundt sets a component's time limit)",not-ported
+azure,avm-res-storage-storageaccount,local_user,"map(object({home_directory, name, permission_scope, ssh_authorized_key, ssh_key_enabled, ssh_password_enabled, +1}))",partial,"accepted as aso-extensions StorageAccountsLocalUser, but an entry's ssh_password_enabled is refused (Azure generates the password and returns it once, from the regeneratePassword action, which no kind performs: the kind's hasSshPassword can only remove one; whether a component may hold it is the builder's decision) and its timeouts (Bundt sets a component's time limit)",gap
 azure,avm-res-storage-storageaccount,local_user_enabled,bool,yes,,
 azure,avm-res-storage-storageaccount,location,string,yes,,
 azure,avm-res-storage-storageaccount,lock,"object({kind, name})",yes,,
@@ -4014,7 +4014,7 @@ azure,avm-res-compute-virtualmachine,resource_group_name,string,yes,,
 azure,avm-res-compute-virtualmachine,role_assignments,"map(object({condition, condition_version, delegated_managed_identity_resource_id, description, principal_id, principal_type, +2}))",yes,,
 azure,avm-res-compute-virtualmachine,role_assignments_system_managed_identity,"map(object({condition, condition_version, delegated_managed_identity_resource_id, description, principal_type, role_definition_id_or_name, +2}))",yes,,
 azure,avm-res-compute-virtualmachine,run_commands,"map(object({deploy_sequence, error_blob_managed_identity, error_blob_uri, location, name, output_blob_managed_identity, +5}))",partial,"mapped, except the managed identities of script_source, error_blob and output_blob (aso-extensions' VirtualMachinesRunCommand is at ARM API 2022-03-01, before them) and timeouts; deploy_sequence is accepted and has no effect",gap
-azure,avm-res-compute-virtualmachine,run_commands_secrets,"map(object({protected_parameters, run_as_password, run_as_user}))",no,protected parameters and run-as passwords are secret values,not-ported
+azure,avm-res-compute-virtualmachine,run_commands_secrets,"map(object({protected_parameters, run_as_password, run_as_user}))",partial,"accepted: run_as_user, and run_as_password as a reference to a Kubernetes Secret (aso-extensions' VirtualMachinesRunCommand runAsPasswordFromSecret; docs/secrets.md), but protected_parameters are refused: the kind takes them only in plain text, so the secret values would sit in the component's inputs",gap
 azure,avm-res-compute-virtualmachine,secrets,"list(object({certificate, key_vault_id}))",yes,,
 azure,avm-res-compute-virtualmachine,secure_boot_enabled,bool,yes,,
 azure,avm-res-compute-virtualmachine,shutdown_schedules,"map(object({daily_recurrence_time, enabled, notification_settings, tags, timezone}))",yes,,
@@ -4072,11 +4072,11 @@ azure,avm-res-operationalinsights-workspace,log_analytics_workspace_tables,"map(
 azure,avm-res-operationalinsights-workspace,log_analytics_workspace_tables_update,"map(object({name, plan, resource_id, retention_in_days, schema, total_retention_in_days}))",yes,,
 azure,avm-res-operationalinsights-workspace,log_analytics_workspace_timeouts,"object({create, delete, read, update})",no,Azure Service Operator has no per-request timeouts; Bundt sets a component's time limit,by-design
 azure,avm-res-operationalinsights-workspace,monitor_private_link_scope,"map(object({exclusions, ingestion_access_mode, lock, name, query_access_mode, resource_id}))",yes,,
-azure,avm-res-operationalinsights-workspace,monitor_private_link_scoped_resource,"map(object({exclusions, name, resource_id}))",partial,"accepted, but an entry's exclusions are refused: they update the access mode settings of an existing scope, which the module reads first and the chart does not own",not-ported
+azure,avm-res-operationalinsights-workspace,monitor_private_link_scoped_resource,"map(object({exclusions, name, resource_id}))",partial,"accepted, but an entry's exclusions are refused: they update the access mode settings of an existing scope, which the module reads first and the chart does not own; aso-extensions' PrivateLinkScope owns the whole scope, and no kind updates part of one",gap
 azure,avm-res-operationalinsights-workspace,monitor_private_link_scoped_service_name,string,yes,,
 azure,avm-res-operationalinsights-workspace,name,string,yes,,
 azure,avm-res-operationalinsights-workspace,network_security_perimeter_association,"object({access_mode, profile_name, resource_id})",yes,,
-azure,avm-res-operationalinsights-workspace,private_endpoint_extensions,"map(object({manage_dns_zone_group, monitor_private_link_scope_exclusion, monitor_private_link_scope_key}))",partial,"accepted, but monitor_private_link_scope_exclusion is refused when it would change the scope's access modes for the endpoint: the module names the exclusion by the scope's private endpoint connection, which Azure names and a render cannot read",not-ported
+azure,avm-res-operationalinsights-workspace,private_endpoint_extensions,"map(object({manage_dns_zone_group, monitor_private_link_scope_exclusion, monitor_private_link_scope_key}))",partial,"accepted, but monitor_private_link_scope_exclusion is refused when it would change the scope's access modes for the endpoint: the module names the exclusion by the scope's private endpoint connection, which Azure names and a render cannot read",gap
 azure,avm-res-operationalinsights-workspace,private_endpoints,"map(object({application_security_group_associations, ip_configurations, location, lock, name, network_interface_name, +7}))",yes,,
 azure,avm-res-operationalinsights-workspace,resource_group_name,string,yes,,
 azure,avm-res-operationalinsights-workspace,role_assignments,"map(object({condition, condition_version, delegated_managed_identity_resource_id, description, principal_id, principal_type, +2}))",yes,,
@@ -4178,7 +4178,7 @@ azure,avm-res-containerregistry-registry,anonymous_pull_enabled,bool,yes,,
 azure,avm-res-containerregistry-registry,azuread_authentication_as_arm_policy_enabled,bool,yes,,
 azure,avm-res-containerregistry-registry,cache_rules,"map(object({credential_set_key, credential_set_resource_id, name, source_repository, target_repository}))",yes,,
 azure,avm-res-containerregistry-registry,credential_sets,"map(object({auth_credentials, login_server, name}))",yes,,
-azure,avm-res-containerregistry-registry,customer_managed_key,"object({key_name, key_vault_resource_id, key_version, user_assigned_identity})",no,"ASO's Registry takes the key's URI and the identity's client ID (keyIdentifier, identity); the module looks both up from the vault and identity IDs, which a render cannot",not-ported
+azure,avm-res-containerregistry-registry,customer_managed_key,"object({key_name, key_vault_resource_id, key_version, user_assigned_identity})",no,"ASO's Registry takes the key's URI and the identity's client ID (keyIdentifier, and identity or identityFromConfig, a ConfigMap only an ASO UserAssignedIdentity in the cluster writes); the module looks the client ID up from the identity's resource ID, which a render cannot",gap
 azure,avm-res-containerregistry-registry,data_endpoint_enabled,bool,yes,,
 azure,avm-res-containerregistry-registry,diagnostic_settings,"map(object({event_hub_authorization_rule_resource_id, event_hub_name, log_analytics_destination_type, log_categories, log_groups, marketplace_partner_resource_id, +4}))",yes,,
 azure,avm-res-containerregistry-registry,enable_telemetry,bool,yes,,
@@ -4203,7 +4203,7 @@ azure,avm-res-containerregistry-registry,retention_policy_in_days,number,yes,,
 azure,avm-res-containerregistry-registry,retry,"object({error_message_regex, interval_seconds, max_interval_seconds})",no,"Azure Service Operator retries every failed request itself, with backoff, until the resource is ready",by-design
 azure,avm-res-containerregistry-registry,role_assignment_mode,string,yes,,
 azure,avm-res-containerregistry-registry,role_assignments,"map(object({condition, condition_version, delegated_managed_identity_resource_id, description, principal_id, principal_type, +2}))",yes,,
-azure,avm-res-containerregistry-registry,scope_maps,"map(object({actions, description, name, registry_tokens}))",partial,"accepted, but a token's passwords are refused: secrets Azure generates and returns once (generateCredentials); whether a component may hold one is the builder's decision",not-ported
+azure,avm-res-containerregistry-registry,scope_maps,"map(object({actions, description, name, registry_tokens}))",partial,"accepted, but a token's passwords are refused: secrets Azure generates and returns once, from the generateCredentials action, which no Azure Service Operator or aso-extensions kind performs; whether a component may hold one is the builder's decision",gap
 azure,avm-res-containerregistry-registry,sku,string,yes,,
 azure,avm-res-containerregistry-registry,tags,map(string),yes,,
 azure,avm-res-containerregistry-registry,timeouts,"object({create, delete, read, update})",no,Azure Service Operator has no per-request timeouts; Bundt sets a component's time limit,by-design
@@ -4466,14 +4466,14 @@ azure,avm-res-web-site,all_child_resources_inherit_tags,bool,yes,,
 azure,avm-res-web-site,always_ready,"map(object({instance_count, name}))",yes,,
 azure,avm-res-web-site,app_service_active_slot,"object({overwrite_network_config, slot_key})",no,"a slot swap is an action (POST Microsoft.Web/sites/slotsswap), which no Azure Service Operator or aso-extensions kind performs",gap
 azure,avm-res-web-site,app_settings,map(string),yes,,
-azure,avm-res-web-site,application_insights_connection_string,string,no,a secret value (the module marks it sensitive); how a component supplies one is the builder's decision,not-ported
-azure,avm-res-web-site,application_insights_key,string,no,a secret value (the module marks it sensitive); how a component supplies one is the builder's decision,not-ported
+azure,avm-res-web-site,application_insights_connection_string,string,no,"a secret value (the module marks it sensitive) the module writes into the APPLICATIONINSIGHTS_CONNECTION_STRING app setting: ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference (docs/secrets.md)",gap
+azure,avm-res-web-site,application_insights_key,string,no,"a secret value (the module marks it sensitive) the module writes into the APPINSIGHTS_INSTRUMENTATIONKEY app setting: ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference (docs/secrets.md)",gap
 azure,avm-res-web-site,auth_settings,"object({active_directory, additional_login_parameters, allowed_external_redirect_urls, default_provider, enabled, facebook, +9})",no,"Microsoft.Web/sites/config (authsettings) has no Azure Service Operator or aso-extensions kind (it has a PUT and no GET; aso-extensions plan.md §8 Q13); the module writes it only without auth_settings_v2, which is mapped",gap
 azure,avm-res-web-site,auth_settings_v2,"object({auth_enabled, config_file_path, excluded_paths, forward_proxy_convention, forward_proxy_custom_host_header_name, forward_proxy_custom_proto_header_name, +8})",yes,,
 azure,avm-res-web-site,auto_generated_domain_name_label_scope,string,yes,,
 azure,avm-res-web-site,backup,"map(object({enabled, name, schedule, storage_account_url}))",no,"Microsoft.Web/sites/config (backup) has no Azure Service Operator or aso-extensions kind (its storage_account_url is a SAS URL, a secret, as well)",gap
 azure,avm-res-web-site,builtin_logging_enabled,bool,yes,,
-azure,avm-res-web-site,bundle_version,string,no,"only a Logic App reads it (the extension bundle's version), and kind logicapp is refused; accepted at its default",not-ported
+azure,avm-res-web-site,bundle_version,string,no,"only a Logic App reads it (the extension bundle's version), and kind logicapp is refused (a gap: the module writes the storage account key into its app settings); accepted at its default",gap
 azure,avm-res-web-site,certificates,"map(object({host_names, key_vault_id, key_vault_secret_name, name, password, pfx_blob, +1}))",yes,,
 azure,avm-res-web-site,client_affinity_enabled,bool,yes,,
 azure,avm-res-web-site,client_affinity_partitioning_enabled,bool,yes,,
@@ -4481,14 +4481,14 @@ azure,avm-res-web-site,client_affinity_proxy_enabled,bool,yes,,
 azure,avm-res-web-site,client_certificate_enabled,bool,yes,,
 azure,avm-res-web-site,client_certificate_exclusion_paths,string,yes,,
 azure,avm-res-web-site,client_certificate_mode,string,yes,,
-azure,avm-res-web-site,connection_strings,"map(object({name, type, value}))",no,a connection string's value is a secret (ASO's siteConfig.connectionStrings takes it in plain text); how a component supplies one is the builder's decision,not-ported
+azure,avm-res-web-site,connection_strings,"map(object({name, type, value}))",no,"a connection string's value is a secret: ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference (docs/secrets.md)",gap
 azure,avm-res-web-site,container_size,number,yes,,
 azure,avm-res-web-site,content_share_force_disabled,bool,yes,,
-azure,avm-res-web-site,custom_domains,"map(object({certificate_key, hostname, ssl_state, thumbprint}))",partial,"accepted as aso-extensions SitesHostNameBinding with a thumbprint, but certificate_key is refused: the binding takes the certificate's thumbprint, which Azure computes when it makes the certificate and a render cannot read",not-ported
+azure,avm-res-web-site,custom_domains,"map(object({certificate_key, hostname, ssl_state, thumbprint}))",partial,"accepted as aso-extensions SitesHostNameBinding with a thumbprint, but certificate_key is refused: the binding takes the certificate's thumbprint, which Azure computes when it makes the certificate, and the kind has no field that reads it from the certificate (no thumbprintFromConfig), so a render cannot wire it",gap
 azure,avm-res-web-site,daily_memory_time_quota,number,yes,,
 azure,avm-res-web-site,dapr_config,"object({app_id, app_port, enable_api_logging, enabled, http_max_request_size, http_read_buffer_size, +1})",yes,,
 azure,avm-res-web-site,delete_empty_service_plan,bool,partial,"accepted as true (the default, Azure's) only; ASO deletes a site without the deleteEmptyServerFarm query parameter",gap
-azure,avm-res-web-site,deployment_slots,"map(object({app_settings, auto_generated_domain_name_label_scope, client_affinity_enabled, client_affinity_partitioning_enabled, client_affinity_proxy_enabled, client_certificate_enabled, +43}))",partial,"accepted as aso-extensions SitesSlot and SitesSlotsHostNameBinding, but a slot's ftp_publish_basic_authentication_enabled and webdeploy_publish_basic_authentication_enabled must be true (false writes a slot's basicPublishingCredentialsPolicies object, which has no kind: aso-extensions' policies are the site's), and its connection_strings (secret values in plain text), zip_deploy_file (application code), site_config.application_insights_* (secret values) and custom_domains.*.certificate_key (a thumbprint Azure computes) are refused",not-ported
+azure,avm-res-web-site,deployment_slots,"map(object({app_settings, auto_generated_domain_name_label_scope, client_affinity_enabled, client_affinity_partitioning_enabled, client_affinity_proxy_enabled, client_certificate_enabled, +43}))",partial,"accepted as aso-extensions SitesSlot and SitesSlotsHostNameBinding, but a slot's ftp_publish_basic_authentication_enabled and webdeploy_publish_basic_authentication_enabled must be true (false writes a slot's basicPublishingCredentialsPolicies object, which has no kind: aso-extensions' policies are the site's), its connection_strings and site_config.application_insights_* are refused (secret values the kind takes only in plain text; no kind takes them as a Secret reference), its custom_domains.*.certificate_key (SitesSlotsHostNameBinding takes the thumbprint Azure computes, with no field that reads it from the certificate) and its zip_deploy_file (application code, by design)",gap
 azure,avm-res-web-site,deployment_slots_inherit_lock,bool,yes,,
 azure,avm-res-web-site,diagnostic_settings,"map(object({event_hub_authorization_rule_resource_id, event_hub_name, log_analytics_destination_type, logs, marketplace_partner_resource_id, metrics, +3}))",yes,,
 azure,avm-res-web-site,dns_configuration,"object({dns_alt_server, dns_max_cache_timeout, dns_retry_attempt_count, dns_retry_attempt_timeout, dns_servers})",yes,,
@@ -4508,11 +4508,11 @@ azure,avm-res-web-site,ignore_body_changes,"object({authorization_locks, authori
 azure,avm-res-web-site,instance_memory_in_mb,number,yes,,
 azure,avm-res-web-site,ip_mode,string,yes,,
 azure,avm-res-web-site,key_vault_reference_identity,string,yes,,
-azure,avm-res-web-site,kind,string,partial,"webapp and functionapp are accepted; logicapp is refused: the module writes the storage account's access key into the AzureWebJobsStorage and WEBSITE_CONTENTAZUREFILECONNECTIONSTRING app settings (a secret value, the builder's decision)",not-ported
+azure,avm-res-web-site,kind,string,partial,"webapp and functionapp are accepted; logicapp is refused: the module always writes the storage account's access key into the AzureWebJobsStorage (and WEBSITE_CONTENTAZUREFILECONNECTIONSTRING) app settings, and ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference (docs/secrets.md)",gap
 azure,avm-res-web-site,location,string,yes,,
 azure,avm-res-web-site,lock,"object({kind, name})",yes,,
-azure,avm-res-web-site,logic_app_node_version,string,no,"only a Logic App reads it (WEBSITE_NODE_DEFAULT_VERSION), and kind logicapp is refused; accepted at its default",not-ported
-azure,avm-res-web-site,logic_app_runtime_version,string,no,"only a Logic App reads it (FUNCTIONS_EXTENSION_VERSION), and kind logicapp is refused; accepted at its default",not-ported
+azure,avm-res-web-site,logic_app_node_version,string,no,"only a Logic App reads it (WEBSITE_NODE_DEFAULT_VERSION), and kind logicapp is refused (a gap: the module writes the storage account key into its app settings); accepted at its default",gap
+azure,avm-res-web-site,logic_app_runtime_version,string,no,"only a Logic App reads it (FUNCTIONS_EXTENSION_VERSION), and kind logicapp is refused (a gap: the module writes the storage account key into its app settings); accepted at its default",gap
 azure,avm-res-web-site,logs,"map(object({application_logs, detailed_error_messages, failed_requests_tracing, http_logs}))",yes,,
 azure,avm-res-web-site,manage_connection_strings,bool,yes,,
 azure,avm-res-web-site,managed_environment_id,string,yes,,
@@ -4533,15 +4533,15 @@ azure,avm-res-web-site,role_assignments,"map(object({condition, condition_versio
 azure,avm-res-web-site,scm_publish_basic_authentication_enabled,bool,yes,,
 azure,avm-res-web-site,scm_site_also_stopped,bool,yes,,
 azure,avm-res-web-site,service_plan_resource_id,string,yes,,
-azure,avm-res-web-site,site_config,"object({always_on, api_definition_url, api_management_api_id, app_command_line, app_scale_limit, application_insights_connection_string, +59})",partial,"accepted, but application_insights_connection_string and application_insights_key are refused: the Application Insights connection string and key, which the module marks sensitive at the root (a secret value, the builder's decision)",not-ported
-azure,avm-res-web-site,slot_sensitive_app_settings,map(map(string)),no,secret values (the module marks them sensitive); how a component supplies one is the builder's decision,not-ported
+azure,avm-res-web-site,site_config,"object({always_on, api_definition_url, api_management_api_id, app_command_line, app_scale_limit, application_insights_connection_string, +59})",partial,"accepted, but application_insights_connection_string and application_insights_key are refused: the Application Insights connection string and key, which the module marks sensitive at the root and writes into app settings: ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference (docs/secrets.md)",gap
+azure,avm-res-web-site,slot_sensitive_app_settings,map(map(string)),no,"secret values (the module marks them sensitive) the module writes into a slot's app settings: ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference (docs/secrets.md)",gap
 azure,avm-res-web-site,slots_storage_shares_to_mount_sensitive_values,map(string),yes,,
 azure,avm-res-web-site,ssh_enabled,bool,yes,,
 azure,avm-res-web-site,sticky_settings,"map(object({app_setting_names, connection_string_names}))",yes,,
-azure,avm-res-web-site,storage_account_access_key,string,no,a secret value (the module marks it sensitive) the module writes into the AzureWebJobsStorage connection string; how a component supplies one is the builder's decision. Use storage_uses_managed_identity,not-ported
+azure,avm-res-web-site,storage_account_access_key,string,no,"a secret value (the module marks it sensitive) the module writes into the AzureWebJobsStorage app setting: ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference (docs/secrets.md). Use storage_uses_managed_identity",gap
 azure,avm-res-web-site,storage_account_name,string,yes,,
 azure,avm-res-web-site,storage_account_required,bool,yes,,
-azure,avm-res-web-site,storage_account_share_name,string,no,"only a Logic App reads it (WEBSITE_CONTENTSHARE beside a connection string with the account key), and kind logicapp is refused",not-ported
+azure,avm-res-web-site,storage_account_share_name,string,no,"only a Logic App reads it (WEBSITE_CONTENTSHARE beside a connection string with the account key), and kind logicapp is refused (a gap: the module writes the storage account key into its app settings)",gap
 azure,avm-res-web-site,storage_authentication_type,string,yes,,
 azure,avm-res-web-site,storage_container_endpoint,string,yes,,
 azure,avm-res-web-site,storage_container_type,string,yes,,
@@ -4551,7 +4551,7 @@ azure,avm-res-web-site,storage_user_assigned_identity_id,string,yes,,
 azure,avm-res-web-site,storage_uses_managed_identity,bool,yes,,
 azure,avm-res-web-site,tags,map(string),yes,,
 azure,avm-res-web-site,timeouts,"object({create, delete, read, update})",no,Azure Service Operator has no per-request timeouts; Bundt sets a component's time limit,by-design
-azure,avm-res-web-site,use_extension_bundle,bool,no,"only a Logic App reads it, and kind logicapp is refused; accepted at its default (true)",not-ported
+azure,avm-res-web-site,use_extension_bundle,bool,no,"only a Logic App reads it, and kind logicapp is refused (a gap: the module writes the storage account key into its app settings); accepted at its default (true)",gap
 azure,avm-res-web-site,virtual_network_backup_restore_enabled,bool,yes,,
 azure,avm-res-web-site,virtual_network_subnet_id,string,yes,,
 azure,avm-res-web-site,vnet_application_traffic_enabled,bool,yes,,

@@ -1,5 +1,6 @@
 # An existing peer gateway and router: only the HA VPN gateway is made,
-# and the route policies (allow_alpha) go on the named router.
+# and the route policies (allow_alpha) and the tunnel's interface and peer
+# go on the named router; the tunnel goes to the existing peer gateway.
 allow_alpha: true
 project_id: my-project
 region: europe-west8
@@ -14,3 +15,12 @@ router_config:
     export:
       type: EXPORT
       terms: [{priority: 1, match: {expression: "true"}, actions: []}]
+tunnels:
+  remote-0:
+    bgp_peer: {address: 169.254.1.2, asn: 64513}
+    bgp_session_range: 169.254.1.1/30
+    vpn_gateway_interface: 0
+    ike_version: 1
+    router: ignored-as-in-fabric
+    peer_gateway_id: ignored-as-in-fabric
+    shared_secret: {secretName: vpn-ipsec, key: shared-secret}

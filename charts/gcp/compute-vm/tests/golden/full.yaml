@@ -1,0 +1,506 @@
+---
+# Source: compute-vm/templates/disks.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeDisk
+metadata:
+  name: full-boot
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    disk_name: "boot"
+    disk_type: "hyperdisk-balanced"
+    env: "test"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "boot_disk"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "full-boot"
+  location: "europe-west8-b"
+  imageRef:
+    external: "projects/debian-cloud/global/images/family/debian-12"
+  type: "hyperdisk-balanced"
+  size: 50
+  provisionedIops: 3000
+  provisionedThroughput: 140
+  diskEncryptionKey:
+    kmsKeyRef:
+      external: "projects/my-project/locations/europe-west8/keyRings/kr/cryptoKeys/k"
+---
+# Source: compute-vm/templates/disks.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeDisk
+metadata:
+  name: full-disk-data
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    disk_name: "data"
+    disk_type: "pd-ssd"
+    env: "test"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "disk:data"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "full-data"
+  location: "europe-west8-b"
+  type: "pd-ssd"
+  size: 100
+  diskEncryptionKey:
+    kmsKeyRef:
+      external: "projects/my-project/locations/europe-west8/keyRings/kr/cryptoKeys/k"
+---
+# Source: compute-vm/templates/disks.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeDisk
+metadata:
+  name: full-disk-repd
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    disk_name: "full-repd"
+    disk_type: "pd-balanced"
+    env: "test"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "disk:repd"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "full-repd"
+  location: "europe-west8"
+  replicaZones: ["europe-west8-b", "europe-west8-c"]
+  type: "pd-balanced"
+  size: 200
+  snapshotRef:
+    external: "projects/my-project/global/snapshots/snap-1"
+  diskEncryptionKey:
+    kmsKeyRef:
+      external: "projects/my-project/locations/europe-west8/keyRings/kr/cryptoKeys/k"
+---
+# Source: compute-vm/templates/resource-policies.yaml
+apiVersion: compute.gcp.hfl.dev/v1beta1
+kind: ComputeDiskResourcePolicyAttachment
+metadata:
+  name: full-boot-snapshot-daily
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "boot_snapshot:daily"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "full-daily"
+  projectRef:
+    external: "my-project"
+  zone: "europe-west8-b"
+  diskRef:
+    name: full-boot
+---
+# Source: compute-vm/templates/resource-policies.yaml
+apiVersion: compute.gcp.hfl.dev/v1beta1
+kind: ComputeDiskResourcePolicyAttachment
+metadata:
+  name: full-disk-data-snapshot-daily
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "disk_snapshot:data-daily"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "full-daily"
+  projectRef:
+    external: "my-project"
+  zone: "europe-west8-b"
+  diskRef:
+    name: full-disk-data
+---
+# Source: compute-vm/templates/resource-policies.yaml
+apiVersion: compute.gcp.hfl.dev/v1beta1
+kind: ComputeDiskResourcePolicyAttachment
+metadata:
+  name: full-disk-data-snapshot-external-policy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "disk_snapshot:data-external-policy"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "external-policy"
+  projectRef:
+    external: "my-project"
+  zone: "europe-west8-b"
+  diskRef:
+    name: full-disk-data
+---
+# Source: compute-vm/templates/instance.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeInstance
+metadata:
+  name: full
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "instance"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "full"
+  zone: "europe-west8-b"
+  machineType: "n1-standard-4"
+  hostname: "full.example.internal"
+  description: "A test VM."
+  tags: ["ssh","http-server"]
+  minCpuPlatform: "Intel Cascade Lake"
+  canIpForward: true
+  deletionProtection: true
+  enableDisplay: true
+  metadata:
+    - key: "enable-oslogin"
+      value: "TRUE"
+    - key: "serial-port-enable"
+      value: "1"
+  metadataStartupScript: "#!/bin/bash\necho hello"
+  resourcePolicies:
+    - external: "projects/my-project/regions/europe-west8/resourcePolicies/placement"
+    - name: full-schedule
+  advancedMachineFeatures:
+    enableNestedVirtualization: true
+    threadsPerCore: 1
+    visibleCoreCount: 2
+  attachedDisk:
+    - deviceName: "full-repd"
+      mode: "READ_ONLY"
+      sourceDiskRef:
+        name: full-disk-repd
+    - deviceName: "data"
+      mode: "READ_WRITE"
+      sourceDiskRef:
+        name: full-disk-data
+    - deviceName: "legacy"
+      mode: "READ_WRITE"
+      sourceDiskRef:
+        external: "projects/my-project/zones/europe-west8-b/disks/legacy-disk"
+  bootDisk:
+    autoDelete: false
+    sourceDiskRef:
+      name: full-boot
+    kmsKeyRef:
+      external: "projects/my-project/locations/europe-west8/keyRings/kr/cryptoKeys/k"
+  confidentialInstanceConfig:
+    enableConfidentialCompute: true
+  networkInterface:
+    - networkRef:
+        external: "projects/my-project/global/networks/vpc"
+      subnetworkRef:
+        external: "projects/my-project/regions/europe-west8/subnetworks/subnet"
+      networkIp: "10.0.0.10"
+      nicType: "GVNIC"
+      stackType: "IPV4_IPV6"
+      queueCount: 2
+      accessConfig:
+        - {"natIpRef":{"external":"34.1.2.3"},"networkTier":"PREMIUM"}
+      ipv6AccessConfig:
+        - networkTier: PREMIUM
+      aliasIpRange:
+        - subnetworkRangeName: "pods"
+          ipCidrRange: "10.16.0.0/24"
+    - networkRef:
+        external: "projects/my-project/global/networks/vpc-2"
+      subnetworkRef:
+        external: "projects/my-project/regions/europe-west8/subnetworks/subnet-2"
+  networkPerformanceConfig:
+    totalEgressBandwidthTier: "TIER_1"
+  scheduling:
+    automaticRestart: false
+    instanceTerminationAction: "STOP"
+    onHostMaintenance: "TERMINATE"
+    preemptible: true
+    provisioningModel: "SPOT"
+    minNodeCpus: 2
+    maxRunDuration:
+      seconds: 3600
+    localSsdRecoveryTimeout:
+      seconds: 600
+      nanos: 0
+    nodeAffinities:
+      - value:
+          key: "compute.googleapis.com/node-group-name"
+          operator: IN
+          values: ["group-1"]
+      - value:
+          key: "workload"
+          operator: NOT_IN
+          values: ["batch"]
+  scratchDisk:
+    - interface: "NVME"
+      size: 375
+    - interface: "NVME"
+      size: 375
+  serviceAccount:
+    serviceAccountRef:
+      name: full-sa
+    scopes: ["https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+  shieldedInstanceConfig:
+    enableSecureBoot: false
+    enableVtpm: true
+    enableIntegrityMonitoring: true
+  params:
+    resourceManagerTags: {"tagKeys/1234":"tagValues/5678"}
+  guestAccelerator:
+    - type: "nvidia-tesla-t4"
+      count: 1
+---
+# Source: compute-vm/templates/main.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeInstanceGroup
+metadata:
+  name: full-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "group"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "full"
+  zone: "europe-west8-b"
+  description: "A test VM."
+  networkRef:
+    external: "projects/my-project/global/networks/vpc"
+  instances:
+    - name: full
+  namedPort:
+    - name: "http"
+      port: 80
+    - name: "https"
+      port: 443
+---
+# Source: compute-vm/templates/resource-policies.yaml
+apiVersion: compute.gcp.hfl.dev/v1beta1
+kind: ComputeRegionDiskResourcePolicyAttachment
+metadata:
+  name: full-disk-repd-snapshot-daily
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "disk_snapshot:repd-daily"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "full-daily"
+  projectRef:
+    external: "my-project"
+  region: "europe-west8"
+  diskRef:
+    name: full-disk-repd
+---
+# Source: compute-vm/templates/resource-policies.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeResourcePolicy
+metadata:
+  name: full-schedule
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "instance_schedule"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "full"
+  region: "europe-west8"
+  description: "Schedule policy for full."
+  instanceSchedulePolicy:
+    timeZone: "Europe/Rome"
+    vmStartSchedule:
+      schedule: "0 8 * * *"
+    vmStopSchedule:
+      schedule: "0 18 * * *"
+---
+# Source: compute-vm/templates/resource-policies.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeResourcePolicy
+metadata:
+  name: full-snapshot-daily
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "snapshot_schedule:daily"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "full-daily"
+  region: "europe-west8"
+  description: "Schedule policy daily for full."
+  snapshotSchedulePolicy:
+    schedule:
+      dailySchedule:
+        daysInCycle: 1
+        startTime: "03:00"
+    retentionPolicy:
+      maxRetentionDays: 7
+      onSourceDiskDelete: "APPLY_RETENTION_POLICY"
+    snapshotProperties:
+      labels: {"kind":"daily"}
+      storageLocations: ["eu"]
+      guestFlush: true
+---
+# Source: compute-vm/templates/resource-policies.yaml
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeResourcePolicy
+metadata:
+  name: full-snapshot-weekly
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "snapshot_schedule:weekly"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "full-weekly"
+  region: "europe-west8"
+  description: "Weekly snapshots."
+  snapshotSchedulePolicy:
+    schedule:
+      weeklySchedule:
+        dayOfWeeks:
+          - day: "MONDAY"
+            startTime: "04:00"
+          - day: "THURSDAY"
+            startTime: "04:00"
+---
+# Source: compute-vm/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: full-iap-iam-roles-iap-tunnelresourceaccessor-7d087867
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "iap_iam:roles/iap.tunnelResourceAccessor"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/iap_tunnel/zones/europe-west8-b/instances/full
+    kind: IAPTunnelInstance
+  role: "roles/iap.tunnelResourceAccessor"
+  members:
+    - "group:ops@example.com"
+---
+# Source: compute-vm/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: full-iap-iam-binding-dev
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "iap_iam_binding:dev"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/iap_tunnel/zones/europe-west8-b/instances/full
+    kind: IAPTunnelInstance
+  role: "roles/iap.tunnelResourceAccessor"
+  members:
+    - "group:dev@example.com"
+  condition:
+    title: "office-hours"
+    expression: "request.time.getHours(\"Europe/Rome\") < 18"
+---
+# Source: compute-vm/templates/main.yaml
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPartialPolicy
+metadata:
+  name: full-iam
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "iam"
+spec:
+  resourceRef:
+    apiVersion: compute.cnrm.cloud.google.com/v1beta1
+    kind: ComputeInstance
+    name: full
+  bindings:
+    - role: "roles/compute.instanceAdmin.v1"
+      members:
+        - member: "group:admins@example.com"
+---
+# Source: compute-vm/templates/main.yaml
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMServiceAccount
+metadata:
+  name: full-sa
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: compute-vm
+    app.kubernetes.io/version: "0.1.0"
+    env: "test"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "service_account"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceID: "tf-vm-full"
+  displayName: "Terraform VM full."

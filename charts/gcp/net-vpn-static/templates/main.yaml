@@ -8,14 +8,19 @@ google_compute_vpn_gateway.gateway: a ComputeTargetVPNGateway;
 google_compute_address.gateway (gateway_address_create): its external
 ComputeAddress, vpn-<name>; google_compute_forwarding_rule.esp, .udp_500
 and .udp_4500: the three ComputeForwardingRules that send ESP, UDP 500 and
-UDP 4500 on that address to the gateway. google_compute_vpn_tunnel.tunnels
-and google_compute_route.route (one per tunnel and remote range) are not
-rendered: tunnels is refused (README.md), so there are no tunnels to route
-through, as in fabric with tunnels empty.
+UDP 4500 on that address to the gateway. google_compute_vpn_tunnel.tunnels:
+a ComputeVPNTunnel per tunnel, its shared secret a reference to a
+Kubernetes Secret (docs/secrets.md); google_compute_route.route: a
+ComputeRoute per tunnel and remote range, through that tunnel.
 */ -}}
 {{- $v := .Values }}
 {{- include "kcc.names" (list $ (list "gateway" "address")) }}
-{{- include "kcc.unsupported" (list $ "tunnels" $v.tunnels "a tunnel's shared secret would be in the rendered manifest, and the chart does not take one from a Kubernetes Secret yet (README.md, \"Values\"); ComputeVPNTunnel has no cipherSuite field") }}
+{{- range $k, $t := $v.tunnels }}
+{{- include "kcc.unsupported" (list $ (printf "tunnels.%s.cipher_suite" $k) $t.cipher_suite "ComputeVPNTunnel has no cipherSuite field") }}
+{{- if kindIs "invalid" $t.shared_secret }}
+{{- fail (printf "net-vpn-static: tunnels.%s.shared_secret is required: fabric would generate one (random_id), and the catalog never generates a secret; give a reference to a Kubernetes Secret, {secretName, key} (docs/secrets.md)" $k) }}
+{{- end }}
+{{- end }}
 {{- $abandon := include "kcc.abandon" . }}
 {{- $network := trimPrefix "https://www.googleapis.com/compute/beta/" (trimPrefix "https://www.googleapis.com/compute/v1/" $v.network) }}
 {{- $gwName := include "kcc.resourceName" (list $ "gateway" "VPN gateway" $v.name 63 "letter") }}
@@ -65,4 +70,41 @@ spec:
   target:
     targetVPNGatewayRef:
       name: {{ include "kcc.name" (list $.Release.Name) }}
+{{- end }}
+{{- range $key := keys ($v.tunnels | default dict) | sortAlpha }}
+{{- $t := index $v.tunnels $key }}
+{{- $tunnel := include "kcc.name" (list $.Release.Name "tunnel" $key) }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeVPNTunnel
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" $tunnel "id" (printf "tunnel:%s" $key) "project" $v.project_id "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "kcc.cloudName" (list $ "VPN tunnel" (printf "%s-%s" $v.name $key) 63 "letter") | quote }}
+  region: {{ $v.region | quote }}
+  targetVPNGatewayRef:
+    name: {{ include "kcc.name" (list $.Release.Name) }}
+  peerIp: {{ $t.peer_ip | quote }}
+  localTrafficSelector: {{ toJson $t.traffic_selectors.local }}
+  remoteTrafficSelector: {{ toJson $t.traffic_selectors.remote }}
+  ikeVersion: {{ ternary 2 $t.ike_version (kindIs "invalid" $t.ike_version) | int64 }}
+  sharedSecret: {{ include "kcc.secretRef" (list $ (printf "tunnels.%s.shared_secret" $key) $t.shared_secret) }}
+{{- /* fabric's route_pairs: one route per tunnel and remote range, keyed
+<tunnel>-<the range's numbers joined by "-">. */}}
+{{- range $range := $v.remote_ranges | default list }}
+{{- $rk := printf "%s-%s" $key (join "-" (regexFindAll "[0-9]+" $range -1)) }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeRoute
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "route" $rk)) "id" (printf "route:%s" $rk) "project" $v.project_id "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "kcc.cloudName" (list $ "route" (printf "vpn-%s-%s" $v.name $rk) 63 "letter") | quote }}
+  networkRef:
+    external: {{ $network | quote }}
+  destRange: {{ $range | quote }}
+  priority: {{ ternary 1000 $v.route_priority (kindIs "invalid" $v.route_priority) | int64 }}
+  nextHopVPNTunnelRef:
+    name: {{ $tunnel }}
+{{- end }}
 {{- end }}

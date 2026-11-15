@@ -1,6 +1,7 @@
-# The module README's example, without its tunnels (which the chart
-# refuses): the HA VPN gateway on two VLAN attachments, an external peer
-# gateway with two interfaces, and the router.
+# The module README's example: the HA VPN gateway on two VLAN attachments,
+# an external peer gateway with two interfaces, the router, and two tunnels
+# with their router interfaces and BGP peers, the shared secret a
+# reference to a Kubernetes Secret (docs/secrets.md).
 project_id: my-project
 region: europe-west8
 network: projects/my-project/global/networks/my-network
@@ -12,3 +13,19 @@ peer_gateway_config:
   create: true
   interfaces: [172.16.0.1, 172.16.0.2]
 router_config: {asn: 64514}
+tunnels:
+  remote-0:
+    bgp_peer: {address: 169.254.1.2, asn: 64513}
+    bgp_session_range: 169.254.1.1/30
+    peer_external_gateway_interface: 0
+    vpn_gateway_interface: 0
+    shared_secret: {secretName: vpn-ipsec, key: shared-secret}
+  remote-1:
+    bgp_peer:
+      address: 169.254.2.2
+      asn: 64513
+      custom_advertise: {all_subnets: true, all_vpc_subnets: false, all_peer_vpc_subnets: false, ip_ranges: {}}
+    bgp_session_range: 169.254.2.1/30
+    peer_external_gateway_interface: 1
+    vpn_gateway_interface: 1
+    shared_secret: {secretName: vpn-ipsec, key: shared-secret}

@@ -1,0 +1,8 @@
+# expect: compute-vm: machine_features_config.enable_turbo_mode is not supported
+project_id: my-project
+zone: europe-west8-b
+name: test
+network_interfaces:
+  - network: projects/my-project/global/networks/vpc
+    subnetwork: projects/my-project/regions/europe-west8/subnetworks/subnet
+machine_features_config: {enable_turbo_mode: true}

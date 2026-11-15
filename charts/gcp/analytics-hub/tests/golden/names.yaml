@@ -1,0 +1,54 @@
+---
+# Source: analytics-hub/templates/main.yaml
+apiVersion: bigqueryanalyticshub.cnrm.cloud.google.com/v1beta1
+kind: BigQueryAnalyticsHubDataExchange
+metadata:
+  name: names
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: analytics-hub
+    app.kubernetes.io/version: "0.1.0"
+    environment: "dev"
+    hfl.dev/environment: "dev"
+    hfl.dev/team: "shop"
+    team: "shop"
+  annotations:
+    hfl.dev/id: "data_exchange"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "shop_dev_exchange"
+  displayName: "shop_dev_exchange"
+---
+# Source: analytics-hub/templates/main.yaml
+apiVersion: bigqueryanalyticshub.cnrm.cloud.google.com/v1beta1
+kind: BigQueryAnalyticsHubListing
+metadata:
+  name: names-listing-orders
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: analytics-hub
+    app.kubernetes.io/version: "0.1.0"
+    environment: "dev"
+    hfl.dev/environment: "dev"
+    hfl.dev/team: "shop"
+    team: "shop"
+  annotations:
+    hfl.dev/id: "listing:orders"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  dataExchangeRef:
+    name: names
+  resourceID: "orders"
+  displayName: "orders"
+  source:
+    bigQueryDatasetSource:
+      datasetRef:
+        external: "projects/my-project/datasets/orders"

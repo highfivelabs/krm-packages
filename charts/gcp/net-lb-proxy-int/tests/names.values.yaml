@@ -1,0 +1,13 @@
+# Every names key, labels and tags, as Bundt passes them (docs/design.md,
+# "Names, labels and tags").
+name: tcp-app
+project_id: my-project
+region: europe-west1
+names: {backendService: shop-dev-bs, healthCheck: shop-dev-hc, targetProxy: shop-dev-tp}
+labels: {hfl.dev/team: shop, env: dev}
+tags: {cost-center: web}
+backend_service_config:
+  backends: [{group: projects/my-project/zones/europe-west1-b/instanceGroups/my-ig}]
+vpc_config:
+  network: projects/my-project/global/networks/my-vpc
+  subnetwork: projects/my-project/regions/europe-west1/subnetworks/my-subnet

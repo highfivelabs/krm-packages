@@ -1,0 +1,96 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/bigquery-connection/main.tf
+(v60.0.0), Copyright 2025 Google LLC, Apache-2.0.
+
+google_bigquery_connection.connection: one BigQueryConnectionConnection
+(Config Connector, v1beta1) with the one connection type connection_config
+sets. cloud_sql's credential is a Kubernetes Secret (secretRef), never a
+username and password in the manifest. IAM is in iam.yaml.
+*/ -}}
+{{- $v := .Values }}
+{{- include "kcc.unsupported" (list $ "context" $v.context "use Bundt expressions (${...}) and valueFrom in the component's inputs instead") }}
+{{- include "kcc.unsupported" (list $ "encryption_key" $v.encryption_key "BigQueryConnectionConnection has no kmsKeyName field") }}
+{{- include "kcc.names" (list $ (list "connection")) }}
+{{- $abandon := include "kcc.abandon" . }}
+{{- $cc := $v.connection_config | default dict }}
+---
+apiVersion: bigqueryconnection.cnrm.cloud.google.com/v1beta1
+kind: BigQueryConnectionConnection
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" .Release.Name "id" "connection" "project" $v.project_id "abandon" $abandon) | nindent 2 }}
+spec:
+  projectRef:
+    external: {{ $v.project_id | quote }}
+  location: {{ $v.location | quote }}
+  resourceID: {{ include "bqConnection.name" . | quote }}
+  {{- with $v.friendly_name }}
+  friendlyName: {{ . | quote }}
+  {{- end }}
+  {{- with $v.description }}
+  description: {{ . | quote }}
+  {{- end }}
+  {{- with $cc.cloud_sql }}
+  {{- $cred := .credential | default dict }}
+  {{- if or $cred.username $cred.password }}
+  {{- fail (printf "%s: connection_config.cloud_sql.credential's username and password are not supported: they would be in the rendered manifest; BigQueryConnectionConnection takes them from a Kubernetes Secret: set credential.secret_name to a Secret of type kubernetes.io/basic-auth holding username and password (docs/gcp-inventory.md, \"Gaps\")" $.Chart.Name) }}
+  {{- end }}
+  {{- if not $cred.secret_name }}
+  {{- fail (printf "%s: connection_config.cloud_sql.credential.secret_name is required: the Kubernetes Secret (kubernetes.io/basic-auth) holding the Cloud SQL username and password" $.Chart.Name) }}
+  {{- end }}
+  cloudSQL:
+    instanceRef:
+      external: {{ .instance_id | quote }}
+    databaseRef:
+      external: {{ .database | quote }}
+    type: {{ .type | quote }}
+    credential:
+      secretRef:
+        name: {{ $cred.secret_name | quote }}
+  {{- end }}
+  {{- with $cc.aws }}
+  aws:
+    accessRole:
+      iamRoleID: {{ .access_role.iam_role_id | quote }}
+  {{- end }}
+  {{- with $cc.azure }}
+  azure:
+    customerTenantID: {{ .customer_tenant_id | quote }}
+    {{- with .federated_application_client_id }}
+    federatedApplicationClientID: {{ . | quote }}
+    {{- end }}
+  {{- end }}
+  {{- with $cc.cloud_spanner }}
+  cloudSpanner:
+    databaseRef:
+      external: {{ .database | quote }}
+    {{- if not (kindIs "invalid" .use_parallelism) }}
+    useParallelism: {{ .use_parallelism }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .use_data_boost) }}
+    useDataBoost: {{ .use_data_boost }}
+    {{- end }}
+    {{- if not (kindIs "invalid" .max_parallelism) }}
+    maxParallelism: {{ .max_parallelism }}
+    {{- end }}
+    {{- with .database_role }}
+    databaseRole: {{ . | quote }}
+    {{- end }}
+  {{- end }}
+  {{- if and (hasKey $cc "cloud_resource") (not (kindIs "invalid" $cc.cloud_resource)) }}
+  cloudResource: {}
+  {{- end }}
+  {{- with $cc.spark }}
+  spark:
+    {{- with .metastore_service_config }}
+    metastoreService:
+      metastoreServiceRef:
+        external: {{ .metastore_service | quote }}
+    {{- end }}
+    {{- with .spark_history_server_config }}
+    sparkHistoryServer:
+      dataprocClusterRef:
+        external: {{ .dataproc_cluster | quote }}
+    {{- end }}
+  {{- end }}

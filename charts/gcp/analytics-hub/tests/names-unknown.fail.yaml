@@ -1,0 +1,5 @@
+# expect: names: Additional property listing is not allowed
+project_id: my-project
+region: europe-west1
+name: x
+names: {listing: x}

@@ -1,0 +1,38 @@
+# fabric's README, "Multiple forwarding rules" and an existing health
+# check: two rules on their own ports, one IPv6 without global access, one
+# on a reserved address, and a PSC service attachment on the second.
+name: ilb-test
+project_id: my-project
+region: europe-west1
+description: A TCP proxy.
+health_check: projects/my-project/regions/europe-west1/healthChecks/existing
+forwarding_rules_config:
+  "": {port: 443}
+  v6: {ipv6: true, global_access: false, port: 8443, description: IPv6.}
+  reserved: {name: ilb-reserved, address: 10.0.0.20}
+backend_service_config:
+  name: ilb-test-bs
+  description: The backend.
+  affinity_cookie_ttl_sec: 60
+  connection_draining_timeout_sec: 10
+  port_name: tcp
+  session_affinity: CLIENT_IP
+  timeout_sec: 30
+  log_config: {enable: true, sample_rate: 0.5}
+  backends:
+    - {group: ig, balancing_mode: CONNECTION, max_connections: {per_instance: 100}}
+group_configs:
+  ig:
+    zone: europe-west1-b
+    instances: [projects/my-project/zones/europe-west1-b/instances/vm-a]
+    named_ports: {tcp: 443}
+service_attachment:
+  forwarding_rule: v6
+  nat_subnets: [projects/my-project/regions/europe-west1/subnetworks/psc-nat]
+  automatic_connection: true
+  consumer_accept_lists: {other-project: 10}
+  consumer_reject_lists: [bad-project]
+  enable_proxy_protocol: false
+vpc_config:
+  network: projects/my-project/global/networks/my-vpc
+  subnetwork: projects/my-project/regions/europe-west1/subnetworks/my-subnet

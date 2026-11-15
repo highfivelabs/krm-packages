@@ -1,4 +1,4 @@
-# expect: tunnels is not supported
+# expect: net-vpn-static: tunnels.remote-0.shared_secret takes a reference to a Kubernetes Secret, {secretName, key}, never the secret's value
 project_id: p
 region: europe-west1
 network: projects/p/global/networks/n

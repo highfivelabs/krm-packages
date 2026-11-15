@@ -1,0 +1,1477 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "compute-vm values (fabric compute-vm v60.0.0)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "network_interfaces",
+    "project_id",
+    "zone"
+  ],
+  "properties": {
+    "labels": {
+      "description": "fabric's instance labels; as every chart's labels, Kubernetes labels on every object (an unprefixed key is also a Google Cloud label).",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 63
+      }
+    },
+    "namePrefix": {
+      "description": "Optional convenience (not a Terraform variable): <namePrefix>- in front of every derived name. A DNS label. Empty changes nothing.",
+      "type": "string",
+      "pattern": "^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+    },
+    "names": {
+      "description": "Cloud names in full (not Terraform variables; docs/design.md, \"Names, labels and tags\"): the instance's, the unmanaged group's, the instance schedule policy's, the created service account's ID and the instance template's base name. A name set here takes no prefix.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "instance": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63,
+          "pattern": "^[a-z]([-a-z0-9]*[a-z0-9])?$"
+        },
+        "group": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63,
+          "pattern": "^[a-z]([-a-z0-9]*[a-z0-9])?$"
+        },
+        "instanceSchedule": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63,
+          "pattern": "^[a-z]([-a-z0-9]*[a-z0-9])?$"
+        },
+        "serviceAccount": {
+          "type": "string",
+          "minLength": 6,
+          "maxLength": 30,
+          "pattern": "^[a-z]([-a-z0-9]*[a-z0-9])?$"
+        },
+        "template": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 54,
+          "pattern": "^[a-z]([-a-z0-9]*[a-z0-9])?$"
+        }
+      }
+    },
+    "tags": {
+      "description": "fabric's network tags (a list), or, as every chart's tags, cloud labels (a map) on every resource that takes them.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z]([a-z0-9_-]{0,61}[a-z0-9])?$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^([a-z0-9]([a-z0-9_-]{0,61}[a-z0-9])?)?$"
+          }
+        }
+      ]
+    },
+    "allow_alpha": {
+      "description": "Accept features that need an alpha (v1alpha1) Config Connector kind.",
+      "type": "boolean"
+    },
+    "attached_disks": {
+      "description": "Additional disks. Source type is one of 'image' (zonal disks in vms and template), 'snapshot' (vm), 'existing', and null.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "auto_delete": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "device_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "force_attach": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "position": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "READ_WRITE",
+              "READ_ONLY",
+              null
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "initialize_params": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "replica_zone": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "size": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "type": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "hyperdisk": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "provisioned_iops": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "provisioned_throughput": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "storage_pool": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "snapshot_schedule": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "source": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "attach": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "image": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "snapshot": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "boot_disk": {
+      "description": "Boot disk properties.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "architecture": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "ARM64",
+            "X86_64",
+            null
+          ]
+        },
+        "auto_delete": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "force_attach": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "snapshot_schedule": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "initialize_params": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "size": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "type": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "hyperdisk": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "provisioned_iops": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "provisioned_throughput": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "storage_pool": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "source": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "attach": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "disk": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "image": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "snapshot": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "use_independent_disk": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "can_ip_forward": {
+      "description": "Enable IP forwarding.",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "confidential_compute": {
+      "description": "Confidential Compute configuration. Set to 'SEV' or 'SEV_SNP' to enable.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "SEV",
+        "SEV_SNP",
+        null
+      ]
+    },
+    "context": {
+      "description": "Not supported: use Bundt's ${...} expressions and valueFrom instead.",
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "create_template": {
+      "description": "Create instance template instead of instances. Defaults to a global template; regional (an alpha kind not ported yet) is refused.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "regional": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "deletion_policy": {
+      "description": "Not a fabric variable: DELETE (default) or ABANDON; PREVENT is refused.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "DELETE",
+        "ABANDON",
+        "PREVENT",
+        null
+      ]
+    },
+    "description": {
+      "description": "Description of a Compute Instance.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "enable_display": {
+      "description": "Enable virtual display on the instances.",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "encryption": {
+      "description": "Encryption options. disk_encryption_key_raw is refused: the key would be in the rendered manifest.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "encrypt_boot": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "disk_encryption_key_raw": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kms_key_self_link": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "gpu": {
+      "description": "GPU information. Based on https://cloud.google.com/compute/docs/gpus.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "type": "number"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "nvidia-tesla-a100",
+            "nvidia-tesla-p100",
+            "nvidia-tesla-p100-vws",
+            "nvidia-tesla-v100",
+            "nvidia-tesla-p4",
+            "nvidia-tesla-p4-vws",
+            "nvidia-tesla-t4",
+            "nvidia-tesla-t4-vws",
+            "nvidia-l4",
+            "nvidia-l4-vws",
+            "nvidia-a100-80gb",
+            "nvidia-h100-80gb",
+            "nvidia-h100-mega-80gb",
+            "nvidia-h200-141gb"
+          ]
+        }
+      },
+      "required": [
+        "count",
+        "type"
+      ]
+    },
+    "group": {
+      "description": "Instance group configuration: named_ports makes an unmanaged group; membership (joining an existing group) is refused.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "membership": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "named_ports": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "hostname": {
+      "description": "Instance FQDN name.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "iam": {
+      "description": "IAM bindings in {ROLE => [MEMBERS]} format.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "iap_tunnel_iam": {
+      "description": "IAP tunnel IAM bindings in {ROLE => [MEMBERS]} format.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "iap_tunnel_iam_bindings": {
+      "description": "Authoritative IAP tunnel IAM bindings in {KEY => {role = ROLE, members = [], condition = {}}}. Keys are arbitrary.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "role": {
+            "type": "string"
+          },
+          "condition": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "expression": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "expression",
+              "title"
+            ]
+          }
+        },
+        "required": [
+          "members",
+          "role"
+        ]
+      }
+    },
+    "iap_tunnel_iam_bindings_additive": {
+      "description": "Individual additive IAP tunnel IAM bindings. Keys are arbitrary. IAMMember is alpha: needs allow_alpha.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "member": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "condition": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "expression": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "expression",
+              "title"
+            ]
+          }
+        }
+      }
+    },
+    "instance_schedule": {
+      "description": "Assign or create and assign an instance schedule policy. An instance schedule must contain at least one schedule.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "active": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expiration_time": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "start_time": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "timezone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vm_start": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vm_stop": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "required": [
+            "vm_start"
+          ],
+          "properties": {
+            "vm_start": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "required": [
+            "vm_stop"
+          ],
+          "properties": {
+            "vm_stop": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "kms_autokeys": {
+      "description": "Not supported: no disk or instance can reference a KMSKeyHandle, whose key is known only after apply.",
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "lifecycle_config": {
+      "description": "Instance lifecycle and operational configurations. key_revocation_action_type and graceful_shutdown are refused.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "allow_stopping_for_update": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "deletion_protection": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "key_revocation_action_type": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "NONE",
+            "STOP",
+            null
+          ]
+        },
+        "graceful_shutdown": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "max_duration_secs": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "machine_features_config": {
+      "description": "Machine-level configuration. enable_turbo_mode, enable_uefi_networking and performance_monitoring_unit are refused.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "enable_nested_virtualization": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "enable_turbo_mode": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "enable_uefi_networking": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "performance_monitoring_unit": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "ARCHITECTURAL",
+            "ENHANCED",
+            "STANDARD",
+            null
+          ]
+        },
+        "threads_per_core": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "visible_core_count": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "machine_type": {
+      "description": "Machine type.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "metadata": {
+      "description": "Instance metadata.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "metadata_startup_script": {
+      "description": "Instance startup script.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "min_cpu_platform": {
+      "description": "Minimum CPU platform.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name": {
+      "description": "Instance name.",
+      "type": "string",
+      "minLength": 1
+    },
+    "network_attached_interfaces": {
+      "description": "Network interfaces using network attachments (templates only).",
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "network_interfaces": {
+      "description": "Network interfaces configuration. Use self links for Shared VPC, set addresses to null if not needed.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "network": {
+            "type": "string"
+          },
+          "subnetwork": {
+            "type": "string"
+          },
+          "alias_ips": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "nat": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "network_tier": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "STANDARD",
+              "PREMIUM",
+              null
+            ]
+          },
+          "nic_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "stack_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "queue_count": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "internal_ipv6_prefix_length": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "external_ipv6": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "addresses": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "internal": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "external": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "network",
+          "subnetwork"
+        ]
+      }
+    },
+    "network_performance_tier": {
+      "description": "Network performance total egress bandwidth tier.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "DEFAULT",
+        "TIER_1",
+        null
+      ]
+    },
+    "network_tag_bindings": {
+      "description": "Not supported: a tag binding names the instance's numeric ID, known only after apply.",
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "project_id": {
+      "description": "Project id.",
+      "type": "string",
+      "minLength": 1
+    },
+    "project_number": {
+      "description": "Project number. fabric uses it only in tag bindings, which are refused.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resource_policies": {
+      "description": "Resource policies to attach to the instance or template.",
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "scheduling_config": {
+      "description": "Scheduling configuration for the instance.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "automatic_restart": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "maintenance_interval": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "min_node_cpus": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "on_host_maintenance": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provisioning_model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "termination_action": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "STOP",
+            "DELETE",
+            null
+          ]
+        },
+        "local_ssd_recovery_timeout": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "nanos": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "seconds": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "seconds"
+          ]
+        },
+        "max_run_duration": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "nanos": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "seconds": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "seconds"
+          ]
+        },
+        "node_affinities": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "values": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "in": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "values"
+            ]
+          }
+        }
+      }
+    },
+    "scratch_disks": {
+      "description": "Scratch disks configuration.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "type": "number"
+        },
+        "interface": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "NVME",
+            "SCSI",
+            null
+          ]
+        },
+        "size": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "count"
+      ]
+    },
+    "service_account": {
+      "description": "Service account email and scopes. {} is the Compute default service account, auto_create makes one, null attaches none.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "auto_create": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scopes": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "shielded_config": {
+      "description": "Shielded VM configuration of the instances.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "enable_secure_boot": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "enable_vtpm": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "enable_integrity_monitoring": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "snapshot_schedules": {
+      "description": "Snapshot schedule resource policies that can be attached to disks. Schedule must contain exactly one of daily, hourly, or weekly schedule.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "schedule": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "daily": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "days_in_cycle": {
+                    "type": "number"
+                  },
+                  "start_time": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "days_in_cycle",
+                  "start_time"
+                ]
+              },
+              "hourly": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "hours_in_cycle": {
+                    "type": "number"
+                  },
+                  "start_time": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "hours_in_cycle",
+                  "start_time"
+                ]
+              },
+              "weekly": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "day": {
+                      "type": "string"
+                    },
+                    "start_time": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "day",
+                    "start_time"
+                  ]
+                }
+              }
+            },
+            "oneOf": [
+              {
+                "required": [
+                  "daily"
+                ],
+                "properties": {
+                  "daily": {
+                    "type": "object"
+                  },
+                  "hourly": {
+                    "type": "null"
+                  },
+                  "weekly": {
+                    "type": "null"
+                  }
+                }
+              },
+              {
+                "required": [
+                  "hourly"
+                ],
+                "properties": {
+                  "hourly": {
+                    "type": "object"
+                  },
+                  "daily": {
+                    "type": "null"
+                  },
+                  "weekly": {
+                    "type": "null"
+                  }
+                }
+              },
+              {
+                "required": [
+                  "weekly"
+                ],
+                "properties": {
+                  "weekly": {
+                    "type": "array"
+                  },
+                  "daily": {
+                    "type": "null"
+                  },
+                  "hourly": {
+                    "type": "null"
+                  }
+                }
+              }
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "retention_policy": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "max_retention_days": {
+                "type": "number"
+              },
+              "on_source_disk_delete_keep": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "max_retention_days"
+            ]
+          },
+          "snapshot_properties": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "chain_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "guest_flush": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "labels": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "storage_locations": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "schedule"
+        ]
+      }
+    },
+    "tag_bindings": {
+      "description": "Not supported: a tag binding names the instance's or disk's numeric ID, known only after apply.",
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "tag_bindings_immutable": {
+      "description": "Immutable resource manager tag bindings, in tagKeys/id => tagValues/id format.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "propertyNames": {
+        "pattern": "^tagKeys/"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^tagValues/"
+      }
+    },
+    "tpu_config": {
+      "description": "Not supported: TPUVirtualMachine and TPUQueuedResource are alpha and not ported yet.",
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "zone": {
+      "description": "Compute zone.",
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

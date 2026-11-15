@@ -1,0 +1,65 @@
+# Applied to the fake cloud by hack/mock-apply.sh: a regional forwarding
+# rule in a subnet (tests/mock.needs.yaml makes the network and subnet),
+# an HTTP proxy and a URL map with a host rule and a path matcher, four
+# backend services (a hybrid NEG with one endpoint, an instance group, a
+# serverless NEG, an internet NEG; the API refuses groups and NEGs in one
+# service), a regional and a global health check.
+name: catalog-mock-ralb
+project_id: mock-project
+region: us-central1
+labels: {env: test}
+vpc_config:
+  network: projects/mock-project/global/networks/catalog-mock-ralb-net
+  subnetwork: projects/mock-project/regions/us-central1/subnetworks/catalog-mock-ralb-sn
+group_configs:
+  a: {zone: us-central1-a, named_ports: {http: 80}}
+neg_configs:
+  hybrid:
+    hybrid:
+      zone: us-central1-b
+      endpoints:
+        e1: {ip_address: 10.23.1.5, port: 80}
+  run:
+    cloudrun:
+      region: us-central1
+      target_service: {name: hello}
+  web:
+    internet: {region: us-central1}
+health_check_configs:
+  default:
+    is_regional: true
+    http: {port_specification: USE_SERVING_PORT, request_path: /healthz}
+  tcp:
+    tcp: {port: 80}
+backend_service_configs:
+  default:
+    backends:
+      - {group: hybrid, balancing_mode: RATE, max_rate: {per_endpoint: 100}}
+  groups:
+    port_name: http
+    health_checks: [tcp]
+    backends:
+      - {group: a}
+  run:
+    health_checks: []
+    backends:
+      - {group: run}
+  web:
+    health_checks: []
+    backends:
+      - {group: web}
+urlmap_config:
+  default_service: default
+  host_rules:
+    - hosts: ["*"]
+      path_matcher: main
+  path_matchers:
+    main:
+      default_service: default
+      path_rules:
+        - paths: [/groups, /groups/*]
+          service: groups
+        - paths: [/run/*]
+          service: run
+        - paths: [/web/*]
+          service: web

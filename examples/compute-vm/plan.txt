@@ -1,0 +1,15 @@
+Plan preview: the converted documents, with each chart rendered by helm template.
+Layout after specs/record/plans.md R2 (one change per object); not captured from a running Bundt.
+
+  create  Template   compute-vm 1.0.0
+  create  Stack      my-team/compute-vm  (Template compute-vm)
+  create  Instance   my-team/dev/compute-vm-dev  (Stack compute-vm, Template version 1.0.0)
+  create  Component  compute-vm-dev-web-vm  (gcp-compute-vm 0.1.0)
+            create  ComputeDisk                compute-vm-dev-web-vm-disk-data  (named web-0-data in the cloud)
+            create  ComputeDiskResourcePolicyAttachment compute-vm-dev-web-vm-disk-data-snapshot-daily  (named web-0-daily in the cloud)
+            create  ComputeInstance            compute-vm-dev-web-vm  (named web-0 in the cloud)
+            create  ComputeResourcePolicy      compute-vm-dev-web-vm-snapshot-daily  (named web-0-daily in the cloud)
+            create  IAMServiceAccount          compute-vm-dev-web-vm-sa  (named tf-vm-web-0 in the cloud)
+            outputs once Ready: external_ip, id, internal_ip, internal_ips, login_command, self_link, service_account_email, service_account_iam_email, template_name
+
+Findings: none. Approving the plan creates the documents and delivers the components.

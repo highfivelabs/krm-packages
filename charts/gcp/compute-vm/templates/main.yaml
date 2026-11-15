@@ -1,0 +1,109 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/compute-vm/main.tf (v60.0.0),
+Copyright 2024 Google LLC, Apache-2.0.
+
+google_compute_instance_iam_binding.default: the instance's iam, one
+IAMPartialPolicy (docs/design.md, "IAM").
+google_compute_instance_group.unmanaged: a ComputeInstanceGroup holding the
+instance, when group is set without membership.
+google_service_account.service_account: an IAMServiceAccount, when
+service_account.auto_create.
+google_kms_key_handle.default (kms_autokeys) and
+google_compute_instance_group_membership.unmanaged (group.membership) are
+refused, and so is every variable or field below that Config Connector
+cannot carry (README.md, "Refused").
+*/ -}}
+{{- $v := .Values }}
+{{- include "kcc.names" (list $ (list "instance" "group" "instanceSchedule" "serviceAccount" "template")) }}
+{{- $tpl := include "computeVm.isTemplate" . }}
+{{- $abandon := include "kcc.abandon" . }}
+{{- include "kcc.unsupported" (list $ "context" $v.context "Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs") }}
+{{- include "kcc.unsupported" (list $ "kms_autokeys" $v.kms_autokeys "a key handle's key is known only after apply, and neither ComputeInstance nor ComputeDisk can reference a KMSKeyHandle (gap 8): give the key in encryption.kms_key_self_link") }}
+{{- include "kcc.unsupported" (list $ "tag_bindings" $v.tag_bindings "a VM's and its disks' tag bindings name the instance's and disks' numeric IDs, known only after apply, and TagsLocationTagBinding cannot reference a ComputeInstance or ComputeDisk (gap 8); tag_bindings_immutable sets tags at creation") }}
+{{- include "kcc.unsupported" (list $ "network_tag_bindings" $v.network_tag_bindings "a VM's tag binding names the instance's numeric ID, known only after apply, and TagsLocationTagBinding cannot reference a ComputeInstance (gap 8)") }}
+{{- include "kcc.unsupported" (list $ "tpu_config" $v.tpu_config "a TPU VM is TPUVirtualMachine or TPUQueuedResource, alpha (v1alpha1) Config Connector kinds this chart does not port yet, even with allow_alpha") }}
+{{- with $v.create_template }}
+{{- include "kcc.unsupported" (list $ "create_template.regional" .regional "a regional template is config-connector-extensions' ComputeRegionInstanceTemplate (compute.gcp.hfl.dev/v1alpha1), which this chart does not port yet, even with allow_alpha: use a global template") }}
+{{- end }}
+{{- with $v.encryption }}
+{{- include "kcc.unsupported" (list $ "encryption.disk_encryption_key_raw" .disk_encryption_key_raw "a raw key given here would be in the rendered manifest; ComputeInstance and ComputeDisk take it from a Kubernetes Secret (diskEncryptionKeyRaw.valueFrom, diskEncryptionKey.rawKey.valueFrom), which the chart does not take yet (the SECV question): use kms_key_self_link") }}
+{{- end }}
+{{- with $v.group }}
+{{- include "kcc.unsupported" (list $ "group.membership" .membership "joining an existing unmanaged group: ComputeInstanceGroup owns its group's whole instance list and Config Connector has no membership kind; add the instance to the group where the group is managed") }}
+{{- end }}
+{{- with $v.lifecycle_config }}
+{{- include "kcc.unsupported" (list $ "lifecycle_config.key_revocation_action_type" .key_revocation_action_type "ComputeInstance and ComputeInstanceTemplate have no keyRevocationActionType field") }}
+{{- include "kcc.unsupported" (list $ "lifecycle_config.graceful_shutdown" .graceful_shutdown "ComputeInstance and ComputeInstanceTemplate have no scheduling.gracefulShutdown field") }}
+{{- end }}
+{{- with $v.machine_features_config }}
+{{- include "kcc.unsupported" (list $ "machine_features_config.enable_turbo_mode" .enable_turbo_mode "advancedMachineFeatures has no turboMode field") }}
+{{- if not (kindIs "invalid" .enable_uefi_networking) }}
+{{- include "kcc.unsupported" (list $ "machine_features_config.enable_uefi_networking" "set" "advancedMachineFeatures has no enableUefiNetworking field") }}
+{{- end }}
+{{- include "kcc.unsupported" (list $ "machine_features_config.performance_monitoring_unit" .performance_monitoring_unit "advancedMachineFeatures has no performanceMonitoringUnit field") }}
+{{- end }}
+{{- $boot := $v.boot_disk | default dict }}
+{{- include "kcc.unsupported" (list $ "boot_disk.architecture" $boot.architecture "ComputeInstance's initializeParams, ComputeDisk and ComputeInstanceTemplate's disk have no architecture field (the image's architecture applies)") }}
+{{- if not (kindIs "invalid" $boot.force_attach) }}
+{{- include "kcc.unsupported" (list $ "boot_disk.force_attach" "set" "ComputeInstance's bootDisk has no forceAttach field") }}
+{{- end }}
+{{- range $k, $d := ($v.attached_disks | default dict) }}
+{{- if not (kindIs "invalid" $d.force_attach) }}
+{{- include "kcc.unsupported" (list $ (printf "attached_disks.%s.force_attach" $k) "set" "ComputeInstance's attachedDisk has no forceAttach field") }}
+{{- end }}
+{{- end }}
+{{- if $tpl }}
+{{- include "kcc.unsupported" (list $ "tag_bindings_immutable" (and $tpl $v.tag_bindings_immutable) "with create_template: ComputeInstanceTemplate has no resourceManagerTags field") }}
+{{- include "kcc.unsupported" (list $ "iam" $v.iam "with create_template: instance IAM needs an instance, and a template makes none") }}
+{{- include "kcc.unsupported" (list $ "iap_tunnel_iam" $v.iap_tunnel_iam "with create_template: IAP tunnel IAM needs an instance, and a template makes none") }}
+{{- include "kcc.unsupported" (list $ "iap_tunnel_iam_bindings" $v.iap_tunnel_iam_bindings "with create_template: IAP tunnel IAM needs an instance, and a template makes none") }}
+{{- include "kcc.unsupported" (list $ "iap_tunnel_iam_bindings_additive" $v.iap_tunnel_iam_bindings_additive "with create_template: IAP tunnel IAM needs an instance, and a template makes none") }}
+{{- include "kcc.unsupported" (list $ "boot_disk.snapshot_schedule" $boot.snapshot_schedule "with create_template: a snapshot schedule attaches to a disk, and a template makes none") }}
+{{- range $k, $d := ($v.attached_disks | default dict) }}
+{{- include "kcc.unsupported" (list $ (printf "attached_disks.%s.snapshot_schedule" $k) $d.snapshot_schedule "with create_template: a snapshot schedule attaches to a disk, and a template makes none") }}
+{{- end }}
+{{- else }}
+{{- include "kcc.unsupported" (list $ "network_attached_interfaces" $v.network_attached_interfaces "ComputeInstance's networkInterface has no networkAttachment field (ComputeInstanceTemplate's has: use create_template)") }}
+{{- end }}
+{{- $sa := include "computeVm.sa" . | fromJson }}
+{{- if $sa.created }}
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMServiceAccount
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list .Release.Name "sa")) "id" "service_account" "project" $v.project_id "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "computeVm.saId" . | quote }}
+  displayName: {{ printf "Terraform VM %s." $v.name | quote }}
+{{- end }}
+{{- if and (not $tpl) (kindIs "map" $v.group) }}
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeInstanceGroup
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list .Release.Name "group")) "id" "group" "project" $v.project_id "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "computeVm.sameName" (list $ "group") | quote }}
+  zone: {{ $v.zone | quote }}
+  {{- if not (kindIs "invalid" $v.description) }}
+  description: {{ $v.description | quote }}
+  {{- end }}
+  {{- with $v.network_interfaces }}
+  networkRef:
+    external: {{ (first .).network | quote }}
+  {{- end }}
+  instances:
+    - name: {{ include "kcc.name" (list .Release.Name) }}
+  {{- with $v.group.named_ports }}
+  namedPort:
+    {{- range $n := keys . | sortAlpha }}
+    - name: {{ $n | quote }}
+      port: {{ int64 (index $v.group.named_ports $n) }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- if not $tpl }}
+{{- include "kcc.iam" (dict "root" $ "base" .Release.Name "idPrefix" "" "resourceRef" (dict "apiVersion" "compute.cnrm.cloud.google.com/v1beta1" "kind" "ComputeInstance" "name" (include "kcc.name" (list .Release.Name))) "v" (dict "iam" $v.iam)) }}
+{{- end }}

@@ -1,0 +1,4 @@
+# expect: forwarding_rules_config..ports: Array must have at most 1 items
+name: lb
+project_id: my-project
+forwarding_rules_config: {"": {ports: [80, 8080]}}

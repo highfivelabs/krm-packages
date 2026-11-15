@@ -1,0 +1,285 @@
+---
+# Source: certificate-authority-service/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: full-iam-roles-privateca-auditor-2343383f
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: certificate-authority-service
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam:roles/privateca.auditor"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/caPools/pki
+    kind: PrivateCACAPool
+  role: "roles/privateca.auditor"
+  members:
+    - "group:auditors@example.com"
+---
+# Source: certificate-authority-service/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: full-iam-roles-privateca-certificatemanager-ab5530d3
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: certificate-authority-service
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam:roles/privateca.certificateManager"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/caPools/pki
+    kind: PrivateCACAPool
+  role: "roles/privateca.certificateManager"
+  members:
+    - "group:pki-admins@example.com"
+---
+# Source: certificate-authority-service/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: full-iam-binding-requesters
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: certificate-authority-service
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam-binding:requesters"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/caPools/pki
+    kind: PrivateCACAPool
+  role: "roles/privateca.certificateRequester"
+  members:
+    - "serviceAccount:issuer@my-project.iam.gserviceaccount.com"
+  condition:
+    title: "until-2030"
+    expression: "request.time < timestamp('2030-01-01T00:00:00Z')"
+---
+# Source: certificate-authority-service/templates/iam.yaml
+apiVersion: iam.gcp.hfl.dev/v1alpha1
+kind: IAMMember
+metadata:
+  name: full-iam-member-reader
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: certificate-authority-service
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam-member:reader"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    external: projects/my-project/locations/europe-west1/caPools/pki
+    kind: PrivateCACAPool
+  role: "roles/privateca.auditor"
+  member: "user:ada@example.com"
+---
+# Source: certificate-authority-service/templates/main.yaml
+apiVersion: privateca.cnrm.cloud.google.com/v1beta1
+kind: PrivateCACAPool
+metadata:
+  name: full
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: certificate-authority-service
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "ca_pool"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "pki"
+  tier: "ENTERPRISE"
+  publishingOptions:
+    publishCaCert: true
+    publishCrl: false
+---
+# Source: certificate-authority-service/templates/main.yaml
+apiVersion: privateca.cnrm.cloud.google.com/v1beta1
+kind: PrivateCACertificateAuthority
+metadata:
+  name: full-ca-kms
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: certificate-authority-service
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "ca:kms"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "kms"
+  caPoolRef:
+    name: full
+  type: "SELF_SIGNED"
+  lifetime: "315360000s"
+  keySpec:
+    cloudKmsKeyVersionRef:
+      external: "projects/my-project/locations/europe-west1/keyRings/pki/cryptoKeys/ca/cryptoKeyVersions/1"
+  config:
+    subjectConfig:
+      subject:
+        commonName: "test.example.com"
+        organization: "Test Example"
+    x509Config:
+      caOptions:
+        isCa: true
+      keyUsage:
+        baseKeyUsage:
+          certSign: true
+          contentCommitment: false
+          crlSign: true
+          dataEncipherment: false
+          decipherOnly: false
+          digitalSignature: false
+          encipherOnly: false
+          keyAgreement: false
+          keyEncipherment: true
+        extendedKeyUsage:
+          clientAuth: false
+          codeSigning: false
+          emailProtection: false
+          ocspSigning: false
+          serverAuth: true
+          timeStamping: false
+---
+# Source: certificate-authority-service/templates/main.yaml
+apiVersion: privateca.cnrm.cloud.google.com/v1beta1
+kind: PrivateCACertificateAuthority
+metadata:
+  name: full-ca-root
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: certificate-authority-service
+    app.kubernetes.io/version: "0.1.0"
+    purpose: "root"
+  annotations:
+    hfl.dev/id: "ca:root"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "root"
+  caPoolRef:
+    name: full
+  type: "SELF_SIGNED"
+  lifetime: "31536000s"
+  gcsBucketRef:
+    external: "my-ca-bucket"
+  keySpec:
+    algorithm: "EC_P384_SHA384"
+  config:
+    subjectConfig:
+      subject:
+        commonName: "root.example.com"
+        organization: "Example"
+        countryCode: "US"
+        locality: "Springfield"
+        organizationalUnit: "Security"
+        postalCode: "12345"
+        province: "IL"
+        streetAddress: "1 Main St"
+      subjectAltName:
+        dnsNames:
+          - "root.example.com"
+        emailAddresses:
+          - "pki@example.com"
+        ipAddresses:
+          - "10.0.0.1"
+        uris:
+          - "spiffe://example.com/root"
+    x509Config:
+      caOptions:
+        isCa: true
+      keyUsage:
+        baseKeyUsage:
+          certSign: true
+          contentCommitment: false
+          crlSign: true
+          dataEncipherment: false
+          decipherOnly: false
+          digitalSignature: true
+          encipherOnly: false
+          keyAgreement: false
+          keyEncipherment: false
+        extendedKeyUsage:
+          clientAuth: true
+          codeSigning: false
+          emailProtection: false
+          ocspSigning: false
+          serverAuth: false
+          timeStamping: false
+---
+# Source: certificate-authority-service/templates/main.yaml
+apiVersion: privateca.cnrm.cloud.google.com/v1beta1
+kind: PrivateCACertificateAuthority
+metadata:
+  name: full-ca-sub
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: certificate-authority-service
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "ca:sub"
+    cnrm.cloud.google.com/project-id: "my-project"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  projectRef:
+    external: "my-project"
+  location: "europe-west1"
+  resourceID: "sub"
+  caPoolRef:
+    name: full
+  type: "SUBORDINATE"
+  lifetime: "315360000s"
+  keySpec:
+    algorithm: "RSA_PKCS1_2048_SHA256"
+  config:
+    subjectConfig:
+      subject:
+        commonName: "test.example.com"
+        organization: "Test Example"
+    x509Config:
+      caOptions:
+        isCa: true
+      keyUsage:
+        baseKeyUsage:
+          certSign: true
+          contentCommitment: false
+          crlSign: true
+          dataEncipherment: false
+          decipherOnly: false
+          digitalSignature: false
+          encipherOnly: false
+          keyAgreement: false
+          keyEncipherment: true
+        extendedKeyUsage:
+          clientAuth: false
+          codeSigning: false
+          emailProtection: false
+          ocspSigning: false
+          serverAuth: true
+          timeStamping: false
