@@ -6,7 +6,7 @@ account, as Config Connector objects (and a config-connector-extensions
 [`modules/gke-nodepool`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/f706bc3b6166787df01402f73a96f1de57097477/modules/gke-nodepool)
 at v60.0.0 (`f706bc3b`), Apache-2.0, Copyright Google LLC. Bundt Package
 `gcp-gke-nodepool` (`package.yaml`). Checked against Config Connector
-v1.160.0 and config-connector-extensions at `89b423fe`. It pairs with a cluster made by `gke-cluster` (or any other):
+v1.160.0 and config-connector-extensions at `5c223962`. It pairs with a cluster made by `gke-cluster` (or any other):
 `cluster_name` (or `cluster_id`) names it.
 
 ## Example
@@ -47,9 +47,7 @@ Set beside the node pool: `node_config.kubelet_config.insecure_kubelet_readonly_
 `.allowed_unsafe_sysctls` have no field in `ContainerNodePool`'s
 `kubeletConfig`; when any is set the chart renders a
 `ContainerNodePoolFields` (config-connector-extensions,
-`container.gcp.hfl.dev/v1beta1`) naming the node pool by its full name
-(`resourceRef.external`: Config Connector's reference cannot resolve a
-node pool whose `clusterRef` is the cluster's bare name, as this chart's is), which sets only
+`container.gcp.hfl.dev/v1beta1`) naming the node pool, which sets only
 those kubelet fields and leaves Config Connector's. Removing it unsets
 them (GKE's defaults apply again).
 

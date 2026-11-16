@@ -1,8 +1,7 @@
-# Packet mirroring rules on a global policy (allow_alpha).
+# Packet mirroring rules on a global policy.
 name: mirror
 parent_id: my-project
 region: global
-allow_alpha: true
 security_profile_group_ids: {mirror: //networksecurity.googleapis.com/organizations/1/locations/global/securityProfileGroups/mirror}
 ingress_mirroring_rules:
   all:
