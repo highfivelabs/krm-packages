@@ -1,0 +1,12 @@
+# The module's defaults with what ACK needs: a Redis OSS replication group
+# with a primary and a replica, its subnet group, its security group with a
+# rule from the VPC, and the default slow log to CloudWatch Logs.
+replication_group_id: sessions
+node_type: cache.t4g.small
+engine_version: "7.1"
+num_cache_clusters: 2
+subnet_ids: [subnet-0123456789abcdef0, subnet-0123456789abcdef1]
+vpc_id: vpc-0123456789abcdef0
+security_group_rules:
+  vpc: {cidr_ipv4: 10.0.0.0/16, description: Redis from the VPC}
+tags: {team: web}

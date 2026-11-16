@@ -1,0 +1,6 @@
+# expect: efs: policy_statements.read needs resources
+name: x
+deny_nonsecure_transport: false
+deny_nonsecure_transport_via_mount_target: false
+policy_statements:
+  read: {actions: [elasticfilesystem:ClientMount]}

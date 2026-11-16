@@ -1,0 +1,97 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "Security Group": the cache's group (aws_security_group.this) and
+its rules (aws_vpc_security_group_ingress_rule,
+aws_vpc_security_group_egress_rule, one map with each rule's type), which
+ACK keeps inline as SecurityGroup.ingressRules and egressRules, as
+charts/aws/security-group does. The replication group and cluster take it
+by reference (securityGroupRefs).
+*/ -}}
+{{- $v := .Values -}}
+{{- if and $v.create $v.create_security_group }}
+{{- $derived := (coalesce $v.security_group_name $v.cluster_id $v.replication_group_id | default "" | lower) }}
+{{- if $v.security_group_name }}{{ $derived = $v.security_group_name }}{{ end }}
+{{- $name := include "ack.resourceName" (list $ "securityGroup" "security group" $derived 255) }}
+{{- if not $name }}
+{{- fail "elasticache: the security group needs a name: set security_group_name, cluster_id or replication_group_id (or names.securityGroup); Terraform's random name would change between renders" }}
+{{- end }}
+{{- if not $v.vpc_id }}
+{{- fail "elasticache: vpc_id is required with create_security_group: true (the default): ACK's SecurityGroup needs its VPC's ID, and the chart cannot look up the account's default VPC, which Terraform takes when vpc_id is unset (docs/aws.md)" }}
+{{- end }}
+{{- $port := include "elasticache.port" $ }}
+---
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "sg")) "id" "security-group" "region" "") | nindent 2 }}
+spec:
+  name: {{ $name | quote }}
+  {{- /* Unset, the Terraform provider's default. */}}
+  description: {{ $v.security_group_description | default "Managed by Terraform" | quote }}
+  vpcID: {{ $v.vpc_id | quote }}
+{{- $rules := $v.security_group_rules | default dict }}
+{{- range $key := keys $rules | sortAlpha }}
+{{- $t := (index $rules $key | default dict).type | default "ingress" }}
+{{- if not (has $t (list "ingress" "egress")) }}
+{{- fail (printf "elasticache: security_group_rules.%s.type must be ingress or egress" $key) }}
+{{- end }}
+{{- end }}
+{{- range $dir := list "ingress" "egress" }}
+{{- $keys := list }}
+{{- range $key := keys $rules | sortAlpha }}
+{{- if eq ((index $rules $key | default dict).type | default "ingress") $dir }}{{ $keys = append $keys $key }}{{ end }}
+{{- end }}
+{{- if $keys }}
+  {{ $dir }}Rules:
+{{- range $key := $keys }}
+{{- $r := index $rules $key | default dict }}
+{{- $set := list }}
+{{- range $f := list "cidr_ipv4" "cidr_ipv6" "prefix_list_id" "referenced_security_group_id" }}
+{{- if index $r $f }}{{ $set = append $set $f }}{{ end }}
+{{- end }}
+{{- if ne (len $set) 1 }}
+{{- fail (printf "elasticache: security_group_rules.%s must set exactly one of cidr_ipv4, cidr_ipv6, prefix_list_id or referenced_security_group_id" $key) }}
+{{- end }}
+{{- /* The module: an ingress rule's ports default to the engine's port; an egress rule's to none. */}}
+{{- $from := $r.from_port }}
+{{- $to := $r.to_port }}
+{{- if eq $dir "ingress" }}
+{{- if kindIs "invalid" $from }}{{ $from = $port }}{{ end }}
+{{- if kindIs "invalid" $to }}{{ $to = $port }}{{ end }}
+{{- end }}
+{{- $desc := dict }}
+{{- with $r.description }}{{ $desc = dict "description" . }}{{ end }}
+    - ipProtocol: {{ $r.ip_protocol | default "tcp" | toString | quote }}
+{{- if not (kindIs "invalid" $from) }}
+      fromPort: {{ int64 $from }}
+{{- end }}
+{{- if not (kindIs "invalid" $to) }}
+      toPort: {{ int64 $to }}
+{{- end }}
+{{- if $r.cidr_ipv4 }}
+      ipRanges:
+        - {{ toJson (merge (dict "cidrIP" $r.cidr_ipv4) $desc) }}
+{{- else if $r.cidr_ipv6 }}
+      ipv6Ranges:
+        - {{ toJson (merge (dict "cidrIPv6" $r.cidr_ipv6) $desc) }}
+{{- else if $r.prefix_list_id }}
+      prefixListIDs:
+        - {{ toJson (merge (dict "prefixListID" $r.prefix_list_id) $desc) }}
+{{- else if eq $r.referenced_security_group_id "self" }}
+      {{- /* self: a pair without a group ID is this group (ACK fills its ID in) */}}
+      userIDGroupPairs:
+        - {{ toJson $desc }}
+{{- else }}
+      userIDGroupPairs:
+        - {{ toJson (merge (dict "groupID" $r.referenced_security_group_id) $desc) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with include "elasticache.tags" (list $ $v.security_group_tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}

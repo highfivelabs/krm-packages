@@ -1,0 +1,24 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: v2
+name: efs
+description: >-
+  An Amazon EFS file system with its policy, backup policy, replication,
+  mount targets, their security group and access points, as AWS
+  Controllers for Kubernetes (ACK) objects. A port of terraform-aws-modules'
+  efs module (its root).
+type: application
+version: 0.1.0
+# The module release this chart was ported from (UPSTREAM.md).
+appVersion: "terraform-aws-efs-v2.2.1"
+kubeVersion: ">=1.27.0-0"
+keywords: [aws, ack, efs, nfs, storage, terraform-aws-modules]
+home: https://github.com/highfivelabs/catalog
+sources:
+  - https://github.com/terraform-aws-modules/terraform-aws-efs/tree/e0ec33d8436363960395b859aff0168ce25c27a4
+annotations:
+  hfl.dev/source: terraform-aws-efs
+  hfl.dev/source-version: v2.2.1
+  hfl.dev/source-commit: e0ec33d8436363960395b859aff0168ce25c27a4
+  hfl.dev/ack-efs-controller: "v1.8.0"
+  hfl.dev/ack-ec2-controller: "v1.23.1"

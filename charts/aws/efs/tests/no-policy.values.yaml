@@ -1,0 +1,5 @@
+# attach_policy: false: no policy, so the module's transport statements
+# (true by default) do not apply; no backup policy.
+name: plain
+attach_policy: false
+create_backup_policy: false

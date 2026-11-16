@@ -1,0 +1,5 @@
+# expect: efs: bypass_policy_lockout_safety_check is not supported
+name: x
+deny_nonsecure_transport: false
+deny_nonsecure_transport_via_mount_target: false
+bypass_policy_lockout_safety_check: true

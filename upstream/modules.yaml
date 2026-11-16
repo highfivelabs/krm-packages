@@ -1760,7 +1760,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/elasticache/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-elasticache/tree/v1.11.2
-    chart: null
+    chart: charts/aws/elasticache
   - id: aws/key-pair
     cloud: aws
     module: key-pair
@@ -1816,7 +1816,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/efs/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-efs/tree/v2.2.1
-    chart: null
+    chart: charts/aws/efs
   - id: aws/vpn-gateway
     cloud: aws
     module: vpn-gateway

@@ -1,0 +1,103 @@
+---
+# Source: efs/templates/access-points.yaml
+apiVersion: efs.services.k8s.aws/v1alpha1
+kind: AccessPoint
+metadata:
+  name: basic-access-point-app
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: efs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "access-point-app"
+spec:
+  fileSystemRef:
+    from:
+      name: basic-fs
+  posixUser:
+    gid: 1000
+    uid: 1000
+  rootDirectory:
+    path: "/app"
+    creationInfo:
+      ownerGID: 1000
+      ownerUID: 1000
+      permissions: "755"
+  tags:
+    - key: "Name"
+      value: "app"
+    - key: "team"
+      value: "storage"
+---
+# Source: efs/templates/file-system.yaml
+apiVersion: efs.services.k8s.aws/v1alpha1
+kind: FileSystem
+metadata:
+  name: basic-fs
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: efs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "file-system"
+spec:
+  encrypted: true
+  policy: "{\"Statement\":[{\"Action\":[\"elasticfilesystem:ClientMount\"],\"Condition\":{\"Bool\":{\"aws:SecureTransport\":[\"true\"]}},\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam::111122223333:role/app\"]},\"Resource\":[\"*\"],\"Sid\":\"mount\"}],\"Version\":\"2012-10-17\"}"
+  backupPolicy:
+    status: ENABLED
+  tags:
+    - key: "Name"
+      value: "shared"
+    - key: "team"
+      value: "storage"
+---
+# Source: efs/templates/mount-targets.yaml
+apiVersion: efs.services.k8s.aws/v1alpha1
+kind: MountTarget
+metadata:
+  name: basic-mount-target-a
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: efs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "mount-target-a"
+spec:
+  fileSystemRef:
+    from:
+      name: basic-fs
+  subnetID: "subnet-0123456789abcdef0"
+  securityGroupRefs:
+    - from:
+        name: basic-sg
+---
+# Source: efs/templates/mount-targets.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: basic-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: efs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "security-group"
+spec:
+  name: "shared"
+  description: "Managed by Terraform"
+  vpcID: "vpc-0123456789abcdef0"
+  ingressRules:
+    - ipProtocol: "tcp"
+      fromPort: 2049
+      toPort: 2049
+      ipRanges:
+        - {"cidrIP":"10.0.0.0/16","description":"NFS from the VPC"}
+  tags:
+    - key: "Name"
+      value: "shared"
+    - key: "team"
+      value: "storage"

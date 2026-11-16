@@ -1,0 +1,81 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "File System", "File System Policy", "Backup Policy" and
+"Replication Configuration": the file system (aws_efs_file_system.this) as
+ACK's FileSystem, with the policy (aws_efs_file_system_policy.this, built
+as data.aws_iam_policy_document.policy builds it; _efs.tpl), the backup
+policy (aws_efs_backup_policy.this) and the replication configuration
+(aws_efs_replication_configuration.this) inline, as ACK keeps them.
+*/ -}}
+{{- include "ack.names" (list $ (list "securityGroup")) -}}
+{{- $v := .Values -}}
+{{- if $v.create }}
+{{- $name := $v.name | default "" }}
+{{- if $name }}{{ $name = include "ack.cloudName" (list $ "file system" $name 256) }}{{ end }}
+---
+apiVersion: efs.services.k8s.aws/v1alpha1
+kind: FileSystem
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "fs")) "id" "file-system" "region" $v.region) | nindent 2 }}
+spec:
+{{- with $v.availability_zone_name }}
+  availabilityZoneName: {{ . | quote }}
+{{- end }}
+{{- with $v.performance_mode }}
+  performanceMode: {{ . | quote }}
+{{- end }}
+  encrypted: {{ $v.encrypted }}
+{{- with $v.kms_key_arn }}
+  kmsKeyID: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.provisioned_throughput_in_mibps) }}
+  provisionedThroughputInMiBps: {{ $v.provisioned_throughput_in_mibps }}
+{{- end }}
+{{- with $v.throughput_mode }}
+  throughputMode: {{ . | quote }}
+{{- end }}
+{{- $lp := $v.lifecycle_policy | default dict }}
+{{- $lpFields := dict "transition_to_archive" "transitionToArchive" "transition_to_ia" "transitionToIA" "transition_to_primary_storage_class" "transitionToPrimaryStorageClass" }}
+{{- $set := list }}
+{{- range $k := keys $lp | sortAlpha }}{{ if not (kindIs "invalid" (index $lp $k)) }}{{ $set = append $set $k }}{{ end }}{{ end }}
+{{- if $set }}
+  {{- /* One policy per transition, in the module's (key) order. */}}
+  lifecyclePolicies:
+{{- range $k := $set }}
+    - {{ index $lpFields $k }}: {{ index $lp $k | quote }}
+{{- end }}
+{{- end }}
+{{- with $v.protection }}
+{{- if not (kindIs "invalid" .replication_overwrite) }}
+  fileSystemProtection:
+    replicationOverwriteProtection: {{ .replication_overwrite | quote }}
+{{- end }}
+{{- end }}
+{{- if $v.attach_policy }}
+{{- with include "efs.policy" $ }}
+  policy: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- if $v.create_backup_policy }}
+  backupPolicy:
+    status: {{ ternary "ENABLED" "DISABLED" $v.enable_backup_policy }}
+{{- end }}
+{{- if $v.create_replication_configuration }}
+{{- $d := $v.replication_configuration_destination }}
+{{- if not $d }}
+{{- fail "efs: replication_configuration_destination is required with create_replication_configuration: true (Terraform's destination block is required)" }}
+{{- end }}
+{{- $dest := dict }}
+{{- range $p := list (list "availability_zone_name" "availabilityZoneName") (list "file_system_id" "fileSystemID") (list "kms_key_id" "kmsKeyID") (list "region" "region") }}
+{{- with index $d (index $p 0) }}{{ $_ := set $dest (index $p 1) . }}{{ end }}
+{{- end }}
+  replicationConfiguration:
+    - {{ toJson $dest }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags (dict "Name" $name)) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}

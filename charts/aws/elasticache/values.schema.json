@@ -1,0 +1,697 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "elasticache values (terraform-aws-modules elasticache v1.11.2)",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "names": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "replicationGroup": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "cluster": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "parameterGroup": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "subnetGroup": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "securityGroup": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    "namePrefix": {
+      "type": "string",
+      "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?)?$",
+      "maxLength": 63
+    },
+    "labels": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean",
+          "null"
+        ]
+      }
+    },
+    "allow_alpha": {
+      "type": "boolean"
+    },
+    "deletion_policy": {
+      "type": "string",
+      "enum": [
+        "DELETE",
+        "ABANDON",
+        "PREVENT"
+      ]
+    },
+    "create": {
+      "type": "boolean"
+    },
+    "tags": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean",
+          "null"
+        ]
+      }
+    },
+    "create_cluster": {
+      "type": "boolean"
+    },
+    "apply_immediately": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "auto_minor_version_upgrade": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "automatic_failover_enabled": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "availability_zone": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "az_mode": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "single-az",
+        "cross-az",
+        null
+      ]
+    },
+    "cluster_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "engine": {
+      "type": "string",
+      "enum": [
+        "memcached",
+        "redis",
+        "valkey"
+      ]
+    },
+    "engine_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "final_snapshot_identifier": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ip_discovery": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "ipv4",
+        "ipv6",
+        null
+      ]
+    },
+    "log_delivery_configuration": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "destination_type": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "cloudwatch-logs",
+              "kinesis-firehose",
+              null
+            ]
+          },
+          "destination": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "log_format": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "json",
+              "text",
+              null
+            ]
+          },
+          "log_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "create_cloudwatch_log_group": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "cloudwatch_log_group_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cloudwatch_log_group_retention_in_days": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "cloudwatch_log_group_kms_key_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cloudwatch_log_group_skip_destroy": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "cloudwatch_log_group_class": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tags": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": [
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "maintenance_window": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "network_type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "ipv4",
+        "ipv6",
+        "dual_stack",
+        null
+      ]
+    },
+    "node_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "notification_topic_arn": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "num_cache_nodes": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "outpost_mode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "port": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "preferred_availability_zones": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "preferred_outpost_arn": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "security_group_ids": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "snapshot_arns": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "snapshot_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "snapshot_retention_limit": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "snapshot_window": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "transit_encryption_enabled": {
+      "type": "boolean"
+    },
+    "transit_encryption_mode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "timeouts": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "create_replication_group": {
+      "type": "boolean"
+    },
+    "auth_token": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "auth_token_update_strategy": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "at_rest_encryption_enabled": {
+      "type": "boolean"
+    },
+    "data_tiering_enabled": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "global_replication_group_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "global_replication_group_id_suffix": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "kms_key_arn": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "multi_az_enabled": {
+      "type": "boolean"
+    },
+    "num_cache_clusters": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "num_node_groups": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "preferred_cache_cluster_azs": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "replicas_per_node_group": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 5
+    },
+    "cluster_mode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "replication_group_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "security_group_names": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "user_group_ids": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "cluster_mode_enabled": {
+      "type": "boolean"
+    },
+    "create_primary_global_replication_group": {
+      "type": "boolean"
+    },
+    "create_secondary_global_replication_group": {
+      "type": "boolean"
+    },
+    "create_parameter_group": {
+      "type": "boolean"
+    },
+    "parameter_group_description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "parameter_group_family": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "parameter_group_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "parameters": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "value"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ]
+          }
+        }
+      }
+    },
+    "create_subnet_group": {
+      "type": "boolean"
+    },
+    "subnet_group_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subnet_group_description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subnet_ids": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "create_security_group": {
+      "type": "boolean"
+    },
+    "security_group_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "security_group_use_name_prefix": {
+      "type": "boolean"
+    },
+    "security_group_description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "vpc_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "security_group_rules": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "ingress",
+              "egress",
+              null
+            ]
+          },
+          "ip_protocol": {
+            "type": [
+              "string",
+              "number",
+              "null"
+            ]
+          },
+          "from_port": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "to_port": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "cidr_ipv4": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cidr_ipv6": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "prefix_list_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "referenced_security_group_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tags": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": [
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "security_group_tags": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean",
+          "null"
+        ]
+      }
+    }
+  }
+}

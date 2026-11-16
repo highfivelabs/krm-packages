@@ -1,0 +1,94 @@
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: CacheCluster
+metadata:
+  name: memcached-cluster
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "memcached"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster"
+spec:
+  cacheClusterID: "sessions-mc"
+  preferredAvailabilityZones:
+    - "us-east-1a"
+    - "us-east-1b"
+    - "us-east-1c"
+  transitEncryptionEnabled: false
+  azMode: "cross-az"
+  engine: "memcached"
+  engineVersion: "1.6.22"
+  cacheNodeType: "cache.t4g.micro"
+  numCacheNodes: 3
+  port: 11211
+  securityGroupRefs:
+    - from:
+        name: memcached-sg
+  cacheSubnetGroupRef:
+    from:
+      name: memcached-subnet-group
+  tags:
+    - key: "terraform-aws-modules"
+      value: "elasticache"
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: CacheSubnetGroup
+metadata:
+  name: memcached-subnet-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "memcached"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "subnet-group"
+spec:
+  cacheSubnetGroupName: "sessions-mc"
+  cacheSubnetGroupDescription: "ElastiCache subnet group"
+  subnetIDs:
+    - "subnet-1"
+    - "subnet-2"
+  tags:
+    - key: "terraform-aws-modules"
+      value: "elasticache"
+---
+# Source: elasticache/templates/security-group.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: memcached-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "memcached"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "security-group"
+spec:
+  name: "sessions-memcached"
+  description: "Memcached"
+  vpcID: "vpc-1"
+  ingressRules:
+    - ipProtocol: "tcp"
+      fromPort: 11211
+      toPort: 11211
+      userIDGroupPairs:
+        - {"description":"from the app","groupID":"sg-app"}
+    - ipProtocol: "tcp"
+      fromPort: 11211
+      toPort: 11211
+      userIDGroupPairs:
+        - {}
+  egressRules:
+    - ipProtocol: "-1"
+      ipRanges:
+        - {"cidrIP":"0.0.0.0/0"}
+  tags:
+    - key: "terraform-aws-modules"
+      value: "elasticache"
+    - key: "tier"
+      value: "cache"

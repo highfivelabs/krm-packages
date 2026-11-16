@@ -1,0 +1,48 @@
+# Valkey with cluster mode enabled: three shards of two replicas, Multi-AZ,
+# its own parameter group (cluster-enabled added as the module adds it), a
+# KMS key, existing groups by name and ID, the engine log to Kinesis Data
+# Firehose and the slow log to a named log group kept on delete.
+replication_group_id: Orders
+description: Orders cache
+engine: valkey
+engine_version: "8.0"
+node_type: cache.r7g.large
+cluster_mode_enabled: true
+num_node_groups: 3
+replicas_per_node_group: 2
+multi_az_enabled: true
+auto_minor_version_upgrade: true
+apply_immediately: true
+data_tiering_enabled: false
+kms_key_arn: arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+ip_discovery: ipv4
+network_type: ipv4
+maintenance_window: sun:05:00-sun:09:00
+snapshot_retention_limit: 7
+snapshot_window: 01:00-03:00
+notification_topic_arn: arn:aws:sns:us-east-1:111122223333:cache-events
+user_group_ids: [orders-users]
+preferred_cache_cluster_azs: [us-east-1a, us-east-1b]
+create_parameter_group: true
+parameter_group_family: valkey8
+parameter_group_description: Orders parameters
+parameters:
+  - {name: latency-tracking, value: "yes"}
+create_subnet_group: false
+subnet_group_name: shared-cache-subnets
+create_security_group: false
+security_group_ids: [sg-0123456789abcdef0]
+log_delivery_configuration:
+  slow-log:
+    destination_type: cloudwatch-logs
+    log_format: json
+    cloudwatch_log_group_name: orders-slow
+    cloudwatch_log_group_retention_in_days: 30
+    cloudwatch_log_group_kms_key_id: arn:aws:kms:us-east-1:111122223333:key/abcd
+    cloudwatch_log_group_skip_destroy: true
+    tags: {log: slow}
+  engine-log:
+    destination_type: kinesis-firehose
+    destination: orders-engine-log
+    log_format: text
+tags: {team: orders}

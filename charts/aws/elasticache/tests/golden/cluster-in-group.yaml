@@ -1,0 +1,94 @@
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: CacheCluster
+metadata:
+  name: cluster-in-group-cluster
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "cluster-in-group"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster"
+spec:
+  cacheClusterID: "reports-002"
+  preferredAvailabilityZone: "us-east-1b"
+  replicationGroupRef:
+    from:
+      name: cluster-in-group-replication-group
+  tags:
+    - key: "terraform-aws-modules"
+      value: "elasticache"
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: CacheSubnetGroup
+metadata:
+  name: cluster-in-group-subnet-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "cluster-in-group"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "subnet-group"
+spec:
+  cacheSubnetGroupName: "reports-002"
+  cacheSubnetGroupDescription: "ElastiCache subnet group"
+  subnetIDs:
+    - "subnet-1"
+  tags:
+    - key: "terraform-aws-modules"
+      value: "elasticache"
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: ReplicationGroup
+metadata:
+  name: cluster-in-group-replication-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "cluster-in-group"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "replication-group"
+spec:
+  replicationGroupID: "reports"
+  description: "Replication group"
+  engine: "redis"
+  cacheNodeType: "cache.t4g.small"
+  port: 6379
+  atRestEncryptionEnabled: true
+  transitEncryptionEnabled: true
+  multiAZEnabled: false
+  cacheSubnetGroupRef:
+    from:
+      name: cluster-in-group-subnet-group
+  securityGroupRefs:
+    - from:
+        name: cluster-in-group-sg
+  tags:
+    - key: "terraform-aws-modules"
+      value: "elasticache"
+---
+# Source: elasticache/templates/security-group.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: cluster-in-group-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "cluster-in-group"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "security-group"
+spec:
+  name: "reports-002"
+  description: "Managed by Terraform"
+  vpcID: "vpc-1"
+  tags:
+    - key: "terraform-aws-modules"
+      value: "elasticache"

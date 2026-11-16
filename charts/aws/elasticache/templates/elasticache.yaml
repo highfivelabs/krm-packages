@@ -1,0 +1,382 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "Parameter Group", "Subnet Group", "Replication Group", "Cluster"
+and "Cloudwatch Log Group": the parameter group
+(aws_elasticache_parameter_group.this, CacheParameterGroup), the subnet
+group (aws_elasticache_subnet_group.this, CacheSubnetGroup), the
+replication group (aws_elasticache_replication_group.this,
+ReplicationGroup), the cache cluster (aws_elasticache_cluster.this,
+CacheCluster) and the log groups (aws_cloudwatch_log_group.this,
+cloudwatchlogs/LogGroup). The replication group and cluster take the
+groups this chart makes by reference (cacheParameterGroupRef,
+cacheSubnetGroupRef, securityGroupRefs), a cluster its replication group
+(replicationGroupRef); groups the chart does not make by name or ID. The
+global replication group (aws_elasticache_global_replication_group) is
+refused (refusals.yaml).
+*/ -}}
+{{- include "ack.names" (list $ (list "replicationGroup" "cluster" "parameterGroup" "subnetGroup" "securityGroup")) -}}
+{{- $v := .Values -}}
+{{- if $v.create }}
+{{- $rel := .Release.Name }}
+{{- $base := include "elasticache.base" $ }}
+{{- $memcached := eq (toString $v.engine) "memcached" }}
+{{- $port := include "elasticache.port" $ }}
+{{- $tags := include "elasticache.tags" (list $) | fromJson }}
+{{- $inRG := not (kindIs "invalid" $v.replication_group_id) }}
+{{- $sgObj := include "ack.name" (list $rel "sg") }}
+{{- if and $v.create_security_group $v.security_group_ids }}
+{{- fail "elasticache: security_group_ids is not supported with create_security_group: true: ACK's ReplicationGroup and CacheCluster cannot take group references (the chart's group) and IDs together; set create_security_group: false and give every group's ID (docs/aws.md)" }}
+{{- end }}
+
+{{- /* Parameter Group */}}
+{{- $pgObj := "" }}
+{{- $pgName := $v.parameter_group_name | default "" }}
+{{- if $v.create_parameter_group }}
+{{- if not $v.parameter_group_family }}
+{{- fail "elasticache: parameter_group_family is required with create_parameter_group: true (redis7, valkey8, memcached1.6, ...)" }}
+{{- end }}
+{{- /* The module's name ends with a random_id; a render must not change between plans, so it is left out. */}}
+{{- $derived := $v.parameter_group_name | default (printf "%s-%s" $base (replace "." "-" $v.parameter_group_family)) | lower }}
+{{- $pgName = include "ack.resourceName" (list $ "parameterGroup" "cache parameter group" $derived 255 "letter") }}
+{{- $pgObj = include "ack.name" (list $rel "parameter-group") }}
+{{- $params := $v.parameters | default list }}
+{{- if $v.cluster_mode_enabled }}{{ $params = prepend $params (dict "name" "cluster-enabled" "value" "yes") }}{{ end }}
+---
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: CacheParameterGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $pgObj "id" "parameter-group" "region" "") | nindent 2 }}
+spec:
+  cacheParameterGroupName: {{ $pgName | quote }}
+  cacheParameterGroupFamily: {{ $v.parameter_group_family | quote }}
+  description: {{ $v.parameter_group_description | default "ElastiCache parameter group" | quote }}
+{{- with $params }}
+  parameterNameValues:
+{{- range . }}
+    - parameterName: {{ .name | quote }}
+      parameterValue: {{ .value | toString | quote }}
+{{- end }}
+{{- end }}
+{{- with $tags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* Subnet Group */}}
+{{- $sngObj := "" }}
+{{- $sngName := $v.subnet_group_name | default "" }}
+{{- if $v.create_subnet_group }}
+{{- $derived := coalesce $v.subnet_group_name $base | default "" | lower }}
+{{- $sngName = include "ack.resourceName" (list $ "subnetGroup" "cache subnet group" $derived 255) }}
+{{- if not $sngName }}
+{{- fail "elasticache: the subnet group needs a name: set subnet_group_name, cluster_id or replication_group_id (or names.subnetGroup), or create_subnet_group: false" }}
+{{- end }}
+{{- if not $v.subnet_ids }}
+{{- fail "elasticache: subnet_ids is required with create_subnet_group: true (ElastiCache needs at least one subnet)" }}
+{{- end }}
+{{- $sngObj = include "ack.name" (list $rel "subnet-group") }}
+---
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: CacheSubnetGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $sngObj "id" "subnet-group" "region" "") | nindent 2 }}
+spec:
+  cacheSubnetGroupName: {{ $sngName | quote }}
+  cacheSubnetGroupDescription: {{ $v.subnet_group_description | default "ElastiCache subnet group" | quote }}
+  subnetIDs:
+{{- range $v.subnet_ids }}
+    - {{ . | quote }}
+{{- end }}
+{{- with $tags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* Log groups */}}
+{{- $groups := include "elasticache.logGroups" $ | fromJson }}
+{{- range $key := keys $groups | sortAlpha }}
+{{- $l := index $v.log_delivery_configuration $key | default dict }}
+{{- $ann := dict }}
+{{- if $l.cloudwatch_log_group_skip_destroy }}{{ $ann = dict "services.k8s.aws/deletion-policy" "retain" }}{{ end }}
+---
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "log" $key)) "id" (printf "log-group-%s" $key) "region" "" "annotations" $ann) | nindent 2 }}
+spec:
+  name: {{ index $groups $key | quote }}
+  retentionDays: {{ int64 (ternary 14 $l.cloudwatch_log_group_retention_in_days (kindIs "invalid" $l.cloudwatch_log_group_retention_in_days)) }}
+{{- with $l.cloudwatch_log_group_kms_key_id }}
+  kmsKeyID: {{ . | quote }}
+{{- end }}
+{{- $lt := include "elasticache.tags" (list $ $l.tags) | fromJson }}
+{{- if $lt }}
+  {{- /* LogGroup takes its tags as a map */}}
+  tags:
+{{- range $k := keys $lt | sortAlpha }}
+    {{ $k | quote }}: {{ index $lt $k | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- /* Replication Group */}}
+{{- $rgObj := include "ack.name" (list $rel "replication-group") }}
+{{- if $v.create_replication_group }}
+{{- if not $v.replication_group_id }}
+{{- fail "elasticache: replication_group_id is required with create_replication_group: true (the default); for a cluster alone, set create_replication_group: false and create_cluster: true" }}
+{{- end }}
+{{- if not $v.node_type }}
+{{- fail "elasticache: node_type is required: the replication group's node type (cache.t4g.micro, ...)" }}
+{{- end }}
+{{- $rgID := include "ack.resourceName" (list $ "replicationGroup" "replication group ID" (lower $v.replication_group_id) 40 "letter") }}
+---
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: ReplicationGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $rgObj "id" "replication-group" "region" "") | nindent 2 }}
+spec:
+  replicationGroupID: {{ $rgID | quote }}
+  description: {{ $v.description | default "Replication group" | quote }}
+  engine: {{ $v.engine | quote }}
+{{- with $v.engine_version }}
+  engineVersion: {{ . | quote }}
+{{- end }}
+  cacheNodeType: {{ $v.node_type | quote }}
+  port: {{ $port }}
+  atRestEncryptionEnabled: {{ $v.at_rest_encryption_enabled }}
+{{- if and $v.at_rest_encryption_enabled $v.kms_key_arn }}
+  kmsKeyID: {{ $v.kms_key_arn | quote }}
+{{- end }}
+  transitEncryptionEnabled: {{ $v.transit_encryption_enabled }}
+{{- if not (kindIs "invalid" $v.auto_minor_version_upgrade) }}
+  autoMinorVersionUpgrade: {{ $v.auto_minor_version_upgrade }}
+{{- end }}
+{{- if or $v.multi_az_enabled $v.cluster_mode_enabled }}
+  automaticFailoverEnabled: true
+{{- else if not (kindIs "invalid" $v.automatic_failover_enabled) }}
+  automaticFailoverEnabled: {{ $v.automatic_failover_enabled }}
+{{- end }}
+  multiAZEnabled: {{ $v.multi_az_enabled }}
+{{- if not (kindIs "invalid" $v.data_tiering_enabled) }}
+  dataTieringEnabled: {{ $v.data_tiering_enabled }}
+{{- end }}
+{{- with $v.ip_discovery }}
+  ipDiscovery: {{ . | quote }}
+{{- end }}
+{{- with $v.network_type }}
+  networkType: {{ . | quote }}
+{{- end }}
+{{- with $v.maintenance_window }}
+  preferredMaintenanceWindow: {{ . | quote }}
+{{- end }}
+{{- with $v.notification_topic_arn }}
+  notificationTopicARN: {{ . | quote }}
+{{- end }}
+{{- if $v.cluster_mode_enabled }}
+{{- if not (kindIs "invalid" $v.num_node_groups) }}
+  numNodeGroups: {{ int64 $v.num_node_groups }}
+{{- end }}
+{{- else if not (kindIs "invalid" $v.num_cache_clusters) }}
+{{- if not (kindIs "invalid" $v.replicas_per_node_group) }}
+{{- fail "elasticache: num_cache_clusters conflicts with replicas_per_node_group (as in the Terraform provider)" }}
+{{- end }}
+{{- if lt (int64 $v.num_cache_clusters) 1 }}
+{{- fail "elasticache: num_cache_clusters must be at least 1" }}
+{{- end }}
+  {{- /* ACK's ReplicationGroup has no numCacheClusters: one node group, a primary and num_cache_clusters - 1 replicas. */}}
+  numNodeGroups: 1
+  replicasPerNodeGroup: {{ sub (int64 $v.num_cache_clusters) 1 }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.replicas_per_node_group) }}
+  replicasPerNodeGroup: {{ int64 $v.replicas_per_node_group }}
+{{- end }}
+{{- with $v.preferred_cache_cluster_azs }}
+  preferredCacheClusterAZs:
+{{- range . }}
+    - {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- if $pgObj }}
+  cacheParameterGroupRef:
+    from:
+      name: {{ $pgObj }}
+{{- else if $pgName }}
+  cacheParameterGroupName: {{ $pgName | quote }}
+{{- end }}
+{{- if $sngObj }}
+  cacheSubnetGroupRef:
+    from:
+      name: {{ $sngObj }}
+{{- else if $sngName }}
+  cacheSubnetGroupName: {{ $sngName | quote }}
+{{- end }}
+{{- with $v.security_group_names }}
+  cacheSecurityGroupNames:
+{{- range . }}
+    - {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- if $v.create_security_group }}
+  securityGroupRefs:
+    - from:
+        name: {{ $sgObj }}
+{{- else if $v.security_group_ids }}
+  securityGroupIDs:
+{{- range $v.security_group_ids }}
+    - {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with $v.snapshot_arns }}
+  snapshotARNs:
+{{- range . }}
+    - {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with $v.snapshot_name }}
+  snapshotName: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.snapshot_retention_limit) }}
+  snapshotRetentionLimit: {{ int64 $v.snapshot_retention_limit }}
+{{- end }}
+{{- with $v.snapshot_window }}
+  snapshotWindow: {{ . | quote }}
+{{- end }}
+{{- with $v.user_group_ids }}
+  userGroupIDs:
+{{- range . }}
+    - {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with include "elasticache.logDelivery" $ }}
+  logDeliveryConfigurations:
+{{- . | nindent 4 }}
+{{- end }}
+{{- with $tags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* Cluster */}}
+{{- if $v.create_cluster }}
+{{- if not $v.cluster_id }}
+{{- fail "elasticache: cluster_id is required with create_cluster: true" }}
+{{- end }}
+{{- $cid := include "ack.resourceName" (list $ "cluster" "cache cluster ID" (lower $v.cluster_id) 50 "letter") }}
+{{- if and (not $inRG) (not $v.node_type) }}
+{{- fail "elasticache: node_type is required: the cache cluster's node type (cache.t4g.micro, ...)" }}
+{{- end }}
+---
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: CacheCluster
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "cluster")) "id" "cluster" "region" "") | nindent 2 }}
+spec:
+  cacheClusterID: {{ $cid | quote }}
+{{- if not (kindIs "invalid" $v.auto_minor_version_upgrade) }}
+  autoMinorVersionUpgrade: {{ $v.auto_minor_version_upgrade }}
+{{- end }}
+{{- with $v.availability_zone }}
+  preferredAvailabilityZone: {{ . | quote }}
+{{- end }}
+{{- with $v.ip_discovery }}
+  ipDiscovery: {{ . | quote }}
+{{- end }}
+{{- with $v.network_type }}
+  networkType: {{ . | quote }}
+{{- end }}
+{{- with $v.outpost_mode }}
+  outpostMode: {{ . | quote }}
+{{- end }}
+{{- with $v.preferred_outpost_arn }}
+  preferredOutpostARN: {{ . | quote }}
+{{- end }}
+{{- with $v.preferred_availability_zones }}
+  preferredAvailabilityZones:
+{{- range . }}
+    - {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- if $memcached }}
+  transitEncryptionEnabled: {{ $v.transit_encryption_enabled }}
+{{- end }}
+{{- if $v.create_replication_group }}
+  replicationGroupRef:
+    from:
+      name: {{ $rgObj }}
+{{- else if $inRG }}
+  replicationGroupID: {{ lower $v.replication_group_id | quote }}
+{{- end }}
+{{- if not $inRG }}
+{{- with $v.az_mode }}
+  azMode: {{ . | quote }}
+{{- end }}
+  engine: {{ $v.engine | quote }}
+{{- with $v.engine_version }}
+  engineVersion: {{ . | quote }}
+{{- end }}
+{{- with $v.maintenance_window }}
+  preferredMaintenanceWindow: {{ . | quote }}
+{{- end }}
+  cacheNodeType: {{ $v.node_type | quote }}
+{{- with $v.notification_topic_arn }}
+  notificationTopicARN: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.num_cache_nodes) }}
+  numCacheNodes: {{ int64 $v.num_cache_nodes }}
+{{- end }}
+{{- if $pgObj }}
+  cacheParameterGroupRef:
+    from:
+      name: {{ $pgObj }}
+{{- else if $pgName }}
+  cacheParameterGroupName: {{ $pgName | quote }}
+{{- end }}
+  port: {{ $port }}
+{{- if $v.create_security_group }}
+  securityGroupRefs:
+    - from:
+        name: {{ $sgObj }}
+{{- else if $v.security_group_ids }}
+  securityGroupIDs:
+{{- range $v.security_group_ids }}
+    - {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with $v.snapshot_arns }}
+  snapshotARNs:
+{{- range . }}
+    - {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with $v.snapshot_name }}
+  snapshotName: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.snapshot_retention_limit) }}
+  snapshotRetentionLimit: {{ int64 $v.snapshot_retention_limit }}
+{{- end }}
+{{- with $v.snapshot_window }}
+  snapshotWindow: {{ . | quote }}
+{{- end }}
+{{- if $sngObj }}
+  cacheSubnetGroupRef:
+    from:
+      name: {{ $sngObj }}
+{{- else if $sngName }}
+  cacheSubnetGroupName: {{ $sngName | quote }}
+{{- end }}
+{{- with include "elasticache.logDelivery" $ }}
+  logDeliveryConfigurations:
+{{- . | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- with $tags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}

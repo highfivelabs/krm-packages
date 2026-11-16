@@ -1,0 +1,6 @@
+# expect: efs: mount_targets.a.security_groups is not supported with create_security_group: true
+name: x
+attach_policy: false
+security_group_vpc_id: vpc-1
+mount_targets:
+  a: {subnet_id: subnet-1, security_groups: [sg-1]}

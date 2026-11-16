@@ -1,0 +1,103 @@
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: CacheParameterGroup
+metadata:
+  name: cluster-mode-parameter-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "cluster-mode"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "parameter-group"
+spec:
+  cacheParameterGroupName: "orders-valkey8"
+  cacheParameterGroupFamily: "valkey8"
+  description: "Orders parameters"
+  parameterNameValues:
+    - parameterName: "cluster-enabled"
+      parameterValue: "yes"
+    - parameterName: "latency-tracking"
+      parameterValue: "yes"
+  tags:
+    - key: "team"
+      value: "orders"
+    - key: "terraform-aws-modules"
+      value: "elasticache"
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: cluster-mode-log-slow-log
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "cluster-mode"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group-slow-log"
+    services.k8s.aws/deletion-policy: "retain"
+spec:
+  name: "/aws/elasticache/orders-slow"
+  retentionDays: 30
+  kmsKeyID: "arn:aws:kms:us-east-1:111122223333:key/abcd"
+  tags:
+    "log": "slow"
+    "team": "orders"
+    "terraform-aws-modules": "elasticache"
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: ReplicationGroup
+metadata:
+  name: cluster-mode-replication-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "cluster-mode"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "replication-group"
+spec:
+  replicationGroupID: "orders"
+  description: "Orders cache"
+  engine: "valkey"
+  engineVersion: "8.0"
+  cacheNodeType: "cache.r7g.large"
+  port: 6379
+  atRestEncryptionEnabled: true
+  kmsKeyID: "arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+  transitEncryptionEnabled: true
+  autoMinorVersionUpgrade: true
+  automaticFailoverEnabled: true
+  multiAZEnabled: true
+  dataTieringEnabled: false
+  ipDiscovery: "ipv4"
+  networkType: "ipv4"
+  preferredMaintenanceWindow: "sun:05:00-sun:09:00"
+  notificationTopicARN: "arn:aws:sns:us-east-1:111122223333:cache-events"
+  numNodeGroups: 3
+  replicasPerNodeGroup: 2
+  preferredCacheClusterAZs:
+    - "us-east-1a"
+    - "us-east-1b"
+  cacheParameterGroupRef:
+    from:
+      name: cluster-mode-parameter-group
+  cacheSubnetGroupName: "shared-cache-subnets"
+  securityGroupIDs:
+    - "sg-0123456789abcdef0"
+  snapshotRetentionLimit: 7
+  snapshotWindow: "01:00-03:00"
+  userGroupIDs:
+    - "orders-users"
+  logDeliveryConfigurations:
+    - {"destinationDetails":{"kinesisFirehoseDetails":{"deliveryStream":"orders-engine-log"}},"destinationType":"kinesis-firehose","enabled":true,"logFormat":"text","logType":"engine-log"}
+    - {"destinationDetails":{"cloudWatchLogsDetails":{"logGroup":"/aws/elasticache/orders-slow"}},"destinationType":"cloudwatch-logs","enabled":true,"logFormat":"json","logType":"slow-log"}
+  tags:
+    - key: "team"
+      value: "orders"
+    - key: "terraform-aws-modules"
+      value: "elasticache"

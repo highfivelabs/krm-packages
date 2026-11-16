@@ -1,0 +1,6 @@
+# expect: elasticache: security_group_ids is not supported with create_security_group: true
+replication_group_id: x
+node_type: cache.t4g.micro
+subnet_ids: [subnet-1]
+vpc_id: vpc-1
+security_group_ids: [sg-1]

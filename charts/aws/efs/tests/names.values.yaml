@@ -1,0 +1,11 @@
+# names, labels and tags (docs/design.md, "Names, labels and tags").
+name: shared
+names: {securityGroup: shop-dev-efs-nfs}
+labels: {hfl.dev/team: shop}
+tags: {team: shop}
+attach_policy: false
+security_group_vpc_id: vpc-1
+mount_targets:
+  a: {subnet_id: subnet-1}
+access_points:
+  app: {}

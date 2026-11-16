@@ -1,0 +1,3 @@
+# expect: names: Additional property fileSystem is not allowed
+names: {fileSystem: x}
+attach_policy: false

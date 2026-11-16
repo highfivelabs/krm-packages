@@ -1,0 +1,789 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "efs values (terraform-aws-modules efs v2.2.1)",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "names": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "securityGroup": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    "namePrefix": {
+      "type": "string",
+      "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?)?$",
+      "maxLength": 63
+    },
+    "labels": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean",
+          "null"
+        ]
+      }
+    },
+    "allow_alpha": {
+      "type": "boolean"
+    },
+    "deletion_policy": {
+      "type": "string",
+      "enum": [
+        "DELETE",
+        "ABANDON",
+        "PREVENT"
+      ]
+    },
+    "create": {
+      "type": "boolean"
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "region": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tags": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean",
+          "null"
+        ]
+      }
+    },
+    "availability_zone_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "creation_token": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 64
+    },
+    "performance_mode": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "generalPurpose",
+        "maxIO",
+        null
+      ]
+    },
+    "encrypted": {
+      "type": "boolean"
+    },
+    "kms_key_arn": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "provisioned_throughput_in_mibps": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "throughput_mode": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "bursting",
+        "elastic",
+        "provisioned",
+        null
+      ]
+    },
+    "lifecycle_policy": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "transition_to_ia": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "transition_to_archive": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "transition_to_primary_storage_class": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "protection": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "replication_overwrite": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "attach_policy": {
+      "type": "boolean"
+    },
+    "bypass_policy_lockout_safety_check": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "source_policy_documents": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "override_policy_documents": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "policy_statements": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "sid": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "actions": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "not_actions": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "effect": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "Allow",
+              "Deny",
+              null
+            ]
+          },
+          "resources": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "not_resources": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "principals": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "identifiers": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "type",
+                "identifiers"
+              ]
+            }
+          },
+          "not_principals": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "identifiers": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "type",
+                "identifiers"
+              ]
+            }
+          },
+          "conditions": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "test": {
+                  "type": "string"
+                },
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": [
+                      "string",
+                      "number",
+                      "boolean"
+                    ]
+                  }
+                },
+                "variable": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "test",
+                "values",
+                "variable"
+              ]
+            }
+          },
+          "condition": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "test": {
+                  "type": "string"
+                },
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": [
+                      "string",
+                      "number",
+                      "boolean"
+                    ]
+                  }
+                },
+                "variable": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "test",
+                "values",
+                "variable"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "deny_nonsecure_transport": {
+      "type": "boolean"
+    },
+    "deny_nonsecure_transport_via_mount_target": {
+      "type": "boolean"
+    },
+    "mount_targets": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "ip_address": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ip_address_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ipv6_address": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "region": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "security_groups": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "subnet_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "subnet_id"
+        ]
+      }
+    },
+    "create_security_group": {
+      "type": "boolean"
+    },
+    "security_group_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "security_group_description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "security_group_use_name_prefix": {
+      "type": "boolean"
+    },
+    "security_group_vpc_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "security_group_ingress_rules": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cidr_ipv4": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cidr_ipv6": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "from_port": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "ip_protocol": {
+            "type": [
+              "string",
+              "number",
+              "null"
+            ]
+          },
+          "prefix_list_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "referenced_security_group_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "region": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tags": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": [
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ]
+            }
+          },
+          "to_port": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "security_group_egress_rules": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cidr_ipv4": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cidr_ipv6": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "from_port": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "ip_protocol": {
+            "type": [
+              "string",
+              "number",
+              "null"
+            ]
+          },
+          "prefix_list_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "referenced_security_group_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "region": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tags": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": [
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ]
+            }
+          },
+          "to_port": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "access_points": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tags": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": [
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ]
+            }
+          },
+          "posix_user": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "gid": {
+                "type": "integer"
+              },
+              "uid": {
+                "type": "integer"
+              },
+              "secondary_gids": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "integer"
+                }
+              }
+            },
+            "required": [
+              "gid",
+              "uid"
+            ]
+          },
+          "root_directory": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "creation_info": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "owner_gid": {
+                    "type": "integer"
+                  },
+                  "owner_uid": {
+                    "type": "integer"
+                  },
+                  "permissions": {
+                    "type": [
+                      "string",
+                      "integer"
+                    ]
+                  }
+                },
+                "required": [
+                  "owner_gid",
+                  "owner_uid",
+                  "permissions"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "create_backup_policy": {
+      "type": "boolean"
+    },
+    "enable_backup_policy": {
+      "type": "boolean"
+    },
+    "create_replication_configuration": {
+      "type": "boolean"
+    },
+    "replication_configuration_destination": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "availability_zone_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "file_system_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kms_key_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "region": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

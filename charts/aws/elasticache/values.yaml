@@ -1,0 +1,230 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values mirror the Terraform variables of terraform-aws-modules'
+# elasticache module (v1.11.2): same names, types and defaults, so a module
+# block's arguments become a values file one to one. values.schema.json
+# carries the types. A variable the chart cannot carry stays here and stops
+# the render when set (upstream.yaml lists them; README.md says why).
+
+# Names, labels and tags (docs/design.md, "Names, labels and tags"). Not
+# Terraform variables, except tags, which is the module's own.
+#
+# Names in full: {replicationGroup, cluster, parameterGroup, subnetGroup,
+# securityGroup}. A name set here takes no namePrefix. Unset, they are
+# derived as the module derives them: replication_group_id, cluster_id;
+# parameter_group_name, else <cluster_id or replication_group_id>-<family>;
+# subnet_group_name and security_group_name, else cluster_id, else
+# replication_group_id. The log groups are named after the cluster or
+# replication group.
+names: {}
+# An optional convenience: "<namePrefix>-" in front of every name the chart
+# gives (never one set under names). Empty (the default) changes nothing.
+namePrefix: ""
+# Kubernetes labels on every object. They stay in Kubernetes: ACK does not
+# copy labels to AWS (AWS tags are the module's tags variable).
+labels: {}
+# No kind here is outside ACK's released controllers; kept for the common
+# values (docs/design.md, "Alpha kinds").
+allow_alpha: false
+# DELETE (default): deleting the component deletes the cache and everything
+# with it. ABANDON keeps them (services.k8s.aws/deletion-policy: retain).
+deletion_policy: DELETE
+
+# The module's variables, in its order, with its defaults.
+
+# Determines whether resources will be created (affects all resources)
+create: true
+# A map of tags to add to all resources (the module adds
+# terraform-aws-modules = elasticache)
+tags: {}
+
+# Cluster
+
+# Determines whether an ElastiCache cluster will be created or not
+create_cluster: false
+# Whether modifications are applied immediately, or during the next
+# maintenance window
+# In part: ACK applies every change immediately; false is refused.
+apply_immediately: null
+# Whether minor engine upgrades are applied automatically
+auto_minor_version_upgrade: null
+# Whether a read-only replica is promoted automatically if the primary fails
+automatic_failover_enabled: null
+# Availability Zone for the cache cluster
+availability_zone: null
+# single-az or cross-az (Memcached)
+az_mode: null
+# Group identifier (lower-cased, as ElastiCache does)
+cluster_id: ""
+# memcached, redis or valkey
+engine: redis
+# Version number of the cache engine
+engine_version: null
+# (Redis only) Name of your final cluster snapshot
+# Not supported (gap): ACK's CacheCluster and ReplicationGroup have no field
+# for a final snapshot on delete.
+final_snapshot_identifier: null
+# ipv4 or ipv6
+ip_discovery: null
+# (Redis OSS or Valkey) Where and how to deliver the slow log or engine log,
+# by log type ({destination_type, destination, log_format, log_type,
+# create_cloudwatch_log_group, cloudwatch_log_group_name,
+# cloudwatch_log_group_retention_in_days, cloudwatch_log_group_kms_key_id,
+# cloudwatch_log_group_skip_destroy, cloudwatch_log_group_class, tags})
+# In part: cloudwatch_log_group_class is refused (ACK's LogGroup has no
+# field for it).
+log_delivery_configuration:
+  slow-log:
+    destination_type: cloudwatch-logs
+    log_format: json
+# The weekly maintenance window (ddd:hh24:mi-ddd:hh24:mi, UTC)
+maintenance_window: null
+# ipv4, ipv6 or dual_stack
+network_type: null
+# The instance class used
+node_type: null
+# ARN of an SNS topic to send ElastiCache notifications to
+notification_topic_arn: null
+# The initial number of cache nodes of the cache cluster
+num_cache_nodes: 1
+# single-outpost or cross-outpost
+outpost_mode: null
+# The port (unset: 11211 for Memcached, 6379 otherwise)
+port: null
+# The Availability Zones in which cache nodes are created
+preferred_availability_zones: []
+# The outpost ARN (required with outpost_mode)
+preferred_outpost_arn: null
+# VPC security groups associated with the cache cluster or replication group
+# In part: refused with create_security_group: true (ACK's kinds cannot take
+# group references, for the chart's group, and IDs together).
+security_group_ids: []
+# (Redis only) The ARN of a Redis RDB snapshot file in S3
+snapshot_arns: []
+# (Redis only) Name of a snapshot to restore from
+snapshot_name: null
+# (Redis only) Days to retain automatic snapshots
+snapshot_retention_limit: null
+# (Redis only) Daily snapshot window (UTC)
+snapshot_window: null
+# Enable encryption in transit
+transit_encryption_enabled: true
+# preferred or required
+# Not supported (gap): ACK's ReplicationGroup has no transitEncryptionMode
+# field.
+transit_encryption_mode: null
+# Terraform's create, update and delete timeouts for the cluster
+# Not supported (by-design): ACK retries until the cluster is synced, and
+# Bundt waits for it.
+timeouts: {}
+
+# Replication Group
+
+# Determines whether an ElastiCache replication group will be created or not
+create_replication_group: true
+# The password of a password protected server
+# Not supported (by-design): a password is never a value; ACK's
+# ReplicationGroup takes it from a Kubernetes Secret.
+auth_token: null
+# SET, ROTATE or DELETE
+# Not supported (gap): used only with auth_token, which is refused.
+auth_token_update_strategy: null
+# Whether to enable encryption at rest
+at_rest_encryption_enabled: true
+# Enables data tiering (r6gd nodes)
+data_tiering_enabled: null
+# The replication group's description (else "Replication group")
+description: null
+# The ID of the global replication group to join
+# Not supported (gap): ACK's ReplicationGroup has no field for it.
+global_replication_group_id: null
+# The ID suffix of the global replication group
+# Not supported (gap): used only with a global replication group, which is
+# refused.
+global_replication_group_id_suffix: null
+# The KMS key to encrypt at rest with
+kms_key_arn: null
+# Whether to enable Multi-AZ
+multi_az_enabled: false
+# Number of cache clusters (primary and replicas), cluster mode disabled
+# (rendered as one node group with num_cache_clusters - 1 replicas, as ACK's
+# ReplicationGroup has no numCacheClusters field)
+num_cache_clusters: null
+# Number of node groups (shards), cluster mode enabled
+num_node_groups: null
+# Availability Zones of the cache clusters, the first the primary's
+preferred_cache_cluster_azs: []
+# Number of replica nodes in each node group
+replicas_per_node_group: null
+# enabled, disabled or compatible
+# Not supported (gap): ACK's ReplicationGroup has no clusterMode field.
+cluster_mode: null
+# Replication group identifier (lower-cased, as ElastiCache does)
+replication_group_id: null
+# Names of cache security groups (EC2-Classic)
+security_group_names: []
+# User group IDs (at most one)
+user_group_ids: null
+# Whether to enable cluster mode
+cluster_mode_enabled: false
+
+# Global Replication Group
+
+# Determines whether a primary global replication group will be created
+# Not supported (gap): no GlobalReplicationGroup kind in ACK
+# (elasticache-controller pull request #237) or ack-extensions.
+create_primary_global_replication_group: false
+# Determines whether a secondary global replication group will be created
+# Not supported (gap): as create_primary_global_replication_group.
+create_secondary_global_replication_group: false
+
+# Parameter Group
+
+# Determines whether the parameter group will be created
+create_parameter_group: false
+# Its description (else "ElastiCache parameter group")
+parameter_group_description: null
+# The family of the parameter group (redis7, valkey8, memcached1.6, ...)
+parameter_group_family: ""
+# The parameter group's name (created), or an existing one's
+# Unset with create_parameter_group: <cluster_id or replication_group_id>-
+# <family>, without the module's random suffix (a render must not change
+# between plans).
+parameter_group_name: null
+# Parameters ([{name, value}])
+parameters: []
+
+# Subnet Group
+
+# Determines whether the subnet group will be created
+create_subnet_group: true
+# The subnet group's name (created), or an existing one's
+subnet_group_name: null
+# Its description (else "ElastiCache subnet group")
+subnet_group_description: null
+# VPC subnet IDs for the subnet group
+subnet_ids: []
+
+# Security Group
+
+# Determines if a security group is created
+create_security_group: true
+# Name of the security group (else cluster_id, else replication_group_id)
+security_group_name: null
+# Whether security_group_name is used as a prefix
+# In part: true (the default) names the group as given, without
+# Terraform's random suffix.
+security_group_use_name_prefix: true
+# Description of the security group created
+security_group_description: null
+# The VPC of the security group (required with it)
+vpc_id: null
+# Ingress and egress rules, by key ({type, ip_protocol, from_port, to_port,
+# cidr_ipv4, cidr_ipv6, prefix_list_id, referenced_security_group_id,
+# description, tags})
+# In part: each rule's tags are not carried (ACK keeps a group's rules
+# inline, with no per-rule tags).
+security_group_rules: {}
+# Additional tags for the security group
+security_group_tags: {}

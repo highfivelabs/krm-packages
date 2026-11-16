@@ -1,0 +1,16 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The namePrefix convention (docs/design.md, "Names, labels and tags"): the
+# replication group's and cluster's IDs, the parameter and subnet groups'
+# names (unique in the account and Region), the security group's (unique
+# in its VPC) and the log groups' (named after the cache) carry the
+# namePrefix. Every kind here is named.
+exempt: {}
+nameFields:
+  ReplicationGroup: replicationGroupID
+  CacheCluster: cacheClusterID
+  CacheParameterGroup: cacheParameterGroupName
+  CacheSubnetGroup: cacheSubnetGroupName
+  SecurityGroup: name
+  LogGroup: name

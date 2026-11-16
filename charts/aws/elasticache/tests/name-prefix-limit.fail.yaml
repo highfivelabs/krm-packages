@@ -1,0 +1,7 @@
+# expect: namePrefix "shop-dev-euw1-team-x" is 21 of them
+replication_group_id: x
+node_type: cache.t4g.micro
+subnet_ids: [subnet-1]
+vpc_id: vpc-1
+namePrefix: shop-dev-euw1-team-x
+replication_group_id: abcdefghijabcdefghijabcdefghij

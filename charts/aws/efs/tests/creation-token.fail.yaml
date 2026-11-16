@@ -1,0 +1,4 @@
+# expect: efs: creation_token is not supported
+name: x
+attach_policy: false
+creation_token: my-token

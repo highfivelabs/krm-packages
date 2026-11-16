@@ -1,0 +1,25 @@
+# The module's defaults with what ACK needs: a file system with a policy
+# whose statement names its resources (the module's two transport
+# statements name the file system's own ARN, which a render cannot know),
+# a mount target with the chart's security group, and an access point.
+name: shared
+security_group_vpc_id: vpc-0123456789abcdef0
+deny_nonsecure_transport: false
+deny_nonsecure_transport_via_mount_target: false
+policy_statements:
+  mount:
+    actions: [elasticfilesystem:ClientMount]
+    resources: ["*"]
+    principals: [{type: AWS, identifiers: [arn:aws:iam::111122223333:role/app]}]
+    condition: [{test: Bool, variable: aws:SecureTransport, values: ["true"]}]
+mount_targets:
+  a: {subnet_id: subnet-0123456789abcdef0}
+security_group_ingress_rules:
+  vpc: {cidr_ipv4: 10.0.0.0/16, description: NFS from the VPC}
+access_points:
+  app:
+    posix_user: {gid: 1000, uid: 1000}
+    root_directory:
+      path: /app
+      creation_info: {owner_gid: 1000, owner_uid: 1000, permissions: "755"}
+tags: {team: storage}
