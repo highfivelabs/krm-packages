@@ -157,6 +157,33 @@ spec:
                     secretRef:
                       external: "projects/my-project/secrets/key/versions/1"
 ---
+# Source: gke-nodepool/templates/fields.yaml
+apiVersion: container.gcp.hfl.dev/v1beta1
+kind: ContainerNodePoolFields
+metadata:
+  name: full-fields
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: gke-nodepool
+    app.kubernetes.io/version: "0.1.0"
+    env: "dev"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "nodepool-fields"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  resourceRef:
+    name: full
+  config:
+    kubeletConfig:
+      allowedUnsafeSysctls:
+      - kernel.msg*
+      - net.core.somaxconn
+      containerLogMaxFiles: 5
+      containerLogMaxSize: 50Mi
+      insecureKubeletReadonlyPortEnabled: false
+---
 # Source: gke-nodepool/templates/service-account.yaml
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMServiceAccount

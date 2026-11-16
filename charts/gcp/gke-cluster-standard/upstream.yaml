@@ -32,14 +32,14 @@ refused:
     reason: "ContainerCluster has no fleet; GKEHubMembership registers a cluster with a fleet"
   - variable: enable_addons
     kind: gap
-    reason: "accepted; agent_sandbox and stateful_ha are refused when true: ContainerCluster's addonsConfig has no agentSandboxConfig or statefulHaConfig"
+    reason: "accepted; agent_sandbox is refused when true: ContainerCluster's addonsConfig has no agentSandboxConfig (stateful_ha goes in config-connector-extensions' ContainerClusterFields)"
     partial: true
-    fields: [agent_sandbox, stateful_ha]
+    fields: [agent_sandbox]
   - variable: enable_features
     kind: gap
-    reason: "accepted; refused when set (or true): anonymous_authentication, dns.additive_vpc_scope_dns_domain, managed_opentelemetry, rbac_binding_config, secret_manager_config, secret_sync_config, which ContainerCluster has no field for"
+    reason: "accepted; refused when set (or true): dns.additive_vpc_scope_dns_domain, managed_opentelemetry, secret_sync_config, which ContainerCluster has no field for (anonymous_authentication, rbac_binding_config and secret_manager_config go in config-connector-extensions' ContainerClusterFields; secret_manager_config true needs workload_identity)"
     partial: true
-    fields: [anonymous_authentication, dns.additive_vpc_scope_dns_domain, managed_opentelemetry, rbac_binding_config, secret_manager_config, secret_sync_config]
+    fields: [dns.additive_vpc_scope_dns_domain, managed_opentelemetry, secret_sync_config]
   - variable: access_config
     kind: gap
     reason: "accepted; dns_access.enable_k8s_certs and ip_access.private_endpoint_authorized_ranges_enforcement are refused when true: ContainerCluster has no enableK8sCertsViaDns or privateEndpointEnforcementEnabled"
@@ -57,9 +57,9 @@ refused:
     fields: [kubelet_readonly_port_enabled]
   - variable: node_pool_auto_config
     kind: gap
-    reason: "accepted; kubelet_readonly_port_enabled and cgroup_mode are refused: nodePoolAutoConfig has no nodeKubeletConfig or linuxNodeConfig"
+    reason: "accepted; cgroup_mode is refused: nodePoolAutoConfig has no linuxNodeConfig (kubelet_readonly_port_enabled goes in config-connector-extensions' ContainerClusterFields)"
     partial: true
-    fields: [kubelet_readonly_port_enabled, cgroup_mode]
+    fields: [cgroup_mode]
   - variable: monitoring_config
     kind: gap
     reason: "accepted; advanced_datapath_observability.enable_relay true is refused: ContainerCluster has only the deprecated relayMode, not enableRelay"

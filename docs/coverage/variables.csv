@@ -322,8 +322,8 @@ gcp,gke-cluster-standard,context,"object({bigquery_datasets, cidr_ranges, email_
 gcp,gke-cluster-standard,default_nodepool,"object({initial_node_count, remove_pool})",yes,,
 gcp,gke-cluster-standard,deletion_protection,bool,partial,"accepted and has no effect: it is Terraform's own guard against destroy, and Config Connector has none; deletion_policy: ABANDON keeps the cluster, and a Bundt policy can block deleting it",by-design
 gcp,gke-cluster-standard,description,string,yes,,
-gcp,gke-cluster-standard,enable_addons,"object({agent_sandbox, cloudrun, config_connector, dns_cache, gce_persistent_disk_csi_driver, gcp_filestore_csi_driver, +7})",partial,accepted; agent_sandbox and stateful_ha are refused when true: ContainerCluster's addonsConfig has no agentSandboxConfig or statefulHaConfig,gap
-gcp,gke-cluster-standard,enable_features,"object({anonymous_authentication, beta_apis, binary_authorization, cilium_clusterwide_network_policy, cost_management, database_encryption, +24})",partial,"accepted; refused when set (or true): anonymous_authentication, dns.additive_vpc_scope_dns_domain, managed_opentelemetry, rbac_binding_config, secret_manager_config, secret_sync_config, which ContainerCluster has no field for",gap
+gcp,gke-cluster-standard,enable_addons,"object({agent_sandbox, cloudrun, config_connector, dns_cache, gce_persistent_disk_csi_driver, gcp_filestore_csi_driver, +7})",partial,accepted; agent_sandbox is refused when true: ContainerCluster's addonsConfig has no agentSandboxConfig (stateful_ha goes in config-connector-extensions' ContainerClusterFields),gap
+gcp,gke-cluster-standard,enable_features,"object({anonymous_authentication, beta_apis, binary_authorization, cilium_clusterwide_network_policy, cost_management, database_encryption, +24})",partial,"accepted; refused when set (or true): dns.additive_vpc_scope_dns_domain, managed_opentelemetry, secret_sync_config, which ContainerCluster has no field for (anonymous_authentication, rbac_binding_config and secret_manager_config go in config-connector-extensions' ContainerClusterFields; secret_manager_config true needs workload_identity)",gap
 gcp,gke-cluster-standard,fleet_project,string,no,ContainerCluster has no fleet; GKEHubMembership registers a cluster with a fleet,gap
 gcp,gke-cluster-standard,issue_client_certificate,bool,yes,,
 gcp,gke-cluster-standard,labels,map(string),yes,,
@@ -336,7 +336,7 @@ gcp,gke-cluster-standard,monitoring_config,"object({advanced_datapath_observabil
 gcp,gke-cluster-standard,name,string,yes,,
 gcp,gke-cluster-standard,node_config,"object({boot_disk_kms_key, k8s_labels, kubelet_readonly_port_enabled, labels, resource_manager_tags, service_account, +2})",partial,accepted; kubelet_readonly_port_enabled is refused: neither nodeConfig nor nodePoolDefaults has insecureKubeletReadonlyPortEnabled,gap
 gcp,gke-cluster-standard,node_locations,list(string),yes,,
-gcp,gke-cluster-standard,node_pool_auto_config,"object({cgroup_mode, kubelet_readonly_port_enabled, network_tags, resource_manager_tags})",partial,accepted; kubelet_readonly_port_enabled and cgroup_mode are refused: nodePoolAutoConfig has no nodeKubeletConfig or linuxNodeConfig,gap
+gcp,gke-cluster-standard,node_pool_auto_config,"object({cgroup_mode, kubelet_readonly_port_enabled, network_tags, resource_manager_tags})",partial,accepted; cgroup_mode is refused: nodePoolAutoConfig has no linuxNodeConfig (kubelet_readonly_port_enabled goes in config-connector-extensions' ContainerClusterFields),gap
 gcp,gke-cluster-standard,project_id,string,yes,,
 gcp,gke-cluster-standard,release_channel,string,yes,,
 gcp,gke-cluster-standard,vpc_config,"object({additional_ranges, disable_default_snat, disable_l4_lb_firewall_reconciliation, network, secondary_range_blocks, secondary_range_names, +2})",yes,,
@@ -346,7 +346,7 @@ gcp,gke-cluster-autopilot,context,"object({bigquery_datasets, cidr_ranges, email
 gcp,gke-cluster-autopilot,deletion_protection,bool,partial,"accepted and has no effect: it is Terraform's own guard against destroy, and Config Connector has none; deletion_policy: ABANDON keeps the cluster, and a Bundt policy can block deleting it",by-design
 gcp,gke-cluster-autopilot,description,string,yes,,
 gcp,gke-cluster-autopilot,enable_addons,"object({agent_sandbox, cloudrun, config_connector, istio, kalm})",partial,accepted; agent_sandbox is refused when true: ContainerCluster's addonsConfig has no agentSandboxConfig,gap
-gcp,gke-cluster-autopilot,enable_features,"object({allow_net_admin, anonymous_authentication, beta_apis, binary_authorization, cilium_clusterwide_network_policy, cost_management, +20})",partial,"accepted; refused when set (or true): anonymous_authentication, dns.additive_vpc_scope_dns_domain, managed_opentelemetry, rbac_binding_config, secret_manager_config, secret_sync_config, which ContainerCluster has no field for",gap
+gcp,gke-cluster-autopilot,enable_features,"object({allow_net_admin, anonymous_authentication, beta_apis, binary_authorization, cilium_clusterwide_network_policy, cost_management, +20})",partial,"accepted; refused when set (or true): dns.additive_vpc_scope_dns_domain, managed_opentelemetry, secret_sync_config, which ContainerCluster has no field for (anonymous_authentication, rbac_binding_config and secret_manager_config go in config-connector-extensions' ContainerClusterFields)",gap
 gcp,gke-cluster-autopilot,fleet_project,string,no,ContainerCluster has no fleet; GKEHubMembership registers a cluster with a fleet,gap
 gcp,gke-cluster-autopilot,issue_client_certificate,bool,yes,,
 gcp,gke-cluster-autopilot,labels,map(string),yes,,
@@ -356,7 +356,7 @@ gcp,gke-cluster-autopilot,maintenance_config,"object({daily_window_start_time, m
 gcp,gke-cluster-autopilot,min_master_version,string,yes,,
 gcp,gke-cluster-autopilot,monitoring_config,"object({advanced_datapath_observability, enable_api_server_metrics, enable_cadvisor_metrics, enable_controller_manager_metrics, enable_daemonset_metrics, enable_deployment_metrics, +6})",partial,"accepted; advanced_datapath_observability.enable_relay true is refused: ContainerCluster has only the deprecated relayMode, not enableRelay",gap
 gcp,gke-cluster-autopilot,name,string,yes,,
-gcp,gke-cluster-autopilot,node_config,"object({boot_disk_kms_key, kubelet_readonly_port_enabled, resource_manager_tags, service_account, tags, workload_metadata_config_mode})",partial,accepted; kubelet_readonly_port_enabled is refused: nodePoolAutoConfig has no nodeKubeletConfig,gap
+gcp,gke-cluster-autopilot,node_config,"object({boot_disk_kms_key, kubelet_readonly_port_enabled, resource_manager_tags, service_account, tags, workload_metadata_config_mode})",yes,,
 gcp,gke-cluster-autopilot,node_locations,list(string),yes,,
 gcp,gke-cluster-autopilot,project_id,string,yes,,
 gcp,gke-cluster-autopilot,release_channel,string,yes,,
@@ -370,7 +370,7 @@ gcp,gke-nodepool,location,string,yes,,
 gcp,gke-nodepool,max_pods_per_node,number,yes,,
 gcp,gke-nodepool,name,string,yes,,
 gcp,gke-nodepool,network_config,"object({additional_node_network_configs, additional_pod_network_configs, enable_private_nodes, pod_cidr_overprovisioning_disabled, pod_range, total_egress_bandwidth_tier})",partial,ContainerNodePool's networkConfig has no networkPerformanceConfig (total_egress_bandwidth_tier),gap
-gcp,gke-nodepool,node_config,"object({advanced_machine_features, boot_disk, boot_disk_kms_key, containerd_config, disk_size_gb, disk_type, +19})",partial,"ContainerNodePool's nodeConfig has no bootDisk (provisioned IOPS and throughput), no flexStart, and its kubeletConfig no insecureKubeletReadonlyPortEnabled, containerLogMaxSize, containerLogMaxFiles or allowedUnsafeSysctls",gap
+gcp,gke-nodepool,node_config,"object({advanced_machine_features, boot_disk, boot_disk_kms_key, containerd_config, disk_size_gb, disk_type, +19})",partial,ContainerNodePool's nodeConfig has no bootDisk (provisioned IOPS and throughput) and no flexStart; kubelet_config's fields its kubeletConfig lacks go in config-connector-extensions' ContainerNodePoolFields,gap
 gcp,gke-nodepool,node_count,"object({current, initial})",yes,,
 gcp,gke-nodepool,node_locations,list(string),yes,,
 gcp,gke-nodepool,nodepool_config,"object({autoscaling, management, placement_policy, queued_provisioning, upgrade_settings})",yes,,

@@ -37,19 +37,14 @@ refused:
     fields: [agent_sandbox]
   - variable: enable_features
     kind: gap
-    reason: "accepted; refused when set (or true): anonymous_authentication, dns.additive_vpc_scope_dns_domain, managed_opentelemetry, rbac_binding_config, secret_manager_config, secret_sync_config, which ContainerCluster has no field for"
+    reason: "accepted; refused when set (or true): dns.additive_vpc_scope_dns_domain, managed_opentelemetry, secret_sync_config, which ContainerCluster has no field for (anonymous_authentication, rbac_binding_config and secret_manager_config go in config-connector-extensions' ContainerClusterFields)"
     partial: true
-    fields: [anonymous_authentication, dns.additive_vpc_scope_dns_domain, managed_opentelemetry, rbac_binding_config, secret_manager_config, secret_sync_config]
+    fields: [dns.additive_vpc_scope_dns_domain, managed_opentelemetry, secret_sync_config]
   - variable: access_config
     kind: gap
     reason: "accepted; dns_access.enable_k8s_certs and ip_access.private_endpoint_authorized_ranges_enforcement are refused when true: ContainerCluster has no enableK8sCertsViaDns or privateEndpointEnforcementEnabled"
     partial: true
     fields: [dns_access.enable_k8s_certs, ip_access.private_endpoint_authorized_ranges_enforcement]
-  - variable: node_config
-    kind: gap
-    reason: "accepted; kubelet_readonly_port_enabled is refused: nodePoolAutoConfig has no nodeKubeletConfig"
-    partial: true
-    fields: [kubelet_readonly_port_enabled]
   - variable: monitoring_config
     kind: gap
     reason: "accepted; advanced_datapath_observability.enable_relay true is refused: ContainerCluster has only the deprecated relayMode, not enableRelay"

@@ -67,6 +67,10 @@ node_config:
     image_gc_high_threshold_percent: 85
     image_minimum_gc_age: 2m
     image_maximum_gc_age: 24h
+    insecure_kubelet_readonly_port_enabled: "FALSE"
+    container_log_max_size: 50Mi
+    container_log_max_files: 5
+    allowed_unsafe_sysctls: [kernel.msg*, net.core.somaxconn]
   linux_node_config: {sysctls: {net.core.somaxconn: "4096"}, cgroup_mode: CGROUP_MODE_V2}
   containerd_config:
     writable_cgroups: true

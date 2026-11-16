@@ -26,6 +26,7 @@ node_config:
   service_account: nodes@my-project.iam.gserviceaccount.com
   boot_disk_kms_key: projects/kms/locations/europe-west1/keyRings/k/cryptoKeys/gke
   tags: [gke, nap]
+  kubelet_readonly_port_enabled: false
   resource_manager_tags: {tagKeys/1: tagValues/2}
 enable_addons:
   config_connector: true
@@ -33,6 +34,9 @@ enable_addons:
   kalm: true
 enable_features:
   binary_authorization: true
+  anonymous_authentication: ENABLED
+  rbac_binding_config: {enable_insecure_binding_system_authenticated: true}
+  secret_manager_config: true
   allow_net_admin: true
   fqdn_network_policy: true
   beta_apis: [authentication.k8s.io/v1beta1/selfsubjectreviews]

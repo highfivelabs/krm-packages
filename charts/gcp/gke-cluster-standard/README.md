@@ -6,7 +6,7 @@ config-connector-extensions objects. A port of Cloud Foundation Fabric's
 [`modules/gke-cluster-standard`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/f706bc3b6166787df01402f73a96f1de57097477/modules/gke-cluster-standard)
 at v60.0.0 (`f706bc3b`), Apache-2.0, Copyright Google LLC. Bundt Package
 `gcp-gke-cluster-standard` (`package.yaml`). Checked against Config
-Connector v1.160.0 and config-connector-extensions at `f3d17dda`.
+Connector v1.160.0 and config-connector-extensions at `89b423fe`.
 
 The module was `blocked` in the coverage (`docs/coverage`): Config
 Connector has the four Backup for GKE kinds only as `v1alpha1`.
@@ -67,22 +67,34 @@ what fabric would).
 | `deletion_protection` | accepted, no effect (below) |
 | `deletion_policy` | not a fabric variable; `ABANDON` keeps the cluster and every backup resource |
 
+**Set beside the cluster**: `enable_addons.stateful_ha`,
+`enable_features.anonymous_authentication`, `rbac_binding_config` and
+`secret_manager_config`, and `node_pool_auto_config.kubelet_readonly_port_enabled`
+(when node auto-provisioning is on, as fabric) have no `ContainerCluster`
+field; when any is set the chart renders a `ContainerClusterFields`
+(config-connector-extensions, `container.gcp.hfl.dev/v1beta1`) naming the
+cluster, which sets only those fields with `clusters.update`. Removing it
+leaves the fields as they are (GKE has no "unset" for them); set the
+value to `false` to turn one off.
+
 **Refused**, with a message naming the gap:
 
 - `context`: by design.
 - `fleet_project`: `ContainerCluster` has no fleet.
-- When set or true: `enable_addons.agent_sandbox` and `stateful_ha`;
-  `enable_features.anonymous_authentication`,
-  `dns.additive_vpc_scope_dns_domain`, `managed_opentelemetry`,
-  `rbac_binding_config`, `secret_manager_config`, `secret_sync_config`;
+- When set or true: `enable_addons.agent_sandbox`;
+  `enable_features.dns.additive_vpc_scope_dns_domain`,
+  `managed_opentelemetry`, `secret_sync_config`;
   `access_config.dns_access.enable_k8s_certs` and
   `ip_access.private_endpoint_authorized_ranges_enforcement`;
   `cluster_autoscaling.auto_provisioning_locations` and a `disk_type` other
   than `pd-standard`; `node_config.kubelet_readonly_port_enabled`;
-  `node_pool_auto_config.kubelet_readonly_port_enabled` and `cgroup_mode`;
+  `node_pool_auto_config.cgroup_mode`;
   `monitoring_config.advanced_datapath_observability.enable_relay`; a
   channel's `deletion_policy: PREVENT`. `ContainerCluster` (or the backup
   kinds) has no field for any of them.
+- `enable_features.secret_manager_config: true` with
+  `workload_identity: false`: the Secret Manager add-on reads secrets as
+  the pod's Workload Identity, so GKE refuses it on a cluster without one.
 - `deletion_protection` is accepted and does nothing: it is Terraform's
   own guard, and Config Connector has none. `deletion_policy: ABANDON`
   keeps the cluster.

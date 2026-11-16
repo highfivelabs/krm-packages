@@ -9,3 +9,8 @@ vpc_config:
   subnetwork: projects/mock-project/regions/us-central1/subnetworks/catalog-mock-gka-sn
 access_config: {private_nodes: false}
 deletion_protection: false
+# Fields ContainerCluster lacks, set by config-connector-extensions'
+# ContainerClusterFields.
+enable_features:
+  secret_manager_config: true
+  anonymous_authentication: LIMITED
