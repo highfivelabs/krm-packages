@@ -62,6 +62,12 @@
 # Rules as hack/live-apply.sh: one allowed project, every gcloud call
 # passes --project, names start with the run ID, a VM acting as a service
 # account, never a key; everything is destroyed and listed at the end.
+# The folders and platform-project shapes act as OFFRAMP_LIVE_SA
+# (live-tests@, born in the live-tests folder's organization, so its
+# domain-restricted sharing admits it as MEMBER) when that is set: the VM
+# runs as offload-runner@ and impersonates it (offload run --impersonate),
+# and every tool here (gcloud, Terraform, Config Connector,
+# config-connector-extensions' manager) acts as it.
 set -o errexit -o nounset -o pipefail
 SHAPE="${1:?shape: shared-vpc, folders, platform-project or gke}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -81,7 +87,10 @@ for p in "${ALLOWED_PROJECTS[@]}"; do [[ "${PROJECT}" == "${p}" ]] && allowed=ye
 [[ "${allowed}" == yes ]] || { echo "live.sh: refusing project '${PROJECT}': only ${ALLOWED_PROJECTS[*]}" >&2; exit 2; }
 FIXTURES="${FIXTURES:-${OFF}/fixtures}"
 [[ -d "${FIXTURES}/${SHAPE}" ]] || { echo "live.sh: no fixture ${FIXTURES}/${SHAPE}" >&2; exit 2; }
-md() { curl -sf -H 'Metadata-Flavor: Google' "http://metadata.google.internal/computeMetadata/v1/$1"; }
+# The metadata server Application Default Credentials use: offload's local
+# one when the run acts as another account (offload run --impersonate sets
+# GCE_METADATA_HOST), so RUNNER is the account the run acts as.
+md() { curl -sf -H 'Metadata-Flavor: Google' "http://${GCE_METADATA_HOST:-metadata.google.internal}/computeMetadata/v1/$1"; }
 RUNNER="$(md instance/service-accounts/default/email || true)"
 [[ "${RUNNER}" == *.iam.gserviceaccount.com ]] || { echo "live.sh: not on a VM acting as a service account (got '${RUNNER}')" >&2; exit 2; }
 G=(gcloud --quiet --project "${PROJECT}")
@@ -340,7 +349,9 @@ fi
 # ---- 6. Config Connector adopts ---------------------------------------------------------
 log "6. manager"
 T0="$(date -u +%FT%TZ)"
-systemd-run --unit=offramp-kcc --setenv=KUBECONFIG="${KCFG}" \
+# A systemd unit does not inherit this shell's environment: pass the
+# impersonating metadata server on (offload run --impersonate).
+systemd-run --unit=offramp-kcc --setenv=KUBECONFIG="${KCFG}" ${GCE_METADATA_HOST:+--setenv=GCE_METADATA_HOST="${GCE_METADATA_HOST}"} \
   --property=StandardOutput="file:${OUT}/manager.log" --property=StandardError="file:${OUT}/manager.log" \
   "${KT}/bin/realcloud" >/dev/null
 started=no
