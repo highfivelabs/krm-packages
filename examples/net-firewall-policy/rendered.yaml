@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "net-firewall-policy-dev-firewall-policy"
     app.kubernetes.io/name: net-firewall-policy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "policy"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -27,7 +27,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "net-firewall-policy-dev-firewall-policy"
     app.kubernetes.io/name: net-firewall-policy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "association:my-vpc"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -49,7 +49,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "net-firewall-policy-dev-firewall-policy"
     app.kubernetes.io/name: net-firewall-policy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "rule:egress/smtp"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -80,7 +80,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "net-firewall-policy-dev-firewall-policy"
     app.kubernetes.io/name: net-firewall-policy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "rule:ingress/icmp"
     cnrm.cloud.google.com/project-id: "my-project"

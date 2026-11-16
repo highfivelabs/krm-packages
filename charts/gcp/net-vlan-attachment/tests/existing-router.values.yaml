@@ -1,6 +1,5 @@
 # An existing router: only the attachment is made, on the named router,
-# and the route policies (allow_alpha) go on it too.
-allow_alpha: true
+# and the route policies go on it too.
 project_id: my-project
 region: europe-west8
 network: projects/my-project/global/networks/my-network

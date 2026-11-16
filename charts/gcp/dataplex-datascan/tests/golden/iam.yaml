@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "iam"
     app.kubernetes.io/name: dataplex-datascan
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "datascan"
     cnrm.cloud.google.com/project-id: "my-project-name"
@@ -35,7 +35,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "iam"
     app.kubernetes.io/name: dataplex-datascan
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "iam:roles/dataplex.dataScanAdmin"
     cnrm.cloud.google.com/project-id: "my-project-name"
@@ -57,7 +57,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "iam"
     app.kubernetes.io/name: dataplex-datascan
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "iam:roles/dataplex.dataScanEditor"
     cnrm.cloud.google.com/project-id: "my-project-name"
@@ -79,7 +79,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "iam"
     app.kubernetes.io/name: dataplex-datascan
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "iam:roles/dataplex.dataScanViewer"
     cnrm.cloud.google.com/project-id: "my-project-name"
@@ -101,7 +101,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "iam"
     app.kubernetes.io/name: dataplex-datascan
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "iam-binding:viewer-temp"
     cnrm.cloud.google.com/project-id: "my-project-name"
@@ -118,7 +118,7 @@ spec:
     expression: "request.time < timestamp('2031-01-01T00:00:00Z')"
 ---
 # Source: dataplex-datascan/templates/iam.yaml
-apiVersion: iam.gcp.hfl.dev/v1alpha1
+apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMMember
 metadata:
   name: iam-iam-member-am1-viewer
@@ -126,7 +126,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "iam"
     app.kubernetes.io/name: dataplex-datascan
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "iam-member:am1-viewer"
     cnrm.cloud.google.com/project-id: "my-project-name"

@@ -42,11 +42,11 @@ The module's variables, with the same names, types and defaults.
 | `names.gateway`, `names.address`, `names.router` | not fabric variables: the gateway's, its address's and the router's names in full, used as given (no `namePrefix`) and checked (63 characters, a leading letter) (`docs/design.md`, "Names, labels and tags") |
 | `namePrefix` | not a fabric variable: an optional convenience; when set, every name the chart derives starts with `<namePrefix>-`; empty changes nothing |
 | `labels`, `tags` | Kubernetes labels on every object; unprefixed ones and `tags` reach the resources that take Google Cloud labels (the address, the forwarding rules) |
-| `allow_alpha` | not a fabric variable: accepts the v1alpha1 kind route policies need (`docs/design.md`, "Alpha kinds") |
+| `allow_alpha` | not a fabric variable, and no longer used: no kind of this chart is alpha (route policies' `ComputeRouterRoutePolicy` is `v1beta1` since config-connector-extensions `81c3f9b5`). It changes nothing and is kept so components that set it still render |
 | `name`, `project_id`, `region`, `network` | the gateway (`name`), the address (`vpn-<name>`) and forwarding rules (`vpn-<name>-esp`, `-udp-500`, `-udp-4500`), their project and region; the gateway's and router's `networkRef` |
 | `gateway_address_create`, `gateway_address` | the `ComputeAddress` the forwarding rules use (true, the default), or the given address (false) |
-| `router_config` | required, as in fabric. `create` (default true) makes the `ComputeRouter`, `name` or `vpn-<name>`, with `asn` (required, as in fabric), `keepalive` and `custom_advertise` (a `CUSTOM` advertise mode with `ALL_SUBNETS` and the ranges); `create: false` reuses the router `name` names. `route_policies` need `allow_alpha` (below) |
-| `route_policies` in `router_config` | one config-connector-extensions `ComputeRouterRoutePolicy` (`compute.gcp.hfl.dev/v1alpha1`) per key, named by it, on the router: `IMPORT` or `EXPORT`, its terms with their match and actions; fabric's checks (priority range, unique priorities, the type) |
+| `router_config` | required, as in fabric. `create` (default true) makes the `ComputeRouter`, `name` or `vpn-<name>`, with `asn` (required, as in fabric), `keepalive` and `custom_advertise` (a `CUSTOM` advertise mode with `ALL_SUBNETS` and the ranges); `create: false` reuses the router `name` names. |
+| `route_policies` in `router_config` | one config-connector-extensions `ComputeRouterRoutePolicy` (`compute.gcp.hfl.dev/v1beta1`) per key, named by it, on the router: `IMPORT` or `EXPORT`, its terms with their match and actions; fabric's checks (priority range, unique priorities, the type) |
 | `tunnels` | a `ComputeVPNTunnel` per tunnel, `<name>-<key>`, on the gateway, to `peer_ip`, with `ike_version` (2 by default) and the router (the tunnel's `router`, else the chart's); `shared_secret`, required, a reference to a Kubernetes Secret, `{secretName, key}` ([secrets](../../../docs/secrets.md)), as `sharedSecret.valueFrom.secretKeyRef`: a string is refused, and so is none (fabric would generate one; the catalog never generates a secret). Per tunnel, as fabric: a `ComputeRouterInterface` (`<name>-<key>`, `bgp_session_range` its IP range, none when `""`) and a `ComputeRouterPeer` (`<name>-<key>`) on the same router with the peer's address, ASN, `route_priority` (1000) and `custom_advertise` (`all_subnets`, `all_vpc_subnets`, `all_peer_vpc_subnets`, `ip_ranges`). Refused (gaps): `cipher_suite` (`ComputeVPNTunnel` has no `cipherSuite`), `bgp_peer`'s `export_policies` and `import_policies` (`ComputeRouterPeer` has no such fields) |
 | `deletion_policy` | not a fabric variable; `ABANDON` keeps the cloud resources |
 
@@ -97,7 +97,7 @@ v1.160.0's CRD schemas and config-connector-extensions'
 Applied to the fake cloud on 2026-11-13 on an offload VM (`task test-mock
 MOCK_CHARTS=net-vpn-dynamic`, run `off-catalog-1113152746-28240`, at
 config-connector-extensions `d54a2075`, whose fake cloud runs its
-`ComputeRouterRoutePolicy` controller): the gateway, its address, its three forwarding rules, the router and an export route policy (`allow_alpha`) on a network from `tests/mock.needs.yaml`: all 7 objects Ready, the outputs evaluated, all deleted.
+`ComputeRouterRoutePolicy` controller): the gateway, its address, its three forwarding rules, the router and an export route policy on a network from `tests/mock.needs.yaml`: all 7 objects Ready, the outputs evaluated, all deleted.
 
 mockgcp (Config Connector `672414b8`) has no VPN tunnels, so tunnels, their
 router interfaces and BGP peers are render-tested only.
@@ -106,6 +106,8 @@ Not applied live: live runs are pending KEYLIVE.
 
 ## Changes
 
+- **0.3.0** (2026-11-15): route policies render config-connector-extensions' `v1beta1`
+  `ComputeRouterRoutePolicy` and need no `allow_alpha` (now a no-op).
 - **0.2.0** (2026-11-15): `tunnels`: the tunnels, their router interfaces and BGP peers; a tunnel's shared secret is a reference to a Kubernetes Secret. `tunnel_names` and `tunnel_self_links` outputs.
 - **0.1.0** (2026-11-13): the port: the gateway, its address and
   forwarding rules, the router and its route policies.

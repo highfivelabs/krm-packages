@@ -1,5 +1,4 @@
 # expect: route_policies.p.type must be one of the following
-allow_alpha: true
 project_id: p
 region: europe-west1
 network: projects/p/global/networks/n

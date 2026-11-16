@@ -5,7 +5,6 @@ name: sales
 documentation: How to use the sales exchange.
 description: Sales data.
 primary_contact: https://example.com/contact
-allow_alpha: true
 deletion_policy: ABANDON
 iam:
   roles/analyticshub.viewer: ["group:viewers@example.com"]

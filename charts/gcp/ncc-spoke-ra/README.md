@@ -11,9 +11,9 @@ v1.160.0 and config-connector-extensions at `89806ec7`.
 
 The module was `blocked` in the coverage (`docs/coverage`): Config
 Connector has no kind for a router's route policies. config-connector-extensions
-now provides `ComputeRouterRoutePolicy` (`compute.gcp.hfl.dev/v1alpha1`),
-so the chart renders route policies with `allow_alpha: true`
-(`docs/design.md`, "Alpha kinds"; the CRD is copied in
+now provides `ComputeRouterRoutePolicy` (`compute.gcp.hfl.dev/v1beta1`
+since config-connector-extensions `81c3f9b5`), so the chart renders
+route policies without `allow_alpha` (the CRD is copied in
 `crds/config-connector-extensions`). Everything else is Config Connector's
 own `v1beta1` kinds.
 
@@ -43,12 +43,12 @@ The module's variables, with the same names, types and defaults.
 | `names.spoke`, `names.router`, `names.hub` | not fabric variables: the spoke's, router's and new hub's names in full, used as given (no `namePrefix`) and checked (63 characters, a leading letter) (`docs/design.md`, "Names, labels and tags") |
 | `namePrefix` | not a fabric variable: an optional convenience; when set, every derived name starts with `<namePrefix>-` (the interfaces and peers take it from the router's name); empty changes nothing |
 | `labels`, `tags` | Kubernetes labels on every object; unprefixed ones, and `tags`, become Google Cloud labels on the hub and the spoke |
-| `allow_alpha` | not a fabric variable: accepts route policies (config-connector-extensions' `v1alpha1` kind) |
+| `allow_alpha` | not a fabric variable, and no longer used: no kind of this chart is alpha (route policies' `ComputeRouterRoutePolicy` is `v1beta1` since config-connector-extensions `81c3f9b5`). It changes nothing and is kept so components that set it still render |
 | `hub` | with `create`, a `NetworkConnectivityHub` named `hub.name`, which the spoke refers to; else the spoke's `hubRef` is `hub.id`. fabric's validation, with its message |
 | `name`, `project_id`, `region` | the spoke's name, project and location; the router is `<name>-cr` |
 | `data_transfer` | the spoke's `siteToSiteDataTransfer` |
 | `router_appliances` | the spoke's linked instances, and two `ComputeRouterPeer`s per appliance (`<router>-<vm>-peer1` and `-peer2`), one on each interface |
-| `router_config` | the router's ASN, advertisement (`CUSTOM` with `custom_advertise`, its groups and ranges) and keepalive; the interfaces' IPs; the peers' ASN and route priority (100 unless set); `route_policies` as `ComputeRouterRoutePolicy`s (`allow_alpha`), with fabric's validations |
+| `router_config` | the router's ASN, advertisement (`CUSTOM` with `custom_advertise`, its groups and ranges) and keepalive; the interfaces' IPs; the peers' ASN and route priority (100 unless set); `route_policies` as `ComputeRouterRoutePolicy`s, with fabric's validations |
 | `vpc_config` | the router's network (a bare name is taken in `project_id`) and the interfaces' subnet |
 | `deletion_policy` | not a fabric variable; `ABANDON` keeps the hub, spoke, router and policies |
 
@@ -88,8 +88,9 @@ with every other module the catalog tracks. To take a newer release, see
 each validated against Config Connector v1.160.0's and
 config-connector-extensions' CRD schemas, and the refusals in
 `tests/*.fail.yaml`. Render-tested only: a spoke needs a router appliance
-VM, which the live tests do not make (no VMs), and route policies'
-extension kind is newer than the fake cloud's pin (`CCE_COMMIT`).
+VM, which the live tests do not make (no VMs); route policies render
+config-connector-extensions' `v1beta1` kind, which the pin (`81c3f9b5`)
+serves.
 
 Live (`hack/live-apply.sh` `LIVE_CHARTS=ncc-spoke-ra`, `tests/live.yaml`; as
 cce-live-tests, config-connector-extensions `c2f0c7d2`): a hub, a router appliance spoke on one e2-micro VM
@@ -103,4 +104,6 @@ gone.
 
 ## Changes
 
+- **0.2.0** (2026-11-15): route policies render config-connector-extensions' `v1beta1`
+  `ComputeRouterRoutePolicy` and need no `allow_alpha` (now a no-op).
 - **0.1.0** (2026-11-12): the port.

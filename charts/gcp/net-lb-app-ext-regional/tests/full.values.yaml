@@ -9,7 +9,6 @@ labels:
 address: 203.0.113.5
 ports: null
 protocol: HTTPS
-allow_alpha: true
 https_proxy_config:
   name: ilb-full-proxy
   description: Proxy.

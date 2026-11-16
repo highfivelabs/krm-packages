@@ -58,7 +58,7 @@ gcp,folder,google_folder,stable,Folder
 gcp,folder,google_folder_iam_audit_config,stable,IAMAuditConfig
 gcp,folder,google_folder_iam_binding,stable,IAMPartialPolicy -> Folder
 gcp,folder,google_folder_iam_member,stable,IAMPolicyMember -> Folder
-gcp,folder,google_folder_service_identity,extensions,ServiceIdentity (serviceusage.gcp.hfl.dev/v1alpha1)
+gcp,folder,google_folder_service_identity,extensions,ServiceIdentity (serviceusage.gcp.hfl.dev/v1beta1)
 gcp,folder,google_iam_deny_policy,extensions,IAMDenyPolicy (iam.gcp.hfl.dev/v1beta1)
 gcp,folder,google_kms_autokey_config,stable,KMSAutokeyConfig
 gcp,folder,google_logging_folder_exclusion,stable,LoggingLogExclusion
@@ -93,7 +93,7 @@ gcp,organization,google_organization_iam_audit_config,stable,IAMAuditConfig
 gcp,organization,google_organization_iam_binding,stable,IAMPartialPolicy -> Organization
 gcp,organization,google_organization_iam_custom_role,stable,IAMCustomRole
 gcp,organization,google_organization_iam_member,stable,IAMPolicyMember -> Organization
-gcp,organization,google_organization_service_identity,extensions,ServiceIdentity (serviceusage.gcp.hfl.dev/v1alpha1)
+gcp,organization,google_organization_service_identity,extensions,ServiceIdentity (serviceusage.gcp.hfl.dev/v1beta1)
 gcp,organization,google_privileged_access_manager_entitlement,stable,PrivilegedAccessManagerEntitlement
 gcp,organization,google_project_iam_member,stable,IAMPolicyMember -> Project
 gcp,organization,google_pubsub_topic_iam_member,stable,IAMPolicyMember -> PubSubTopic

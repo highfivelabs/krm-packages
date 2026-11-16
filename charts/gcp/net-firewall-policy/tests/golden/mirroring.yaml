@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mirroring"
     app.kubernetes.io/name: net-firewall-policy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "policy"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -26,7 +26,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mirroring"
     app.kubernetes.io/name: net-firewall-policy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "rule:mirror/egress/skip"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -55,7 +55,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mirroring"
     app.kubernetes.io/name: net-firewall-policy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "rule:mirror/ingress/all"
     cnrm.cloud.google.com/project-id: "my-project"

@@ -33,6 +33,6 @@ refused:
     reason: "Config Connector's WorkstationCluster (v1.160.0) has no domainConfig field"
   - variable: workstation_configs
     kind: gap
-    reason: "Config Connector's WorkstationConfig and Workstation (v1.160.0) have no field for enable_audit_agent, max_workstations, gce_instance.accelerators, gce_instance.boost_configs or a workstation's env; iam_bindings_additive needs allow_alpha (config-connector-extensions' IAMMember is v1alpha1)"
+    reason: "Config Connector's WorkstationConfig and Workstation (v1.160.0) have no field for enable_audit_agent, max_workstations, gce_instance.accelerators, gce_instance.boost_configs or a workstation's env"
     partial: true
     fields: [enable_audit_agent, max_workstations, gce_instance.accelerators, gce_instance.boost_configs, workstations.env]

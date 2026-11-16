@@ -1,10 +1,9 @@
 # fabric's README, NEG examples: zonal, hybrid, Cloud Run, Cloud
 # Functions, PSC, and internet NEGs by domain name and by address with
-# their endpoints (alpha).
+# their endpoints.
 name: glb-test-0
 project_id: my-project
 region: europe-west8
-allow_alpha: true
 backend_service_configs:
   default:
     backends:

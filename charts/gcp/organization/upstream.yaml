@@ -35,11 +35,6 @@ refused:
   - variable: asset_search
     kind: by-design
     reason: "a Cloud Asset Inventory search is a read at plan time, not a resource; Bundt does not run one"
-  - variable: cloud_armor_policy
-    kind: alpha
-    reason: "ComputeOrganizationSecurityPolicyAssociation is v1alpha1: needs allow_alpha: true; excluded_folders and excluded_projects are refused (the kind has no such fields)"
-    partial: true
-    fields: [excluded_folders, excluded_projects]
   - variable: context
     kind: by-design
     reason: "Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs"
@@ -80,9 +75,6 @@ refused:
     kind: alpha
     reason: "SecurityCenterManagementSecurityHealthAnalyticsCustomModule is v1alpha1: needs allow_alpha: true"
     partial: true
-  - variable: service_agents_config
-    kind: gap
-    reason: "Config Connector has no kind for an organization's service identities (ServiceIdentity takes only a project)"
   - variable: tags
     kind: gap
     reason: "fabric's tag keys are ported; allowed_values_regex is refused (TagsTagKey has no such field), and so are IAM conditions on tag keys and values (they take none). A tags entry whose value is a string is the catalog's cloud label, applied to every object"

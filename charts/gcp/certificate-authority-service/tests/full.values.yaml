@@ -3,7 +3,6 @@
 # and IAM on the pool.
 project_id: my-project
 location: europe-west1
-allow_alpha: true
 deletion_policy: ABANDON
 ca_pool_config:
   create_pool:

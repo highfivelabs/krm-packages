@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "views"
     app.kubernetes.io/name: logging-bucket
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "view:myview:iam:roles/logging.viewAccessor"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -29,7 +29,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "views"
     app.kubernetes.io/name: logging-bucket
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "view:myview:iam-binding:conditional"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -45,7 +45,7 @@ spec:
     expression: "request.time < timestamp(\"2027-01-01T00:00:00Z\")"
 ---
 # Source: logging-bucket/templates/iam.yaml
-apiVersion: iam.gcp.hfl.dev/v1alpha1
+apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMMember
 metadata:
   name: views-view-myview-iam-member-one
@@ -53,7 +53,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "views"
     app.kubernetes.io/name: logging-bucket
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "view:myview:iam-member:one"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -73,7 +73,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "views"
     app.kubernetes.io/name: logging-bucket
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "bucket"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -94,7 +94,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "views"
     app.kubernetes.io/name: logging-bucket
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "view:myview"
     cnrm.cloud.google.com/project-id: "my-project"

@@ -11,7 +11,7 @@ workstation_configs entry, in the cluster.
 google_workstations_workstation.workstations: one Workstation per entry of
 a configuration's workstations, in that configuration.
 iam.tf: on each configuration and workstation, IAMBinding (iam, and
-iam_bindings) and IAMMember (iam_bindings_additive, allow_alpha) from
+iam_bindings) and IAMMember (iam_bindings_additive) from
 config-connector-extensions, by the resource's full name
 (_workstation-cluster.tpl, workstationCluster.iam).
 Refused by name (no Config Connector field): domain, and in

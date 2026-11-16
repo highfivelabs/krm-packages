@@ -12,7 +12,6 @@ network_tier_premium: true
 ports:
 - 443
 protocol: HTTPS
-allow_alpha: true
 https_proxy_config:
   name: ilb-full-proxy
   description: Proxy.

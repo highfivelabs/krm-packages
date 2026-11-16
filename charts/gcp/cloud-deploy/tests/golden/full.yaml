@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-deploy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "platform"
   annotations:
     hfl.dev/id: "automation:nightly"
@@ -41,7 +41,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-deploy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "platform"
   annotations:
     hfl.dev/id: "automation:promote"
@@ -87,7 +87,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-deploy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "platform"
   annotations:
     hfl.dev/id: "automation:repair"
@@ -129,7 +129,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-deploy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "platform"
   annotations:
     hfl.dev/id: "pipeline"
@@ -212,7 +212,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-deploy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "platform"
   annotations:
     hfl.dev/id: "deploy_policy:freeze"
@@ -284,7 +284,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-deploy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "platform"
   annotations:
     hfl.dev/id: "target:dev"
@@ -320,7 +320,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-deploy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "platform"
   annotations:
     hfl.dev/id: "target:staging"
@@ -342,7 +342,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-deploy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "platform"
   annotations:
     hfl.dev/id: "target:prod"
@@ -368,7 +368,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-deploy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "platform"
   annotations:
     hfl.dev/id: "target:hidden"
@@ -390,7 +390,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-deploy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "platform"
   annotations:
     hfl.dev/id: "iam:roles/clouddeploy.approver"
@@ -412,7 +412,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-deploy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "platform"
   annotations:
     hfl.dev/id: "iam:roles/clouddeploy.releaser"
@@ -434,7 +434,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-deploy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "platform"
   annotations:
     hfl.dev/id: "iam-binding:conditional"
@@ -459,7 +459,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-deploy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "platform"
   annotations:
     hfl.dev/id: "target:dev:iam:roles/clouddeploy.admin"
@@ -481,7 +481,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-deploy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "platform"
   annotations:
     hfl.dev/id: "target:dev:iam:roles/clouddeploy.operator"
@@ -503,7 +503,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-deploy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "platform"
   annotations:
     hfl.dev/id: "target:dev:iam-binding:viewers"
@@ -517,7 +517,7 @@ spec:
     - "group:viewers@example.com"
 ---
 # Source: cloud-deploy/templates/iam.yaml
-apiVersion: iam.gcp.hfl.dev/v1alpha1
+apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMMember
 metadata:
   name: full-iam-member-bob
@@ -525,7 +525,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-deploy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "platform"
   annotations:
     hfl.dev/id: "iam-member:bob"
@@ -538,7 +538,7 @@ spec:
   member: "user:bob@example.com"
 ---
 # Source: cloud-deploy/templates/iam.yaml
-apiVersion: iam.gcp.hfl.dev/v1alpha1
+apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMMember
 metadata:
   name: full-target-dev-iam-member-runner
@@ -546,7 +546,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-deploy
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     team: "platform"
   annotations:
     hfl.dev/id: "target:dev:iam-member:runner"

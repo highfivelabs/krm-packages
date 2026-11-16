@@ -1,7 +1,6 @@
 # Every value the chart carries: an IPv6 gateway, two external peer
 # gateways (one named), a router with keepalive and custom advertisements,
-# and import and export route policies (allow_alpha).
-allow_alpha: true
+# and import and export route policies.
 project_id: my-project
 region: europe-west1
 network: projects/my-project/global/networks/my-network

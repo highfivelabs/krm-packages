@@ -1,0 +1,4 @@
+# expect: asset_feeds.f.feed_output_config.pubsub_destination.topic is required
+parent: organizations/123456789012
+name: f
+asset_feeds: {f: {content_type: RESOURCE}}

@@ -1,6 +1,6 @@
 dependencies:
 - name: project
   repository: file://../project
-  version: 0.10.0
-digest: sha256:b58533fd8177edd89861133f716df69fe075dcb5aa4077972855fff262ce049b
-generated: "2026-11-15T04:27:00.221344-06:00"
+  version: 0.11.0
+digest: sha256:6af159f79abcf8ee02148fd353e31775681e397018eb515cec8bc7b5807e935e
+generated: "2026-11-15T20:49:07.827358-06:00"

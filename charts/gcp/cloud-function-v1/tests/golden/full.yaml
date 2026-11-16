@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-function-v1
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     env: "prod"
   annotations:
     hfl.dev/id: "function"
@@ -38,27 +38,26 @@ spec:
   vpcConnectorEgressSettings: "PRIVATE_RANGES_ONLY"
 ---
 # Source: cloud-function-v1/templates/main.yaml
-apiVersion: iam.cnrm.cloud.google.com/v1beta1
-kind: IAMPartialPolicy
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
 metadata:
-  name: full-iam
+  name: full-iam-roles-cloudfunctions-invoker-d80e360d
   labels:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-function-v1
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     env: "prod"
   annotations:
-    hfl.dev/id: "iam"
+    hfl.dev/id: "iam:roles/cloudfunctions.invoker"
+    cnrm.cloud.google.com/project-id: "my-project"
 spec:
   resourceRef:
-    apiVersion: cloudfunctions.cnrm.cloud.google.com/v1beta1
     kind: CloudFunctionsFunction
-    name: full
-  bindings:
-    - role: "roles/cloudfunctions.invoker"
-      members:
-        - member: "serviceAccount:caller@my-project.iam.gserviceaccount.com"
+    external: projects/my-project/locations/europe-west1/functions/pfx-full-fn
+  role: "roles/cloudfunctions.invoker"
+  members:
+    - "serviceAccount:caller@my-project.iam.gserviceaccount.com"
 ---
 # Source: cloud-function-v1/templates/serviceaccount.yaml
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
@@ -69,7 +68,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-function-v1
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     env: "prod"
   annotations:
     hfl.dev/id: "sa-role:roles/logging.logWriter"
@@ -92,7 +91,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-function-v1
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     env: "prod"
   annotations:
     hfl.dev/id: "service_account"
@@ -110,7 +109,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-function-v1
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     env: "prod"
   annotations:
     hfl.dev/id: "bucket"
@@ -129,7 +128,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: cloud-function-v1
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     env: "prod"
   annotations:
     hfl.dev/id: "vpc_connector"

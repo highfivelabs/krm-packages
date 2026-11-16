@@ -9,14 +9,14 @@ validate Config Connector's own kinds against its CRDs.
 | --- | --- | --- |
 | `iam.gcp.hfl.dev_iambindings.yaml` | `IAMBinding` (`iam.gcp.hfl.dev/v1beta1`) | `config/crds/` at `c4c26aa46f33d9e19a169a5ee5239145050d655b` (2026-11-10; config-connector-extensions' `agent/iambinding-v1beta1`, decision 24) |
 | `compute.gcp.hfl.dev_computenetworkattachments.yaml` | `ComputeNetworkAttachment` (`compute.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `89806ec7a1ea127fd435ca264d2883b9c233de2c` (2026-11-12) |
-| `compute.gcp.hfl.dev_computerouterroutepolicies.yaml` | `ComputeRouterRoutePolicy` (`compute.gcp.hfl.dev/v1alpha1`: a chart renders it only with `allow_alpha`) | `config/crds/` at `89806ec7a1ea127fd435ca264d2883b9c233de2c` (2026-11-12) |
+| `compute.gcp.hfl.dev_computerouterroutepolicies.yaml` | `ComputeRouterRoutePolicy` (`compute.gcp.hfl.dev/v1beta1`) | `config/crds/` at `81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15, the pin) |
 | `biglake.gcp.hfl.dev_biglakecatalogs.yaml` | `BigLakeCatalog` (`biglake.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `11baa460f60ad9f9345cefcb6f2b594a95ce0568` (2026-11-12) |
 | `biglake.gcp.hfl.dev_biglakedatabases.yaml` | `BigLakeDatabase` (`biglake.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `11baa460f60ad9f9345cefcb6f2b594a95ce0568` (2026-11-12) |
 | `biglake.gcp.hfl.dev_biglaketables.yaml` | `BigLakeTable` (`biglake.gcp.hfl.dev/v1beta1`; Config Connector's own, `bigquerybiglake.cnrm.cloud.google.com`, reads BigLake's 403 for a missing table as a denial and never creates one) | `config/crds/` at `d7b525010062e2ef9b34cbdc8409add693ebb00a` (2026-11-14, the pin) |
 | `certificatemanager.gcp.hfl.dev_certificatemanagercertificateissuanceconfigs.yaml` | `CertificateManagerCertificateIssuanceConfig` (`certificatemanager.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `f3d17ddac1f255c36dd07972b84042b58ceee53f` (2026-11-12) |
 | `dataplex.gcp.hfl.dev_dataplexaspecttypes.yaml` | `DataplexAspectType` (`dataplex.gcp.hfl.dev/v1beta1`) | `config/crds/` at `11baa460f60ad9f9345cefcb6f2b594a95ce0568` (2026-11-12) |
 | `dataplex.gcp.hfl.dev_dataplexdatascans.yaml` | `DataplexDataScan` (`dataplex.gcp.hfl.dev/v1beta1`) | `config/crds/` at `11baa460f60ad9f9345cefcb6f2b594a95ce0568` (2026-11-12) |
-| `iam.gcp.hfl.dev_iammembers.yaml` | `IAMMember` (`iam.gcp.hfl.dev/v1alpha1`: a chart renders it only with `allow_alpha`) | `config/crds/` at `11baa460f60ad9f9345cefcb6f2b594a95ce0568` (2026-11-12) |
+| `iam.gcp.hfl.dev_iammembers.yaml` | `IAMMember` (`iam.gcp.hfl.dev/v1beta1`) | `config/crds/` at `81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15, the pin) |
 | `compute.gcp.hfl.dev_computenetworkendpoints.yaml` | `ComputeNetworkEndpoint` (`compute.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `11baa460f60ad9f9345cefcb6f2b594a95ce0568` (2026-11-12) |
 | `apigateway.gcp.hfl.dev_apigatewayapiconfigs.yaml` | `APIGatewayAPIConfig` (`apigateway.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `11baa460f60ad9f9345cefcb6f2b594a95ce0568` (2026-11-12) |
 | `apigateway.gcp.hfl.dev_apigatewaygateways.yaml` | `APIGatewayGateway` (`apigateway.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `11baa460f60ad9f9345cefcb6f2b594a95ce0568` (2026-11-12) |
@@ -31,9 +31,8 @@ validate Config Connector's own kinds against its CRDs.
 | `datacatalog.gcp.hfl.dev_datacatalogtags.yaml` | `DataCatalogTag` (`datacatalog.gcp.hfl.dev/v1beta1`) | `config/crds/` at `0ee17dd438d942df8279270dac3f3fe6fcc7bebb` (2026-11-12) |
 | `dns.gcp.hfl.dev_dnsresponsepolicies.yaml` | `DNSResponsePolicy` (`dns.gcp.hfl.dev/v1beta1`) | `config/crds/` at `0ee17dd438d942df8279270dac3f3fe6fcc7bebb` (2026-11-12) |
 | `dns.gcp.hfl.dev_dnsresponsepolicyrules.yaml` | `DNSResponsePolicyRule` (`dns.gcp.hfl.dev/v1beta1`) | `config/crds/` at `0ee17dd438d942df8279270dac3f3fe6fcc7bebb` (2026-11-12) |
-| `iam.gcp.hfl.dev_iammembers.yaml` | `IAMMember` (`iam.gcp.hfl.dev/v1alpha1`: a chart renders it only with `allow_alpha`) | `config/crds/` at `0ee17dd438d942df8279270dac3f3fe6fcc7bebb` (2026-11-12) |
 | `spanner.gcp.hfl.dev_spannerinstanceconfigs.yaml` | `SpannerInstanceConfig` (`spanner.gcp.hfl.dev/v1beta1`) | `config/crds/` at `0ee17dd438d942df8279270dac3f3fe6fcc7bebb` (2026-11-12) |
-| `storage.gcp.hfl.dev_storagebucketobjects.yaml` | `StorageBucketObject` (`storage.gcp.hfl.dev/v1alpha1`: a chart renders it only with `allow_alpha`) | `config/crds/` at `0ee17dd438d942df8279270dac3f3fe6fcc7bebb` (2026-11-12) |
+| `storage.gcp.hfl.dev_storagebucketobjects.yaml` | `StorageBucketObject` (`storage.gcp.hfl.dev/v1beta1`) | `config/crds/` at `81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15, the pin) |
 | `apigee.gcp.hfl.dev_apigeednszones.yaml` | `ApigeeDnsZone` (`apigee.gcp.hfl.dev/v1alpha1`: a chart renders it only with `allow_alpha`) | `config/crds/` at `35833eb8c7594675ea5237c11373665cd806658e` (2026-11-12) |
 | `apigee.gcp.hfl.dev_apigeenataddresses.yaml` | `ApigeeNATAddress` (`apigee.gcp.hfl.dev/v1beta1`) | `config/crds/` at `35833eb8c7594675ea5237c11373665cd806658e` (2026-11-12) |
 | `compute.gcp.hfl.dev_computeperinstanceconfigs.yaml` | `ComputePerInstanceConfig` (`compute.gcp.hfl.dev/v1beta1`) | `config/crds/` at `35833eb8c7594675ea5237c11373665cd806658e` (2026-11-12) |
@@ -65,17 +64,24 @@ validate Config Connector's own kinds against its CRDs.
 | `clouddeploy.gcp.hfl.dev_clouddeployautomations.yaml` | `CloudDeployAutomation` (`clouddeploy.gcp.hfl.dev/v1beta1`) | `config/crds/` at `384d07c01932defd747c17038a833ca3b591fa7a` (2026-11-15, the pin) |
 | `clouddeploy.gcp.hfl.dev_clouddeploydeploypolicies.yaml` | `CloudDeployDeployPolicy` (`clouddeploy.gcp.hfl.dev/v1beta1`) | `config/crds/` at `384d07c01932defd747c17038a833ca3b591fa7a` (2026-11-15, the pin) |
 | `looker.gcp.hfl.dev_lookerinstances.yaml` | `LookerInstance` (`looker.gcp.hfl.dev/v1alpha1`: a chart renders it only with `allow_alpha`; `oauthConfig.clientSecret` takes `valueFrom.secretKeyRef`) | `config/crds/` at `069e4211eff74013929015dbb4b0707bcba42b0c` (2026-11-15, the pin) |
+| `compute.gcp.hfl.dev_computeregionnetworkendpoints.yaml` | `ComputeRegionNetworkEndpoint` (`compute.gcp.hfl.dev/v1beta1`) | `config/crds/` at `81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15, the pin) |
+| `compute.gcp.hfl.dev_computeregionnetworkfirewallpolicies.yaml` | `ComputeRegionNetworkFirewallPolicy` (`compute.gcp.hfl.dev/v1beta1`) | `config/crds/` at `81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15, the pin) |
+| `compute.gcp.hfl.dev_computeregionnetworkfirewallpolicyassociations.yaml` | `ComputeRegionNetworkFirewallPolicyAssociation` (`compute.gcp.hfl.dev/v1beta1`) | `config/crds/` at `81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15, the pin) |
+| `compute.gcp.hfl.dev_computeregionnetworkfirewallpolicyrules.yaml` | `ComputeRegionNetworkFirewallPolicyRule` (`compute.gcp.hfl.dev/v1beta1`) | `config/crds/` at `81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15, the pin) |
+| `asset.gcp.hfl.dev_assetfeeds.yaml` | `AssetFeed` (`asset.gcp.hfl.dev/v1beta1`: Config Connector's direct `AssetFeed` with its parent comparison fixed, a project named by ID or number alike) | `config/crds/` at `81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15, the pin) |
+| `compute.gcp.hfl.dev_computeorganizationsecuritypolicyassociations.yaml` | `ComputeOrganizationSecurityPolicyAssociation` (`compute.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`; with `excludedFolders` and `excludedProjects`) | `config/crds/` at `81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15, the pin) |
+| `serviceusage.gcp.hfl.dev_serviceidentities.yaml` | `ServiceIdentity` (`serviceusage.gcp.hfl.dev/v1beta1`: a folder's or an organization's service identity) | `config/crds/` at `81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15, the pin) |
 
 `Taskfile.yml`'s `CCE_COMMIT`, which the fake-cloud and live runs use, is
-`069e4211eff74013929015dbb4b0707bcba42b0c` (2026-11-15), at or after every
-copy above, so the fake cloud serves each of these kinds. Seven files are
-not the same at that pin: config-connector-extensions #131 and #132 moved
+`81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15), at or after every
+copy above, so the fake cloud serves each of these kinds (each file is the
+same at the pin). config-connector-extensions #131 and #132 moved
 `ComputeRegionNetworkEndpoint`, `ComputeRegionNetworkFirewallPolicy`,
 `ComputeRegionNetworkFirewallPolicyAssociation`,
 `ComputeRegionNetworkFirewallPolicyRule`, `ComputeRouterRoutePolicy`,
-`IAMMember` and `StorageBucketObject` from `v1alpha1` to `v1beta1`, and the
-copies here and the charts that render them still say `v1alpha1` (only
-behind `allow_alpha`, which no fake-cloud case sets); moving them is its
-own change. A CRD copied from a later commit needs the pin moved
-first, in its own change, before a fake-cloud case renders the kind; until
-then the chart's README says which of its objects are only render-tested.
+`IAMMember` and `StorageBucketObject` from `v1alpha1` to `v1beta1`, and its
+#138 `RunService` and `ServiceIdentity`: the copies here are the pin's, and
+the charts render them without `allow_alpha`. A CRD copied from a later
+commit needs the pin moved first, in its own change, before a fake-cloud
+case renders the kind; until then the chart's README says which of its
+objects are only render-tested.

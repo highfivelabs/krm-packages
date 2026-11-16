@@ -32,8 +32,7 @@ refused:
     partial: true
     fields: [export_policies, import_policies, custom_learned_ip_ranges, md5_authentication_key]
   - variable: router_config
-    kind: alpha
-    reason: "accepted; route_policies need config-connector-extensions' v1alpha1 ComputeRouterRoutePolicy: set allow_alpha: true; md5_authentication_key is refused (it configures the dedicated BGP peer, and ComputeRouterPeer has no md5AuthenticationKey)"
+    kind: gap
+    reason: "accepted; md5_authentication_key is refused (it configures the dedicated BGP peer, and ComputeRouterPeer has no md5AuthenticationKey)"
     partial: true
     fields: [md5_authentication_key]
-    alpha_fields: [route_policies]

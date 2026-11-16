@@ -30,10 +30,6 @@ refused:
     reason: "ComputeBackendService has no tlsSettings, and its logConfig has no optionalMode or optionalFields"
     partial: true
     fields: [tls_settings, optional_mode, optional_fields]
-  - variable: neg_configs
-    kind: alpha
-    reason: "an internet NEG's endpoints are config-connector-extensions' ComputeRegionNetworkEndpoint, which is v1alpha1: needs allow_alpha: true"
-    partial: true
   - variable: service_attachment
     kind: gap
     reason: "ComputeServiceAttachment has no domainNames or reconcileConnections"

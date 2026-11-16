@@ -1,6 +1,6 @@
 # The fake-cloud case (hack/mock-apply.sh): a dataset with a table, a view,
-# a routine, a role on the dataset and, with allow_alpha, an access entry
-# and an additive member.
+# a routine, a role on the dataset, an additive member and, with
+# allow_alpha, an access entry.
 allow_alpha: true
 project_id: mock-project
 id: cat_mock_dataset

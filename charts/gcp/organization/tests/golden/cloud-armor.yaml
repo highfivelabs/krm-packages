@@ -1,0 +1,52 @@
+---
+# Source: organization/templates/cloud-armor.yaml
+apiVersion: compute.gcp.hfl.dev/v1beta1
+kind: ComputeOrganizationSecurityPolicyAssociation
+metadata:
+  name: cloud-armor-cloud-armor
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "cloud-armor"
+    app.kubernetes.io/name: organization
+    app.kubernetes.io/version: "0.4.0"
+  annotations:
+    hfl.dev/id: "cloud_armor_policy"
+spec:
+  resourceID: "organization-1122334455"
+  attachmentId: "organizations/1122334455"
+  policyId: "1234567890"
+  excludedProjects: ["projects/222222222222"]
+---
+# Source: organization/templates/service-agents.yaml
+apiVersion: serviceusage.gcp.hfl.dev/v1beta1
+kind: ServiceIdentity
+metadata:
+  name: cloud-armor-agent-privilegedaccessmanager
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "cloud-armor"
+    app.kubernetes.io/name: organization
+    app.kubernetes.io/version: "0.4.0"
+  annotations:
+    hfl.dev/id: "service-identity:privilegedaccessmanager.googleapis.com"
+spec:
+  resourceID: "privilegedaccessmanager.googleapis.com"
+  organizationRef:
+    external: "organizations/1122334455"
+---
+# Source: organization/templates/service-agents.yaml
+apiVersion: serviceusage.gcp.hfl.dev/v1beta1
+kind: ServiceIdentity
+metadata:
+  name: cloud-armor-agent-securitycenter
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "cloud-armor"
+    app.kubernetes.io/name: organization
+    app.kubernetes.io/version: "0.4.0"
+  annotations:
+    hfl.dev/id: "service-identity:securitycenter.googleapis.com"
+spec:
+  resourceID: "securitycenter.googleapis.com"
+  organizationRef:
+    external: "organizations/1122334455"

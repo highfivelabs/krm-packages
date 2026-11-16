@@ -9,7 +9,7 @@ at v60.0.0 (`f706bc3b`), Apache-2.0, Copyright Google LLC. Bundt Package
 tag bindings are Config Connector kinds (`v1beta1`); a separate access
 entry is Config Connector's `BigQueryDatasetAccess` (`v1alpha1`); IAM on the
 dataset is config-connector-extensions' `IAMBinding` (`v1beta1`) and
-`IAMMember` (`v1alpha1`), at `d54a2075`, since Config Connector's IAM kinds
+`IAMMember` (`v1beta1` since `81c3f9b5`), since Config Connector's IAM kinds
 cannot reference a dataset.
 
 ## Example
@@ -41,7 +41,7 @@ chart carries 23 of the 24; one is refused, and six are accepted in part.
 | `namePrefix` | not a fabric variable: `<namePrefix>_` in front of the dataset's ID, its hyphens as underscores (a dataset ID has no hyphens). Tables, views and routines are named within the dataset |
 | `labels` | fabric's dataset labels, with the catalog's meaning: labels on every object; an unprefixed one is a cloud label of the dataset and of each table, view and materialized view |
 | `tags` | not a fabric variable: cloud labels on every object |
-| `allow_alpha` | not a fabric variable: required for `BigQueryDatasetAccess` (below) and `iam_bindings_additive` |
+| `allow_alpha` | not a fabric variable: required for `BigQueryDatasetAccess` (below) |
 | `deletion_policy` | not a fabric variable: `DELETE` (default) or `ABANDON`; `PREVENT` is refused |
 | `project_id`, `id`, `location` | the dataset's `projectRef`, `resourceID` and `location` |
 | `friendly_name`, `description` | `friendlyName`, `description` (fabric's default `Terraform managed.`) |
@@ -53,7 +53,7 @@ chart carries 23 of the 24; one is refused, and six are accepted in part.
 | `dataset_access` | where the access entries go (above) |
 | `iam`, `iam_by_principals` | merged by role; one `IAMBinding` per role on the dataset, exact per role |
 | `iam_bindings` | one `IAMBinding` per entry, with its condition |
-| `iam_bindings_additive` | one `IAMMember` per entry, with its condition: **needs `allow_alpha: true`** |
+| `iam_bindings_additive` | one `IAMMember` (`iam.gcp.hfl.dev/v1beta1`) per entry, with its condition |
 | `tables` | one `BigQueryTable` per key, named by the key: `friendlyName`, `description`, `labels` (its object's), `schema`, `requirePartitionFilter`, `options` (`clustering`, `encryptionConfiguration`, `expirationTime`, `maxStaleness`), `partitioning` (`rangePartitioning` with `field`, or `timePartitioning` with its own `field`, as fabric maps them), `externalDataConfiguration` (every field fabric has, `avro_logical_types` as `avroOptions` and `json_options_encoding` as `jsonOptions`), `tableConstraints` (the primary key, and the one foreign key fabric takes). `deletion_protection` is accepted and ignored (below) |
 | `views` | one `BigQueryTable` with a `view` (`query`, `useLegacySql`) per key; `schema` is sent as JSON, as fabric's `jsonencode` |
 | `materialized_views` | one `BigQueryTable` with a `materializedView` (`query`, `enableRefresh`, `refreshIntervalMs`, `allowNonIncrementalDefinition`) per key, with the table fields above |
@@ -107,7 +107,7 @@ Fabric's whole-object outputs (`dataset`, `tables`, `views`,
 A `module "x" { source = ".../modules/bigquery-dataset" ... }` block's
 arguments become the values unchanged, with `allow_alpha: true` when
 `access`, `authorized_views` or `authorized_datasets` is set without
-`dataset_access`, or `iam_bindings_additive` is set. The dataset, tables and
+`dataset_access`. The dataset, tables and
 routines keep their names, so they adopt what Terraform made
 (`docs/design.md`, "From Terraform").
 
@@ -142,5 +142,8 @@ Not applied live: live runs are pending KEYLIVE.
 
 ## Changes
 
+- **0.2.0** (2026-11-15): `IAMMember` renders
+  `iam.gcp.hfl.dev/v1beta1` without `allow_alpha` (config-connector-extensions
+  `81c3f9b5`).
 - **0.1.0** (2026-11-13): the port: the dataset, its access entries and
   IAM, tables, views, materialized views, routines and tag bindings.

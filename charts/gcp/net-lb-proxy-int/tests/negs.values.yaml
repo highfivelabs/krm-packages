@@ -1,9 +1,8 @@
 # fabric's README, NEG examples: zonal (the chart's subnetwork), hybrid,
-# and internet with endpoints (alpha), with a regional HTTP health check.
+# and internet with endpoints, with a regional HTTP health check.
 name: ilb-test
 project_id: my-project
 region: europe-west1
-allow_alpha: true
 health_check_config:
   name: ilb-test-hc
   project_id: my-project

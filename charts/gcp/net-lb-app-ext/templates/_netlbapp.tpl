@@ -704,7 +704,7 @@ per entry, named <name>-<key>:
   internet, regional load balancer: a ComputeRegionNetworkEndpointGroup
     (INTERNET_FQDN_PORT or INTERNET_IP_PORT), and
     google_compute_region_network_endpoint, config-connector-extensions'
-    ComputeRegionNetworkEndpoint (v1alpha1, allow_alpha). */ -}}
+    ComputeRegionNetworkEndpoint (v1beta1). */ -}}
 {{- define "netlbapp.negs" -}}
 {{- $v := .Values }}
 {{- $c := include "netlbapp.c" . | fromJson }}
@@ -820,7 +820,9 @@ spec:
 {{- end }}
 {{- end }}
 {{- end }}
-{{- include "kcc.alpha" (list $ (printf "neg_configs.%s.internet.endpoints" $k) $i.endpoints (ternary "ComputeRegionNetworkEndpoint (config-connector-extensions)" "ComputeGlobalNetworkEndpoint" (not (empty $c.region)))) }}
+{{- if empty $c.region }}
+{{- include "kcc.alpha" (list $ (printf "neg_configs.%s.internet.endpoints" $k) $i.endpoints "ComputeGlobalNetworkEndpoint") }}
+{{- end }}
 {{- if $c.region }}
 ---
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
@@ -837,7 +839,7 @@ spec:
 {{- range $ek := keys ($i.endpoints | default dict) | sortAlpha }}
 {{- $e := index $i.endpoints $ek }}
 ---
-apiVersion: compute.gcp.hfl.dev/v1alpha1
+apiVersion: compute.gcp.hfl.dev/v1beta1
 kind: ComputeRegionNetworkEndpoint
 metadata:
   {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "ep" $k $ek)) "id" (printf "internet_endpoint:%s-%s" $k $ek) "project" $negProject "abandon" $abandon) | nindent 2 }}

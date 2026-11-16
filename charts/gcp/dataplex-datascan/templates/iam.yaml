@@ -10,7 +10,7 @@ of iam merged with iam_by_principals, exact per role as fabric's.
 google_dataplex_datascan_iam_binding.bindings: one IAMBinding per entry of
 iam_bindings.
 google_dataplex_datascan_iam_member.bindings: one IAMMember
-(config-connector-extensions, iam.gcp.hfl.dev/v1alpha1, so allow_alpha)
+(config-connector-extensions, iam.gcp.hfl.dev/v1beta1)
 per entry of iam_bindings_additive.
 */ -}}
 {{- $v := .Values }}
@@ -58,10 +58,9 @@ spec:
     {{- include "kcc.condition" . | nindent 4 }}
   {{- end }}
 {{- end }}
-{{- include "kcc.alpha" (list $ "iam_bindings_additive" $v.iam_bindings_additive "IAMMember (config-connector-extensions)") }}
 {{- range $key, $b := ($v.iam_bindings_additive | default dict) }}
 ---
-apiVersion: iam.gcp.hfl.dev/v1alpha1
+apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMMember
 metadata:
   {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "iam-member" $key)) "id" (printf "iam-member:%s" $key) "project" $v.project_id) | nindent 2 }}

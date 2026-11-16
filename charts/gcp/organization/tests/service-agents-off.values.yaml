@@ -1,0 +1,5 @@
+# create_agents: false makes no ServiceIdentity, as fabric's.
+organization_id: organizations/1122334455
+service_agents_config:
+  services: [securitycenter.googleapis.com]
+  create_agents: false

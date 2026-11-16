@@ -65,10 +65,10 @@ org_policies:
 | `bigquery_reservations` | one `BigQueryReservationReservation` each and one `BigQueryReservationAssignment` per job type and assignee (`projects/`, `folders/` or `organizations/`), keyed as fabric keys them; fabric's `scaling_mode` is not read by its resource either |
 | `kms_autokeys` | one `KMSKeyHandle` each |
 | `iam_deny_policies` | one `IAMDenyPolicy` of config-connector-extensions (`iam.gcp.hfl.dev/v1beta1`) each on the project, named by its key, with its rules (denied and exception principals and permissions, the denial condition) and fabric's check that every rule denies a principal a permission |
-| `asset_feeds` | on an existing project (`project_reuse` with `attributes.number`; "Config Connector bugs"), one `AssetFeed` (`v1beta1`) each, the project named by its number, its ID the key, to the Pub/Sub topic `projects/<project>/topics/<topic>`, with its content type (fabric's check), asset types and names and condition. `billing_project` is not carried: `AssetFeed` has no field for it, and Config Connector bills the call to the project its controller is configured with (as the `organization` chart) |
+| `asset_feeds` | one `AssetFeed` of config-connector-extensions (`asset.gcp.hfl.dev/v1beta1`) each on the project, by the `Project` object or with `project_reuse` by its ID, its ID the key, to the Pub/Sub topic `projects/<project>/topics/<topic>`, with its content type (fabric's check), asset types and names and condition. `billing_project` is not carried: `AssetFeed` has no field for it, and Config Connector bills the call to the project its controller is configured with (as the `organization` chart) |
 | `vpc_sc` | one `AccessContextManagerServicePerimeterResource` (`v1beta1`) putting the project in `perimeter_name` (`accessPolicies/<n>/servicePerimeters/<name>`), by the `Project` object (Config Connector reads its number), or with `project_reuse` by `project_reuse.attributes.number`, which it then needs. `is_dry_run` is refused: Config Connector has no dry-run perimeter resource kind |
-| `cloud_armor_policy` | alpha: needs `allow_alpha: true`. One `ComputeOrganizationSecurityPolicyAssociation` (`v1alpha1`) of the hierarchical policy with `projects/<number>`, named `project-<number>` unless named, as the `folder` chart. The number must be known, so it needs `project_reuse` with `attributes.number` (a new project's number exists only after apply). Exclusions are refused with fabric's message |
-| `allow_alpha` | not a fabric variable: accept `log_scopes` and `cloud_armor_policy`, whose kinds are `v1alpha1` |
+| `cloud_armor_policy` | one `ComputeOrganizationSecurityPolicyAssociation` of config-connector-extensions (`compute.gcp.hfl.dev/v1beta1`) of the hierarchical policy with `projects/<number>`, named `project-<number>` unless named, as the `folder` chart. The number must be known, so it needs `project_reuse` with `attributes.number` (a new project's number exists only after apply). Exclusions are refused with fabric's message |
+| `allow_alpha` | not a fabric variable: accept `log_scopes`, whose kind is `v1alpha1` |
 | `tag_bindings` | one `TagsTagBinding` each on the project: the `Project` object (Config Connector reads its number), or with `project_reuse` the number in `project_reuse.attributes.number`, which it then needs |
 
 ## Not ported
@@ -91,20 +91,6 @@ Refused because Config Connector cannot express them:
 | `shared_vpc_service_config.service_agent_iam`, `service_agent_subnet_iam`, `service_iam_grants`, `network_subnet_users` | grants to service agents name the project number, known only after apply (gap 8) |
 | `asset_search` | a read, not a resource |
 | `universe`, `skip_delete`, `context` | other universes are not supported; `skip_delete` is deprecated in fabric; use Bundt expressions |
-
-## Config Connector bugs
-
-- **Config Connector's `AssetFeed` works on a project only when named by
-  its number.** Google Cloud names a feed `projects/<number>/feeds/<id>`,
-  and the kind compares that parent with its `projectRef` on every
-  reconcile after the create. In the fake cloud on 2026-11-15, a feed on
-  the chart's new project became Ready and then could not be deleted: by
-  the `Project` object (run `off-catalog-1115103624-5909`: `referenced
-  Project catalog-project/mock not found` once the object was gone) or by
-  the project ID (run `off-catalog-1115110334-29801`: `spec.projectRef
-  changed, expect 886048300, got catalog-mock-prj`). So `asset_feeds`
-  needs `project_reuse` with `attributes.number`, and the chart names the
-  project by that number.
 
 ## Outputs
 
@@ -148,7 +134,7 @@ with every other module the catalog tracks. To take a newer release, see
 `task test CHART=project`: thirteen render cases (`extras` carries the
 0.5.0 variables, `logging` the 0.6.0 ones, `monitoring` the 0.7.0 ones, `tags` the 0.8.0 ones, `identity` the 0.9.0 ones, `reuse-tags` tag bindings on a
 reused project, `security` the 0.10.0 variables on a new project and
-`reuse-security` on a reused one, with asset feeds), thirty-nine refusals. `tests/mock.values.yaml` (no lien and no Shared VPC: mockgcp has
+`reuse-security` on a reused one, with asset feeds), thirty-eight refusals. `tests/mock.values.yaml` (no lien and no Shared VPC: mockgcp has
 neither) is applied to the fake cloud.
 
 On 2026-11-12 (`task test-mock MOCK_CHARTS=project`, offload VM), with the
@@ -183,12 +169,25 @@ and deleted in both. Both runs also carried an asset feed on the new
 project, which became Ready but could not be deleted ("Config Connector
 bugs"); the case no longer sets one. Asset feeds, `vpc_sc` (it needs an
 access policy and a perimeter) and `cloud_armor_policy` (alpha) are
-render-tested only. No live run: the project chart's
+render-tested only. And for 0.11.0 (run `off-catalog-1116014618-16654`,
+config-connector-extensions `81c3f9b5`): the feed is back, as
+config-connector-extensions' `AssetFeed` by the `Project` object, and all
+23 objects became Ready and were deleted, outputs evaluated. `vpc_sc` and
+`cloud_armor_policy` are still render-tested only. No live run: the project chart's
 live case waits for the test provisioner (`docs/design.md`, "The test
 provisioner").
 
 ## Changes
 
+- **0.11.0** (2026-11-15): `asset_feeds` render config-connector-extensions'
+  `AssetFeed` (`asset.gcp.hfl.dev/v1beta1`, its #134), which takes a
+  project's number and ID as one project, so a feed names the project by
+  the `Project` object or with `project_reuse` by its ID, on a new project
+  too, and no longer needs `project_reuse.attributes.number`; the
+  fake-cloud case carries a feed again. `cloud_armor_policy` renders
+  config-connector-extensions' `ComputeOrganizationSecurityPolicyAssociation`
+  (`compute.gcp.hfl.dev/v1beta1`, its #136) without `allow_alpha`; it still
+  needs the project's number, and exclusions stay refused.
 - **0.10.0** (2026-11-15): `iam_deny_policies` (config-connector-extensions'
   `IAMDenyPolicy`, as the `folder` chart), `asset_feeds` (`AssetFeed`, as
   the `organization` chart, on a reused project with its number;

@@ -9,8 +9,7 @@ own IAM kinds cannot reference, as config-connector-extensions' kinds
   iam, iam_by_principals   one IAMBinding (iam.gcp.hfl.dev/v1beta1) per
                            role, the two merged as fabric merges them
   iam_bindings             one IAMBinding per entry
-  iam_bindings_additive    one IAMMember (iam.gcp.hfl.dev/v1alpha1, so
-                           allow_alpha) per entry
+  iam_bindings_additive    one IAMMember (iam.gcp.hfl.dev/v1beta1) per entry
 Arguments (a dict):
   root        $
   ref         the resourceRef (a dict: kind, and external or name)
@@ -75,11 +74,10 @@ spec:
   {{- end }}
 {{- end }}
 {{- $additive := index $v "iam_bindings_additive" | default dict }}
-{{- include "kcc.alpha" (list $root (printf "%siam_bindings_additive" (.what | default "")) $additive "IAMMember (config-connector-extensions)") }}
 {{- range $key := keys $additive | sortAlpha }}
 {{- $b := index $additive $key }}
 ---
-apiVersion: iam.gcp.hfl.dev/v1alpha1
+apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMMember
 metadata:
   {{- include "kcc.metadata" (dict "root" $root "name" (include "kcc.name" (compact (list $root.Release.Name $base "iam-member" $key))) "id" (printf "%siam-member:%s" $idp $key) "project" $.project) | nindent 2 }}

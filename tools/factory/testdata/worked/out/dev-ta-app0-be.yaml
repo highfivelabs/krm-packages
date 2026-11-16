@@ -12,7 +12,7 @@ spec:
     - name: project
       package:
         name: gcp-project
-        version: "0.10.0"
+        version: "0.11.0"
       inputs:
         name: dev-ta-app0-be
         prefix: hfl

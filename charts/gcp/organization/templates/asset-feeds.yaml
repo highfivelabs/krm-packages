@@ -4,8 +4,9 @@ SPDX-License-Identifier: Apache-2.0
 Ported from cloud-foundation-fabric modules/organization/assets.tf
 (v60.0.0), Copyright 2025 Google LLC, Apache-2.0.
 
-google_cloud_asset_organization_feed.default: one AssetFeed per entry of
-asset_feeds on the organization, its ID the key, publishing to the Pub/Sub
+google_cloud_asset_organization_feed.default: one AssetFeed
+(asset.gcp.hfl.dev/v1beta1, config-connector-extensions, as the project and
+folder charts render it) per entry of asset_feeds on the organization, its ID the key, publishing to the Pub/Sub
 topic (projects/<project>/topics/<topic>), with its content type (fabric's
 check), asset types and names and condition. billing_project is not
 carried: AssetFeed has no field for it, and Config Connector bills the call
@@ -24,7 +25,7 @@ from the module").
 {{- include "organization.context" (list $ (printf "asset_feeds.%s.feed_output_config.pubsub_destination.topic" $key) $topic) }}
 {{- include "organization.context" (list $ (printf "asset_feeds.%s.billing_project" $key) $f.billing_project) }}
 ---
-apiVersion: asset.cnrm.cloud.google.com/v1beta1
+apiVersion: asset.gcp.hfl.dev/v1beta1
 kind: AssetFeed
 metadata:
   {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "feed" $key)) "id" (printf "asset-feed:%s" $key) "abandon" $abandon) | nindent 2 }}

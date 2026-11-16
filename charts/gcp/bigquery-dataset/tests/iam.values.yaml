@@ -1,6 +1,5 @@
 # fabric's README example "IAM roles", with iam_by_principals merged into
-# iam, a conditional binding and (allow_alpha) an additive member.
-allow_alpha: true
+# iam, a conditional binding and an additive member.
 project_id: my-project
 id: my_dataset
 iam:

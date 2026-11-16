@@ -25,8 +25,3 @@ refused:
     reason: "accepted; an appliance's import_policies and export_policies are refused: ComputeRouterPeer has no importPolicies or exportPolicies"
     partial: true
     fields: [import_policies, export_policies]
-  - variable: router_config
-    kind: alpha
-    reason: "accepted; route_policies need config-connector-extensions' v1alpha1 ComputeRouterRoutePolicy: set allow_alpha: true"
-    partial: true
-    fields: [route_policies]

@@ -1,7 +1,5 @@
 # fabric's README "Simple example": one aspect type with IAM on it.
-# iam_bindings_additive renders the v1alpha1 IAMMember, so allow_alpha.
 project_id: test-project
-allow_alpha: true
 aspect_types:
   tf-test-template:
     display_name: Test template.

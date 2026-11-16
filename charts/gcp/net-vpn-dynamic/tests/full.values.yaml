@@ -1,7 +1,6 @@
 # Every value the chart carries: a given address, a named router with
 # keepalive and custom advertisements, and import and export route
-# policies (allow_alpha).
-allow_alpha: true
+# policies.
 project_id: my-project
 region: europe-west1
 network: https://www.googleapis.com/compute/v1/projects/my-project/global/networks/my-network

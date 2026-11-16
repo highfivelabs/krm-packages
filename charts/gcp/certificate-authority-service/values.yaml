@@ -38,8 +38,7 @@ iam: {}
 # Authoritative IAM bindings in {KEY => {role = ROLE, members = [],
 # condition = {}}}. Keys are arbitrary.
 iam_bindings: {}
-# Individual additive IAM bindings. Keys are arbitrary. IAMMember is
-# v1alpha1: needs allow_alpha.
+# Individual additive IAM bindings. Keys are arbitrary.
 iam_bindings_additive: {}
 # Authoritative IAM binding in {PRINCIPAL => [ROLES]} format. Merged with
 # iam.
@@ -49,9 +48,9 @@ location: ""
 # Project id.
 project_id: ""
 
-# Not a fabric variable: iam_bindings_additive renders
-# config-connector-extensions' IAMMember, which is v1alpha1; set true to
-# accept that its schema may change (docs/design.md, "Alpha kinds").
+# Not a fabric variable: no kind of this chart is alpha any more
+# (config-connector-extensions' IAMMember is v1beta1 since 81c3f9b5); kept
+# so components that set it still render, it changes nothing.
 allow_alpha: false
 # Not a fabric variable: DELETE (the default) or ABANDON, which keeps the
 # pool and the CAs when the component is deleted. PREVENT has no Config

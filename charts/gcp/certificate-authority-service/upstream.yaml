@@ -36,7 +36,3 @@ refused:
     reason: "create_pool.publishing_options.encoding_format DER is refused: PrivateCACAPool's publishingOptions has no encodingFormat, so the pool publishes PEM (the API's default)"
     partial: true
     fields: [encoding_format]
-  - variable: iam_bindings_additive
-    kind: alpha
-    reason: "config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true"
-    partial: true

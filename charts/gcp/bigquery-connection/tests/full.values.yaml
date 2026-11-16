@@ -4,7 +4,6 @@ location: europe-west1
 connection_id: my_spark
 friendly_name: Spark
 description: Spark with a metastore and a history server.
-allow_alpha: true
 deletion_policy: ABANDON
 connection_config:
   spark:

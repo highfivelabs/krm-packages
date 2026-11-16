@@ -1,6 +1,5 @@
 # A new hub, custom advertisement, keepalive, data transfer and route
-# policies (allow_alpha).
-allow_alpha: true
+# policies.
 hub: {create: true, name: prod-hub, description: the hub}
 name: spoke-ra
 project_id: my-project

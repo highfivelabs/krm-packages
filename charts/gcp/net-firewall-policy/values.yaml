@@ -23,8 +23,8 @@ labels: {}
 # Cloud labels on every resource; firewall policies take none, so these
 # stay in Kubernetes too.
 tags: {}
-# Not a fabric variable: true accepts the v1alpha1 kinds a regional policy
-# and packet mirroring rules need (docs/design.md, "Alpha kinds").
+# Not a fabric variable: true accepts the v1alpha1 kind packet mirroring
+# rules need (docs/design.md, "Alpha kinds").
 allow_alpha: false
 
 # Ids of the resources to which this policy will be attached, in
@@ -67,7 +67,7 @@ name: ""
 # policy.
 parent_id: ""
 # Policy region. Null for a hierarchical policy, global for a global
-# network policy, a region for a regional one (allow_alpha).
+# network policy, a region for a regional one.
 region: null
 # Security profile group IDs that rules may name by key.
 security_profile_group_ids: {}

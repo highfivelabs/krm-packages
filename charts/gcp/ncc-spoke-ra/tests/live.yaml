@@ -2,8 +2,7 @@
 # router appliance spoke on one e2-micro VM of the run (live.extra.yaml; no
 # BGP speaker runs on it, so the sessions stay down), its Cloud Router,
 # interfaces and peer, and an import route policy (config-connector-
-# extensions' ComputeRouterRoutePolicy, v1alpha1, so allow_alpha).
-allow_alpha: true
+# extensions' ComputeRouterRoutePolicy, v1beta1).
 hub: {create: true, name: ${RUN}-hub, description: catalog live test ${RUN}}
 name: ${RUN}-spoke
 project_id: ${PROJECT}

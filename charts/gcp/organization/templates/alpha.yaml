@@ -2,18 +2,13 @@
 Copyright 2026 High Five Labs
 SPDX-License-Identifier: Apache-2.0
 Ported from cloud-foundation-fabric modules/organization (v60.0.0):
-deny-policies.tf, main.tf, context_aware_access.tf, model-armor.tf and
+deny-policies.tf, context_aware_access.tf, model-armor.tf and
 scc-sha-custom-modules.tf, Copyright 2025 Google LLC, Apache-2.0.
 
 The parts whose only Config Connector kind is v1alpha1: each needs
 allow_alpha: true (docs/design.md, "Alpha kinds").
 google_iam_deny_policy.default: an IAMDenyPolicy per entry of
 iam_deny_policies on the organization, its ID the key, with fabric's rules.
-google_compute_organization_security_policy_association.default
-(cloud_armor_policy): a ComputeOrganizationSecurityPolicyAssociation of the
-hierarchical Cloud Armor policy with the organization, named
-organization-<id> unless named; excluded folders and projects are refused
-(the kind has no such fields).
 google_access_context_manager_gcp_user_access_binding.binding: an
 AccessContextManagerGCPUserAccessBinding per entry of
 context_aware_access_bindings ("$access_levels:<key>" is this chart's
@@ -34,7 +29,6 @@ ID).
 {{- $org := include "organization.id" . }}
 {{- $number := include "organization.number" . }}
 {{- include "kcc.alpha" (list $ "iam_deny_policies" $v.iam_deny_policies "IAMDenyPolicy") }}
-{{- include "kcc.alpha" (list $ "cloud_armor_policy" $v.cloud_armor_policy "ComputeOrganizationSecurityPolicyAssociation") }}
 {{- include "kcc.alpha" (list $ "context_aware_access_bindings" $v.context_aware_access_bindings "AccessContextManagerGCPUserAccessBinding") }}
 {{- include "kcc.alpha" (list $ "model_armor_floor_setting" $v.model_armor_floor_setting "ModelArmorFloorSetting") }}
 {{- include "kcc.alpha" (list $ "scc_sha_custom_modules" $v.scc_sha_custom_modules "SecurityCenterManagementSecurityHealthAnalyticsCustomModule") }}
@@ -82,20 +76,6 @@ spec:
           {{- end }}
         {{- end }}
     {{- end }}
-{{- end }}
-{{- with $v.cloud_armor_policy }}
-{{- include "kcc.unsupported" (list $ "cloud_armor_policy.excluded_folders" .excluded_folders "ComputeOrganizationSecurityPolicyAssociation has no excludedFolders") }}
-{{- include "kcc.unsupported" (list $ "cloud_armor_policy.excluded_projects" .excluded_projects "ComputeOrganizationSecurityPolicyAssociation has no excludedProjects") }}
-{{- include "organization.context" (list $ "cloud_armor_policy.policy_id" .policy_id) }}
----
-apiVersion: compute.cnrm.cloud.google.com/v1alpha1
-kind: ComputeOrganizationSecurityPolicyAssociation
-metadata:
-  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "cloud-armor")) "id" "cloud_armor_policy" "abandon" $abandon) | nindent 2 }}
-spec:
-  resourceID: {{ include "kcc.cloudName" (list $ "Cloud Armor policy association" (.name | default (printf "organization-%s" $number)) 63) | quote }}
-  attachmentId: {{ $org | quote }}
-  policyId: {{ .policy_id | quote }}
 {{- end }}
 {{- $caa := $v.context_aware_access_bindings | default dict }}
 {{- range $key := keys $caa | sortAlpha }}

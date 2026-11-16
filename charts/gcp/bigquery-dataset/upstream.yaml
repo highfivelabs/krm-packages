@@ -45,11 +45,6 @@ refused:
     kind: gap
     reason: "accepted with dataset_access: true only (the dataset's own access list): BigQueryDatasetAccess, fabric's default, has no routine"
     partial: true
-  - variable: iam_bindings_additive
-    kind: alpha
-    reason: "config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true"
-    partial: true
-    needs_allow_alpha: true
   - variable: routines
     kind: gap
     reason: "data_governance_type, spark_options and remote_function_options are refused: BigQueryRoutine has no dataGovernanceType, sparkOptions or remoteFunctionOptions"

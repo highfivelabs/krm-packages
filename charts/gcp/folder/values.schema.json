@@ -47,7 +47,7 @@
       }
     },
     "asset_feeds": {
-      "description": "Cloud Asset Inventory feeds; refused when set (README.md).",
+      "description": "Cloud Asset Inventory feeds {ID: {content_type, asset_types, asset_names, feed_output_config: {pubsub_destination: {topic}}, condition}}: an AssetFeed (asset.gcp.hfl.dev/v1beta1) each on the folder; billing_project is not carried.",
       "type": [
         "object",
         "null"
@@ -85,7 +85,7 @@
       }
     },
     "cloud_armor_policy": {
-      "description": "Hierarchical Cloud Armor policy association {name, policy_id, excluded_folders, excluded_projects}: ComputeOrganizationSecurityPolicyAssociation (v1alpha1, allow_alpha) on an existing folder; the exclusions are refused.",
+      "description": "Hierarchical Cloud Armor policy association {name, policy_id, excluded_folders, excluded_projects}: ComputeOrganizationSecurityPolicyAssociation (compute.gcp.hfl.dev/v1beta1) on an existing folder; excluded_folders is refused, as fabric refuses it.",
       "type": [
         "object",
         "null"
@@ -776,11 +776,29 @@
       ]
     },
     "service_agents_config": {
-      "description": "Service agents configuration; refused when set (README.md).",
+      "description": "Service agents configuration {services, create_agents}: with create_agents (default true), a ServiceIdentity (serviceusage.gcp.hfl.dev/v1beta1) per service of services that has a folder-level agent.",
       "type": [
         "object",
         "null"
-      ]
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "services": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "create_agents": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
     },
     "tag_bindings": {
       "description": "Tag bindings for this folder, in key => tag value id format.",
@@ -802,7 +820,7 @@
       ]
     },
     "allow_alpha": {
-      "description": "Accept features that need an alpha Config Connector kind: cloud_armor_policy (not a Terraform variable).",
+      "description": "Not a Terraform variable. No feature of this chart needs an alpha kind any more; kept so components that set it still render.",
       "type": "boolean"
     }
   }

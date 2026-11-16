@@ -18,7 +18,7 @@ One policy, by region (main.tf's use_hierarchical and use_regional):
     rule;
   - any other region, net-regional.tf: config-connector-extensions'
     ComputeRegionNetworkFirewallPolicy, its associations and rules (all
-    v1alpha1: allow_alpha).
+    v1beta1).
 Rules are keyed and named as fabric keys them, "<direction>/<name>".
 */ -}}
 {{- $v := .Values }}
@@ -34,9 +34,6 @@ Rules are keyed and named as fabric keys them, "<direction>/<name>".
 {{- $rules := include "nfwp.rules" (list $ false) | fromJson }}
 {{- $mirroring := include "nfwp.rules" (list $ true) | fromJson }}
 {{- $sgs := $v.security_profile_group_ids | default dict }}
-{{- if $regional }}
-{{- include "kcc.alpha" (list $ "region" $v.region "ComputeRegionNetworkFirewallPolicy (config-connector-extensions)") }}
-{{- end }}
 {{- if not (or $hier $regional) }}
 {{- include "kcc.alpha" (list $ "ingress_mirroring_rules" $v.ingress_mirroring_rules "ComputeNetworkFirewallPolicyPacketMirroringRule (config-connector-extensions)") }}
 {{- include "kcc.alpha" (list $ "egress_mirroring_rules" $v.egress_mirroring_rules "ComputeNetworkFirewallPolicyPacketMirroringRule (config-connector-extensions)") }}
@@ -76,7 +73,7 @@ spec:
   {{- end }}
 {{- else if $regional }}
 ---
-apiVersion: compute.gcp.hfl.dev/v1alpha1
+apiVersion: compute.gcp.hfl.dev/v1beta1
 kind: ComputeRegionNetworkFirewallPolicy
 metadata:
   {{- include "kcc.metadata" (dict "root" $ "name" $policyObject "id" "policy" "project" $project "abandon" $abandon) | nindent 2 }}
@@ -109,7 +106,7 @@ spec:
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeFirewallPolicyAssociation
 {{- else if $regional }}
-apiVersion: compute.gcp.hfl.dev/v1alpha1
+apiVersion: compute.gcp.hfl.dev/v1beta1
 kind: ComputeRegionNetworkFirewallPolicyAssociation
 {{- else }}
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
@@ -147,7 +144,7 @@ spec:
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeFirewallPolicyRule
 {{- else if $regional }}
-apiVersion: compute.gcp.hfl.dev/v1alpha1
+apiVersion: compute.gcp.hfl.dev/v1beta1
 kind: ComputeRegionNetworkFirewallPolicyRule
 {{- else }}
 apiVersion: compute.gcp.hfl.dev/v1beta1

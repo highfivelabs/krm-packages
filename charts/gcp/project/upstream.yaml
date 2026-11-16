@@ -30,16 +30,15 @@ refused:
     fields: [alert_strategy.notification_prompts, documentation.subject, documentation.links, conditions.condition_prometheus_query_language.disable_metric_validation]
   - variable: asset_feeds
     kind: gap
-    reason: "only on an existing project (project_reuse with attributes.number): Config Connector's AssetFeed must name the project by its number; billing_project is not carried: AssetFeed has no field for it, and Config Connector bills the call to the project its controller is configured with"
+    reason: "billing_project is not carried: AssetFeed has no field for it, and Config Connector bills the call to the project its controller is configured with"
     partial: true
   - variable: asset_search
     kind: by-design
     reason: "a search is a read, not a resource"
   - variable: cloud_armor_policy
-    kind: alpha
-    reason: "ComputeOrganizationSecurityPolicyAssociation is v1alpha1: needs allow_alpha: true, and an existing project (project_reuse with attributes.number): its attachmentId is the project's number, known only after a new project is made"
+    kind: gap
+    reason: "only on an existing project (project_reuse with attributes.number): the association's attachmentId is the project's number, known only after a new project is made"
     partial: true
-    needs_allow_alpha: true
   - variable: compute_metadata
     kind: gap
     reason: "ComputeProjectMetadata owns all of a project's metadata, while fabric sets single items; there is no per-item kind (gap 10)"

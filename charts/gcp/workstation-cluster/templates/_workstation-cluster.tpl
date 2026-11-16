@@ -46,8 +46,7 @@ IAM kinds can reference, as config-connector-extensions' kinds
 (docs/design.md, "IAM"):
   iam                      one IAMBinding (iam.gcp.hfl.dev/v1beta1) per role
   iam_bindings             one IAMBinding per entry
-  iam_bindings_additive    one IAMMember (iam.gcp.hfl.dev/v1alpha1, so
-                           allow_alpha) per entry
+  iam_bindings_additive    one IAMMember (iam.gcp.hfl.dev/v1beta1) per entry
 fabric's variables carry no conditions here.
 Arguments (a dict):
   root      $
@@ -93,11 +92,10 @@ spec:
   {{- end }}
 {{- end }}
 {{- $additive := $v.iam_bindings_additive | default dict }}
-{{- include "kcc.alpha" (list $root (printf "%s.iam_bindings_additive" .what) $additive "IAMMember (config-connector-extensions)") }}
 {{- range $key := keys $additive | sortAlpha }}
 {{- $b := index $additive $key }}
 ---
-apiVersion: iam.gcp.hfl.dev/v1alpha1
+apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMMember
 metadata:
   {{- include "kcc.metadata" (dict "root" $root "name" (include "kcc.name" (list $root.Release.Name $base "iam-member" $key)) "id" (printf "%siam-member:%s" $idp $key) "project" $root.Values.project_id) | nindent 2 }}

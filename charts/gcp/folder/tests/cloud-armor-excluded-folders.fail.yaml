@@ -1,0 +1,4 @@
+# expect: Folders can only be excluded from organization-level Cloud Armor policy associations.
+folder_create: false
+id: folders/1234567890
+cloud_armor_policy: {policy_id: "123", excluded_folders: [folders/2]}

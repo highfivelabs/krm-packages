@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "existing"
     app.kubernetes.io/name: net-vpn-ha
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "router_interface:remote-0"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -30,7 +30,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "existing"
     app.kubernetes.io/name: net-vpn-ha
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "bgp_peer:remote-0"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -46,7 +46,7 @@ spec:
   advertiseMode: DEFAULT
 ---
 # Source: net-vpn-ha/templates/main.yaml
-apiVersion: compute.gcp.hfl.dev/v1alpha1
+apiVersion: compute.gcp.hfl.dev/v1beta1
 kind: ComputeRouterRoutePolicy
 metadata:
   name: existing-route-policy-import
@@ -54,7 +54,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "existing"
     app.kubernetes.io/name: net-vpn-ha
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "route_policy:import"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -80,7 +80,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "existing"
     app.kubernetes.io/name: net-vpn-ha
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "tunnel:remote-0"
     cnrm.cloud.google.com/project-id: "my-project"

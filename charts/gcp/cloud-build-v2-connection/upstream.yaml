@@ -35,7 +35,3 @@ refused:
     kind: alpha
     reason: "config-connector-extensions' CloudBuildRepository is v1alpha1: repositories, and the triggers on them, render only with allow_alpha: true"
     partial: true
-  - variable: iam_bindings_additive
-    kind: alpha
-    reason: "config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true"
-    partial: true

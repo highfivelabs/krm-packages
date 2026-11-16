@@ -3,7 +3,6 @@ project_id: my-project
 name: full
 region: us-central1
 service_account: dataform@my-project.iam.gserviceaccount.com
-allow_alpha: true
 deletion_policy: ABANDON
 remote_repository_settings:
   url: https://gitlab.example.com/data/dataform.git

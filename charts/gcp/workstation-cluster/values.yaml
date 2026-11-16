@@ -23,9 +23,9 @@ namePrefix: ""
 labels: {}
 # Cloud labels on every resource: on Google Cloud, labels.
 tags: {}
-# Not a Terraform variable: accept v1alpha1 kinds (config-connector-
-# extensions' IAMMember, for iam_bindings_additive on configurations and
-# workstations), whose schema may change (docs/design.md, "Alpha kinds").
+# Not a fabric variable: no kind of this chart is alpha any more
+# (config-connector-extensions' IAMMember is v1beta1 since 81c3f9b5); kept
+# so components that set it still render, it changes nothing.
 allow_alpha: false
 # DELETE (the default) or ABANDON: what deleting an object does to its
 # cloud resource. Not a fabric variable (docs/design.md, "Deletion").

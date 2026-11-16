@@ -28,7 +28,3 @@ refused:
     reason: "token is refused: a token given here would be in the rendered manifest (fabric's module does not send it either); the repository reads its token from the Secret Manager secret version secret_version names"
     partial: true
     fields: [token]
-  - variable: iam_bindings_additive
-    kind: alpha
-    reason: "config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true"
-    partial: true

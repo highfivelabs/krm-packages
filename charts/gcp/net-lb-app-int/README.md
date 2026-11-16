@@ -17,7 +17,7 @@ v1.160.0 (`ComputeForwardingRule`, `ComputeTargetHTTPProxy`,
 `ComputeNetworkEndpointGroup`, `ComputeRegionNetworkEndpointGroup`,
 `ComputeServiceAttachment`) and config-connector-extensions'
 `ComputeNetworkEndpoint` (`compute.gcp.hfl.dev/v1beta1`) and
-`ComputeRegionNetworkEndpoint` (`v1alpha1`) at `384d07c0`.
+`ComputeRegionNetworkEndpoint` (`v1beta1`) at `81c3f9b5`.
 
 Regional internal application load balancers need a proxy-only subnet
 with purpose `REGIONAL_MANAGED_PROXY` in the region (net-vpc's
@@ -74,11 +74,11 @@ The module's variables, with the same names, types and defaults.
 | `backend_service_configs` | one regional `ComputeBackendService` (`INTERNAL_MANAGED`) per key, named `<name>-<key>` unless it has a name: description, cookie TTL, draining timeout, health checks (keys of the chart's or existing IDs; `["default"]` unless set, `[]` for none), locality LB policy, logging, port name, protocol, security policy, session affinity, subsetting (`enable_subsetting`), timeout, circuit breakers, consistent hash, IAP (the client secret a Secret reference), outlier detection and the backends. Refused in part (below) |
 | `health_check_configs` | one `ComputeHealthCheck` per key, named `<name>-<key>` unless it has a name, of one type: global, or in `region` with `is_regional: true`. `null` (the default) is fabric's default; `{}` makes none |
 | `group_configs` | one unmanaged `ComputeInstanceGroup` per key |
-| `neg_configs` | per key, in the entry's project or the chart's, one of: `gce`, a zonal `ComputeNetworkEndpointGroup` (`GCE_VM_IP_PORT`; network and subnetwork the entry's or `vpc_config`'s) with one `ComputeNetworkEndpoint` per endpoint; `hybrid`, the same of type `NON_GCP_PRIVATE_IP_PORT`; `cloudrun`, a serverless `ComputeRegionNetworkEndpointGroup` (service, tag or URL mask); `internet`, a `ComputeRegionNetworkEndpointGroup` (`INTERNET_FQDN_PORT`, or `INTERNET_IP_PORT` with `use_fqdn: false`) on `vpc_config.network` with one `ComputeRegionNetworkEndpoint` per endpoint (alpha: `allow_alpha`); `psc`, a `ComputeRegionNetworkEndpointGroup` to a PSC target service. Named `<name>-<key>` |
+| `neg_configs` | per key, in the entry's project or the chart's, one of: `gce`, a zonal `ComputeNetworkEndpointGroup` (`GCE_VM_IP_PORT`; network and subnetwork the entry's or `vpc_config`'s) with one `ComputeNetworkEndpoint` per endpoint; `hybrid`, the same of type `NON_GCP_PRIVATE_IP_PORT`; `cloudrun`, a serverless `ComputeRegionNetworkEndpointGroup` (service, tag or URL mask); `internet`, a `ComputeRegionNetworkEndpointGroup` (`INTERNET_FQDN_PORT`, or `INTERNET_IP_PORT` with `use_fqdn: false`) on `vpc_config.network` with one `ComputeRegionNetworkEndpoint` per endpoint; `psc`, a `ComputeRegionNetworkEndpointGroup` to a PSC target service. Named `<name>-<key>` |
 | `service_attachment` | one `ComputeServiceAttachment` for the forwarding rule, named `name`: NAT subnets, automatic or manual acceptance, accept and reject lists, proxy protocol. `domain_name` and `reconcile_connections` are refused (below) |
 | `service_directory_registration` | refused (below) |
 | `context` | refused: Bundt expressions (`${...}`) and `valueFrom` replace fabric's `$context` lookups |
-| `allow_alpha` | not a fabric variable: accept config-connector-extensions' `v1alpha1` `ComputeRegionNetworkEndpoint` (internet NEG endpoints) |
+| `allow_alpha` | not a fabric variable, and no longer used: no kind of this chart is alpha (internet NEG endpoints' `ComputeRegionNetworkEndpoint` is `v1beta1` since config-connector-extensions `81c3f9b5`). It changes nothing and is kept so components that set it still render |
 | `deletion_policy` | not a fabric variable; `ABANDON` keeps every resource |
 
 Refused, by name:
@@ -87,9 +87,6 @@ Refused, by name:
   `log_config.optional_mode` and `optional_fields`:
   `ComputeBackendService` has no `tlsSettings`, and no `optionalMode` or
   `optionalFields` in `logConfig`.
-- `neg_configs.<key>.internet.endpoints` without `allow_alpha: true`:
-  config-connector-extensions' `ComputeRegionNetworkEndpoint` is
-  `v1alpha1`.
 - `service_attachment.domain_name` and `reconcile_connections`:
   `ComputeServiceAttachment` has neither field. Any value of
   `reconcile_connections` is refused, `false` too.
@@ -165,7 +162,7 @@ release, see [`UPSTREAM.md`](../../../UPSTREAM.md), "Moving the pins".
 
 `task test CHART=net-lb-app-int`: render cases from fabric's README,
 `basic` ("Minimal Example"), `https`, `certificate-manager`,
-`health-check`, `negs` (every NEG type, internet endpoints alpha),
+`health-check`, `negs` (every NEG type, internet endpoints),
 `service-attachment`; and `full` (every variable the chart carries, with
 every URL map block), `names` and `mock`. Each is validated against
 Config Connector v1.160.0's CRD schemas and config-connector-extensions'
@@ -176,8 +173,11 @@ and subnet from `tests/mock.needs.yaml`). On 2026-11-15 (offload VM `off-catalog
 config-connector-extensions `384d07c0`) all 14 objects became Ready, the
 outputs evaluated and all 14 were deleted. The
 HTTPS proxy and its certificates, the PSC NEG, the internet NEG's
-endpoints (alpha) and the service attachment are only render-tested.
+endpoints and the service attachment are only render-tested.
 
 ## Changes
 
+- **0.2.0** (2026-11-15): internet NEG endpoints render config-connector-extensions'
+  `v1beta1` `ComputeRegionNetworkEndpoint` and need no `allow_alpha` (now
+  a no-op).
 - **0.1.0** (2026-11-15): the port.

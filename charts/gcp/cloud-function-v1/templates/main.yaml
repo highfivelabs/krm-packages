@@ -10,7 +10,9 @@ source the Cloud Storage object bundle_config.path names in the bucket
 fabric's local.bucket names; an HTTPS trigger without trigger_config, an
 event trigger with it.
 google_cloudfunctions_function_iam_binding.default (iam, authoritative per
-role): one IAMPartialPolicy on the function (docs/design.md, "IAM").
+role): one IAMBinding (iam.gcp.hfl.dev/v1beta1, config-connector-extensions)
+per role on the function, exact as fabric's binding is, by the function's
+full name so it can be deleted after the function (docs/design.md, "IAM").
 Refused by name (Config Connector's CloudFunctionsFunction has no field):
 build_environment_variables, build_worker_pool, kms_key, secrets and
 repository_settings other than fabric's default registry.
@@ -32,7 +34,7 @@ repository_settings other than fabric's default registry.
 {{- end }}
 {{- /* bundle_config: only a Cloud Storage object. Terraform zips a local
 folder or uploads a local zip from the machine it runs on; a chart has no
-files, and StorageBucketObject (config-connector-extensions, v1alpha1)
+files, and StorageBucketObject (config-connector-extensions, v1beta1)
 takes text content, not an archive. */}}
 {{- $b := $v.bundle_config }}
 {{- $path := $b.path }}
@@ -114,4 +116,20 @@ spec:
   {{- with ($v.vpc_connector | default dict).egress_settings }}
   vpcConnectorEgressSettings: {{ . | quote }}
   {{- end }}
-{{- include "kcc.iam" (dict "root" $ "base" .Release.Name "idPrefix" "" "resourceRef" (dict "apiVersion" "cloudfunctions.cnrm.cloud.google.com/v1beta1" "kind" "CloudFunctionsFunction" "name" .Release.Name) "v" (dict "iam" $v.iam)) }}
+{{- $iam := $v.iam | default dict }}
+{{- range $role := keys $iam | sortAlpha }}
+---
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "iam" $role)) "id" (printf "iam:%s" $role) "project" $v.project_id "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceRef:
+    kind: CloudFunctionsFunction
+    external: {{ printf "projects/%s/locations/%s/functions/%s" $v.project_id $v.region (include "cloudFunctionV1.function" $) }}
+  role: {{ $role | quote }}
+  members:
+  {{- range $m := (index $iam $role | uniq | sortAlpha) }}
+    - {{ $m | quote }}
+  {{- end }}
+{{- end }}

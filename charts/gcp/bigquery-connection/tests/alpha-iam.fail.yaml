@@ -1,6 +1,0 @@
-# expect: bigquery-connection: iam_bindings_additive needs the alpha Config Connector kind IAMMember
-project_id: my-project
-location: US
-connection_id: c
-connection_config: {cloud_resource: {}}
-iam_bindings_additive: {u: {role: roles/bigquery.connectionUser, member: "user:a@example.com"}}

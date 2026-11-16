@@ -23,7 +23,9 @@ labels: {}
 # Cloud labels on every resource that takes them.
 tags: {}
 
-# Cloud Asset Inventory feeds. Refused when set (README.md).
+# Cloud Asset Inventory feeds, {ID: {content_type, asset_types,
+# asset_names, feed_output_config: {pubsub_destination: {topic}},
+# condition}}; billing_project is not carried (README.md).
 asset_feeds: {}
 # Cloud Asset Inventory search configurations. Refused when set (README.md).
 asset_search: {}
@@ -31,8 +33,9 @@ asset_search: {}
 assured_workload_config: null
 # Enable autokey support for this folder's children: {project}.
 autokey_config: null
-# Hierarchical Cloud Armor policy association: {name, policy_id}. Needs
-# allow_alpha and an existing folder (README.md).
+# Hierarchical Cloud Armor policy association: {name, policy_id,
+# excluded_projects}. Needs an existing folder (README.md); excluded_folders
+# is refused, as fabric refuses it on a folder.
 cloud_armor_policy: null
 # Essential contacts, EMAIL -> [NOTIFICATION_TYPES]: ALL, SUSPENSION,
 # SECURITY, TECHNICAL, BILLING, LEGAL, PRODUCT_UPDATES.
@@ -85,7 +88,8 @@ parent: null
 scc_mute_configs: {}
 # Security Health Analytics custom modules. Refused when set (README.md).
 scc_sha_custom_modules: {}
-# Service agents configuration. Refused when set (README.md).
+# Service agents configuration, {services, create_agents (default true)}:
+# a ServiceIdentity per service with a folder-level agent (README.md).
 service_agents_config: {}
 # Tag bindings for this folder, in key => tag value id format.
 tag_bindings: null
@@ -94,6 +98,9 @@ tag_bindings: null
 # cloud resources when the component is deleted. PREVENT has no Config
 # Connector equivalent.
 deletion_policy: null
-# Accept features that need an alpha (v1alpha1) Config Connector kind:
-# cloud_armor_policy. Not a fabric variable (docs/design.md, "Alpha kinds").
+# Not a fabric variable (docs/design.md, "Alpha kinds"). No feature of this
+# chart needs an alpha kind any more: cloud_armor_policy's
+# ComputeOrganizationSecurityPolicyAssociation is config-connector-extensions'
+# v1beta1 kind since 0.3.0. The value changes nothing; it is kept so
+# components that set it still render.
 allow_alpha: false

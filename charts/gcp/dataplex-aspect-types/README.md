@@ -7,14 +7,13 @@ at v60.0.0 (`f706bc3b`), Apache-2.0, Copyright Google LLC. Bundt Package
 `gcp-dataplex-aspect-types` (`package.yaml`). Checked against
 config-connector-extensions' `DataplexAspectType`
 (`dataplex.gcp.hfl.dev/v1beta1`), `IAMBinding` (`iam.gcp.hfl.dev/v1beta1`)
-and `IAMMember` (`iam.gcp.hfl.dev/v1alpha1`), at `11baa460`; Config
+and `IAMMember` (`iam.gcp.hfl.dev/v1beta1`), at `81c3f9b5`; Config
 Connector v1.160.0 has none of them.
 
 ## Example
 
 ```yaml
 project_id: test-project
-allow_alpha: true          # iam_bindings_additive: IAMMember is v1alpha1
 aspect_types:
   tf-test-template:
     display_name: Test template.
@@ -47,10 +46,10 @@ The module's variables, with the same names, types and defaults.
 | `aspect_types` | one `DataplexAspectType` per key, its ID the key, with `description`, `display_name`, `labels` (with the chart's) and `metadata_template`, JSON text parsed into the kind's `metadataTemplate` |
 | `aspect_types.*.iam` | one `IAMBinding` per role, exact as fabric's `authoritative` bindings |
 | `aspect_types.*.iam_bindings` | one `IAMBinding` per entry, with its condition; keyed by the entry's key across all aspect types, as fabric merges them |
-| `aspect_types.*.iam_bindings_additive` | one `IAMMember` per entry (additive), keyed the same way; `IAMMember` is `v1alpha1`, so it needs `allow_alpha: true` |
+| `aspect_types.*.iam_bindings_additive` | one `IAMMember` per entry (additive), keyed the same way |
 | `factories_config` | accepted and ignored: a chart cannot read files. Each file of the `aspect_types` folder goes under `factories_data.aspect_types.<file name without .yaml>`, exactly its content, and wins over the `aspect_types` entry of the same key, as fabric's `merge` does |
 | `context` | refused: Bundt expressions (`${...}`) and `valueFrom` replace fabric's `$context` lookups (`$iam_principals:`, `$custom_roles:`, `$locations:`, `$project_ids:`, `condition_vars`) |
-| `allow_alpha` | not a fabric variable: accept the `v1alpha1` `IAMMember` |
+| `allow_alpha` | not a fabric variable: no kind of this chart is alpha any more (`IAMMember` is `v1beta1` since config-connector-extensions `81c3f9b5`); kept so components that set it still render, it changes nothing |
 | `deletion_policy` | not a fabric variable; `ABANDON` keeps the aspect types (not the IAM) |
 
 Checks: `metadata_template` must be valid JSON, and an aspect type without
@@ -114,8 +113,8 @@ Fake cloud (`task test-mock`, `tests/mock.values.yaml`): one aspect type in
 config-connector-extensions `35833eb8`, whose fake cloud serves
 `getIamPolicy` on an aspect type) the aspect type and its `IAMBinding`
 became Ready, the outputs evaluated (`ids`, `names`, `timestamps`, `uids`
-all set) and both were deleted. The `IAMMember`s (`v1alpha1`) are only
-render-tested: alpha features are not in fake-cloud cases.
+all set) and both were deleted. The `IAMMember`s are only
+render-tested.
 
 Live (`hack/live-apply.sh` `LIVE_CHARTS=dataplex-aspect-types`, `tests/live.yaml`;
 2026-11-13, run `cat-11132355-c86b`, offload VM
@@ -125,5 +124,8 @@ Cloud.
 
 ## Changes
 
+- **0.2.0** (2026-11-15): `IAMMember` renders
+  `iam.gcp.hfl.dev/v1beta1` without `allow_alpha` (config-connector-extensions
+  `81c3f9b5`).
 - **0.1.0** (2026-11-12): the port: aspect types from the variable and the
   factory, and IAM on each.

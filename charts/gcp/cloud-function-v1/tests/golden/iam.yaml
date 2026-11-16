@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "iam"
     app.kubernetes.io/name: cloud-function-v1
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "function"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -30,29 +30,46 @@ spec:
     securityLevel: "SECURE_ALWAYS"
 ---
 # Source: cloud-function-v1/templates/main.yaml
-apiVersion: iam.cnrm.cloud.google.com/v1beta1
-kind: IAMPartialPolicy
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
 metadata:
-  name: iam-iam
+  name: iam-iam-roles-cloudfunctions-invoker-5e6b7064
   labels:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "iam"
     app.kubernetes.io/name: cloud-function-v1
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
-    hfl.dev/id: "iam"
+    hfl.dev/id: "iam:roles/cloudfunctions.invoker"
+    cnrm.cloud.google.com/project-id: "my-project"
 spec:
   resourceRef:
-    apiVersion: cloudfunctions.cnrm.cloud.google.com/v1beta1
     kind: CloudFunctionsFunction
-    name: iam
-  bindings:
-    - role: "roles/cloudfunctions.invoker"
-      members:
-        - member: "allUsers"
-    - role: "roles/cloudfunctions.viewer"
-      members:
-        - member: "group:viewers@example.org"
+    external: projects/my-project/locations/europe-west1/functions/test-cf-http
+  role: "roles/cloudfunctions.invoker"
+  members:
+    - "allUsers"
+---
+# Source: cloud-function-v1/templates/main.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: iam-iam-roles-cloudfunctions-viewer-bc8ecf91
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "iam"
+    app.kubernetes.io/name: cloud-function-v1
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "iam:roles/cloudfunctions.viewer"
+    cnrm.cloud.google.com/project-id: "my-project"
+spec:
+  resourceRef:
+    kind: CloudFunctionsFunction
+    external: projects/my-project/locations/europe-west1/functions/test-cf-http
+  role: "roles/cloudfunctions.viewer"
+  members:
+    - "group:viewers@example.org"
 ---
 # Source: cloud-function-v1/templates/serviceaccount.yaml
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
@@ -63,7 +80,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "iam"
     app.kubernetes.io/name: cloud-function-v1
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "sa-role:roles/logging.logWriter"
 spec:
@@ -85,7 +102,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "iam"
     app.kubernetes.io/name: cloud-function-v1
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "sa-role:roles/monitoring.metricWriter"
 spec:
@@ -107,7 +124,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "iam"
     app.kubernetes.io/name: cloud-function-v1
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "service_account"
     cnrm.cloud.google.com/project-id: "my-project"

@@ -636,7 +636,7 @@
       "required": [
         "policy_id"
       ],
-      "description": "Hierarchical Cloud Armor policy to associate to the organization (v1alpha1: needs allow_alpha)."
+      "description": "Hierarchical Cloud Armor policy to associate to the organization: ComputeOrganizationSecurityPolicyAssociation (compute.gcp.hfl.dev/v1beta1), with excluded folders (folders/N) and projects (projects/<number>)."
     },
     "contacts": {
       "description": "Essential contacts, EMAIL -> [NOTIFICATION_TYPES].",
@@ -2038,11 +2038,29 @@
       }
     },
     "service_agents_config": {
-      "description": "Service agents configuration; refused when set (README.md).",
+      "description": "Service agents configuration {services, create_agents}: with create_agents (default true), a ServiceIdentity (serviceusage.gcp.hfl.dev/v1beta1) per service of services that has an organization-level agent.",
       "type": [
         "object",
         "null"
-      ]
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "services": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "create_agents": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
     },
     "tag_bindings": {
       "description": "Tag bindings for this organization, in key => tag value id format.",

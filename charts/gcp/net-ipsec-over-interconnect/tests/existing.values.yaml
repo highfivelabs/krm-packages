@@ -1,7 +1,6 @@
 # An existing peer gateway and router: only the HA VPN gateway is made,
-# and the route policies (allow_alpha) and the tunnel's interface and peer
+# and the route policies and the tunnel's interface and peer
 # go on the named router; the tunnel goes to the existing peer gateway.
-allow_alpha: true
 project_id: my-project
 region: europe-west8
 network: projects/my-project/global/networks/my-network

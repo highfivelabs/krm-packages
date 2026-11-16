@@ -23,11 +23,6 @@ synced: 2026-11-13
 # map it yet) or by-design (Bundt replaces it). partial: the variable is
 # accepted, the reason says what is refused.
 refused:
-  - variable: router_config
-    kind: alpha
-    reason: "accepted; route_policies need config-connector-extensions' v1alpha1 ComputeRouterRoutePolicy: set allow_alpha: true"
-    partial: true
-    alpha_fields: [route_policies]
   - variable: tunnels
     kind: gap
     reason: "cipher_suite is refused (ComputeVPNTunnel has no cipherSuite field), and bgp_peer's export_policies and import_policies (ComputeRouterPeer has no such fields). A tunnel's shared_secret is a reference to a Kubernetes Secret (sharedSecret.valueFrom, docs/secrets.md) and is required: fabric's generated secret (random_id) is refused, the catalog never generates one"

@@ -88,7 +88,7 @@
       ]
     },
     "allow_alpha": {
-      "description": "Accept features that need an alpha (v1alpha1) Config Connector kind.",
+      "description": "No kind of this chart is alpha any more: config-connector-extensions' IAMMember is v1beta1 (since 81c3f9b5). Kept so components that set it still render; it changes nothing. Not a Terraform variable.",
       "type": "boolean"
     },
     "attached_disks": {
@@ -616,7 +616,7 @@
       }
     },
     "iap_tunnel_iam_bindings_additive": {
-      "description": "Individual additive IAP tunnel IAM bindings. Keys are arbitrary. IAMMember is alpha: needs allow_alpha.",
+      "description": "Individual additive IAP tunnel IAM bindings. Keys are arbitrary.",
       "type": [
         "object",
         "null"

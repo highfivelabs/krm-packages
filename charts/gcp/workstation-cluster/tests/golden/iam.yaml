@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "iam"
     app.kubernetes.io/name: workstation-cluster
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "config:my-workstation-config:iam:roles/workstations.viewer"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -29,7 +29,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "iam"
     app.kubernetes.io/name: workstation-cluster
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "config:my-workstation-config:iam-binding:admins"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -50,7 +50,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "iam"
     app.kubernetes.io/name: workstation-cluster
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "workstation:my-workstation-config-my-workstation:iam:roles/workstations.user"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -71,7 +71,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "iam"
     app.kubernetes.io/name: workstation-cluster
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "workstation:my-workstation-config-my-workstation:iam-binding:users"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -84,7 +84,7 @@ spec:
     - "user:user2@my-org.com"
 ---
 # Source: workstation-cluster/templates/main.yaml
-apiVersion: iam.gcp.hfl.dev/v1alpha1
+apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMMember
 metadata:
   name: iam-config-my-workstation-config-iam-member-operator
@@ -92,7 +92,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "iam"
     app.kubernetes.io/name: workstation-cluster
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "config:my-workstation-config:iam-member:operator"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -104,7 +104,7 @@ spec:
   member: "user:ops@my-org.com"
 ---
 # Source: workstation-cluster/templates/main.yaml
-apiVersion: iam.gcp.hfl.dev/v1alpha1
+apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMMember
 metadata:
   name: iam-ws-my-workstation-config-my-workstation-iam-member-user3
@@ -112,7 +112,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "iam"
     app.kubernetes.io/name: workstation-cluster
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "workstation:my-workstation-config-my-workstation:iam-member:user3"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -132,7 +132,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "iam"
     app.kubernetes.io/name: workstation-cluster
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "workstation:my-workstation-config-my-workstation"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -153,7 +153,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "iam"
     app.kubernetes.io/name: workstation-cluster
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "cluster"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -176,7 +176,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "iam"
     app.kubernetes.io/name: workstation-cluster
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "config:my-workstation-config"
     cnrm.cloud.google.com/project-id: "my-project"

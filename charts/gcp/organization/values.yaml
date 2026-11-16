@@ -32,8 +32,8 @@ access_policy: null
 asset_feeds: {}
 # Cloud Asset Inventory search configurations. Refused when set (README.md).
 asset_search: {}
-# Hierarchical Cloud Armor policy association: {policy_id, name}. Alpha:
-# needs allow_alpha.
+# Hierarchical Cloud Armor policy association: {policy_id, name,
+# excluded_folders, excluded_projects}.
 cloud_armor_policy: null
 # Essential contacts, EMAIL -> [NOTIFICATION_TYPES]: ALL, SUSPENSION,
 # SECURITY, TECHNICAL, BILLING, LEGAL, PRODUCT_UPDATES.
@@ -88,7 +88,9 @@ pam_entitlements: {}
 scc_mute_configs: {}
 # Security Health Analytics custom modules. Alpha: needs allow_alpha.
 scc_sha_custom_modules: {}
-# Service agents configuration. Refused when set (README.md).
+# Service agents configuration, {services, create_agents (default true)}:
+# a ServiceIdentity per service with an organization-level agent
+# (README.md).
 service_agents_config: {}
 # Tag bindings for this organization, in key => tag value id format.
 tag_bindings: {}
@@ -99,7 +101,7 @@ tags_config: {}
 workforce_identity_pools: {}
 
 # Not a fabric variable: true accepts the features that need a v1alpha1
-# Config Connector kind (iam_deny_policies, cloud_armor_policy,
+# Config Connector kind (iam_deny_policies,
 # context_aware_access_bindings, model_armor_floor_setting,
 # scc_sha_custom_modules). Beta kinds are always on. An alpha kind's schema
 # may change between Config Connector releases (docs/design.md, "Alpha

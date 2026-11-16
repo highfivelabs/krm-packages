@@ -18,8 +18,8 @@ of those, keyed <neg>-<endpoint>;
 google_compute_region_network_endpoint_group.psc and .internet: one
 ComputeRegionNetworkEndpointGroup per psc or internet entry;
 google_compute_region_network_endpoint.internet: one
-ComputeRegionNetworkEndpoint (config-connector-extensions, v1alpha1,
-allow_alpha) per internet endpoint;
+ComputeRegionNetworkEndpoint (config-connector-extensions, v1beta1) per
+internet endpoint;
 google_compute_service_attachment.default: with service_attachment, one
 ComputeServiceAttachment for the forwarding rule it names.
 */ -}}
@@ -182,7 +182,6 @@ spec:
 {{- else if eq $type "internet" }}
 {{- $i := $n.internet | default dict }}
 {{- $fqdn := ne (toString $i.use_fqdn) "false" }}
-{{- include "kcc.alpha" (list $ (printf "neg_configs.%s.internet.endpoints" $k) $i.endpoints "ComputeRegionNetworkEndpoint (config-connector-extensions)") }}
 ---
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeRegionNetworkEndpointGroup
@@ -197,7 +196,7 @@ spec:
 {{- range $ek := keys ($i.endpoints | default dict) | sortAlpha }}
 {{- $e := index $i.endpoints $ek }}
 ---
-apiVersion: compute.gcp.hfl.dev/v1alpha1
+apiVersion: compute.gcp.hfl.dev/v1beta1
 kind: ComputeRegionNetworkEndpoint
 metadata:
   {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "ep" $k $ek)) "id" (printf "internet_endpoint:%s-%s" $k $ek) "project" $project "abandon" $abandon) | nindent 2 }}

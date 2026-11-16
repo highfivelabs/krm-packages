@@ -85,7 +85,7 @@ iap_tunnel_iam: {}
 # IAP tunnel IAM, {KEY: {role, members, condition}}, exact per role.
 iap_tunnel_iam_bindings: {}
 # Additive IAP tunnel IAM, {KEY: {member, role, condition}}: an IAMMember
-# each (config-connector-extensions, alpha: needs allow_alpha).
+# each (config-connector-extensions, iam.gcp.hfl.dev/v1beta1).
 iap_tunnel_iam_bindings_additive: {}
 # Instance schedule: {active, description, expiration_time, start_time,
 # timezone, vm_start, vm_stop}.
@@ -162,7 +162,9 @@ tpu_config: null
 zone: null
 
 # Not fabric variables: deletion_policy DELETE (default) or ABANDON
-# (PREVENT is refused, docs/design.md "Deletion"); allow_alpha accepts
-# the alpha kinds (IAMMember for iap_tunnel_iam_bindings_additive).
+# (PREVENT is refused, docs/design.md "Deletion"); allow_alpha changes
+# nothing: no kind of this chart is alpha any more (config-connector-
+# extensions' IAMMember is v1beta1 since 81c3f9b5); kept so components
+# that set it still render.
 deletion_policy: DELETE
 allow_alpha: false

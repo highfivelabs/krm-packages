@@ -30,7 +30,3 @@ refused:
     reason: "ComputeBackendService's logConfig has no optionalMode or optionalFields"
     partial: true
     fields: [optional_mode, optional_fields]
-  - variable: neg_configs
-    kind: alpha
-    reason: "an internet NEG's endpoints are config-connector-extensions' ComputeRegionNetworkEndpoint, which is v1alpha1: needs allow_alpha: true"
-    partial: true

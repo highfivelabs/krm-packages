@@ -12,7 +12,7 @@ google_clouddeploy_delivery_pipeline_iam_binding.authoritative and
 .bindings, google_clouddeploy_delivery_pipeline_iam_member.bindings: on the
 pipeline, one IAMBinding (iam.gcp.hfl.dev/v1beta1) per role of iam merged
 with iam_by_principals, one per entry of iam_bindings (with its
-condition), one IAMMember (iam.gcp.hfl.dev/v1alpha1, so allow_alpha) per
+condition), one IAMMember (iam.gcp.hfl.dev/v1beta1) per
 entry of iam_bindings_additive (with its condition).
 google_clouddeploy_target_iam_binding.authoritative and .bindings,
 google_clouddeploy_target_iam_member.bindings: the same from each target's

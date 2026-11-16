@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-proxy-int
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "backend_service"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -53,7 +53,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-proxy-int
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "forwarding_rule:"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -83,7 +83,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-proxy-int
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "health_check"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -107,7 +107,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-proxy-int
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "endpoint:hybrid-e-0"
     cnrm.cloud.google.com/project-id: "other-project"
@@ -129,7 +129,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-proxy-int
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "endpoint:zonal-e-0"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -153,7 +153,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-proxy-int
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "neg:hybrid"
     cnrm.cloud.google.com/project-id: "other-project"
@@ -174,7 +174,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-proxy-int
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "neg:zonal"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -189,7 +189,7 @@ spec:
     external: "projects/my-project/regions/europe-west1/subnetworks/my-subnet"
 ---
 # Source: net-lb-proxy-int/templates/main.yaml
-apiVersion: compute.gcp.hfl.dev/v1alpha1
+apiVersion: compute.gcp.hfl.dev/v1beta1
 kind: ComputeRegionNetworkEndpoint
 metadata:
   name: negs-ep-web-e-0
@@ -197,7 +197,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-proxy-int
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "internet_endpoint:web-e-0"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -219,7 +219,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-proxy-int
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "internet_neg:web"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -239,7 +239,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-proxy-int
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "target_proxy"
     cnrm.cloud.google.com/project-id: "my-project"

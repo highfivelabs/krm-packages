@@ -48,20 +48,26 @@ The module's variables, with the same names, types and defaults.
 | `pam_entitlements` | a `PrivilegedAccessManagerEntitlement` per entry on the folder, as the `project` chart's |
 | `deletion_protection` | `false`, the default, is accepted; `true` is refused: Config Connector's `Folder` has no `deletionProtection` (`deletion_policy: ABANDON` keeps the folder when the component is deleted) |
 | `context`, `factories_config`, `asset_search` | refused, by design: Bundt replaces `$context` lookups with `${...}` expressions; a chart cannot read the caller's files (their entries go in `org_policies` and `pam_entitlements`); a search is a read at plan time, not a resource |
-| `asset_feeds`, `assured_workload_config`, `scc_sha_custom_modules` | refused: `CloudAssetFolderFeed`, `AssuredWorkloadsWorkload` and `SecurityCenterManagementSecurityHealthAnalyticsCustomModule` are `v1alpha1` kinds, not ported yet |
+| `asset_feeds` | one `AssetFeed` of config-connector-extensions (`asset.gcp.hfl.dev/v1beta1`) each on the folder, its ID the key, to the Pub/Sub topic `projects/<project>/topics/<topic>`, with its content type (fabric's check), asset types and names and condition, as the `project` and `organization` charts. `billing_project` is not carried: `AssetFeed` has no field for it, and Config Connector bills the call to the project its controller is configured with |
+| `service_agents_config` | with `create_agents` (the default), one `ServiceIdentity` of config-connector-extensions (`serviceusage.gcp.hfl.dev/v1beta1`) per service of `services` that has a folder-level agent in fabric's list (`service-agents.yaml`), on the folder. Fabric makes one per agent; its two OS Config agents share `osconfig.googleapis.com`, so the chart makes one per service. A service with no folder-level agent is skipped, as fabric skips it |
+| `assured_workload_config`, `scc_sha_custom_modules` | refused: `AssuredWorkloadsWorkload` and `SecurityCenterManagementSecurityHealthAnalyticsCustomModule` are `v1alpha1` kinds, not ported yet |
 | `iam_deny_policies` | an `IAMDenyPolicy` of config-connector-extensions (`iam.gcp.hfl.dev/v1beta1`) per entry on the folder, named by its key: `display_name`, and each rule's description, denied and exception principals and permissions and denial condition; fabric's check that a rule has a denied principal and a denied permission |
-| `cloud_armor_policy` | with `allow_alpha: true`, a `ComputeOrganizationSecurityPolicyAssociation` (`v1alpha1`) of `policy_id` with the folder, named `name` or `folder-<number>`, as the `organization` chart does. It needs an existing folder (`folder_create: false`, `id`): its `attachmentId` is the folder's number, which a new folder has only after it is made. `excluded_folders` and `excluded_projects` are refused: the kind has no such fields |
-| `logging_settings`, `scc_mute_configs`, `service_agents_config` | refused, gaps: Config Connector has no kind for a folder's logging settings, a Security Command Center v2 mute config or a folder's service identities |
+| `cloud_armor_policy` | a `ComputeOrganizationSecurityPolicyAssociation` of config-connector-extensions (`compute.gcp.hfl.dev/v1beta1`) of `policy_id` with the folder, named `name` or `folder-<number>`, as the `organization` chart does, with `excluded_projects` (`projects/<number>`). It needs an existing folder (`folder_create: false`, `id`): its `attachmentId` is the folder's number, which a new folder has only after it is made. `excluded_folders` is refused with fabric's message: folders can be excluded only from an organization's association |
+| `logging_settings`, `scc_mute_configs` | refused, gaps: Config Connector has no kind for a folder's logging settings or a Security Command Center v2 mute config |
+| `allow_alpha` | not a fabric variable. No feature of this chart needs an alpha kind since 0.3.0; the value changes nothing and is kept so components that set it still render |
 | `deletion_policy` | not a fabric variable; `ABANDON` keeps the cloud resources |
 
 ## Outputs
 
 `id` (`folders/N`: the new folder's, read from its status, else `id`),
 `name` (the new folder's display name), `organization_policies_ids` and
-`sink_writer_identities`, keyed as fabric keys them. Not outputs:
-`asset_search_results`, `assured_workload`, `scc_custom_sha_modules_ids`
-and `service_agents` (their variables are refused), and fabric's whole
-object (`folder`; `docs/design.md`, "Outputs").
+`sink_writer_identities`, keyed as fabric keys them, and `service_agents`:
+each `ServiceIdentity`'s `status.email`, keyed by its service (fabric
+outputs whole agent objects keyed by agent name, with emails it computes
+from the folder number; the chart outputs the email the API returns, one
+per service). Not outputs: `asset_search_results`, `assured_workload` and
+`scc_custom_sha_modules_ids` (their variables are refused), and fabric's
+whole object (`folder`; `docs/design.md`, "Outputs").
 
 ## From Terraform
 
@@ -107,6 +113,14 @@ kinds for `google_logging_folder_settings`,
   policies before the folder (or Config Connector should skip the lookup
   on delete). The fake-cloud case leaves org policies out for this reason;
   they are render-tested only.
+- **A `ServiceIdentity` on a `Folder` object cannot be deleted once the
+  `Folder` object is gone** (config-connector-extensions `81c3f9b5`, run
+  `off-catalog-1116014618-16654`): its delete resolves `folderRef.name`
+  ("Update call failed: referenced Folder catalog-folder/mock not found"),
+  though Google Cloud has no call to delete a service identity. On an
+  existing folder (`folder_create: false`) the reference is external and
+  does not hit it. The fake-cloud case leaves service agents out; they are
+  render-tested only.
 
 ## Upstream
 
@@ -137,11 +151,27 @@ with an org policy evaluated `organization_policies_ids` and left the
 policy undeleted (same section). Contacts, sinks, PAM, tag bindings, the
 firewall policy association and Autokey are render-tested only.
 
+And on 2026-11-15 (0.3.0, run `off-catalog-1116014618-16654`, config-connector-extensions
+`81c3f9b5`) with an asset feed and a service agent added: the folder, IAM,
+exclusion, deny policy and `AssetFeed` all Ready and deleted, the
+`ServiceIdentity` Ready (`service_agents` evaluated) but not deleted
+("Config Connector bugs"); the case no longer sets one. The Cloud Armor
+association needs a policy the case does not make, and is render-tested
+only.
+
 Not applied live: live runs are pending KEYLIVE (and the test provisioner's
 folder, `docs/design.md`, "The test provisioner").
 
 ## Changes
 
+- **0.3.0** (2026-11-15): `asset_feeds` as config-connector-extensions'
+  `AssetFeed` (`asset.gcp.hfl.dev/v1beta1`); `service_agents_config` as
+  its `ServiceIdentity` (`serviceusage.gcp.hfl.dev/v1beta1`), one per
+  service, and the `service_agents` output; `cloud_armor_policy` as its
+  `ComputeOrganizationSecurityPolicyAssociation`
+  (`compute.gcp.hfl.dev/v1beta1`) without `allow_alpha`, carrying
+  `excluded_projects` (`excluded_folders` refused, as fabric refuses it).
+  config-connector-extensions 81c3f9b5 (its #134, #136, #138).
 - **0.2.0** (2026-11-13): `iam_deny_policies` as config-connector-extensions'
   `IAMDenyPolicy`; `cloud_armor_policy` with `allow_alpha` on an existing
   folder.

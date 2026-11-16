@@ -2,7 +2,6 @@
 # data. The $iam_principals:test-sa lookup of the second file is written
 # as the principal itself (context is refused: Bundt expressions replace it).
 project_id: test-project
-allow_alpha: true
 factories_config: {aspect_types: data/aspect-types}
 factories_data:
   aspect_types:

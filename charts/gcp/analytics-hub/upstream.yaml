@@ -34,7 +34,3 @@ refused:
     reason: "icon is refused: BigQueryAnalyticsHubListing has no icon field"
     partial: true
     fields: [icon]
-  - variable: iam_bindings_additive
-    kind: alpha
-    reason: "config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true"
-    partial: true

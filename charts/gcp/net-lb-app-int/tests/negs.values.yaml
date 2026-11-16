@@ -1,10 +1,9 @@
 # fabric's README, "Network Endpoint Groups": zonal (the chart's
 # subnetwork), hybrid, serverless with a tag, PSC in another project, and
-# internet NEGs with their endpoints (alpha).
+# internet NEGs with their endpoints.
 name: ilb-test
 project_id: my-project
 region: europe-west1
-allow_alpha: true
 backend_service_configs:
   default:
     backends:

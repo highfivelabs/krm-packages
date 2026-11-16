@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "names"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     cost-center: "web"
     env: "dev"
     hfl.dev/team: "shop"
@@ -42,7 +42,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "names"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     cost-center: "web"
     env: "dev"
     hfl.dev/team: "shop"
@@ -72,7 +72,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "names"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     cost-center: "web"
     env: "dev"
     hfl.dev/team: "shop"
@@ -95,7 +95,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "names"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     cost-center: "web"
     env: "dev"
     hfl.dev/team: "shop"
@@ -118,7 +118,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "names"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     cost-center: "web"
     env: "dev"
     hfl.dev/team: "shop"

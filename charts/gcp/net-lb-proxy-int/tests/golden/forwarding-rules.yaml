@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "forwarding-rules"
     app.kubernetes.io/name: net-lb-proxy-int
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "backend_service"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -47,7 +47,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "forwarding-rules"
     app.kubernetes.io/name: net-lb-proxy-int
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "forwarding_rule:"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -77,7 +77,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "forwarding-rules"
     app.kubernetes.io/name: net-lb-proxy-int
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "forwarding_rule:reserved"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -108,7 +108,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "forwarding-rules"
     app.kubernetes.io/name: net-lb-proxy-int
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "forwarding_rule:v6"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -138,7 +138,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "forwarding-rules"
     app.kubernetes.io/name: net-lb-proxy-int
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "group:ig"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -161,7 +161,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "forwarding-rules"
     app.kubernetes.io/name: net-lb-proxy-int
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "service_attachment"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -193,7 +193,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "forwarding-rules"
     app.kubernetes.io/name: net-lb-proxy-int
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "target_proxy"
     cnrm.cloud.google.com/project-id: "my-project"

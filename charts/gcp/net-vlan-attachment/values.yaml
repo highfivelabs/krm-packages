@@ -23,9 +23,10 @@ namePrefix: ""
 labels: {}
 # Cloud labels on every resource that takes them.
 tags: {}
-# Not a fabric variable: route policies (router_config.route_policies) are
-# config-connector-extensions' ComputeRouterRoutePolicy, a v1alpha1 kind,
-# refused unless this is true (docs/design.md, "Alpha kinds").
+# Not a fabric variable, and no longer used: no kind of this chart is alpha
+# (route policies' ComputeRouterRoutePolicy is v1beta1 since
+# config-connector-extensions 81c3f9b5). It changes nothing and is kept so
+# components that set it still render.
 allow_alpha: false
 
 # Whether the VLAN attachment is enabled.

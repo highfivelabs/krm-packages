@@ -1,7 +1,9 @@
 # Every value the chart carries on a new folder: IAM in each form, contacts,
 # org policies (boolean, list, conditional, dry run), a firewall policy
 # association, Autokey, tag bindings, data access logs, exclusions, sinks of
-# each destination type, and a PAM entitlement.
+# each destination type, a PAM entitlement, an asset feed and service agents
+# (two OS Config agents share one service; cloudasset.googleapis.com has no
+# folder-level agent and is skipped, as fabric skips it).
 parent: organizations/123456789012
 name: Full folder
 deletion_protection: false
@@ -83,3 +85,12 @@ pam_entitlements:
         - approvers: ["group:approvers@example.org"]
     additional_notification_targets:
       admin_email_recipients: [admins@example.org]
+asset_feeds:
+  buckets:
+    billing_project: billing-project
+    content_type: RESOURCE
+    asset_types: [storage.googleapis.com/Bucket]
+    feed_output_config: {pubsub_destination: {topic: projects/feeds-project/topics/assets}}
+    condition: {expression: "!temporal_asset.deleted", title: live}
+service_agents_config:
+  services: [osconfig.googleapis.com, logging.googleapis.com, cloudasset.googleapis.com]

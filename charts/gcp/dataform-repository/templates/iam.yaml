@@ -11,7 +11,7 @@ google_dataform_repository_iam_binding.authoritative: one IAMBinding
 google_dataform_repository_iam_binding.bindings: one IAMBinding per entry
 of iam_bindings, with its condition.
 google_dataform_repository_iam_member.bindings: one IAMMember
-(iam.gcp.hfl.dev/v1alpha1, so allow_alpha) per entry of
+(iam.gcp.hfl.dev/v1beta1) per entry of
 iam_bindings_additive, with its condition.
 On the repository by its full name, so they can be deleted after the
 repository's object is gone.

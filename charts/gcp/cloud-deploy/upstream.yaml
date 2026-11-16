@@ -28,12 +28,3 @@ refused:
     reason: "an automation without service_account is refused: fabric then reads the project's Compute Engine default service account, whose email needs the project number, which a render does not have; set service_account"
     partial: true
     fields: [service_account]
-  - variable: iam_bindings_additive
-    kind: alpha
-    reason: "config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true"
-    partial: true
-  - variable: targets
-    kind: alpha
-    reason: "accepted; a target's iam_bindings_additive renders config-connector-extensions' IAMMember, which is v1alpha1: set allow_alpha: true"
-    partial: true
-    alpha_fields: [iam_bindings_additive]

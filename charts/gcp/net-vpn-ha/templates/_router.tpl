@@ -52,7 +52,7 @@ location: {{ . | quote }}
 
 {{/*
 router.policies: one config-connector-extensions ComputeRouterRoutePolicy
-(v1alpha1, so behind allow_alpha) per entry of router_config.route_policies,
+(v1beta1) per entry of router_config.route_policies,
 named by its key, on the router the chart makes or the one router_config
 names. Checks fabric's validation that a policy's term priorities are
 unique (the schema checks the type and the priority's range).
@@ -63,7 +63,6 @@ unique (the schema checks the type and the priority's range).
 */}}
 {{- define "router.policies" -}}
 {{- $root := .root -}}{{- $v := $root.Values -}}
-{{- include "kcc.alpha" (list $root "router_config.route_policies" .policies "ComputeRouterRoutePolicy (config-connector-extensions)") -}}
 {{- range $k, $p := .policies }}
 {{- $seen := dict }}
 {{- range $t := $p.terms }}
@@ -77,7 +76,7 @@ unique (the schema checks the type and the priority's range).
 {{- $abandon := .abandon }}
 {{- range $key, $p := .policies }}
 ---
-apiVersion: compute.gcp.hfl.dev/v1alpha1
+apiVersion: compute.gcp.hfl.dev/v1beta1
 kind: ComputeRouterRoutePolicy
 metadata:
   {{- include "kcc.metadata" (dict "root" $root "name" (include "kcc.name" (list $root.Release.Name "route-policy" $key)) "id" (printf "route_policy:%s" $key) "project" $v.project_id "abandon" $abandon) | nindent 2 }}

@@ -9,7 +9,7 @@ at v60.0.0 (`f706bc3b`), Apache-2.0, Copyright Google LLC. Bundt Package
 Config Connector v1.160.0's `PrivateCACAPool` and
 `PrivateCACertificateAuthority`, and config-connector-extensions'
 `IAMBinding` (`iam.gcp.hfl.dev/v1beta1`) and `IAMMember`
-(`iam.gcp.hfl.dev/v1alpha1`), at `384d07c0`: Config Connector's own IAM
+(`iam.gcp.hfl.dev/v1beta1`), at `81c3f9b5`: Config Connector's own IAM
 kinds cannot reference a CA pool.
 
 ## Example
@@ -41,9 +41,9 @@ The module's variables, with the same names, types and defaults.
 | `ca_configs` | one `PrivateCACertificateAuthority` per key, its ID the key, in the pool: type `SELF_SIGNED` when `is_self_signed` and no `subordinate_config`, else `SUBORDINATE`; `lifetime`; `gcs_bucket` as `gcsBucketRef.external`; `labels` as the CA's own labels; `key_spec` (`algorithm`, or `kms_key_id` as `cloudKmsKeyVersionRef.external`); `key_usage` as base and extended key usages; `subject` and `subject_alt_name`; `is_ca`. Every default is fabric's, and unset means fabric's one CA, `test-ca` |
 | `iam`, `iam_by_principals` | one `IAMBinding` per role on the pool, exact, the two merged as fabric merges them |
 | `iam_bindings` | one `IAMBinding` per entry, exact, with its condition |
-| `iam_bindings_additive` | one `IAMMember` per entry (additive), with its condition; `IAMMember` is `v1alpha1`, so it needs `allow_alpha: true` |
+| `iam_bindings_additive` | one `IAMMember` per entry (additive), with its condition |
 | `context` | refused: Bundt expressions (`${...}`) and `valueFrom` replace fabric's `$context` lookups |
-| `allow_alpha` | not a fabric variable: accept the `v1alpha1` `IAMMember` |
+| `allow_alpha` | not a fabric variable: no kind of this chart is alpha any more (`IAMMember` is `v1beta1` since config-connector-extensions `81c3f9b5`); kept so components that set it still render, it changes nothing |
 | `deletion_policy` | not a fabric variable; `ABANDON` keeps the pool and the CAs (not the IAM) |
 
 Refused:
@@ -85,7 +85,7 @@ IAM is on the pool by its full name
 
 A `module "x" { source = ".../modules/certificate-authority-service" ... }`
 block's arguments become the values unchanged, apart from `context` and
-the refused fields, plus `allow_alpha: true` when it has additive IAM.
+the refused fields.
 The pool and the CAs keep their names, so they adopt what Terraform made
 (`docs/design.md`, "From Terraform").
 
@@ -107,10 +107,13 @@ variable), `names` and `mock`, each validated against Config Connector's
 CRDs and those in `crds/config-connector-extensions`, and the refusals in
 `tests/*.fail.yaml`.
 
-Fake cloud (`task test-mock`, `tests/mock.values.yaml`): a DevOps pool, a self-signed root CA with fabric's defaults and a role on the pool (`iam`). On 2026-11-15 (offload VM `off-catalog-1115092825-18945`, config-connector-extensions `384d07c0`, whose fake cloud serves any `getIamPolicy` path) the pool, the CA and the `IAMBinding` became Ready, the outputs evaluated and all three were deleted. `use_pool`, KMS keys, subordinate CAs, `iam_bindings` (with conditions) and the `v1alpha1` `IAMMember`s are only render-tested.
+Fake cloud (`task test-mock`, `tests/mock.values.yaml`): a DevOps pool, a self-signed root CA with fabric's defaults and a role on the pool (`iam`). On 2026-11-15 (offload VM `off-catalog-1115092825-18945`, config-connector-extensions `384d07c0`, whose fake cloud serves any `getIamPolicy` path) the pool, the CA and the `IAMBinding` became Ready, the outputs evaluated and all three were deleted. `use_pool`, KMS keys, subordinate CAs, `iam_bindings` (with conditions) and the `IAMMember`s are only render-tested.
 
 Not applied live.
 
 ## Changes
 
+- **0.2.0** (2026-11-15): `IAMMember` renders
+  `iam.gcp.hfl.dev/v1beta1` without `allow_alpha` (config-connector-extensions
+  `81c3f9b5`).
 - **0.1.0** (2026-11-15): the port: the pool, its CAs and IAM on the pool.

@@ -20,8 +20,9 @@ labels: {}
 # Kubernetes labels too: a log bucket, its views and its link have no
 # cloud labels.
 tags: {}
-# config-connector-extensions' IAMMember is v1alpha1: a view's
-# iam_bindings_additive renders only with allow_alpha: true.
+# Not a fabric variable: no kind of this chart is alpha any more
+# (config-connector-extensions' IAMMember is v1beta1 since 81c3f9b5); kept
+# so components that set it still render, it changes nothing.
 allow_alpha: false
 # DELETE (default) or ABANDON (keeps the bucket, its views and its link).
 deletion_policy: DELETE

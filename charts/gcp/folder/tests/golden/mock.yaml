@@ -1,4 +1,27 @@
 ---
+# Source: folder/templates/asset-feeds.yaml
+apiVersion: asset.gcp.hfl.dev/v1beta1
+kind: AssetFeed
+metadata:
+  name: mock-feed-catalog-mock-feed
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: folder
+    app.kubernetes.io/version: "0.3.0"
+  annotations:
+    hfl.dev/id: "asset-feed:catalog-mock-feed"
+spec:
+  resourceID: "catalog-mock-feed"
+  folderRef:
+    name: mock
+  contentType: "RESOURCE"
+  assetTypes: ["storage.googleapis.com/Bucket"]
+  feedOutputConfig:
+    pubsubDestination:
+      topicRef:
+        external: "projects/mock-project/topics/assets"
+---
 # Source: folder/templates/folder.yaml
 apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
 kind: Folder
@@ -8,7 +31,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "folder"
 spec:
@@ -25,7 +48,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "iam_deny_policy:no-sa-keys"
 spec:
@@ -52,7 +75,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "iam"
 spec:
@@ -74,7 +97,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "iam-additive-browser"
 spec:
@@ -94,7 +117,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "logging-exclusion:no-gce"
 spec:

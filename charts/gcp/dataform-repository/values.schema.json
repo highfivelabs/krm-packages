@@ -80,7 +80,7 @@
       }
     },
     "allow_alpha": {
-      "description": "Accept v1alpha1 kinds (IAMMember, for iam_bindings_additive). Not a Terraform variable.",
+      "description": "No kind of this chart is alpha any more: config-connector-extensions' IAMMember is v1beta1 (since 81c3f9b5). Kept so components that set it still render; it changes nothing. Not a Terraform variable.",
       "type": "boolean"
     },
     "deletion_policy": {
@@ -135,7 +135,7 @@
       }
     },
     "iam_bindings_additive": {
-      "description": "Individual additive IAM bindings. Keys are arbitrary. IAMMember is v1alpha1: needs allow_alpha.",
+      "description": "Individual additive IAM bindings. Keys are arbitrary.",
       "type": [
         "object",
         "null"

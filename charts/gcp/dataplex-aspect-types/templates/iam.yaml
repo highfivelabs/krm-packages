@@ -11,7 +11,7 @@ google_dataplex_aspect_type_iam_binding.bindings: one IAMBinding per entry
 of an aspect type's iam_bindings, keyed by the entry's key across every
 aspect type (fabric merges them; the later aspect type's entry wins).
 google_dataplex_aspect_type_iam_member.members: one IAMMember
-(config-connector-extensions, iam.gcp.hfl.dev/v1alpha1, so allow_alpha)
+(config-connector-extensions, iam.gcp.hfl.dev/v1beta1)
 per entry of iam_bindings_additive, keyed the same way.
 */ -}}
 {{- $v := .Values }}
@@ -67,11 +67,10 @@ spec:
     {{- include "kcc.condition" . | nindent 4 }}
   {{- end }}
 {{- end }}
-{{- include "kcc.alpha" (list $ "iam_bindings_additive" $additive "IAMMember (config-connector-extensions)") }}
 {{- range $bk, $e := $additive }}
 {{- $b := $e.b }}
 ---
-apiVersion: iam.gcp.hfl.dev/v1alpha1
+apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMMember
 metadata:
   {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "iam-member" $bk)) "id" (printf "iam-member:%s" $bk) "project" $v.project_id) | nindent 2 }}

@@ -8,7 +8,7 @@ spec:
     - name: project
       package:
         name: gcp-project
-        version: "0.10.0"
+        version: "0.11.0"
       inputs:
         name: project
         services:

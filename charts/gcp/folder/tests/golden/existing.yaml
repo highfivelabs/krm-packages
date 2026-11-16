@@ -1,4 +1,26 @@
 ---
+# Source: folder/templates/asset-feeds.yaml
+apiVersion: asset.gcp.hfl.dev/v1beta1
+kind: AssetFeed
+metadata:
+  name: existing-feed-iam
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing"
+    app.kubernetes.io/name: folder
+    app.kubernetes.io/version: "0.3.0"
+  annotations:
+    hfl.dev/id: "asset-feed:iam"
+spec:
+  resourceID: "iam"
+  folderRef:
+    external: "folders/1234567890"
+  contentType: "IAM_POLICY"
+  feedOutputConfig:
+    pubsubDestination:
+      topicRef:
+        external: "projects/feeds-project/topics/iam"
+---
 # Source: folder/templates/folder.yaml
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeFirewallPolicyAssociation
@@ -8,7 +30,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "existing"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "firewall_policy"
 spec:
@@ -27,7 +49,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "existing"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "contact:admins@example.org"
 spec:
@@ -46,7 +68,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "existing"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "iam"
 spec:
@@ -68,7 +90,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "existing"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "logging-sink-writer:audit"
 spec:
@@ -90,7 +112,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "existing"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "logging-sink:audit"
 spec:
@@ -113,7 +135,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "existing"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "org_policy:compute.skipDefaultNetworkCreation"
 spec:
@@ -124,6 +146,23 @@ spec:
     rules:
     - enforce: true
 ---
+# Source: folder/templates/service-agents.yaml
+apiVersion: serviceusage.gcp.hfl.dev/v1beta1
+kind: ServiceIdentity
+metadata:
+  name: existing-agent-privilegedaccessmanager
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing"
+    app.kubernetes.io/name: folder
+    app.kubernetes.io/version: "0.3.0"
+  annotations:
+    hfl.dev/id: "service-identity:privilegedaccessmanager.googleapis.com"
+spec:
+  resourceID: "privilegedaccessmanager.googleapis.com"
+  folderRef:
+    external: "folders/1234567890"
+---
 # Source: folder/templates/folder.yaml
 apiVersion: tags.cnrm.cloud.google.com/v1beta1
 kind: TagsTagBinding
@@ -133,7 +172,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "existing"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "tag-binding:env"
 spec:
