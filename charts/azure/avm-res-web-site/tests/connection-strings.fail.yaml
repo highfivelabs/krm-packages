@@ -1,4 +1,4 @@
-# expect: connection_strings is not supported
+# expect: connection_strings.db.value takes a reference to a Kubernetes Secret
 name: app
 location: eastus2
 parent_id: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg

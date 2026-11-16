@@ -11,12 +11,15 @@ azapi_resource.this (Microsoft.Web/sites@2025-03-01): one ASO Site
 with the body the module builds (_site.tpl, site.body). The config
 submodules the module applies after the site are carried inline where ASO's
 Site has the field: config_appsettings (siteConfig.appSettings, the merged
-app settings of locals.app_settings.tf) and config_metadata
+app settings of locals.app_settings.tf; when one of them is secret material,
+all of them are an aso-extensions SitesConfigAppSettings instead, _settings.tpl)
+and config_metadata
 (siteConfig.metadata) and config_azurestorageaccounts
 (siteConfig.azureStorageAccounts, each access key a reference to a
 Kubernetes Secret; docs/secrets.md). config_authsettingsv2, config_logs, config_slotconfignames and the
 publishing credential policies are aso-extensions kinds (config.yaml).
-config_connectionstrings, config_authsettings
+config_connectionstrings: an aso-extensions
+SitesConfigConnectionStrings (_settings.tpl). config_authsettings
 (v1), config_backup and the slot swap are refused (upstream.yaml). azapi_resource.lock, role_assignment and
 diagnostic_setting: the AVM interfaces (avm-utl-interfaces 0.7.0, diagnostic
 settings v2). Slots, custom domains, certificates and private endpoints are
@@ -35,17 +38,6 @@ ported.
 {{- include "aso.unsupported" (list $ "resource_types" $t "the API versions are the kinds' (ASO Site 2025-05-01; aso-extensions SitesSlot, SitesHostNameBinding and Certificate 2026-07-15)") }}
 {{- end }}
 {{- include "aso.unsupported" (list $ "zip_deploy_file" $v.zip_deploy_file "a zip deploy uploads a local file to the site's Kudu (extensions/zipDeploy), application code a Package does not carry") }}
-{{- /* secret values the module writes into app settings: a gap (docs/secrets.md) */ -}}
-{{- $secv := "a secret value (the module marks it sensitive) the module writes into an app setting: ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference, so the value would sit in the component's inputs (docs/secrets.md)" }}
-{{- include "aso.unsupported" (list $ "application_insights_connection_string" $v.application_insights_connection_string $secv) }}
-{{- include "aso.unsupported" (list $ "application_insights_key" $v.application_insights_key $secv) }}
-{{- include "aso.unsupported" (list $ "storage_account_access_key" $v.storage_account_access_key $secv) }}
-{{- include "aso.unsupported" (list $ "slot_sensitive_app_settings" $v.slot_sensitive_app_settings $secv) }}
-{{- include "aso.unsupported" (list $ "connection_strings" $v.connection_strings "a connection string's value is a secret: ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference, so the value would sit in the component's inputs (docs/secrets.md)") }}
-{{- with $v.site_config }}
-{{- include "aso.unsupported" (list $ "site_config.application_insights_connection_string" .application_insights_connection_string "the Application Insights connection string, which the module marks sensitive as application_insights_connection_string and writes into an app setting: ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference, so the value would sit in the component's inputs (docs/secrets.md)") }}
-{{- include "aso.unsupported" (list $ "site_config.application_insights_key" .application_insights_key "the Application Insights instrumentation key, which the module marks sensitive as application_insights_key and writes into an app setting: ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference, so the value would sit in the component's inputs (docs/secrets.md)") }}
-{{- end }}
 {{- /* gaps: sites/config sections, publishing policies and actions with no kind */ -}}
 {{- /* auth_settings (v1) is written only without auth_settings_v2, as the module does */ -}}
 {{- if not $v.auth_settings_v2 }}
@@ -56,16 +48,13 @@ ported.
 {{- if not (eq (toString $v.delete_empty_service_plan) "true") }}
 {{- fail (printf "%s: delete_empty_service_plan false is not supported: Azure Service Operator deletes a site without the deleteEmptyServerFarm query parameter, so Azure's default (true) applies (docs/azure.md, \"Charts\")" $n) }}
 {{- end }}
-{{- /* Logic Apps: the module writes the storage account key into AzureWebJobsStorage. */ -}}
+{{- /* Logic Apps: the module requires the storage account's access key, which
+it writes into AzureWebJobsStorage (variables.tf's validation), and its name,
+which the connection string interpolates. */ -}}
 {{- if eq $v.kind "logicapp" }}
-{{- fail (printf "%s: kind logicapp is not supported: the module writes the storage account's access key into the AzureWebJobsStorage app setting, and ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference, so the value would sit in the component's inputs (docs/secrets.md) (docs/azure.md, \"Charts\")" $n) }}
+{{- if kindIs "invalid" $v.storage_account_access_key }}{{ fail (printf "%s: `storage_account_access_key` is required when `kind` is `logicapp`, because the Logic App runtime is configured with a Storage Account connection string." $n) }}{{ end }}
+{{- if not $v.storage_account_name }}{{ fail (printf "%s: `storage_account_name` is required when `kind` is `logicapp`: the Storage Account connection string names it." $n) }}{{ end }}
 {{- end }}
-{{- $logicOnly := "only a Logic App (kind logicapp, which is refused) reads it" }}
-{{- if ne (toString $v.logic_app_node_version) "~22" }}{{ include "aso.unsupported" (list $ "logic_app_node_version" (toString $v.logic_app_node_version) $logicOnly) }}{{ end }}
-{{- if ne (toString $v.logic_app_runtime_version) "~4" }}{{ include "aso.unsupported" (list $ "logic_app_runtime_version" (toString $v.logic_app_runtime_version) $logicOnly) }}{{ end }}
-{{- if ne (toString $v.bundle_version) "[1.*, 2.0.0)" }}{{ include "aso.unsupported" (list $ "bundle_version" (toString $v.bundle_version) $logicOnly) }}{{ end }}
-{{- if ne (toString $v.use_extension_bundle) "true" }}{{ include "aso.unsupported" (list $ "use_extension_bundle" "false" $logicOnly) }}{{ end }}
-{{- include "aso.unsupported" (list $ "storage_account_share_name" $v.storage_account_share_name $logicOnly) }}
 {{- /* names and the module's validations */ -}}
 {{- include "aso.names" (list $ (list "site")) }}
 {{- if not $v.name }}{{ fail (printf "%s: name is required" $n) }}{{ end }}
@@ -119,11 +108,18 @@ ported.
 {{- with $v.lock }}
 {{- if not (has .kind (list "CanNotDelete" "ReadOnly")) }}{{ fail (printf "%s: The lock level must be one of: `CanNotDelete`, or `ReadOnly`." $n) }}{{ end }}
 {{- end }}
-{{- /* locals.app_settings.tf: the merged app settings (the Application Insights ones are refused above). */ -}}
+{{- /* locals.app_settings.tf: the merged app settings. Secret material (the
+storage account's access key, the Application Insights connection string and
+key) is a reference to a Kubernetes Secret (_settings.tpl, webcfg.secretSetting). */ -}}
 {{- $merged := deepCopy $settings }}
+{{- $storageConn := printf "DefaultEndpointsProtocol=https;AccountName=%s;AccountKey=$(value)" (toString $v.storage_account_name) }}
+{{- $secret := dict }}
 {{- if eq $v.kind "functionapp" }}
 {{- if and (not $fc1) (not (has "functions_extension_version" $lowerKeys)) }}{{ $_ := set $merged "FUNCTIONS_EXTENSION_VERSION" $v.functions_extension_version }}{{ end }}
-{{- /* storage_account_name without a managed identity: AzureWebJobsStorage is the connection string with the access key, which is refused, so the module's value is null and nothing is sent. */ -}}
+{{- /* storage_account_name without a managed identity: AzureWebJobsStorage is the connection string around the access key, from a Secret; without the key the module's value is null and nothing is sent. */ -}}
+{{- if and $v.storage_account_name (not $smi) }}
+{{- with include "webcfg.secretSetting" (list $ "storage_account_access_key" $v.storage_account_access_key $storageConn) }}{{ $_ := set $secret "AzureWebJobsStorage" (fromJson .) }}{{ end }}
+{{- end }}
 {{- if and $smi (not (has "azurewebjobsstorage__accountname" $lowerKeys)) }}{{ $_ := set $merged "AzureWebJobsStorage__accountName" $v.storage_account_name }}{{ end }}
 {{- if and $smi (not (has "azurewebjobsstorage__credential" $lowerKeys)) }}{{ $_ := set $merged "AzureWebJobsStorage__credential" "managedidentity" }}{{ end }}
 {{- if and $smi $v.storage_user_assigned_identity_client_id (not (has "azurewebjobsstorage__clientid" $lowerKeys)) }}{{ $_ := set $merged "AzureWebJobsStorage__clientId" $v.storage_user_assigned_identity_client_id }}{{ end }}
@@ -133,6 +129,36 @@ ported.
 {{- end }}
 {{- if and (eq (toString $v.content_share_force_disabled) "true") (not $fc1) }}{{ $_ := set $merged "WEBSITE_CONTENTSHARE" "" }}{{ end }}
 {{- end }}
+{{- if eq $v.kind "logicapp" }}
+{{- $_ := set $merged "FUNCTIONS_EXTENSION_VERSION" $v.logic_app_runtime_version }}
+{{- $_ := set $secret "AzureWebJobsStorage" (include "webcfg.secretSetting" (list $ "storage_account_access_key" $v.storage_account_access_key $storageConn) | fromJson) }}
+{{- if not (has "functions_worker_runtime" $lowerKeys) }}{{ $_ := set $merged "FUNCTIONS_WORKER_RUNTIME" "dotnet" }}{{ end }}
+{{- if and (not (kindIs "invalid" $v.logic_app_node_version)) (not (has "website_node_default_version" $lowerKeys)) }}{{ $_ := set $merged "WEBSITE_NODE_DEFAULT_VERSION" $v.logic_app_node_version }}{{ end }}
+{{- if eq (toString $v.use_extension_bundle) "true" }}
+{{- $_ := set $merged "AzureFunctionsJobHost__extensionBundle__id" "Microsoft.Azure.Functions.ExtensionBundle.Workflows" }}
+{{- $_ := set $merged "AzureFunctionsJobHost__extensionBundle__version" $v.bundle_version }}
+{{- end }}
+{{- with $v.storage_account_share_name }}
+{{- $_ := set $merged "WEBSITE_CONTENTSHARE" . }}
+{{- $_ := set $secret "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING" (include "webcfg.secretSetting" (list $ "storage_account_access_key" $v.storage_account_access_key $storageConn) | fromJson) }}
+{{- end }}
+{{- end }}
+{{- /* Application Insights: site_config's value first, then the variable's, as the module coalesces them. */ -}}
+{{- $sci := $v.site_config | default dict }}
+{{- $aiConn := ternary $v.application_insights_connection_string $sci.application_insights_connection_string (kindIs "invalid" $sci.application_insights_connection_string) }}
+{{- $aiConnPath := ternary "application_insights_connection_string" "site_config.application_insights_connection_string" (kindIs "invalid" $sci.application_insights_connection_string) }}
+{{- with include "webcfg.secretSetting" (list $ $aiConnPath $aiConn "") }}{{ $_ := set $secret "APPLICATIONINSIGHTS_CONNECTION_STRING" (fromJson .) }}{{ end }}
+{{- $aiKey := ternary $v.application_insights_key $sci.application_insights_key (kindIs "invalid" $sci.application_insights_key) }}
+{{- $aiKeyPath := ternary "application_insights_key" "site_config.application_insights_key" (kindIs "invalid" $sci.application_insights_key) }}
+{{- with include "webcfg.secretSetting" (list $ $aiKeyPath $aiKey "") }}{{ $_ := set $secret "APPINSIGHTS_INSTRUMENTATIONKEY" (fromJson .) }}{{ end }}
+{{- /* the settings map: the plain ones, then the secret ones over them, in the module's merge order (Application Insights last). */ -}}
+{{- $entries := dict }}
+{{- range $k, $x := $merged }}{{ $_ := set $entries $k (dict "value" $x) }}{{ end }}
+{{- range $k, $x := $secret }}{{ $_ := set $entries $k $x }}{{ end }}
+{{- $byKind := include "webcfg.hasRef" $entries | eq "true" }}
+{{- $inline := ternary (dict) (include "webcfg.plain" $entries | fromJson) $byKind }}
+{{- /* the storage account key is accepted where the module reads it (a function app's AzureWebJobsStorage, a Logic App); anywhere else it is still checked to be a reference. */ -}}
+{{- $_ := include "aso.secretRef" (list $ "storage_account_access_key" $v.storage_account_access_key) }}
 {{- $sc := include "site.withDefaults" (list $v.site_config (include "site.siteConfigDefaults" . | fromJson)) | fromJson }}
 {{- $farm := regexReplaceAll "(?i)/providers/microsoft\\.web/serverfarms/" (toString $v.service_plan_resource_id) "/providers/Microsoft.Web/serverfarms/" }}
 {{- $abandon := include "aso.abandon" . }}
@@ -148,11 +174,19 @@ spec:
   owner:
     {{- include "aso.owner" (list $ "parent_id" $v.parent_id) | nindent 4 }}
   kind: {{ include "site.armKind" . | quote }}
-  {{- (include "site.body" (dict "root" $ "v" $v "sc" $sc "slot" false "appSettings" $merged "serverFarm" $farm "vnetBackup" $v.virtual_network_backup_restore_enabled "storage" (include "site.storageMounts" (list $ "storage_shares_to_mount" $v.storage_shares_to_mount nil) | fromJson).v) | fromJson).v | toYaml | nindent 2 }}
+  {{- (include "site.body" (dict "root" $ "v" $v "sc" $sc "slot" false "appSettings" $inline "serverFarm" $farm "vnetBackup" $v.virtual_network_backup_restore_enabled "storage" (include "site.storageMounts" (list $ "storage_shares_to_mount" $v.storage_shares_to_mount nil) | fromJson).v) | fromJson).v | toYaml | nindent 2 }}
   {{- with (include "aso.tags" (list $ dict) | fromJson) }}
   tags:
     {{- toYaml . | nindent 4 }}
   {{- end }}
+{{- if $byKind }}
+{{- include "webcfg.appSettings" (dict "root" $ "name" (include "aso.name" (list .Release.Name "appsettings")) "id" "config_appsettings" "abandon" $abandon "owner" (dict "name" $obj) "settings" $entries) }}
+{{- end }}
+{{- /* a connection string's value is a reference even when manage_connection_strings is false and nothing is sent: it never sits in the inputs as text */ -}}
+{{- range $ck, $cv := ($v.connection_strings | default dict) }}{{ $_ := include "aso.secretRef" (list $ (printf "connection_strings.%s.value" $ck) ($cv | default dict).value) }}{{ end }}
+{{- if and (eq (toString $v.manage_connection_strings) "true") $v.connection_strings }}
+{{- include "webcfg.connectionStrings" (dict "root" $ "name" (include "aso.name" (list .Release.Name "connectionstrings")) "id" "config_connectionstrings" "abandon" $abandon "owner" (dict "name" $obj) "path" "connection_strings" "v" $v.connection_strings) }}
+{{- end }}
 {{- $owner := dict "group" "web.azure.com" "kind" "Site" "name" $obj }}
 {{- include "aso.lock" (dict "root" $ "base" $obj "idPrefix" "" "owner" $owner "v" $v.lock) }}
 {{- include "aso.roleAssignments" (dict "root" $ "base" $obj "idPrefix" "" "owner" $owner "v" $v.role_assignments) }}

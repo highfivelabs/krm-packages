@@ -9,7 +9,11 @@ module.slot: one aso-extensions SitesSlot (web.azure.hfl.dev/v20260715;
 the module sends Microsoft.Web/sites/slots@2025-03-01) per
 deployment_slots entry, owned by the Site, with the body modules/slot
 builds (_site.tpl, site.body with slot true) and its app settings and
-metadata inline, as the site's. Its lock (the entry's, else the site's when
+metadata inline, as the site's; when its settings hold secret material (the
+Application Insights connection string or key, slot_sensitive_app_settings),
+all of them are an aso-extensions SitesConfigAppSettings owned by the slot
+instead, and its connection_strings a SitesConfigConnectionStrings
+(_settings.tpl). Its lock (the entry's, else the site's when
 deployment_slots_inherit_lock) and role assignments: the AVM interfaces on
 the slot. module.slot_hostname_binding: one aso-extensions
 SitesSlotsHostNameBinding per entry of a slot's custom_domains. The slot
@@ -25,14 +29,14 @@ private_endpoints_inherit_lock) and role assignments.
 {{- $abandon := include "aso.abandon" . }}
 {{- $site := include "aso.name" (list .Release.Name "site") }}
 {{- $farm := regexReplaceAll "(?i)/providers/microsoft\\.web/serverfarms/" (toString $v.service_plan_resource_id) "/providers/Microsoft.Web/serverfarms/" }}
+{{- range $k, $x := ($v.slot_sensitive_app_settings | default dict) }}
+{{- if not (hasKey ($v.deployment_slots | default dict) $k) }}
+{{- fail (printf "%s: slot_sensitive_app_settings.%s names no deployment_slots entry (the key MUST be the slot's key)" $n $k) }}
+{{- end }}
+{{- end }}
 {{- range $key, $in := ($v.deployment_slots | default dict) }}
 {{- $p := printf "deployment_slots.%s" $key }}
-{{- include "aso.unsupported" (list $ (printf "%s.connection_strings" $p) $in.connection_strings "a connection string's value is a secret: ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference, so the value would sit in the component's inputs (docs/secrets.md)") }}
 {{- include "aso.unsupported" (list $ (printf "%s.zip_deploy_file" $p) $in.zip_deploy_file "a zip deploy uploads a local file to the slot's Kudu (extensions/zipDeploy), application code a Package does not carry") }}
-{{- with $in.site_config }}
-{{- include "aso.unsupported" (list $ (printf "%s.site_config.application_insights_connection_string" $p) .application_insights_connection_string "the Application Insights connection string, which the module marks sensitive as application_insights_connection_string and writes into an app setting: ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference, so the value would sit in the component's inputs (docs/secrets.md)") }}
-{{- include "aso.unsupported" (list $ (printf "%s.site_config.application_insights_key" $p) .application_insights_key "the Application Insights instrumentation key, which the module marks sensitive as application_insights_key and writes into an app setting: ASO's Site and aso-extensions' SitesSlot take app settings and connection strings only in plain text, and aso-extensions (8d7f8c2) has no kind for Microsoft.Web/sites/config appsettings or connectionstrings that takes a Secret reference, so the value would sit in the component's inputs (docs/secrets.md)") }}
-{{- end }}
 {{- if not (eq (toString $in.ftp_publish_basic_authentication_enabled) "true") }}
 {{- fail (printf "%s: %s.ftp_publish_basic_authentication_enabled false (the module's default) is not supported: the module then writes Microsoft.Web/sites/slots/basicPublishingCredentialsPolicies (ftp) with allow false, which has no Azure Service Operator or aso-extensions kind; set it to true to leave FTP basic authentication as Azure has it (docs/azure.md, \"Charts\")" $n $p) }}
 {{- end }}
@@ -49,6 +53,24 @@ private_endpoints_inherit_lock) and role assignments.
 {{- $slotFarm := $farm }}
 {{- with $s.server_farm_id }}{{ $slotFarm = regexReplaceAll "(?i)/providers/microsoft\\.web/serverfarms/" . "/providers/Microsoft.Web/serverfarms/" }}{{ end }}
 {{- $obj := include "aso.name" (list $site "slot" $key) }}
+{{- /* modules/slot locals.tf: the slot's app settings, then the Application
+Insights connection string and key (the slot's site_config first, then the
+site's variables), then its sensitive settings, each secret value a
+reference to a Kubernetes Secret. */ -}}
+{{- $entries := dict }}
+{{- range $sk, $sx := ($s.app_settings | default dict) }}{{ $_ := set $entries $sk (dict "value" $sx) }}{{ end }}
+{{- $ssc := $in.site_config | default dict }}
+{{- $aiConn := ternary $v.application_insights_connection_string $ssc.application_insights_connection_string (kindIs "invalid" $ssc.application_insights_connection_string) }}
+{{- $aiConnPath := ternary "application_insights_connection_string" (printf "%s.site_config.application_insights_connection_string" $p) (kindIs "invalid" $ssc.application_insights_connection_string) }}
+{{- with include "webcfg.secretSetting" (list $ $aiConnPath $aiConn "") }}{{ $_ := set $entries "APPLICATIONINSIGHTS_CONNECTION_STRING" (fromJson .) }}{{ end }}
+{{- $aiKey := ternary $v.application_insights_key $ssc.application_insights_key (kindIs "invalid" $ssc.application_insights_key) }}
+{{- $aiKeyPath := ternary "application_insights_key" (printf "%s.site_config.application_insights_key" $p) (kindIs "invalid" $ssc.application_insights_key) }}
+{{- with include "webcfg.secretSetting" (list $ $aiKeyPath $aiKey "") }}{{ $_ := set $entries "APPINSIGHTS_INSTRUMENTATIONKEY" (fromJson .) }}{{ end }}
+{{- range $sk, $sx := (index ($v.slot_sensitive_app_settings | default dict) $key | default dict) }}
+{{- with include "webcfg.secretSetting" (list $ (printf "slot_sensitive_app_settings.%s.%s" $key $sk) $sx "") }}{{ $_ := set $entries $sk (fromJson .) }}{{ end }}
+{{- end }}
+{{- $byKind := include "webcfg.hasRef" $entries | eq "true" }}
+{{- $inline := ternary (dict) (include "webcfg.plain" $entries | fromJson) $byKind }}
 {{- $tags := dict }}
 {{- if eq (toString $v.all_child_resources_inherit_tags) "true" }}
 {{- $tags = include "aso.tags" (list $ $s.tags) | fromJson }}
@@ -66,12 +88,20 @@ spec:
   owner:
     name: {{ $site }}
   kind: {{ include "site.armKind" $ | quote }}
-  {{- (include "site.body" (dict "root" $ "v" $s "sc" $sc "slot" true "appSettings" ($s.app_settings | default dict) "serverFarm" $slotFarm "vnetBackup" $s.vnet_backup_restore_enabled "storage" (include "site.storageMounts" (list $ (printf "deployment_slots.%s.storage_shares_to_mount" $key) $s.storage_shares_to_mount ($v.slots_storage_shares_to_mount_sensitive_values | default dict)) | fromJson).v) | fromJson).v | toYaml | nindent 2 }}
+  {{- (include "site.body" (dict "root" $ "v" $s "sc" $sc "slot" true "appSettings" $inline "serverFarm" $slotFarm "vnetBackup" $s.vnet_backup_restore_enabled "storage" (include "site.storageMounts" (list $ (printf "deployment_slots.%s.storage_shares_to_mount" $key) $s.storage_shares_to_mount ($v.slots_storage_shares_to_mount_sensitive_values | default dict)) | fromJson).v) | fromJson).v | toYaml | nindent 2 }}
   {{- with $tags }}
   tags:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 {{- $owner := dict "group" "web.azure.hfl.dev" "kind" "SitesSlot" "name" $obj }}
+{{- if $byKind }}
+{{- include "webcfg.appSettings" (dict "root" $ "name" (include "aso.name" (list $obj "appsettings")) "id" (printf "slot:%s/config_appsettings" $key) "abandon" $abandon "owner" $owner "settings" $entries) }}
+{{- end }}
+{{- /* a connection string's value is a reference even when manage_connection_strings is false and nothing is sent: it never sits in the inputs as text */ -}}
+{{- range $ck, $cv := ($s.connection_strings | default dict) }}{{ $_ := include "aso.secretRef" (list $ (printf "%s.connection_strings.%s.value" $p $ck) ($cv | default dict).value) }}{{ end }}
+{{- if and (eq (toString $s.manage_connection_strings) "true") $s.connection_strings }}
+{{- include "webcfg.connectionStrings" (dict "root" $ "name" (include "aso.name" (list $obj "connectionstrings")) "id" (printf "slot:%s/config_connectionstrings" $key) "abandon" $abandon "owner" $owner "path" (printf "%s.connection_strings" $p) "v" $s.connection_strings) }}
+{{- end }}
 {{- $lock := $s.lock }}
 {{- if and (not $lock) (eq (toString $v.deployment_slots_inherit_lock) "true") }}{{ $lock = $v.lock }}{{ end }}
 {{- include "aso.lock" (dict "root" $ "base" $obj "idPrefix" (printf "slot:%s/" $key) "owner" $owner "v" $lock) }}
