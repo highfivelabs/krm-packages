@@ -1,0 +1,3 @@
+# expect: efs: deny_nonsecure_transport_via_mount_target is not supported
+name: x
+deny_nonsecure_transport: false

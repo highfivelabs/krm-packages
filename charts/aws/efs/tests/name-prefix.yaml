@@ -1,0 +1,14 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The namePrefix convention (docs/design.md, "Names, labels and tags"): the
+# mount targets' security group's name (unique in its VPC) carries the
+# namePrefix. AWS assigns the file system's, mount targets' and access
+# points' IDs; the file system's and access points' Name tags carry the
+# namePrefix but need not be unique.
+exempt:
+  FileSystem: "AWS assigns its ID; its Name tag carries the namePrefix but need not be unique"
+  MountTarget: "AWS assigns its ID; a file system and a subnet identify it"
+  AccessPoint: "AWS assigns its ID; its Name tag carries the namePrefix but need not be unique"
+nameFields:
+  SecurityGroup: name

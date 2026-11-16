@@ -1,0 +1,137 @@
+---
+# Source: efs/templates/access-points.yaml
+apiVersion: efs.services.k8s.aws/v1alpha1
+kind: AccessPoint
+metadata:
+  name: full-access-point-app
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: efs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "access-point-app"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  fileSystemRef:
+    from:
+      name: full-fs
+  rootDirectory:
+    path: "/app"
+  tags:
+    - key: "Name"
+      value: "app"
+    - key: "team"
+      value: "storage"
+---
+# Source: efs/templates/access-points.yaml
+apiVersion: efs.services.k8s.aws/v1alpha1
+kind: AccessPoint
+metadata:
+  name: full-access-point-root
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: efs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "access-point-root"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  fileSystemRef:
+    from:
+      name: full-fs
+  posixUser:
+    gid: 0
+    uid: 0
+    secondaryGIDs:
+      - 10
+      - 20
+  tags:
+    - key: "Name"
+      value: "root-ap"
+    - key: "team"
+      value: "storage"
+    - key: "use"
+      value: "admin"
+---
+# Source: efs/templates/file-system.yaml
+apiVersion: efs.services.k8s.aws/v1alpha1
+kind: FileSystem
+metadata:
+  name: full-fs
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: efs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "file-system"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  availabilityZoneName: "eu-west-1a"
+  performanceMode: "generalPurpose"
+  encrypted: true
+  kmsKeyID: "arn:aws:kms:eu-west-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+  provisionedThroughputInMiBps: 256
+  throughputMode: "provisioned"
+  lifecyclePolicies:
+    - transitionToArchive: "AFTER_90_DAYS"
+    - transitionToIA: "AFTER_30_DAYS"
+    - transitionToPrimaryStorageClass: "AFTER_1_ACCESS"
+  fileSystemProtection:
+    replicationOverwriteProtection: "DISABLED"
+  policy: "{\"Statement\":[{\"Action\":\"*\",\"Condition\":{\"Bool\":{\"aws:SecureTransport\":\"false\"}},\"Effect\":\"Deny\",\"Principal\":{\"AWS\":\"*\"},\"Resource\":\"*\",\"Sid\":\"Src\"},{\"Action\":[\"elasticfilesystem:ClientWrite\"],\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam::111122223333:root\"]},\"Resource\":[\"*\"],\"Sid\":\"Write\"}],\"Version\":\"2012-10-17\"}"
+  backupPolicy:
+    status: DISABLED
+  replicationConfiguration:
+    - {"kmsKeyID":"alias/efs-replica","region":"eu-central-1"}
+  tags:
+    - key: "Name"
+      value: "full"
+    - key: "team"
+      value: "storage"
+---
+# Source: efs/templates/mount-targets.yaml
+apiVersion: efs.services.k8s.aws/v1alpha1
+kind: MountTarget
+metadata:
+  name: full-mount-target-a
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: efs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "mount-target-a"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  fileSystemRef:
+    from:
+      name: full-fs
+  subnetID: "subnet-a"
+  ipAddress: "10.0.1.10"
+  securityGroups:
+    - "sg-1"
+    - "sg-2"
+---
+# Source: efs/templates/mount-targets.yaml
+apiVersion: efs.services.k8s.aws/v1alpha1
+kind: MountTarget
+metadata:
+  name: full-mount-target-b
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: efs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "mount-target-b"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  fileSystemRef:
+    from:
+      name: full-fs
+  subnetID: "subnet-b"
+  securityGroups:
+    - "sg-1"

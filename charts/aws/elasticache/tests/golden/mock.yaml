@@ -1,0 +1,137 @@
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: CacheParameterGroup
+metadata:
+  name: mock-parameter-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "parameter-group"
+spec:
+  cacheParameterGroupName: "catalog-cache-redis7"
+  cacheParameterGroupFamily: "redis7"
+  description: "ElastiCache parameter group"
+  parameterNameValues:
+    - parameterName: "maxmemory-policy"
+      parameterValue: "allkeys-lru"
+  tags:
+    - key: "catalog-test"
+      value: "true"
+    - key: "terraform-aws-modules"
+      value: "elasticache"
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: CacheSubnetGroup
+metadata:
+  name: mock-subnet-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "subnet-group"
+spec:
+  cacheSubnetGroupName: "catalog-cache"
+  cacheSubnetGroupDescription: "ElastiCache subnet group"
+  subnetIDs:
+    - "subnet-set-by-mock-set-yaml-a"
+    - "subnet-set-by-mock-set-yaml-b"
+  tags:
+    - key: "catalog-test"
+      value: "true"
+    - key: "terraform-aws-modules"
+      value: "elasticache"
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: mock-log-slow-log
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group-slow-log"
+spec:
+  name: "/aws/elasticache/catalog-cache"
+  retentionDays: 14
+  tags:
+    "catalog-test": "true"
+    "terraform-aws-modules": "elasticache"
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: ReplicationGroup
+metadata:
+  name: mock-replication-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "replication-group"
+spec:
+  replicationGroupID: "catalog-cache"
+  description: "Replication group"
+  engine: "redis"
+  engineVersion: "7.1"
+  cacheNodeType: "cache.t3.micro"
+  port: 6379
+  atRestEncryptionEnabled: true
+  transitEncryptionEnabled: true
+  multiAZEnabled: false
+  numNodeGroups: 1
+  replicasPerNodeGroup: 1
+  cacheParameterGroupRef:
+    from:
+      name: mock-parameter-group
+  cacheSubnetGroupRef:
+    from:
+      name: mock-subnet-group
+  securityGroupRefs:
+    - from:
+        name: mock-sg
+  logDeliveryConfigurations:
+    - {"destinationDetails":{"cloudWatchLogsDetails":{"logGroup":"/aws/elasticache/catalog-cache"}},"destinationType":"cloudwatch-logs","enabled":true,"logFormat":"json","logType":"slow-log"}
+  tags:
+    - key: "catalog-test"
+      value: "true"
+    - key: "terraform-aws-modules"
+      value: "elasticache"
+---
+# Source: elasticache/templates/security-group.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: mock-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "security-group"
+spec:
+  name: "catalog-cache"
+  description: "Managed by Terraform"
+  vpcID: "vpc-set-by-mock-set-yaml"
+  ingressRules:
+    - ipProtocol: "tcp"
+      fromPort: 6379
+      toPort: 6379
+      ipRanges:
+        - {"cidrIP":"10.70.0.0/16"}
+  tags:
+    - key: "catalog-test"
+      value: "true"
+    - key: "terraform-aws-modules"
+      value: "elasticache"

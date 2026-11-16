@@ -1,0 +1,23 @@
+# Applied to the fake AWS by hack/mock-apply-aws.sh: a file system with a
+# policy, a backup policy and a lifecycle policy, a mount target in the
+# subnet tests/mock.needs.yaml makes (tests/mock.set.yaml) with the chart's
+# security group, and an access point.
+name: catalog-efs
+region: us-east-1
+lifecycle_policy: {transition_to_ia: AFTER_30_DAYS}
+deny_nonsecure_transport: false
+deny_nonsecure_transport_via_mount_target: false
+policy_statements:
+  mount:
+    actions: [elasticfilesystem:ClientMount]
+    resources: ["*"]
+    principals: [{type: AWS, identifiers: ["*"]}]
+    condition: [{test: Bool, variable: aws:SecureTransport, values: ["true"]}]
+security_group_vpc_id: vpc-set-by-mock-set-yaml
+mount_targets:
+  a: {subnet_id: subnet-set-by-mock-set-yaml}
+security_group_ingress_rules:
+  vpc: {cidr_ipv4: 10.60.0.0/16}
+access_points:
+  app: {posix_user: {gid: 1000, uid: 1000}, root_directory: {path: /app, creation_info: {owner_gid: 1000, owner_uid: 1000, permissions: "755"}}}
+tags: {catalog-test: "true"}

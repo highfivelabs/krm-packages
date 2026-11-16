@@ -1,0 +1,4 @@
+# expect: efs: replication_configuration_destination is required
+name: x
+attach_policy: false
+create_replication_configuration: true

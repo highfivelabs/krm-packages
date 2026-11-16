@@ -1,0 +1,5 @@
+# expect: efs: security_group_vpc_id is required
+name: x
+attach_policy: false
+mount_targets:
+  a: {subnet_id: subnet-1}

@@ -1,0 +1,6 @@
+# expect: efs: mount_targets.a.ip_address_type is not supported
+name: x
+attach_policy: false
+security_group_vpc_id: vpc-1
+mount_targets:
+  a: {subnet_id: subnet-1, ip_address_type: DUAL_STACK}

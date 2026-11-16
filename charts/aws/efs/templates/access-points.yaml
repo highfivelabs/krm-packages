@@ -1,0 +1,52 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "Access Point(s)": the access points (aws_efs_access_point.this) as
+ACK's AccessPoint, each taking the file system by reference
+(fileSystemRef). Each one's Name tag is its name, else its key, as in the
+module, with the namePrefix.
+*/ -}}
+{{- $v := .Values -}}
+{{- if $v.create }}
+{{- range $key := keys ($v.access_points | default dict) | sortAlpha }}
+{{- $ap := index $v.access_points $key | default dict }}
+{{- $name := include "ack.cloudName" (list $ "access point" ($ap.name | default $key) 256) }}
+---
+apiVersion: efs.services.k8s.aws/v1alpha1
+kind: AccessPoint
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "access-point" $key)) "id" (printf "access-point-%s" $key) "region" $v.region) | nindent 2 }}
+spec:
+  fileSystemRef:
+    from:
+      name: {{ include "ack.name" (list $.Release.Name "fs") }}
+{{- with $ap.posix_user }}
+  posixUser:
+    gid: {{ int64 .gid }}
+    uid: {{ int64 .uid }}
+{{- with .secondary_gids }}
+    secondaryGIDs:
+{{- range . }}
+      - {{ int64 . }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with $ap.root_directory }}
+  rootDirectory:
+{{- with .path }}
+    path: {{ . | quote }}
+{{- end }}
+{{- with .creation_info }}
+    creationInfo:
+      ownerGID: {{ int64 .owner_gid }}
+      ownerUID: {{ int64 .owner_uid }}
+      permissions: {{ .permissions | toString | quote }}
+{{- end }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags $ap.tags (dict "Name" $name)) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}

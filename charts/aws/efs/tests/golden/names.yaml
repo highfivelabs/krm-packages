@@ -1,0 +1,91 @@
+---
+# Source: efs/templates/access-points.yaml
+apiVersion: efs.services.k8s.aws/v1alpha1
+kind: AccessPoint
+metadata:
+  name: names-access-point-app
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: efs
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "access-point-app"
+spec:
+  fileSystemRef:
+    from:
+      name: names-fs
+  tags:
+    - key: "Name"
+      value: "app"
+    - key: "team"
+      value: "shop"
+---
+# Source: efs/templates/file-system.yaml
+apiVersion: efs.services.k8s.aws/v1alpha1
+kind: FileSystem
+metadata:
+  name: names-fs
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: efs
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "file-system"
+spec:
+  encrypted: true
+  backupPolicy:
+    status: ENABLED
+  tags:
+    - key: "Name"
+      value: "shared"
+    - key: "team"
+      value: "shop"
+---
+# Source: efs/templates/mount-targets.yaml
+apiVersion: efs.services.k8s.aws/v1alpha1
+kind: MountTarget
+metadata:
+  name: names-mount-target-a
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: efs
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "mount-target-a"
+spec:
+  fileSystemRef:
+    from:
+      name: names-fs
+  subnetID: "subnet-1"
+  securityGroupRefs:
+    - from:
+        name: names-sg
+---
+# Source: efs/templates/mount-targets.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: names-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: efs
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "security-group"
+spec:
+  name: "shop-dev-efs-nfs"
+  description: "Managed by Terraform"
+  vpcID: "vpc-1"
+  tags:
+    - key: "Name"
+      value: "shop-dev-efs-nfs"
+    - key: "team"
+      value: "shop"

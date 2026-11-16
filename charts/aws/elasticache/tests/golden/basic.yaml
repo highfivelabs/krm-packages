@@ -1,0 +1,109 @@
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: CacheSubnetGroup
+metadata:
+  name: basic-subnet-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "subnet-group"
+spec:
+  cacheSubnetGroupName: "sessions"
+  cacheSubnetGroupDescription: "ElastiCache subnet group"
+  subnetIDs:
+    - "subnet-0123456789abcdef0"
+    - "subnet-0123456789abcdef1"
+  tags:
+    - key: "team"
+      value: "web"
+    - key: "terraform-aws-modules"
+      value: "elasticache"
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: basic-log-slow-log
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group-slow-log"
+spec:
+  name: "/aws/elasticache/sessions"
+  retentionDays: 14
+  tags:
+    "team": "web"
+    "terraform-aws-modules": "elasticache"
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: ReplicationGroup
+metadata:
+  name: basic-replication-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "replication-group"
+spec:
+  replicationGroupID: "sessions"
+  description: "Replication group"
+  engine: "redis"
+  engineVersion: "7.1"
+  cacheNodeType: "cache.t4g.small"
+  port: 6379
+  atRestEncryptionEnabled: true
+  transitEncryptionEnabled: true
+  multiAZEnabled: false
+  numNodeGroups: 1
+  replicasPerNodeGroup: 1
+  cacheSubnetGroupRef:
+    from:
+      name: basic-subnet-group
+  securityGroupRefs:
+    - from:
+        name: basic-sg
+  logDeliveryConfigurations:
+    - {"destinationDetails":{"cloudWatchLogsDetails":{"logGroup":"/aws/elasticache/sessions"}},"destinationType":"cloudwatch-logs","enabled":true,"logFormat":"json","logType":"slow-log"}
+  tags:
+    - key: "team"
+      value: "web"
+    - key: "terraform-aws-modules"
+      value: "elasticache"
+---
+# Source: elasticache/templates/security-group.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: basic-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "security-group"
+spec:
+  name: "sessions"
+  description: "Managed by Terraform"
+  vpcID: "vpc-0123456789abcdef0"
+  ingressRules:
+    - ipProtocol: "tcp"
+      fromPort: 6379
+      toPort: 6379
+      ipRanges:
+        - {"cidrIP":"10.0.0.0/16","description":"Redis from the VPC"}
+  tags:
+    - key: "team"
+      value: "web"
+    - key: "terraform-aws-modules"
+      value: "elasticache"

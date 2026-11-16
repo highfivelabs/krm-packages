@@ -1,0 +1,42 @@
+# Every carried variable: One Zone storage, KMS, provisioned throughput,
+# lifecycle, protection, a policy from source, statement and override
+# documents, two mount targets in the caller's groups, two access points,
+# backups off and replication to another Region.
+name: full
+region: eu-west-1
+availability_zone_name: eu-west-1a
+performance_mode: generalPurpose
+encrypted: true
+kms_key_arn: arn:aws:kms:eu-west-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+throughput_mode: provisioned
+provisioned_throughput_in_mibps: 256
+lifecycle_policy:
+  transition_to_ia: AFTER_30_DAYS
+  transition_to_archive: AFTER_90_DAYS
+  transition_to_primary_storage_class: AFTER_1_ACCESS
+protection: {replication_overwrite: DISABLED}
+deny_nonsecure_transport: false
+deny_nonsecure_transport_via_mount_target: false
+source_policy_documents:
+  - '{"Version":"2012-10-17","Statement":[{"Sid":"Src","Effect":"Allow","Principal":{"AWS":"*"},"Action":"elasticfilesystem:ClientMount","Resource":"*"}]}'
+policy_statements:
+  write:
+    sid: Write
+    actions: [elasticfilesystem:ClientWrite]
+    resources: ["*"]
+    principals: [{type: AWS, identifiers: [arn:aws:iam::111122223333:root]}]
+    conditions: [{test: Bool, variable: aws:SecureTransport, values: ["true"]}]
+override_policy_documents:
+  - '{"Version":"2012-10-17","Statement":{"Sid":"Src","Effect":"Deny","Principal":{"AWS":"*"},"Action":"*","Resource":"*","Condition":{"Bool":{"aws:SecureTransport":"false"}}}}'
+create_security_group: false
+mount_targets:
+  a: {subnet_id: subnet-a, ip_address: 10.0.1.10, security_groups: [sg-1, sg-2]}
+  b: {subnet_id: subnet-b, security_groups: [sg-1], region: eu-west-1}
+access_points:
+  root: {name: root-ap, posix_user: {gid: 0, uid: 0, secondary_gids: [10, 20]}, tags: {use: admin}}
+  app: {root_directory: {path: /app}}
+create_backup_policy: true
+enable_backup_policy: false
+create_replication_configuration: true
+replication_configuration_destination: {region: eu-central-1, kms_key_id: alias/efs-replica}
+tags: {team: storage}

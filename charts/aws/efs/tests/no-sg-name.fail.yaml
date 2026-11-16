@@ -1,0 +1,5 @@
+# expect: efs: name is required with mount targets
+attach_policy: false
+security_group_vpc_id: vpc-1
+mount_targets:
+  a: {subnet_id: subnet-1}

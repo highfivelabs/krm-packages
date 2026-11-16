@@ -1,0 +1,18 @@
+---
+# Source: efs/templates/file-system.yaml
+apiVersion: efs.services.k8s.aws/v1alpha1
+kind: FileSystem
+metadata:
+  name: no-policy-fs
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "no-policy"
+    app.kubernetes.io/name: efs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "file-system"
+spec:
+  encrypted: true
+  tags:
+    - key: "Name"
+      value: "plain"

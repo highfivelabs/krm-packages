@@ -1,0 +1,118 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "Mount Target(s)" and "Security Group": the mount targets
+(aws_efs_mount_target.this) as ACK's MountTarget, each taking the file
+system by reference (fileSystemRef), and their security group
+(aws_security_group.this, made only with mount targets) with its rules
+(aws_vpc_security_group_ingress_rule, aws_vpc_security_group_egress_rule),
+which ACK keeps inline as SecurityGroup.ingressRules and egressRules, as
+charts/aws/security-group does. The mount targets take the group by
+reference (securityGroupRefs).
+*/ -}}
+{{- $v := .Values -}}
+{{- $targets := $v.mount_targets | default dict }}
+{{- if and $v.create $targets }}
+{{- $sgObj := include "ack.name" (list .Release.Name "sg") }}
+{{- $createSG := $v.create_security_group }}
+{{- if $createSG }}
+{{- $derived := $v.security_group_name | default $v.name | default "" }}
+{{- $sgName := include "ack.resourceName" (list $ "securityGroup" "security group" $derived 255) }}
+{{- if not $sgName }}
+{{- fail "efs: name is required with mount targets and create_security_group: true: the security group is named security_group_name, else name (or names.securityGroup); Terraform's random name would change between renders" }}
+{{- end }}
+{{- if not $v.security_group_vpc_id }}
+{{- fail "efs: security_group_vpc_id is required with mount targets and create_security_group: true: ACK's SecurityGroup needs its VPC's ID, and the chart cannot look up the account's default VPC, which Terraform takes when it is unset (docs/aws.md)" }}
+{{- end }}
+---
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $sgObj "id" "security-group" "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ $sgName | quote }}
+  {{- /* Unset, the Terraform provider's default. */}}
+  description: {{ $v.security_group_description | default "Managed by Terraform" | quote }}
+  vpcID: {{ $v.security_group_vpc_id | quote }}
+{{- range $dir := list "ingress" "egress" }}
+{{- $rules := index $v (printf "security_group_%s_rules" $dir) | default dict }}
+{{- if $rules }}
+  {{ $dir }}Rules:
+{{- range $key := keys $rules | sortAlpha }}
+{{- $r := index $rules $key | default dict }}
+{{- $set := list }}
+{{- range $f := list "cidr_ipv4" "cidr_ipv6" "prefix_list_id" "referenced_security_group_id" }}
+{{- if index $r $f }}{{ $set = append $set $f }}{{ end }}
+{{- end }}
+{{- if ne (len $set) 1 }}
+{{- fail (printf "efs: security_group_%s_rules.%s must set exactly one of cidr_ipv4, cidr_ipv6, prefix_list_id or referenced_security_group_id" $dir $key) }}
+{{- end }}
+{{- /* The module's optional() defaults: tcp, port 2049 (NFS). */}}
+{{- $from := $r.from_port }}
+{{- if kindIs "invalid" $from }}{{ $from = 2049 }}{{ end }}
+{{- $to := $r.to_port }}
+{{- if kindIs "invalid" $to }}{{ $to = 2049 }}{{ end }}
+{{- $desc := dict }}
+{{- with $r.description }}{{ $desc = dict "description" . }}{{ end }}
+    - ipProtocol: {{ $r.ip_protocol | default "tcp" | toString | quote }}
+      fromPort: {{ int64 $from }}
+      toPort: {{ int64 $to }}
+{{- if $r.cidr_ipv4 }}
+      ipRanges:
+        - {{ toJson (merge (dict "cidrIP" $r.cidr_ipv4) $desc) }}
+{{- else if $r.cidr_ipv6 }}
+      ipv6Ranges:
+        - {{ toJson (merge (dict "cidrIPv6" $r.cidr_ipv6) $desc) }}
+{{- else if $r.prefix_list_id }}
+      prefixListIDs:
+        - {{ toJson (merge (dict "prefixListID" $r.prefix_list_id) $desc) }}
+{{- else if eq $r.referenced_security_group_id "self" }}
+      {{- /* self: a pair without a group ID is this group (ACK fills its ID in) */}}
+      userIDGroupPairs:
+        - {{ toJson $desc }}
+{{- else }}
+      userIDGroupPairs:
+        - {{ toJson (merge (dict "groupID" $r.referenced_security_group_id) $desc) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags (dict "Name" $sgName)) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- range $key := keys $targets | sortAlpha }}
+{{- $mt := index $targets $key | default dict }}
+{{- if not $mt.subnet_id }}
+{{- fail (printf "efs: mount_targets.%s needs subnet_id" $key) }}
+{{- end }}
+{{- if and $createSG $mt.security_groups }}
+{{- fail (printf "efs: mount_targets.%s.security_groups is not supported with create_security_group: true: ACK's MountTarget cannot take group references (the chart's group) and IDs together; set create_security_group: false and give every group's ID (docs/aws.md)" $key) }}
+{{- end }}
+---
+apiVersion: efs.services.k8s.aws/v1alpha1
+kind: MountTarget
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "mount-target" $key)) "id" (printf "mount-target-%s" $key) "region" $v.region) | nindent 2 }}
+spec:
+  fileSystemRef:
+    from:
+      name: {{ include "ack.name" (list $.Release.Name "fs") }}
+  subnetID: {{ $mt.subnet_id | quote }}
+{{- with $mt.ip_address }}
+  ipAddress: {{ . | quote }}
+{{- end }}
+{{- if $createSG }}
+  securityGroupRefs:
+    - from:
+        name: {{ $sgObj }}
+{{- else if $mt.security_groups }}
+  securityGroups:
+{{- range $mt.security_groups }}
+    - {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,16 @@
+# names, labels and tags (docs/design.md, "Names, labels and tags").
+replication_group_id: sessions
+create_cluster: false
+node_type: cache.t4g.small
+create_parameter_group: true
+parameter_group_family: redis7
+subnet_ids: [subnet-1]
+vpc_id: vpc-1
+names:
+  replicationGroup: shop-dev-sessions
+  cluster: shop-dev-sessions-001
+  parameterGroup: shop-dev-sessions-redis7
+  subnetGroup: shop-dev-sessions
+  securityGroup: shop-dev-sessions-redis
+labels: {hfl.dev/team: shop}
+tags: {team: shop}

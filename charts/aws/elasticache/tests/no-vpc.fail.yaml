@@ -1,0 +1,4 @@
+# expect: elasticache: vpc_id is required
+replication_group_id: x
+node_type: cache.t4g.micro
+subnet_ids: [subnet-1]

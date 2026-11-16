@@ -1,0 +1,8 @@
+# expect: namePrefix "shop-dev-euw1-team-x" is 21 of them
+namePrefix: shop-dev-euw1-team-x
+name: x
+attach_policy: false
+security_group_name: abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcde
+security_group_vpc_id: vpc-1
+mount_targets:
+  a: {subnet_id: subnet-1}

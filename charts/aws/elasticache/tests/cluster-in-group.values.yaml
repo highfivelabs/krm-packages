@@ -1,0 +1,12 @@
+# A replication group and a cluster in it (create_cluster with
+# replication_group_id): the cluster takes the group by reference and
+# carries only what a member can set.
+create_cluster: true
+cluster_id: reports-002
+replication_group_id: reports
+node_type: cache.t4g.small
+availability_zone: us-east-1b
+subnet_ids: [subnet-1]
+vpc_id: vpc-1
+log_delivery_configuration:
+  slow-log: null

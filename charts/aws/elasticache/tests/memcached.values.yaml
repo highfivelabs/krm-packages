@@ -1,0 +1,23 @@
+# A Memcached cluster alone (create_replication_group: false): three nodes
+# across Availability Zones on port 11211, with its subnet group and
+# security group (an ingress rule from a group, an egress rule to anywhere);
+# no log groups, as Memcached has no log delivery.
+create_cluster: true
+create_replication_group: false
+cluster_id: Sessions-MC
+engine: memcached
+engine_version: "1.6.22"
+node_type: cache.t4g.micro
+num_cache_nodes: 3
+az_mode: cross-az
+preferred_availability_zones: [us-east-1a, us-east-1b, us-east-1c]
+transit_encryption_enabled: false
+subnet_ids: [subnet-1, subnet-2]
+vpc_id: vpc-1
+security_group_name: sessions-memcached
+security_group_description: Memcached
+security_group_tags: {tier: cache}
+security_group_rules:
+  app: {referenced_security_group_id: sg-app, description: from the app}
+  self: {referenced_security_group_id: self}
+  out: {type: egress, ip_protocol: "-1", cidr_ipv4: 0.0.0.0/0}

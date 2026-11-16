@@ -1,0 +1,7 @@
+# expect: elasticache: num_cache_clusters conflicts with replicas_per_node_group
+replication_group_id: x
+node_type: cache.t4g.micro
+subnet_ids: [subnet-1]
+vpc_id: vpc-1
+num_cache_clusters: 2
+replicas_per_node_group: 1

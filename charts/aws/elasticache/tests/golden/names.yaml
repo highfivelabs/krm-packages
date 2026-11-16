@@ -1,0 +1,129 @@
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: CacheParameterGroup
+metadata:
+  name: names-parameter-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "parameter-group"
+spec:
+  cacheParameterGroupName: "shop-dev-sessions-redis7"
+  cacheParameterGroupFamily: "redis7"
+  description: "ElastiCache parameter group"
+  tags:
+    - key: "team"
+      value: "shop"
+    - key: "terraform-aws-modules"
+      value: "elasticache"
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: CacheSubnetGroup
+metadata:
+  name: names-subnet-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "subnet-group"
+spec:
+  cacheSubnetGroupName: "shop-dev-sessions"
+  cacheSubnetGroupDescription: "ElastiCache subnet group"
+  subnetIDs:
+    - "subnet-1"
+  tags:
+    - key: "team"
+      value: "shop"
+    - key: "terraform-aws-modules"
+      value: "elasticache"
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: names-log-slow-log
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "log-group-slow-log"
+spec:
+  name: "/aws/elasticache/sessions"
+  retentionDays: 14
+  tags:
+    "team": "shop"
+    "terraform-aws-modules": "elasticache"
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: ReplicationGroup
+metadata:
+  name: names-replication-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "replication-group"
+spec:
+  replicationGroupID: "shop-dev-sessions"
+  description: "Replication group"
+  engine: "redis"
+  cacheNodeType: "cache.t4g.small"
+  port: 6379
+  atRestEncryptionEnabled: true
+  transitEncryptionEnabled: true
+  multiAZEnabled: false
+  cacheParameterGroupRef:
+    from:
+      name: names-parameter-group
+  cacheSubnetGroupRef:
+    from:
+      name: names-subnet-group
+  securityGroupRefs:
+    - from:
+        name: names-sg
+  logDeliveryConfigurations:
+    - {"destinationDetails":{"cloudWatchLogsDetails":{"logGroup":"/aws/elasticache/sessions"}},"destinationType":"cloudwatch-logs","enabled":true,"logFormat":"json","logType":"slow-log"}
+  tags:
+    - key: "team"
+      value: "shop"
+    - key: "terraform-aws-modules"
+      value: "elasticache"
+---
+# Source: elasticache/templates/security-group.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: names-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "security-group"
+spec:
+  name: "shop-dev-sessions-redis"
+  description: "Managed by Terraform"
+  vpcID: "vpc-1"
+  tags:
+    - key: "team"
+      value: "shop"
+    - key: "terraform-aws-modules"
+      value: "elasticache"

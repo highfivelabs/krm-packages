@@ -3030,74 +3030,74 @@ aws,sns,topic_policy,string,yes,,
 aws,sns,topic_policy_statements,"map(object({actions, condition, effect, not_actions, not_principals, not_resources, +3}))",yes,,
 aws,sns,tracing_config,string,yes,,
 aws,sns,use_name_prefix,bool,no,a topic name with Terraform's random suffix (name_prefix) would change between renders; set name (the namePrefix value keeps two Instances' topics apart),gap
-aws,elasticache,apply_immediately,bool,no,,no-chart
-aws,elasticache,at_rest_encryption_enabled,bool,no,,no-chart
-aws,elasticache,auth_token,string,no,,no-chart
-aws,elasticache,auth_token_update_strategy,string,no,,no-chart
-aws,elasticache,auto_minor_version_upgrade,bool,no,,no-chart
-aws,elasticache,automatic_failover_enabled,bool,no,,no-chart
-aws,elasticache,availability_zone,string,no,,no-chart
-aws,elasticache,az_mode,string,no,,no-chart
-aws,elasticache,cluster_id,string,no,,no-chart
-aws,elasticache,cluster_mode,string,no,,no-chart
-aws,elasticache,cluster_mode_enabled,bool,no,,no-chart
-aws,elasticache,create,bool,no,,no-chart
-aws,elasticache,create_cluster,bool,no,,no-chart
-aws,elasticache,create_parameter_group,bool,no,,no-chart
-aws,elasticache,create_primary_global_replication_group,bool,no,,no-chart
-aws,elasticache,create_replication_group,bool,no,,no-chart
-aws,elasticache,create_secondary_global_replication_group,bool,no,,no-chart
-aws,elasticache,create_security_group,bool,no,,no-chart
-aws,elasticache,create_subnet_group,bool,no,,no-chart
-aws,elasticache,data_tiering_enabled,bool,no,,no-chart
-aws,elasticache,description,string,no,,no-chart
-aws,elasticache,engine,string,no,,no-chart
-aws,elasticache,engine_version,string,no,,no-chart
-aws,elasticache,final_snapshot_identifier,string,no,,no-chart
-aws,elasticache,global_replication_group_id,string,no,,no-chart
-aws,elasticache,global_replication_group_id_suffix,string,no,,no-chart
-aws,elasticache,ip_discovery,string,no,,no-chart
-aws,elasticache,kms_key_arn,string,no,,no-chart
-aws,elasticache,log_delivery_configuration,any,no,,no-chart
-aws,elasticache,maintenance_window,string,no,,no-chart
-aws,elasticache,multi_az_enabled,bool,no,,no-chart
-aws,elasticache,network_type,string,no,,no-chart
-aws,elasticache,node_type,string,no,,no-chart
-aws,elasticache,notification_topic_arn,string,no,,no-chart
-aws,elasticache,num_cache_clusters,number,no,,no-chart
-aws,elasticache,num_cache_nodes,number,no,,no-chart
-aws,elasticache,num_node_groups,number,no,,no-chart
-aws,elasticache,outpost_mode,string,no,,no-chart
-aws,elasticache,parameter_group_description,string,no,,no-chart
-aws,elasticache,parameter_group_family,string,no,,no-chart
-aws,elasticache,parameter_group_name,string,no,,no-chart
-aws,elasticache,parameters,list(map(string)),no,,no-chart
-aws,elasticache,port,number,no,,no-chart
-aws,elasticache,preferred_availability_zones,list(string),no,,no-chart
-aws,elasticache,preferred_cache_cluster_azs,list(string),no,,no-chart
-aws,elasticache,preferred_outpost_arn,string,no,,no-chart
-aws,elasticache,replicas_per_node_group,number,no,,no-chart
-aws,elasticache,replication_group_id,string,no,,no-chart
-aws,elasticache,security_group_description,string,no,,no-chart
-aws,elasticache,security_group_ids,list(string),no,,no-chart
-aws,elasticache,security_group_name,string,no,,no-chart
-aws,elasticache,security_group_names,list(string),no,,no-chart
-aws,elasticache,security_group_rules,any,no,,no-chart
-aws,elasticache,security_group_tags,map(string),no,,no-chart
-aws,elasticache,security_group_use_name_prefix,bool,no,,no-chart
-aws,elasticache,snapshot_arns,list(string),no,,no-chart
-aws,elasticache,snapshot_name,string,no,,no-chart
-aws,elasticache,snapshot_retention_limit,number,no,,no-chart
-aws,elasticache,snapshot_window,string,no,,no-chart
-aws,elasticache,subnet_group_description,string,no,,no-chart
-aws,elasticache,subnet_group_name,string,no,,no-chart
-aws,elasticache,subnet_ids,list(string),no,,no-chart
-aws,elasticache,tags,map(string),no,,no-chart
-aws,elasticache,timeouts,map(string),no,,no-chart
-aws,elasticache,transit_encryption_enabled,bool,no,,no-chart
-aws,elasticache,transit_encryption_mode,string,no,,no-chart
-aws,elasticache,user_group_ids,list(string),no,,no-chart
-aws,elasticache,vpc_id,string,no,,no-chart
+aws,elasticache,apply_immediately,bool,partial,"accepted unset or true; false is refused: ACK's elasticache-controller v1.12.0 applies every change immediately, with no field to wait for the maintenance window",gap
+aws,elasticache,at_rest_encryption_enabled,bool,yes,,
+aws,elasticache,auth_token,string,no,"a password is never a value: ACK's ReplicationGroup takes its auth token from a Kubernetes Secret (spec.authToken), which the chart does not make yet; user_group_ids (RBAC) is carried",by-design
+aws,elasticache,auth_token_update_strategy,string,no,"used only with auth_token, which is refused; ACK's ReplicationGroup has no field for it",gap
+aws,elasticache,auto_minor_version_upgrade,bool,yes,,
+aws,elasticache,automatic_failover_enabled,bool,yes,,
+aws,elasticache,availability_zone,string,yes,,
+aws,elasticache,az_mode,string,yes,,
+aws,elasticache,cluster_id,string,yes,,
+aws,elasticache,cluster_mode,string,no,ACK's ReplicationGroup (elasticache-controller v1.12.0) has no clusterMode field; cluster_mode_enabled is carried,gap
+aws,elasticache,cluster_mode_enabled,bool,yes,,
+aws,elasticache,create,bool,yes,,
+aws,elasticache,create_cluster,bool,yes,,
+aws,elasticache,create_parameter_group,bool,yes,,
+aws,elasticache,create_primary_global_replication_group,bool,no,no GlobalReplicationGroup kind in ACK (elasticache-controller pull request #237) or ack-extensions (its Cloud Control generator excludes AWS::ElastiCache::GlobalReplicationGroup for that pull request),gap
+aws,elasticache,create_replication_group,bool,yes,,
+aws,elasticache,create_secondary_global_replication_group,bool,no,"no GlobalReplicationGroup kind, and ACK's ReplicationGroup has no field to join one",gap
+aws,elasticache,create_security_group,bool,yes,,
+aws,elasticache,create_subnet_group,bool,yes,,
+aws,elasticache,data_tiering_enabled,bool,yes,,
+aws,elasticache,description,string,yes,,
+aws,elasticache,engine,string,yes,,
+aws,elasticache,engine_version,string,yes,,
+aws,elasticache,final_snapshot_identifier,string,no,ACK's CacheCluster and ReplicationGroup have no field for a final snapshot on delete,gap
+aws,elasticache,global_replication_group_id,string,no,ACK's ReplicationGroup has no field to join a global replication group,gap
+aws,elasticache,global_replication_group_id_suffix,string,no,"used only with a global replication group, which is refused",gap
+aws,elasticache,ip_discovery,string,yes,,
+aws,elasticache,kms_key_arn,string,yes,,
+aws,elasticache,log_delivery_configuration,any,partial,"accepted, but each entry's cloudwatch_log_group_class is refused: ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no logGroupClass field",gap
+aws,elasticache,maintenance_window,string,yes,,
+aws,elasticache,multi_az_enabled,bool,yes,,
+aws,elasticache,network_type,string,yes,,
+aws,elasticache,node_type,string,yes,,
+aws,elasticache,notification_topic_arn,string,yes,,
+aws,elasticache,num_cache_clusters,number,yes,,
+aws,elasticache,num_cache_nodes,number,yes,,
+aws,elasticache,num_node_groups,number,yes,,
+aws,elasticache,outpost_mode,string,yes,,
+aws,elasticache,parameter_group_description,string,yes,,
+aws,elasticache,parameter_group_family,string,yes,,
+aws,elasticache,parameter_group_name,string,partial,"accepted; unset with create_parameter_group: true, the group is named <cluster_id or replication_group_id>-<family> without the module's random_id suffix, since a render must not change between plans",gap
+aws,elasticache,parameters,list(map(string)),yes,,
+aws,elasticache,port,number,yes,,
+aws,elasticache,preferred_availability_zones,list(string),yes,,
+aws,elasticache,preferred_cache_cluster_azs,list(string),yes,,
+aws,elasticache,preferred_outpost_arn,string,yes,,
+aws,elasticache,replicas_per_node_group,number,yes,,
+aws,elasticache,replication_group_id,string,yes,,
+aws,elasticache,security_group_description,string,yes,,
+aws,elasticache,security_group_ids,list(string),partial,"accepted with create_security_group: false; with the chart's own group it is refused, since ACK's ReplicationGroup and CacheCluster cannot take group references and IDs together",gap
+aws,elasticache,security_group_name,string,yes,,
+aws,elasticache,security_group_names,list(string),yes,,
+aws,elasticache,security_group_rules,any,partial,"accepted, but each rule's tags are not carried: ACK keeps a group's rules inline in SecurityGroup, which has no per-rule tags",gap
+aws,elasticache,security_group_tags,map(string),yes,,
+aws,elasticache,security_group_use_name_prefix,bool,partial,"accepted: true (the default) names the group as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' groups apart",gap
+aws,elasticache,snapshot_arns,list(string),yes,,
+aws,elasticache,snapshot_name,string,yes,,
+aws,elasticache,snapshot_retention_limit,number,yes,,
+aws,elasticache,snapshot_window,string,yes,,
+aws,elasticache,subnet_group_description,string,yes,,
+aws,elasticache,subnet_group_name,string,yes,,
+aws,elasticache,subnet_ids,list(string),yes,,
+aws,elasticache,tags,map(string),yes,,
+aws,elasticache,timeouts,map(string),no,"Terraform's create, update and delete timeouts: ACK retries until the cluster is synced, and Bundt waits for it",by-design
+aws,elasticache,transit_encryption_enabled,bool,yes,,
+aws,elasticache,transit_encryption_mode,string,no,ACK's ReplicationGroup (elasticache-controller v1.12.0) has no transitEncryptionMode field,gap
+aws,elasticache,user_group_ids,list(string),yes,,
+aws,elasticache,vpc_id,string,partial,accepted when set; unset with create_security_group: true (Terraform's default VPC) is refused: ACK's SecurityGroup needs its VPC's ID,gap
 aws,key-pair,create,bool,no,,no-chart
 aws,key-pair,create_private_key,bool,no,,no-chart
 aws,key-pair,key_name,string,no,,no-chart
@@ -3166,39 +3166,39 @@ aws,step-functions,trusted_entities,list(string),yes,,
 aws,step-functions,type,string,yes,,
 aws,step-functions,use_existing_cloudwatch_log_group,bool,yes,,
 aws,step-functions,use_existing_role,bool,yes,,
-aws,efs,access_points,"map(object({name, posix_user, root_directory, tags}))",no,,no-chart
-aws,efs,attach_policy,bool,no,,no-chart
-aws,efs,availability_zone_name,string,no,,no-chart
-aws,efs,bypass_policy_lockout_safety_check,bool,no,,no-chart
-aws,efs,create,bool,no,,no-chart
-aws,efs,create_backup_policy,bool,no,,no-chart
-aws,efs,create_replication_configuration,bool,no,,no-chart
-aws,efs,create_security_group,bool,no,,no-chart
-aws,efs,creation_token,string,no,,no-chart
-aws,efs,deny_nonsecure_transport,bool,no,,no-chart
-aws,efs,deny_nonsecure_transport_via_mount_target,bool,no,,no-chart
-aws,efs,enable_backup_policy,bool,no,,no-chart
-aws,efs,encrypted,bool,no,,no-chart
-aws,efs,kms_key_arn,string,no,,no-chart
-aws,efs,lifecycle_policy,"object({transition_to_archive, transition_to_ia, transition_to_primary_storage_class})",no,,no-chart
-aws,efs,mount_targets,"map(object({ip_address, ip_address_type, ipv6_address, region, security_groups, subnet_id}))",no,,no-chart
-aws,efs,name,string,no,,no-chart
-aws,efs,override_policy_documents,list(string),no,,no-chart
-aws,efs,performance_mode,string,no,,no-chart
-aws,efs,policy_statements,"map(object({actions, condition, conditions, effect, not_actions, not_principals, +4}))",no,,no-chart
-aws,efs,protection,object({replication_overwrite}),no,,no-chart
-aws,efs,provisioned_throughput_in_mibps,number,no,,no-chart
-aws,efs,region,string,no,,no-chart
-aws,efs,replication_configuration_destination,"object({availability_zone_name, file_system_id, kms_key_id, region})",no,,no-chart
-aws,efs,security_group_description,string,no,,no-chart
-aws,efs,security_group_egress_rules,"map(object({cidr_ipv4, cidr_ipv6, description, from_port, ip_protocol, name, +5}))",no,,no-chart
-aws,efs,security_group_ingress_rules,"map(object({cidr_ipv4, cidr_ipv6, description, from_port, ip_protocol, name, +5}))",no,,no-chart
-aws,efs,security_group_name,string,no,,no-chart
-aws,efs,security_group_use_name_prefix,bool,no,,no-chart
-aws,efs,security_group_vpc_id,string,no,,no-chart
-aws,efs,source_policy_documents,list(string),no,,no-chart
-aws,efs,tags,map(string),no,,no-chart
-aws,efs,throughput_mode,string,no,,no-chart
+aws,efs,access_points,"map(object({name, posix_user, root_directory, tags}))",yes,,
+aws,efs,attach_policy,bool,yes,,
+aws,efs,availability_zone_name,string,yes,,
+aws,efs,bypass_policy_lockout_safety_check,bool,no,"ACK's FileSystem (efs-controller v1.8.0) takes its policy as a string, with no flag to bypass PutFileSystemPolicy's lockout safety check",gap
+aws,efs,create,bool,yes,,
+aws,efs,create_backup_policy,bool,yes,,
+aws,efs,create_replication_configuration,bool,yes,,
+aws,efs,create_security_group,bool,yes,,
+aws,efs,creation_token,string,no,ACK's FileSystem has no creationToken field: the controller sets its own,gap
+aws,efs,deny_nonsecure_transport,bool,no,"the module's NonSecureTransport statement names the file system's own ARN, which holds the ID AWS assigns and is only in the FileSystem's status, and ACK's FileSystem takes its policy as a string with no reference to it; refused when true (the default) with attach_policy: true",gap
+aws,efs,deny_nonsecure_transport_via_mount_target,bool,no,the module's NonSecureTransportAccessedViaMountTarget statement names the file system's own ARN (as deny_nonsecure_transport); refused when true (the default) with attach_policy: true,gap
+aws,efs,enable_backup_policy,bool,yes,,
+aws,efs,encrypted,bool,yes,,
+aws,efs,kms_key_arn,string,yes,,
+aws,efs,lifecycle_policy,"object({transition_to_archive, transition_to_ia, transition_to_primary_storage_class})",yes,,
+aws,efs,mount_targets,"map(object({ip_address, ip_address_type, ipv6_address, region, security_groups, subnet_id}))",partial,"accepted, but ip_address_type and ipv6_address are refused (ACK's MountTarget has no field for them), and security_groups is refused with create_security_group: true (ACK's MountTarget cannot take group references and IDs together); region is not used, as in the module",gap
+aws,efs,name,string,yes,,
+aws,efs,override_policy_documents,list(string),yes,,
+aws,efs,performance_mode,string,yes,,
+aws,efs,policy_statements,"map(object({actions, condition, conditions, effect, not_actions, not_principals, +4}))",partial,"accepted, but each statement needs resources: the module's default is the file system's own ARN, which is only in the FileSystem's status; conditions is not carried, as the module does not carry it",gap
+aws,efs,protection,object({replication_overwrite}),yes,,
+aws,efs,provisioned_throughput_in_mibps,number,yes,,
+aws,efs,region,string,yes,,
+aws,efs,replication_configuration_destination,"object({availability_zone_name, file_system_id, kms_key_id, region})",yes,,
+aws,efs,security_group_description,string,yes,,
+aws,efs,security_group_egress_rules,"map(object({cidr_ipv4, cidr_ipv6, description, from_port, ip_protocol, name, +5}))",partial,"accepted, but each rule's name and tags are not carried: ACK keeps a group's rules inline in SecurityGroup, which has no per-rule tags; region is not used, as in the module",gap
+aws,efs,security_group_ingress_rules,"map(object({cidr_ipv4, cidr_ipv6, description, from_port, ip_protocol, name, +5}))",partial,"accepted, but each rule's name and tags are not carried: ACK keeps a group's rules inline in SecurityGroup, which has no per-rule tags; region is not used, as in the module",gap
+aws,efs,security_group_name,string,yes,,
+aws,efs,security_group_use_name_prefix,bool,partial,"accepted: true names the group as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' groups apart",gap
+aws,efs,security_group_vpc_id,string,partial,accepted when set; unset with mount targets and create_security_group: true (Terraform's default VPC) is refused: ACK's SecurityGroup needs its VPC's ID,gap
+aws,efs,source_policy_documents,list(string),yes,,
+aws,efs,tags,map(string),yes,,
+aws,efs,throughput_mode,string,yes,,
 aws,vpn-gateway,connect_to_transit_gateway,bool,no,,no-chart
 aws,vpn-gateway,create_vpn_connection,bool,no,,no-chart
 aws,vpn-gateway,create_vpn_gateway_attachment,bool,no,,no-chart
