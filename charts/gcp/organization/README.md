@@ -190,6 +190,11 @@ the case. mockgcp makes up a writer identity for every sink and does not
 model the interception itself (config-connector-extensions'
 `docs/fake-cloud.md`).
 
+On 2026-11-16 (0.6.0, run `off-catalog-1116041737-16616`, config-connector-extensions
+`a65d1edb`) with an IAM deny policy added: config-connector-extensions'
+`IAMDenyPolicy` (`iam.gcp.hfl.dev`) on the organization Ready and deleted,
+with all 13 objects of the case.
+
 Not applied live: live runs are pending KEYLIVE, and a live run needs an
 organization the test identity may change (nothing can create one).
 
