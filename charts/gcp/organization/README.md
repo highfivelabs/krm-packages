@@ -176,6 +176,11 @@ applied: contacts (mockgcp's essential contacts take only a project
 parent), sinks, PAM, the firewall policy association and tag bindings,
 render-tested only.
 
+On 2026-11-15 (0.4.0, run `off-catalog-1116014618-16654`, config-connector-extensions
+`81c3f9b5`) with an asset feed and a service agent added: all 10 objects
+Ready and deleted, `service_agents` evaluated. The Cloud Armor association
+needs a policy the case does not make, and is render-tested only.
+
 Not applied live: live runs are pending KEYLIVE, and a live run needs an
 organization the test identity may change (nothing can create one).
 

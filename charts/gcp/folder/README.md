@@ -113,6 +113,14 @@ kinds for `google_logging_folder_settings`,
   policies before the folder (or Config Connector should skip the lookup
   on delete). The fake-cloud case leaves org policies out for this reason;
   they are render-tested only.
+- **A `ServiceIdentity` on a `Folder` object cannot be deleted once the
+  `Folder` object is gone** (config-connector-extensions `81c3f9b5`, run
+  `off-catalog-1116014618-16654`): its delete resolves `folderRef.name`
+  ("Update call failed: referenced Folder catalog-folder/mock not found"),
+  though Google Cloud has no call to delete a service identity. On an
+  existing folder (`folder_create: false`) the reference is external and
+  does not hit it. The fake-cloud case leaves service agents out; they are
+  render-tested only.
 
 ## Upstream
 
@@ -142,6 +150,14 @@ deny policy included (an earlier run, `off-catalog-1113174707-3197` at
 with an org policy evaluated `organization_policies_ids` and left the
 policy undeleted (same section). Contacts, sinks, PAM, tag bindings, the
 firewall policy association and Autokey are render-tested only.
+
+And on 2026-11-15 (0.3.0, run `off-catalog-1116014618-16654`, config-connector-extensions
+`81c3f9b5`) with an asset feed and a service agent added: the folder, IAM,
+exclusion, deny policy and `AssetFeed` all Ready and deleted, the
+`ServiceIdentity` Ready (`service_agents` evaluated) but not deleted
+("Config Connector bugs"); the case no longer sets one. The Cloud Armor
+association needs a policy the case does not make, and is render-tested
+only.
 
 Not applied live: live runs are pending KEYLIVE (and the test provisioner's
 folder, `docs/design.md`, "The test provisioner").

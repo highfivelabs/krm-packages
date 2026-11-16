@@ -169,7 +169,11 @@ and deleted in both. Both runs also carried an asset feed on the new
 project, which became Ready but could not be deleted ("Config Connector
 bugs"); the case no longer sets one. Asset feeds, `vpc_sc` (it needs an
 access policy and a perimeter) and `cloud_armor_policy` (alpha) are
-render-tested only. No live run: the project chart's
+render-tested only. And for 0.11.0 (run `off-catalog-1116014618-16654`,
+config-connector-extensions `81c3f9b5`): the feed is back, as
+config-connector-extensions' `AssetFeed` by the `Project` object, and all
+23 objects became Ready and were deleted, outputs evaluated. `vpc_sc` and
+`cloud_armor_policy` are still render-tested only. No live run: the project chart's
 live case waits for the test provisioner (`docs/design.md`, "The test
 provisioner").
 

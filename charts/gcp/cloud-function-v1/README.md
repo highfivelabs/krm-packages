@@ -120,8 +120,10 @@ MOCK_CHARTS="cloud-function-v1 workstation-cluster"`, run
 its source and its service account with one project role: all 4 objects
 Ready, the outputs evaluated, all deleted. mockgcp reports an empty
 function URL, so `invoke_command` is null there (the run showed a command
-with no URL; the output now waits for a non-empty one). The VPC Access
-connector is render-tested only.
+with no URL; the output now waits for a non-empty one). And for 0.2.0 (run
+`off-catalog-1116014618-16654`, config-connector-extensions `81c3f9b5`) with an
+`IAMBinding` on the function: all 5 objects Ready and deleted. The VPC
+Access connector is render-tested only.
 
 Not applied live.
 
