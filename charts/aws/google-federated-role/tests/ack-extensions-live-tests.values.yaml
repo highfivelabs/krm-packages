@@ -4,18 +4,19 @@
 # The instance for ack-extensions' live tests: the role
 # ack-extensions-live-tests in the AWS test account, which the offload VMs'
 # Google service account assumes for `task test-live` (ack-extensions
-# docs/live-runs.md). The same role, trust and permissions as ack-extensions'
-# generated CloudFormation template
-# cloudcontrol/config/live/sandbox-account.yaml at 7d67acc (2026-11-15),
-# statement for statement; that template's budget alarm is not here (no ACK
-# or ack-extensions kind serves AWS::Budgets::Budget; README.md).
+# docs/live-runs.md). Deployed through ACK and adopted in place
+# (2026-11-16). The policies are ack-extensions' generated
+# cloudcontrol/config/live/role-policies.yaml, statement for statement
+# (since 2026-11-16 with the ACK-kind suite's actions, HFL-623); the budget
+# alarm stays in ack-extensions' CloudFormation stack (no ACK or
+# ack-extensions kind serves AWS::Budgets::Budget; README.md).
 #
 # The service account's unique ID never goes in this repository: the one
 # here is a placeholder. Set the real one where the instance is deployed
 # (google_service_account_unique_id), as the template took it as a
-# parameter. When ack-extensions' liveKinds change, regenerate the
-# statements from that template (README.md, "The ack-extensions live-test
-# role").
+# parameter. When ack-extensions' liveKinds or live-test actions change,
+# copy the statements from its role-policies.yaml and apply the instance
+# again (README.md, "The ack-extensions live-test role").
 name: ack-extensions-live-tests
 description: Assumed only by the offload VMs' Google service account, through web identity federation, for task test-live (ack-extensions docs/live-runs.md).
 max_session_duration: 3600
@@ -28,6 +29,42 @@ policies:
   part-1:
     description: ack-extensions live tests, part 1
     statements:
+      - sid: ServiceApigateway
+        effect: Allow
+        actions:
+          - apigateway:SetWebACL
+        resources: ['*']
+      - sid: ServiceApplicationautoscaling
+        effect: Allow
+        actions:
+          - application-autoscaling:DeleteScheduledAction
+          - application-autoscaling:DescribeScheduledActions
+          - application-autoscaling:PutScheduledAction
+          - application-autoscaling:RegisterScalableTarget
+        resources: ['*']
+      - sid: ServiceApprunner
+        effect: Allow
+        actions:
+          - apprunner:AssociateWebAcl
+          - apprunner:DescribeWebAclForService
+          - apprunner:DisassociateWebAcl
+        resources: ['*']
+      - sid: ServiceAppsync
+        effect: Allow
+        actions:
+          - appsync:SetWebACL
+        resources: ['*']
+      - sid: ServiceAutoscaling
+        effect: Allow
+        actions:
+          - autoscaling:CreateAutoScalingGroup
+          - autoscaling:DeletePolicy
+          - autoscaling:DeleteScheduledAction
+          - autoscaling:DescribePolicies
+          - autoscaling:DescribeScheduledActions
+          - autoscaling:PutScalingPolicy
+          - autoscaling:PutScheduledUpdateGroupAction
+        resources: ['*']
       - sid: ServiceCloudformation
         effect: Allow
         actions:
@@ -38,6 +75,13 @@ policies:
           - cloudformation:ListResources
           - cloudformation:UpdateResource
         resources: ['*']
+      - sid: ServiceCognitoidp
+        effect: Allow
+        actions:
+          - cognito-idp:AssociateWebACL
+          - cognito-idp:DisassociateWebACL
+          - cognito-idp:GetWebACLForResource
+        resources: ['*']
       - sid: ServiceConfig
         effect: Allow
         actions:
@@ -46,41 +90,179 @@ policies:
       - sid: ServiceEc2
         effect: Allow
         actions:
+          - ec2:AssociateVerifiedAccessInstanceWebAcl
+          - ec2:AttachVolume
+          - ec2:AttachVpnGateway
+          - ec2:AuthorizeSecurityGroupEgress
+          - ec2:AuthorizeSecurityGroupIngress
+          - ec2:CreateCustomerGateway
+          - ec2:CreateLaunchTemplate
+          - ec2:CreateNetworkInterfacePermission
           - ec2:CreateSubnet
           - ec2:CreateTags
           - ec2:CreateTransitGateway
           - ec2:CreateTransitGatewayRouteTable
           - ec2:CreateTransitGatewayVpcAttachment
+          - ec2:CreateVolume
           - ec2:CreateVpc
+          - ec2:CreateVpnConnection
+          - ec2:CreateVpnConnectionRoute
+          - ec2:CreateVpnGateway
+          - ec2:DeleteCustomerGateway
+          - ec2:DeleteNetworkInterfacePermission
           - ec2:DeleteSubnet
+          - ec2:DeleteTags
           - ec2:DeleteTransitGateway
           - ec2:DeleteTransitGatewayRouteTable
           - ec2:DeleteTransitGatewayVpcAttachment
+          - ec2:DeleteVolume
           - ec2:DeleteVpc
+          - ec2:DeleteVpnConnection
+          - ec2:DeleteVpnConnectionRoute
+          - ec2:DeleteVpnGateway
+          - ec2:DescribeAvailabilityZones
+          - ec2:DescribeCustomerGateways
+          - ec2:DescribeImages
+          - ec2:DescribeNetworkInterfacePermissions
+          - ec2:DescribeRouteTables
+          - ec2:DescribeSecurityGroups
+          - ec2:DescribeTags
           - ec2:DescribeTransitGatewayPeeringAttachments
           - ec2:DescribeTransitGatewayVpcAttachments
           - ec2:DescribeTransitGateways
+          - ec2:DescribeVolumes
           - ec2:DescribeVpcs
+          - ec2:DescribeVpnConnections
+          - ec2:DescribeVpnGateways
+          - ec2:DetachVolume
+          - ec2:DetachVpnGateway
+          - ec2:DisableVgwRoutePropagation
+          - ec2:DisassociateVerifiedAccessInstanceWebAcl
+          - ec2:EnableVgwRoutePropagation
           - ec2:GetTransitGatewayRouteTableAssociations
           - ec2:GetTransitGatewayRouteTablePropagations
+          - ec2:ModifyVolume
+          - ec2:ModifyVpnConnectionOptions
+          - ec2:ModifyVpnTunnelOptions
+          - ec2:RevokeSecurityGroupEgress
+          - ec2:RevokeSecurityGroupIngress
+          - ec2:RunInstances
           - ec2:SearchTransitGatewayRoutes
+        resources: ['*']
+      - sid: ServiceEcr
+        effect: Allow
+        actions:
+          - ecr:DescribeRegistry
+          - ecr:PutReplicationConfiguration
+        resources: ['*']
+      - sid: ServiceEcs
+        effect: Allow
+        actions:
+          - ecs:CreateCluster
+          - ecs:CreateService
+          - ecs:RegisterTaskDefinition
+        resources: ['*']
+      - sid: ServiceElasticloadbalancing
+        effect: Allow
+        actions:
+          - elasticloadbalancing:SetWebAcl
+        resources: ['*']
+      - sid: ServiceEvents
+        effect: Allow
+        actions:
+          - events:CreateApiDestination
+          - events:CreateConnection
+          - events:DeleteApiDestination
+          - events:DeleteConnection
+          - events:DescribeApiDestination
+          - events:DescribeConnection
+          - events:UpdateApiDestination
+          - events:UpdateConnection
         resources: ['*']
       - sid: ServiceIam
         effect: Allow
         actions:
+          - iam:AddUserToGroup
           - iam:AttachRolePolicy
+          - iam:CreateAccessKey
+          - iam:CreateAccountAlias
+          - iam:CreateGroup
+          - iam:CreateLoginProfile
+          - iam:CreatePolicy
           - iam:CreateRole
           - iam:CreateSAMLProvider
+          - iam:CreateServiceLinkedRole
+          - iam:CreateUser
+          - iam:CreateVirtualMFADevice
+          - iam:DeleteAccessKey
+          - iam:DeleteAccountAlias
+          - iam:DeleteAccountPasswordPolicy
+          - iam:DeleteLoginProfile
           - iam:DeleteRole
           - iam:DeleteSAMLProvider
+          - iam:DeleteSSHPublicKey
+          - iam:DeleteVirtualMFADevice
+          - iam:DetachRolePolicy
+          - iam:GetAccountPasswordPolicy
+          - iam:GetLoginProfile
           - iam:GetSAMLProvider
+          - iam:GetSSHPublicKey
+          - iam:ListAccessKeys
+          - iam:ListAccountAliases
+          - iam:ListAttachedRolePolicies
+          - iam:ListGroups
+          - iam:ListGroupsForUser
+          - iam:ListPolicies
           - iam:ListRolePolicies
+          - iam:ListRoleTags
+          - iam:ListRoles
           - iam:ListSAMLProviderTags
           - iam:ListSAMLProviders
+          - iam:ListUserTags
+          - iam:ListUsers
+          - iam:ListVirtualMFADevices
+          - iam:PassRole
           - iam:PutRolePolicy
+          - iam:RemoveUserFromGroup
           - iam:TagSAMLProvider
           - iam:UntagSAMLProvider
+          - iam:UpdateAccountPasswordPolicy
+          - iam:UpdateLoginProfile
           - iam:UpdateSAMLProvider
+          - iam:UpdateSSHPublicKey
+          - iam:UploadSSHPublicKey
+        resources: ['*']
+      - sid: ServiceKms
+        effect: Allow
+        actions:
+          - kms:CreateKey
+          - kms:DescribeKey
+          - kms:DisableKey
+          - kms:DisableKeyRotation
+          - kms:EnableKey
+          - kms:EnableKeyRotation
+          - kms:GetKeyPolicy
+          - kms:GetKeyRotationStatus
+          - kms:ListAliases
+          - kms:ListGrants
+          - kms:ListKeys
+          - kms:ListResourceTags
+          - kms:PutKeyPolicy
+          - kms:ReplicateKey
+          - kms:ScheduleKeyDeletion
+          - kms:TagResource
+          - kms:UntagResource
+          - kms:UpdateKeyDescription
+        resources: ['*']
+      - sid: ServiceLambda
+        effect: Allow
+        actions:
+          - lambda:AddPermission
+          - lambda:CreateAlias
+          - lambda:CreateFunction
+          - lambda:GetPolicy
+          - lambda:PublishVersion
+          - lambda:RemovePermission
         resources: ['*']
       - sid: ServiceLogs
         effect: Allow
@@ -88,6 +270,32 @@ policies:
           - logs:CreateLogGroup
           - logs:DeleteLogGroup
           - logs:DescribeLogGroups
+        resources: ['*']
+  part-2:
+    description: ack-extensions live tests, part 2
+    statements:
+      - sid: ServiceRds
+        effect: Allow
+        actions:
+          - rds:AddRoleToDBCluster
+          - rds:AddRoleToDBInstance
+          - rds:AddTagsToResource
+          - rds:CreateDBCluster
+          - rds:CreateDBInstance
+          - rds:CreateDBProxy
+          - rds:CreateOptionGroup
+          - rds:DeleteOptionGroup
+          - rds:DeregisterDBProxyTargets
+          - rds:DescribeDBClusters
+          - rds:DescribeDBInstances
+          - rds:DescribeDBProxyTargets
+          - rds:DescribeOptionGroups
+          - rds:ListTagsForResource
+          - rds:ModifyOptionGroup
+          - rds:RegisterDBProxyTargets
+          - rds:RemoveRoleFromDBCluster
+          - rds:RemoveRoleFromDBInstance
+          - rds:RemoveTagsFromResource
         resources: ['*']
       - sid: ServiceRoute53
         effect: Allow
@@ -104,14 +312,117 @@ policies:
       - sid: ServiceS3
         effect: Allow
         actions:
+          - s3:AbortMultipartUpload
+          - s3:BypassGovernanceRetention
           - s3:CreateBucket
+          - s3:CreateMultipartUpload
           - s3:DeleteBucket
+          - s3:DeleteBucket*
+          - s3:DeleteBucketPolicy
+          - s3:DeleteBucketWebsite
+          - s3:DeleteObject
+          - s3:DeleteObjectVersion
+          - s3:Get*Configuration
+          - s3:GetAccelerateConfiguration
+          - s3:GetAccountPublicAccessBlock
+          - s3:GetAnalyticsConfiguration
+          - s3:GetBucket*
+          - s3:GetBucketAbac
+          - s3:GetBucketAcl
+          - s3:GetBucketCORS
+          - s3:GetBucketLogging
+          - s3:GetBucketNotification
+          - s3:GetBucketObjectLockConfiguration
+          - s3:GetBucketOwnershipControls
+          - s3:GetBucketPolicy
+          - s3:GetBucketPublicAccessBlock
+          - s3:GetBucketRequestPayment
+          - s3:GetBucketTagging
+          - s3:GetBucketVersioning
+          - s3:GetBucketWebsite
+          - s3:GetEncryptionConfiguration
+          - s3:GetIntelligentTieringConfiguration
+          - s3:GetInventoryConfiguration
+          - s3:GetLifecycleConfiguration
+          - s3:GetMetricsConfiguration
+          - s3:GetObject
+          - s3:GetReplicationConfiguration
+          - s3:ListAllMyBuckets
+          - s3:ListBucket
+          - s3:ListBucketMultipartUploads
+          - s3:ListBucketVersions
+          - s3:ListDirectoryBuckets
+          - s3:Put*Configuration
+          - s3:PutAccelerateConfiguration
+          - s3:PutAccountPublicAccessBlock
+          - s3:PutAnalyticsConfiguration
+          - s3:PutBucket*
+          - s3:PutBucketAbac
+          - s3:PutBucketAcl
+          - s3:PutBucketCORS
+          - s3:PutBucketLogging
+          - s3:PutBucketNotification
+          - s3:PutBucketObjectLockConfiguration
+          - s3:PutBucketOwnershipControls
+          - s3:PutBucketPolicy
+          - s3:PutBucketPublicAccessBlock
+          - s3:PutBucketRequestPayment
+          - s3:PutBucketTagging
+          - s3:PutBucketVersioning
+          - s3:PutBucketWebsite
+          - s3:PutEncryptionConfiguration
+          - s3:PutIntelligentTieringConfiguration
+          - s3:PutInventoryConfiguration
+          - s3:PutLifecycleConfiguration
+          - s3:PutMetricsConfiguration
+          - s3:PutObject
+          - s3:PutReplicationConfiguration
+        resources: ['*']
+      - sid: ServiceS3express
+        effect: Allow
+        actions:
+          - s3express:CreateBucket
+          - s3express:DeleteBucket
+          - s3express:DeleteBucketPolicy
+          - s3express:GetBucketPolicy
+          - s3express:GetEncryptionConfiguration
+          - s3express:GetLifecycleConfiguration
+          - s3express:ListTagsForResource
+          - s3express:PutBucketPolicy
+          - s3express:PutEncryptionConfiguration
+          - s3express:PutLifecycleConfiguration
+          - s3express:TagResource
+          - s3express:UntagResource
+        resources: ['*']
+      - sid: ServiceScheduler
+        effect: Allow
+        actions:
+          - scheduler:CreateSchedule
+          - scheduler:CreateScheduleGroup
+          - scheduler:DeleteSchedule
+          - scheduler:DeleteScheduleGroup
+          - scheduler:GetSchedule
+          - scheduler:GetScheduleGroup
+          - scheduler:ListTagsForResource
+          - scheduler:TagResource
+          - scheduler:UntagResource
+          - scheduler:UpdateSchedule
         resources: ['*']
       - sid: ServiceSecretsmanager
         effect: Allow
         actions:
           - secretsmanager:CreateSecret
           - secretsmanager:DeleteSecret
+          - secretsmanager:DescribeSecret
+          - secretsmanager:GetSecretValue
+          - secretsmanager:PutSecretValue
+          - secretsmanager:UpdateSecret
+        resources: ['*']
+      - sid: ServiceSsm
+        effect: Allow
+        actions:
+          - ssm:GetParameter
+          - ssm:GetParameters
         resources: ['*']
       - sid: ServiceSso
         effect: Allow
@@ -144,4 +455,22 @@ policies:
           - sso:TagResource
           - sso:UntagResource
           - sso:UpdatePermissionSet
+        resources: ['*']
+      - sid: ServiceSts
+        effect: Allow
+        actions:
+          - sts:GetCallerIdentity
+        resources: ['*']
+      - sid: ServiceTag
+        effect: Allow
+        actions:
+          - tag:GetResources
+        resources: ['*']
+      - sid: ServiceWafv2
+        effect: Allow
+        actions:
+          - wafv2:AssociateWebACL
+          - wafv2:CreateWebACL
+          - wafv2:DisassociateWebACL
+          - wafv2:GetWebACLForResource
         resources: ['*']
