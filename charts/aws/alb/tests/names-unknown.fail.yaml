@@ -1,0 +1,4 @@
+# expect: names: Additional property lb is not allowed
+names: {lb: x}
+name: x
+vpc_id: vpc-1

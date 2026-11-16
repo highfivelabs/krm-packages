@@ -1,0 +1,22 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: v2
+name: route53
+description: >-
+  A Route 53 hosted zone, public or private, and its records, as AWS
+  Controllers for Kubernetes (ACK) objects. A port of terraform-aws-modules'
+  route53 module (its root).
+type: application
+version: 0.1.0
+# The module release this chart was ported from (UPSTREAM.md).
+appVersion: "terraform-aws-route53-v6.5.1"
+kubeVersion: ">=1.27.0-0"
+keywords: [aws, ack, route53, dns, terraform-aws-modules]
+home: https://github.com/highfivelabs/catalog
+sources:
+  - https://github.com/terraform-aws-modules/terraform-aws-route53/tree/883f987d6bb328c09bd4dfc5a04024534b371d59
+annotations:
+  hfl.dev/source: terraform-aws-route53
+  hfl.dev/source-version: v6.5.1
+  hfl.dev/source-commit: 883f987d6bb328c09bd4dfc5a04024534b371d59
+  hfl.dev/ack-route53-controller: "v1.8.0"

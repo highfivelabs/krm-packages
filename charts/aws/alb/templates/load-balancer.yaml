@@ -1,0 +1,135 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "Load Balancer": the load balancer (aws_lb.this) as ACK's
+LoadBalancer. The module's settings that the Terraform provider sends as
+load balancer attributes (ModifyLoadBalancerAttributes) are
+spec.attributes, each only for the load balancer types that have it, as the
+provider sends them, and only when set (or defaulted by the module).
+*/ -}}
+{{- include "ack.names" (list $ (list "loadBalancer" "securityGroup")) -}}
+{{- $v := .Values -}}
+{{- if and $v.create $v.putin_khuylo }}
+{{- $type := $v.load_balancer_type | default "application" }}
+{{- if not (has $type (list "application" "network" "gateway")) }}
+{{- fail (printf "alb: load_balancer_type %q must be application, network or gateway" $type) }}
+{{- end }}
+{{- $name := include "ack.resourceName" (list $ "loadBalancer" "load balancer" ($v.name | default "") 32) }}
+{{- if not $name }}
+{{- fail "alb: name is required: the load balancer's name (or names.loadBalancer); Terraform's generated name (name and name_prefix unset) would change between renders" }}
+{{- end }}
+{{- if and $v.create_security_group $v.security_groups }}
+{{- fail "alb: security_groups is not supported with create_security_group: true: ACK's LoadBalancer takes the chart's group by reference (securityGroupRefs) and cannot also take group IDs; set create_security_group: false and list every group, or add the rules to the chart's group (docs/aws.md)" }}
+{{- end }}
+{{- /* attributes: key, value, the types that have it */}}
+{{- $attrs := dict }}
+{{- $all := list "application" "network" "gateway" }}
+{{- $alb := list "application" }}
+{{- $nlb := list "network" }}
+{{- $albnlb := list "application" "network" }}
+{{- $nlbgw := list "network" "gateway" }}
+{{- $set := list }}
+{{- with $v.access_logs }}
+{{- $set = append $set (list "access_logs.s3.enabled" (ternary "true" "false" (kindIs "invalid" .enabled | ternary true .enabled)) $albnlb) }}
+{{- $set = append $set (list "access_logs.s3.bucket" .bucket $albnlb) }}
+{{- $set = append $set (list "access_logs.s3.prefix" (.prefix | default "") $albnlb) }}
+{{- end }}
+{{- with $v.connection_logs }}
+{{- $set = append $set (list "connection_logs.s3.enabled" (ternary "true" "false" (kindIs "invalid" .enabled | ternary true .enabled)) $alb) }}
+{{- $set = append $set (list "connection_logs.s3.bucket" .bucket $alb) }}
+{{- $set = append $set (list "connection_logs.s3.prefix" (.prefix | default "") $alb) }}
+{{- end }}
+{{- with $v.health_check_logs }}
+{{- $set = append $set (list "health_check_logs.s3.enabled" (ternary "true" "false" (kindIs "invalid" .enabled | ternary true .enabled)) $alb) }}
+{{- $set = append $set (list "health_check_logs.s3.bucket" .bucket $alb) }}
+{{- $set = append $set (list "health_check_logs.s3.prefix" (.prefix | default "") $alb) }}
+{{- end }}
+{{- $scalars := list
+  (list "client_keep_alive" "client_keep_alive.seconds" $alb)
+  (list "desync_mitigation_mode" "routing.http.desync_mitigation_mode" $alb)
+  (list "dns_record_client_routing_policy" "dns_record.client_routing_policy" $nlb)
+  (list "drop_invalid_header_fields" "routing.http.drop_invalid_header_fields.enabled" $alb)
+  (list "enable_cross_zone_load_balancing" "load_balancing.cross_zone.enabled" $nlbgw)
+  (list "enable_deletion_protection" "deletion_protection.enabled" $all)
+  (list "enable_http2" "routing.http2.enabled" $alb)
+  (list "enable_tls_version_and_cipher_suite_headers" "routing.http.x_amzn_tls_version_and_cipher_suite.enabled" $alb)
+  (list "enable_waf_fail_open" "waf.fail_open.enabled" $alb)
+  (list "enable_xff_client_port" "routing.http.xff_client_port.enabled" $alb)
+  (list "enable_zonal_shift" "zonal_shift.config.enabled" $albnlb)
+  (list "idle_timeout" "idle_timeout.timeout_seconds" $alb)
+  (list "preserve_host_header" "routing.http.preserve_host_header.enabled" $alb)
+  (list "xff_header_processing_mode" "routing.http.xff_header_processing.mode" $alb) }}
+{{- range $s := $scalars }}
+{{- $val := index $v (index $s 0) }}
+{{- if not (kindIs "invalid" $val) }}
+{{- $str := toString $val }}
+{{- if or (kindIs "float64" $val) (kindIs "int64" $val) (kindIs "int" $val) }}{{ $str = toString (int64 $val) }}{{ end }}
+{{- $set = append $set (list (index $s 1) $str (index $s 2)) }}
+{{- end }}
+{{- end }}
+{{- range $a := $set }}
+{{- if has $type (index $a 2) }}
+{{- $_ := set $attrs (index $a 0) (index $a 1) }}
+{{- end }}
+{{- end }}
+---
+apiVersion: elbv2.services.k8s.aws/v1alpha1
+kind: LoadBalancer
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "lb")) "id" "load-balancer" "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ $name | quote }}
+  type: {{ $type | quote }}
+{{- if not (kindIs "invalid" $v.internal) }}
+  scheme: {{ ternary "internal" "internet-facing" $v.internal | quote }}
+{{- end }}
+{{- with $v.ip_address_type }}
+  ipAddressType: {{ . | quote }}
+{{- end }}
+{{- with $v.customer_owned_ipv4_pool }}
+  customerOwnedIPv4Pool: {{ . | quote }}
+{{- end }}
+{{- with $v.subnets }}
+  subnets:
+{{- range . }}
+    - {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with $v.subnet_mapping }}
+  subnetMappings:
+{{- range . }}
+    - subnetID: {{ .subnet_id | quote }}
+{{- with .allocation_id }}
+      allocationID: {{ . | quote }}
+{{- end }}
+{{- with .ipv6_address }}
+      ipv6Address: {{ . | quote }}
+{{- end }}
+{{- with .private_ipv4_address }}
+      privateIPv4Address: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $v.create_security_group }}
+  securityGroupRefs:
+    - from:
+        name: {{ include "ack.name" (list .Release.Name "sg") }}
+{{- else if $v.security_groups }}
+  securityGroups:
+{{- range $v.security_groups }}
+    - {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- if $attrs }}
+  attributes:
+{{- range $k := keys $attrs | sortAlpha }}
+    - key: {{ $k | quote }}
+      value: {{ index $attrs $k | quote }}
+{{- end }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}

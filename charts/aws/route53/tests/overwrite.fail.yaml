@@ -1,0 +1,4 @@
+# expect: records.allow_overwrite is not supported
+name: example.com
+records:
+  a: {type: A, ttl: 60, records: [192.0.2.1], allow_overwrite: true}

@@ -1,0 +1,5 @@
+# expect: listeners.routing_http_response_server_enabled is not supported
+name: x
+vpc_id: vpc-1
+listeners:
+  http: {routing_http_response_server_enabled: false, fixed_response: {content_type: text/plain}}

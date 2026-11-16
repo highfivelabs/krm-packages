@@ -1,0 +1,10 @@
+# expect: listeners.http.rules.r needs priority
+name: x
+vpc_id: vpc-1
+listeners:
+  http:
+    fixed_response: {content_type: text/plain}
+    rules:
+      r:
+        actions: [{fixed_response: {content_type: text/plain}}]
+        conditions: [{path_pattern: {values: [/a]}}]

@@ -1,0 +1,53 @@
+# The module's README, "Usage", "Application Load Balancer": HTTP redirect
+# to HTTPS, a forward with a rule, an instance target group, the load
+# balancer's security group.
+name: my-alb
+vpc_id: vpc-abcde012
+subnets: [subnet-abcde012, subnet-bcde012a]
+enable_deletion_protection: false
+security_group_ingress_rules:
+  all_http: {from_port: 80, to_port: 80, ip_protocol: tcp, description: HTTP web traffic, cidr_ipv4: 0.0.0.0/0}
+  all_https: {from_port: 443, to_port: 443, ip_protocol: tcp, description: HTTPS web traffic, cidr_ipv4: 0.0.0.0/0}
+security_group_egress_rules:
+  all: {ip_protocol: "-1", cidr_ipv4: 10.0.0.0/16}
+access_logs: {bucket: my-alb-logs}
+listeners:
+  ex-http-https-redirect:
+    port: 80
+    protocol: HTTP
+    redirect: {port: "443", protocol: HTTPS, status_code: HTTP_301}
+  ex-https:
+    port: 443
+    protocol: HTTPS
+    certificate_arn: arn:aws:acm:eu-west-1:123456789012:certificate/12345678-1234-1234-1234-123456789012
+    forward: {target_group_key: ex-instance}
+    rules:
+      ex-fixed:
+        priority: 10
+        actions:
+          - fixed_response: {content_type: text/plain, message_body: Fixed message, status_code: "200"}
+        conditions:
+          - path_pattern: {values: [/onfixed]}
+          - http_request_method: {values: [GET, HEAD]}
+target_groups:
+  ex-instance:
+    name: h1
+    protocol: HTTP
+    port: 80
+    target_type: instance
+    deregistration_delay: 10
+    target_id: i-0f6d38a07d50d080f
+    health_check:
+      enabled: true
+      interval: 30
+      path: /healthz
+      port: traffic-port
+      healthy_threshold: 3
+      unhealthy_threshold: 3
+      timeout: 6
+      protocol: HTTP
+      matcher: 200-399
+    stickiness: {type: lb_cookie, cookie_duration: 3600}
+tags:
+  Environment: Development
+  Project: Example

@@ -1,0 +1,165 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "Target Group(s)" and "Target Group Attachment": one TargetGroup
+per entry of target_groups (aws_lb_target_group.this). The settings the
+Terraform provider sends as target group attributes are spec.attributes;
+the group's attachments (aws_lb_target_group_attachment.this and
+.additional) are its targets, which ACK keeps inline. A group's Lambda
+permission (attach_lambda_permission) is refused: ack-extensions'
+Permission cannot take the group's ARN by reference.
+*/ -}}
+{{- $v := .Values -}}
+{{- if and $v.create $v.putin_khuylo }}
+{{- $tgs := $v.target_groups | default dict }}
+{{- range $key, $a := ($v.additional_target_group_attachments | default dict) }}
+{{- if not (hasKey $tgs $a.target_group_key) }}
+{{- fail (printf "alb: additional_target_group_attachments.%s: target_group_key %q is not a key of target_groups" $key $a.target_group_key) }}
+{{- end }}
+{{- end }}
+{{- range $key := keys $tgs | sortAlpha }}
+{{- $t := index $tgs $key }}
+{{- if $t.name_prefix }}
+{{- fail (printf "alb: target_groups.%s: target_groups.name_prefix is not supported: Terraform appends a random suffix, and a render must not change between plans; give name (docs/aws.md)" $key) }}
+{{- end }}
+{{- if $t.attach_lambda_permission }}
+{{- fail (printf "alb: target_groups.%s: target_groups.attach_lambda_permission is not supported: ack-extensions' Lambda Permission takes the source ARN only as a string, with no reference to the target group this render makes (docs/aws.md)" $key) }}
+{{- end }}
+{{- if not $t.name }}
+{{- fail (printf "alb: target_groups.%s needs name: ACK's TargetGroup requires one, and Terraform's generated name would change between renders" $key) }}
+{{- end }}
+{{- $lambda := eq (toString $t.target_type) "lambda" }}
+{{- $port := $t.port | default $v.default_port }}
+{{- $protocol := $t.protocol | default $v.default_protocol }}
+{{- $attrs := dict }}
+{{- if not (kindIs "invalid" $t.connection_termination) }}{{ $_ := set $attrs "deregistration_delay.connection_termination.enabled" (toString $t.connection_termination) }}{{ end }}
+{{- if not (kindIs "invalid" $t.deregistration_delay) }}{{ $_ := set $attrs "deregistration_delay.timeout_seconds" (toString (int64 $t.deregistration_delay)) }}{{ end }}
+{{- if not (kindIs "invalid" $t.lambda_multi_value_headers_enabled) }}{{ $_ := set $attrs "lambda.multi_value_headers.enabled" (toString $t.lambda_multi_value_headers_enabled) }}{{ end }}
+{{- with $t.load_balancing_algorithm_type }}{{ $_ := set $attrs "load_balancing.algorithm.type" . }}{{ end }}
+{{- with $t.load_balancing_anomaly_mitigation }}{{ $_ := set $attrs "load_balancing.algorithm.anomaly_mitigation" . }}{{ end }}
+{{- with $t.load_balancing_cross_zone_enabled }}{{ $_ := set $attrs "load_balancing.cross_zone.enabled" (toString .) }}{{ end }}
+{{- if not (kindIs "invalid" $t.preserve_client_ip) }}{{ $_ := set $attrs "preserve_client_ip.enabled" (toString $t.preserve_client_ip) }}{{ end }}
+{{- if not (kindIs "invalid" $t.proxy_protocol_v2) }}{{ $_ := set $attrs "proxy_protocol_v2.enabled" (toString $t.proxy_protocol_v2) }}{{ end }}
+{{- if not (kindIs "invalid" $t.slow_start) }}{{ $_ := set $attrs "slow_start.duration_seconds" (toString (int64 $t.slow_start)) }}{{ end }}
+{{- with $t.stickiness }}
+{{- $_ := set $attrs "stickiness.enabled" (toString (kindIs "invalid" .enabled | ternary true .enabled)) }}
+{{- $_ := set $attrs "stickiness.type" .type }}
+{{- if eq .type "app_cookie" }}
+{{- with .cookie_name }}{{ $_ := set $attrs "stickiness.app_cookie.cookie_name" . }}{{ end }}
+{{- if not (kindIs "invalid" .cookie_duration) }}{{ $_ := set $attrs "stickiness.app_cookie.duration_seconds" (toString (int64 .cookie_duration)) }}{{ end }}
+{{- else if eq .type "lb_cookie" }}
+{{- if not (kindIs "invalid" .cookie_duration) }}{{ $_ := set $attrs "stickiness.lb_cookie.duration_seconds" (toString (int64 .cookie_duration)) }}{{ end }}
+{{- end }}
+{{- end }}
+{{- with $t.target_failover }}
+{{- $f := first . }}
+{{- $_ := set $attrs "target_failover.on_deregistration" $f.on_deregistration }}
+{{- $_ := set $attrs "target_failover.on_unhealthy" $f.on_unhealthy }}
+{{- end }}
+{{- with $t.target_group_health }}
+{{- range $block := list "dns_failover" "unhealthy_state_routing" }}
+{{- with (index $t.target_group_health $block) }}
+{{- if not (kindIs "invalid" .minimum_healthy_targets_count) }}{{ $_ := set $attrs (printf "target_group_health.%s.minimum_healthy_targets.count" $block) (toString .minimum_healthy_targets_count) }}{{ end }}
+{{- if not (kindIs "invalid" .minimum_healthy_targets_percentage) }}{{ $_ := set $attrs (printf "target_group_health.%s.minimum_healthy_targets.percentage" $block) (toString .minimum_healthy_targets_percentage) }}{{ end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with $t.target_health_state }}
+{{- $_ := set $attrs "target_health_state.unhealthy.connection_termination.enabled" (toString .enable_unhealthy_connection_termination) }}
+{{- if not (kindIs "invalid" .unhealthy_draining_interval) }}{{ $_ := set $attrs "target_health_state.unhealthy.draining_interval_seconds" (toString (int64 .unhealthy_draining_interval)) }}{{ end }}
+{{- end }}
+{{- $targets := list }}
+{{- if and (kindIs "invalid" $t.create_attachment | ternary true $t.create_attachment) $t.target_id }}
+{{- $targets = append $targets (dict "id" $t.target_id "availability_zone" $t.availability_zone "port" (ternary nil $port $lambda)) }}
+{{- end }}
+{{- range $ak := keys ($v.additional_target_group_attachments | default dict) | sortAlpha }}
+{{- $a := index $v.additional_target_group_attachments $ak }}
+{{- if eq $a.target_group_key $key }}
+{{- $targets = append $targets (dict "id" $a.target_id "availability_zone" $a.availability_zone "port" (ternary nil ($a.port | default $v.default_port) (eq (toString $a.target_type) "lambda"))) }}
+{{- end }}
+{{- end }}
+{{- $vpc := $t.vpc_id | default $v.vpc_id }}
+{{- if and (not $lambda) (not $vpc) }}
+{{- fail (printf "alb: target_groups.%s needs vpc_id (or the chart's vpc_id)" $key) }}
+{{- end }}
+---
+apiVersion: elbv2.services.k8s.aws/v1alpha1
+kind: TargetGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "tg" $key)) "id" (printf "target-group-%s" $key) "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ include "ack.cloudName" (list $ "target group" $t.name 32) | quote }}
+{{- with $t.target_type }}
+  targetType: {{ . | quote }}
+{{- end }}
+{{- if not $lambda }}
+  port: {{ int64 $port }}
+  protocol: {{ $protocol | quote }}
+  vpcID: {{ $vpc | quote }}
+{{- end }}
+{{- with $t.protocol_version }}
+  protocolVersion: {{ . | quote }}
+{{- end }}
+{{- with $t.ip_address_type }}
+  ipAddressType: {{ . | quote }}
+{{- end }}
+{{- with $t.health_check }}
+{{- if not (kindIs "invalid" .enabled) }}
+  healthCheckEnabled: {{ .enabled }}
+{{- end }}
+{{- if not (kindIs "invalid" .healthy_threshold) }}
+  healthyThresholdCount: {{ int64 .healthy_threshold }}
+{{- end }}
+{{- if not (kindIs "invalid" .interval) }}
+  healthCheckIntervalSeconds: {{ int64 .interval }}
+{{- end }}
+{{- with .matcher }}
+  matcher:
+{{- if eq (toString $t.protocol_version) "GRPC" }}
+    grpcCode: {{ . | quote }}
+{{- else }}
+    httpCode: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with .path }}
+  healthCheckPath: {{ . | quote }}
+{{- end }}
+{{- with .port }}
+  healthCheckPort: {{ toString . | quote }}
+{{- end }}
+{{- with .protocol }}
+  healthCheckProtocol: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .timeout) }}
+  healthCheckTimeoutSeconds: {{ int64 .timeout }}
+{{- end }}
+{{- if not (kindIs "invalid" .unhealthy_threshold) }}
+  unhealthyThresholdCount: {{ int64 .unhealthy_threshold }}
+{{- end }}
+{{- end }}
+{{- if $attrs }}
+  attributes:
+{{- range $k := keys $attrs | sortAlpha }}
+    - key: {{ $k | quote }}
+      value: {{ index $attrs $k | quote }}
+{{- end }}
+{{- end }}
+{{- if $targets }}
+  targets:
+{{- range $targets }}
+    - id: {{ .id | quote }}
+{{- if not (kindIs "invalid" .port) }}
+      port: {{ int64 .port }}
+{{- end }}
+{{- with .availability_zone }}
+      availabilityZone: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags $t.tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}

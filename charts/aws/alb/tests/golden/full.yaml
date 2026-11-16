@@ -1,0 +1,305 @@
+---
+# Source: alb/templates/listeners.yaml
+apiVersion: elbv2.services.k8s.aws/v1alpha1
+kind: Listener
+metadata:
+  name: full-listener-https
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: alb
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "listener-https"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  loadBalancerRef:
+    from:
+      name: full-lb
+  port: 443
+  protocol: "HTTPS"
+  sslPolicy: "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificates:
+    - certificateARN: "arn:aws:acm:eu-west-1:123456789012:certificate/abc"
+  mutualAuthentication:
+    mode: "verify"
+    ignoreClientCertificateExpiry: false
+    trustStoreARN: "arn:aws:elasticloadbalancing:eu-west-1:123456789012:truststore/ts/1"
+  defaultActions:
+    - forwardConfig:
+        targetGroupStickinessConfig:
+          durationSeconds: 3600
+          enabled: true
+        targetGroups:
+        - targetGroupRef:
+            from:
+              name: full-tg-ip
+          weight: 80
+        - targetGroupARN: arn:aws:elasticloadbalancing:eu-west-1:123456789012:targetgroup/other/1
+          weight: 20
+      type: forward
+---
+# Source: alb/templates/load-balancer.yaml
+apiVersion: elbv2.services.k8s.aws/v1alpha1
+kind: LoadBalancer
+metadata:
+  name: full-lb
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: alb
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "load-balancer"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "full-alb"
+  type: "application"
+  scheme: "internal"
+  ipAddressType: "dualstack"
+  subnetMappings:
+    - subnetID: "subnet-abcde012"
+      privateIPv4Address: "10.0.1.10"
+    - subnetID: "subnet-bcde012a"
+  securityGroupRefs:
+    - from:
+        name: full-sg
+  attributes:
+    - key: "client_keep_alive.seconds"
+      value: "7200"
+    - key: "connection_logs.s3.bucket"
+      value: "conn-logs"
+    - key: "connection_logs.s3.enabled"
+      value: "true"
+    - key: "connection_logs.s3.prefix"
+      value: "full"
+    - key: "deletion_protection.enabled"
+      value: "true"
+    - key: "health_check_logs.s3.bucket"
+      value: "hc-logs"
+    - key: "health_check_logs.s3.enabled"
+      value: "false"
+    - key: "health_check_logs.s3.prefix"
+      value: ""
+    - key: "idle_timeout.timeout_seconds"
+      value: "120"
+    - key: "routing.http.desync_mitigation_mode"
+      value: "strictest"
+    - key: "routing.http.drop_invalid_header_fields.enabled"
+      value: "true"
+    - key: "routing.http.preserve_host_header.enabled"
+      value: "true"
+    - key: "routing.http.x_amzn_tls_version_and_cipher_suite.enabled"
+      value: "true"
+    - key: "routing.http.xff_client_port.enabled"
+      value: "true"
+    - key: "routing.http.xff_header_processing.mode"
+      value: "preserve"
+    - key: "routing.http2.enabled"
+      value: "false"
+    - key: "waf.fail_open.enabled"
+      value: "true"
+    - key: "zonal_shift.config.enabled"
+      value: "true"
+---
+# Source: alb/templates/listeners.yaml
+apiVersion: elbv2.services.k8s.aws/v1alpha1
+kind: Rule
+metadata:
+  name: full-rule-https-cognito
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: alb
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "rule-https/cognito"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  listenerRef:
+    from:
+      name: full-listener-https
+  priority: 2
+  actions:
+    - authenticateCognitoConfig:
+        sessionTimeout: 3600
+        userPoolARN: arn:aws:cognito-idp:eu-west-1:123456789012:userpool/eu-west-1_abc
+        userPoolClientID: clientid
+        userPoolDomain: auth.example.com
+      type: authenticate-cognito
+    - redirectConfig:
+        host: www.example.com
+        path: /#{path}
+        query: '#{query}'
+        statusCode: HTTP_302
+      type: redirect
+  conditions:
+    - field: path-pattern
+      pathPatternConfig:
+        values:
+        - /login
+---
+# Source: alb/templates/listeners.yaml
+apiVersion: elbv2.services.k8s.aws/v1alpha1
+kind: Rule
+metadata:
+  name: full-rule-https-oidc
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: alb
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "rule-https/oidc"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  listenerRef:
+    from:
+      name: full-listener-https
+  priority: 1
+  actions:
+    - authenticateOIDCConfig:
+        authenticationRequestExtraParams:
+          display: page
+        authorizationEndpoint: https://idp.example.com/authorize
+        clientID: client
+        clientSecret: secret
+        issuer: https://idp.example.com
+        tokenEndpoint: https://idp.example.com/token
+        userInfoEndpoint: https://idp.example.com/userinfo
+      order: 1
+      type: authenticate-oidc
+    - order: 2
+      targetGroupRef:
+        from:
+          name: full-tg-lambda
+      type: forward
+  conditions:
+    - field: host-header
+      hostHeaderConfig:
+        values:
+        - app.example.com
+    - field: http-header
+      httpHeaderConfig:
+        httpHeaderName: X-Forwarded-For
+        values:
+        - 192.168.1.*
+    - field: query-string
+      queryStringConfig:
+        values:
+        - key: q
+          value: "1"
+        - value: bar
+    - field: source-ip
+      sourceIPConfig:
+        values:
+        - 10.0.0.0/8
+  tags:
+    - key: "Rule"
+      value: "oidc"
+---
+# Source: alb/templates/security-group.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: full-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: alb
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "security-group"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "full-alb-lb"
+  description: "The load balancer's group"
+  vpcID: "vpc-abcde012"
+  ingressRules:
+    - ipProtocol: "tcp"
+      fromPort: 443
+      toPort: 443
+      ipRanges:
+        - {"cidrIP":"10.0.0.0/16"}
+  tags:
+    - key: "Tier"
+      value: "edge"
+---
+# Source: alb/templates/target-groups.yaml
+apiVersion: elbv2.services.k8s.aws/v1alpha1
+kind: TargetGroup
+metadata:
+  name: full-tg-ip
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: alb
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "target-group-ip"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "full-ip"
+  targetType: "ip"
+  port: 8080
+  protocol: "HTTP"
+  vpcID: "vpc-abcde012"
+  protocolVersion: "HTTP2"
+  attributes:
+    - key: "deregistration_delay.connection_termination.enabled"
+      value: "true"
+    - key: "load_balancing.algorithm.anomaly_mitigation"
+      value: "off"
+    - key: "load_balancing.algorithm.type"
+      value: "least_outstanding_requests"
+    - key: "load_balancing.cross_zone.enabled"
+      value: "use_load_balancer_configuration"
+    - key: "slow_start.duration_seconds"
+      value: "30"
+    - key: "stickiness.app_cookie.cookie_name"
+      value: "SESSION"
+    - key: "stickiness.app_cookie.duration_seconds"
+      value: "600"
+    - key: "stickiness.enabled"
+      value: "true"
+    - key: "stickiness.type"
+      value: "app_cookie"
+    - key: "target_group_health.dns_failover.minimum_healthy_targets.count"
+      value: "1"
+    - key: "target_group_health.unhealthy_state_routing.minimum_healthy_targets.percentage"
+      value: "50"
+    - key: "target_health_state.unhealthy.connection_termination.enabled"
+      value: "false"
+    - key: "target_health_state.unhealthy.draining_interval_seconds"
+      value: "300"
+  targets:
+    - id: "10.0.1.20"
+      port: 8080
+      availabilityZone: "eu-west-1a"
+    - id: "10.0.1.21"
+      port: 8081
+  tags:
+    - key: "Kind"
+      value: "ip"
+---
+# Source: alb/templates/target-groups.yaml
+apiVersion: elbv2.services.k8s.aws/v1alpha1
+kind: TargetGroup
+metadata:
+  name: full-tg-lambda
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: alb
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "target-group-lambda"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "full-lambda"
+  targetType: "lambda"
+  attributes:
+    - key: "lambda.multi_value_headers.enabled"
+      value: "true"
+  targets:
+    - id: "arn:aws:lambda:eu-west-1:123456789012:function:hello"

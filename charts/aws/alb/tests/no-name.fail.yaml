@@ -1,0 +1,2 @@
+# expect: alb: name is required
+vpc_id: vpc-1

@@ -1,0 +1,99 @@
+# Weighted forwards, authentication, every rule condition, additional
+# attachments, IP and Lambda targets, the load balancer attributes, an
+# internal dualstack load balancer.
+name: full-alb
+region: eu-west-1
+internal: true
+ip_address_type: dualstack
+vpc_id: vpc-abcde012
+subnet_mapping:
+  - {subnet_id: subnet-abcde012, private_ipv4_address: 10.0.1.10}
+  - {subnet_id: subnet-bcde012a}
+security_group_name: full-alb-lb
+security_group_description: The load balancer's group
+security_group_tags: {Tier: edge}
+security_group_ingress_rules:
+  vpc: {from_port: 443, cidr_ipv4: 10.0.0.0/16}
+client_keep_alive: 7200
+connection_logs: {bucket: conn-logs, prefix: full}
+health_check_logs: {bucket: hc-logs, enabled: false}
+desync_mitigation_mode: strictest
+enable_http2: false
+enable_tls_version_and_cipher_suite_headers: true
+enable_waf_fail_open: true
+enable_xff_client_port: true
+enable_zonal_shift: true
+idle_timeout: 120
+preserve_host_header: true
+xff_header_processing_mode: preserve
+default_port: 8080
+listeners:
+  https:
+    port: 443
+    protocol: HTTPS
+    certificate_arn: arn:aws:acm:eu-west-1:123456789012:certificate/abc
+    ssl_policy: ELBSecurityPolicy-TLS13-1-2-2021-06
+    mutual_authentication: {mode: verify, trust_store_arn: "arn:aws:elasticloadbalancing:eu-west-1:123456789012:truststore/ts/1", ignore_client_certificate_expiry: false}
+    weighted_forward:
+      target_groups:
+        - {target_group_key: ip, weight: 80}
+        - {target_group_arn: "arn:aws:elasticloadbalancing:eu-west-1:123456789012:targetgroup/other/1", weight: 20}
+      stickiness: {enabled: true, duration: 3600}
+    rules:
+      oidc:
+        priority: 1
+        actions:
+          - authenticate_oidc:
+              authorization_endpoint: https://idp.example.com/authorize
+              client_id: client
+              client_secret: secret
+              issuer: https://idp.example.com
+              token_endpoint: https://idp.example.com/token
+              user_info_endpoint: https://idp.example.com/userinfo
+              authentication_request_extra_params: {display: page}
+            order: 1
+          - forward: {target_group_key: lambda}
+            order: 2
+        conditions:
+          - host_header: {values: [app.example.com]}
+          - http_header: {http_header_name: X-Forwarded-For, values: ["192.168.1.*"]}
+          - query_string: [{key: q, value: "1"}, {value: bar}]
+          - source_ip: {values: [10.0.0.0/8]}
+        tags: {Rule: oidc}
+      cognito:
+        priority: 2
+        actions:
+          - authenticate_cognito:
+              user_pool_arn: arn:aws:cognito-idp:eu-west-1:123456789012:userpool/eu-west-1_abc
+              user_pool_client_id: clientid
+              user_pool_domain: auth.example.com
+              session_timeout: 3600
+          - redirect: {status_code: HTTP_302, host: www.example.com, path: "/#{path}", query: "#{query}"}
+        conditions:
+          - path_pattern: {values: [/login]}
+target_groups:
+  ip:
+    name: full-ip
+    target_type: ip
+    protocol: HTTP
+    protocol_version: HTTP2
+    connection_termination: true
+    load_balancing_algorithm_type: least_outstanding_requests
+    load_balancing_anomaly_mitigation: "off"
+    load_balancing_cross_zone_enabled: use_load_balancer_configuration
+    slow_start: 30
+    stickiness: {type: app_cookie, cookie_name: SESSION, cookie_duration: 600}
+    target_group_health:
+      dns_failover: {minimum_healthy_targets_count: "1"}
+      unhealthy_state_routing: {minimum_healthy_targets_percentage: "50"}
+    target_health_state: {enable_unhealthy_connection_termination: false, unhealthy_draining_interval: 300}
+    target_id: 10.0.1.20
+    availability_zone: eu-west-1a
+    tags: {Kind: ip}
+  lambda:
+    name: full-lambda
+    target_type: lambda
+    lambda_multi_value_headers_enabled: true
+    target_id: arn:aws:lambda:eu-west-1:123456789012:function:hello
+additional_target_group_attachments:
+  second: {target_group_key: ip, target_id: 10.0.1.21, port: 8081}

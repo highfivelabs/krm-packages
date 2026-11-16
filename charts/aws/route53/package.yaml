@@ -1,0 +1,40 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (docs/design.md, "Outputs"): the module's
+# zone outputs from the live HostedZone (resources.zone) and the records'
+# names from the RecordSets (resources.record-<key>). Route 53 reports a
+# zone's ID as /hostedzone/<id>; id is the bare <id>, as Terraform's.
+# arn is built as the Terraform provider builds it,
+# arn:<partition>:route53:::hostedzone/<id>. records is the one field
+# consumers take from each record, its fully qualified name, by key
+# (outputs are selective; Terraform's output is the whole resource).
+# Not provided: primary_name_server (Route 53's GetHostedZone does not
+# report the SOA's server) and the DNSSEC outputs (enable_dnssec is refused).
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: aws-route53
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [ack]
+  outputs:
+    id: >-
+      'zone' in resources && has(resources.zone.status.id) ? dyn(resources.zone.status.id.replace('/hostedzone/', '')) : null
+    arn: >-
+      'zone' in resources && has(resources.zone.status.id)
+      ? dyn('arn:'
+        + (has(resources.zone.status.ackResourceMetadata.partition) ? resources.zone.status.ackResourceMetadata.partition : 'aws')
+        + ':route53:::hostedzone/' + resources.zone.status.id.replace('/hostedzone/', ''))
+      : null
+    name_servers: >-
+      'zone' in resources && has(resources.zone.status.delegationSet) && has(resources.zone.status.delegationSet.nameServers)
+      ? dyn(resources.zone.status.delegationSet.nameServers) : null
+    name: >-
+      inputs.name.endsWith('.') ? inputs.name.substring(0, size(inputs.name) - 1) : inputs.name
+    records: >-
+      resources.filter(k, k.startsWith('record-')).transformMapEntry(i, k, {
+        k.substring(7): (resources[k].spec.name.endsWith('.') ? resources[k].spec.name.substring(0, size(resources[k].spec.name) - 1)
+          : (resources[k].spec.name == '' ? '' : resources[k].spec.name + '.')
+            + (inputs.name.endsWith('.') ? inputs.name.substring(0, size(inputs.name) - 1) : inputs.name)).lowerAscii()})

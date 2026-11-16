@@ -1,0 +1,85 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Where this chart came from: the Terraform module it ports and the release
+# it was ported from. Machine-readable; `task upstream-check` keeps it equal
+# to upstream/modules.yaml and Chart.yaml. To take a newer release, see
+# UPSTREAM.md ("Moving the pins").
+module: aws/route53
+repo: https://github.com/terraform-aws-modules/terraform-aws-route53
+path: .
+version: v6.5.1
+commit: 883f987d6bb328c09bd4dfc5a04024534b371d59
+license: Apache-2.0
+copyright: null
+module_url: https://github.com/terraform-aws-modules/terraform-aws-route53/tree/v6.5.1
+registry_url: https://registry.terraform.io/modules/terraform-aws-modules/route53/aws
+synced: 2026-11-16
+# Module variables the chart keeps in values.yaml (so tfvars convert one to
+# one) but refuses when set (to anything but the module's default), or
+# accepts only in part. Read by `task coverage`; `task coverage-verify`
+# renders the chart to check that each one is refused. kind: gap (no ACK or
+# ack-extensions kind or field), not-ported (ACK has it, the chart does not
+# map it yet) or by-design (Bundt replaces it). partial: the variable is
+# accepted, the reason says what is not carried.
+refused:
+- variable: create_dnssec_kms_key
+  kind: gap
+  reason: "used only with enable_dnssec, which is refused"
+- variable: create_zone
+  kind: by-design
+  reason: "false looks an existing zone up by name (data.aws_route53_zone); a render cannot look anything up: the zone is another component's, and its records belong in that component"
+- variable: dnssec_key_signing_key_name
+  kind: gap
+  reason: "used only with enable_dnssec, which is refused"
+- variable: dnssec_kms_key_aliases
+  kind: gap
+  reason: "used only with enable_dnssec, which is refused"
+- variable: dnssec_kms_key_arn
+  kind: gap
+  reason: "used only with enable_dnssec, which is refused"
+- variable: dnssec_kms_key_description
+  kind: gap
+  reason: "used only with enable_dnssec, which is refused"
+- variable: dnssec_kms_key_tags
+  kind: gap
+  reason: "used only with enable_dnssec, which is refused"
+- variable: enable_accelerated_recovery
+  kind: gap
+  reason: ACK's HostedZone (route53-controller v1.8.0) has no field for Route 53 Accelerated Recovery
+- variable: enable_dnssec
+  kind: gap
+  reason: "ack-extensions' KeySigningKey and DNSSEC (Cloud Control) take the zone's ID only as a string, with no reference to a HostedZone, so they cannot be wired to the zone this render makes"
+- variable: force_destroy
+  kind: gap
+  reason: "ACK's HostedZone has no field to delete records made elsewhere before the zone; Route 53 refuses to delete a zone that still has them"
+- variable: ignore_vpc
+  kind: gap
+  reason: "ACK's HostedZone owns the zone's VPC associations (spec.vpcs) and removes ones made elsewhere; leaving them alone after creation has no ACK equivalent"
+- variable: private_zone
+  kind: by-design
+  reason: "used only to look up an existing zone (create_zone: false), which is refused"
+- variable: records
+  kind: gap
+  reason: "accepted, but geoproximity_routing_policy (ACK's RecordSet has no geoproximity field), allow_overwrite: true (no UPSERT-on-create field) and an alias's zone_id self (aliasTarget takes a zone only by ID, with no reference) are refused, and each record's timeouts is not carried (ACK retries until synced)"
+  partial: true
+  fields:
+  - alias.zone_id
+  - allow_overwrite
+  - geoproximity_routing_policy
+  - timeouts
+- variable: timeouts
+  kind: by-design
+  reason: "Terraform's create, update and delete timeouts: ACK retries until the zone is synced, and Bundt waits for it"
+- variable: vpc
+  kind: gap
+  reason: "accepted, but each entry needs vpc_region: ACK's HostedZone requires it, and the chart cannot know the provider's region Terraform defaults to"
+  partial: true
+  fields:
+  - vpc_region
+- variable: vpc_association_authorizations
+  kind: gap
+  reason: "aws_route53_vpc_association_authorization has no ACK or ack-extensions kind (no Cloud Control type)"
+- variable: vpc_id
+  kind: by-design
+  reason: "used only to look up an existing zone (create_zone: false), which is refused"

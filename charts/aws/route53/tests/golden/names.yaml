@@ -1,0 +1,44 @@
+---
+# Source: route53/templates/zone.yaml
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: HostedZone
+metadata:
+  name: names-zone
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "zone"
+spec:
+  name: "shop.example.com"
+  hostedZoneConfig:
+    comment: "Managed by Terraform"
+  tags:
+    - key: "team"
+      value: "shop"
+---
+# Source: route53/templates/records.yaml
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: RecordSet
+metadata:
+  name: names-record-www
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "record-www"
+spec:
+  hostedZoneRef:
+    from:
+      name: names-zone
+  name: "www"
+  recordType: "A"
+  ttl: 60
+  resourceRecords:
+    - value: "192.0.2.10"

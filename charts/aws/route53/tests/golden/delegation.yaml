@@ -1,0 +1,19 @@
+---
+# Source: route53/templates/zone.yaml
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: HostedZone
+metadata:
+  name: delegation-zone
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "delegation"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "zone"
+    services.k8s.aws/deletion-policy: retain
+spec:
+  name: "shop.example.com."
+  hostedZoneConfig:
+    comment: "Managed by Terraform"
+  delegationSetID: "N1PA6795SAMPLE"

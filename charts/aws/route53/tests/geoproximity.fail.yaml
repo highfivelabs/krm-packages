@@ -1,0 +1,4 @@
+# expect: records.geoproximity_routing_policy is not supported
+name: example.com
+records:
+  g: {type: A, ttl: 60, records: [192.0.2.1], set_identifier: g, geoproximity_routing_policy: {aws_region: eu-west-1}}

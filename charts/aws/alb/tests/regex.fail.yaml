@@ -1,0 +1,11 @@
+# expect: regex_values is not supported
+name: x
+vpc_id: vpc-1
+listeners:
+  http:
+    fixed_response: {content_type: text/plain}
+    rules:
+      r:
+        priority: 1
+        actions: [{fixed_response: {content_type: text/plain}}]
+        conditions: [{path_pattern: {regex_values: ["^/a"]}}]

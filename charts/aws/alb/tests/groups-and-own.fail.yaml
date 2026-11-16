@@ -1,0 +1,4 @@
+# expect: alb: security_groups is not supported with create_security_group: true
+name: x
+vpc_id: vpc-1
+security_groups: [sg-1]

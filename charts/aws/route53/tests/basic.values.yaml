@@ -1,0 +1,32 @@
+# The module's README, "Usage": a public zone with an alias, a weighted pair
+# and a plain record.
+name: example.com
+comment: Public zone for example.com
+tags:
+  Environment: dev
+records:
+  s3-bucket:
+    name: s3-bucket
+    type: A
+    alias:
+      name: s3-website-eu-west-1.amazonaws.com
+      zone_id: Z1BKCTXD74EZPE
+  blue:
+    name: test
+    type: CNAME
+    ttl: 5
+    records: [test.example.com.]
+    set_identifier: test-primary
+    weighted_routing_policy: {weight: 90}
+  green:
+    name: test
+    type: CNAME
+    ttl: 5
+    records: [test2.example.com.]
+    set_identifier: test-secondary
+    weighted_routing_policy: {weight: 10}
+  apex-mx:
+    full_name: example.com
+    type: MX
+    ttl: 3600
+    records: ["10 mail.example.com."]

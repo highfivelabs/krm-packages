@@ -1,0 +1,24 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+The module variables this chart keeps in its values but cannot carry
+(upstream.yaml, "refused"): each stops the render, naming the gap, when it
+is set to anything but its Terraform default. Renders nothing.
+*/ -}}
+{{- $v := .Values -}}
+{{- include "ack.unchanged" (list $ "create_zone" $v.create_zone "true" "false looks an existing zone up by name, and a render cannot look anything up: the zone is another component's, and its records belong in that component") }}
+{{- include "ack.unsupported" (list $ "ignore_vpc" $v.ignore_vpc "ACK's HostedZone owns the zone's VPC associations (spec.vpcs) and removes ones made elsewhere; leaving them alone after creation has no ACK equivalent") }}
+{{- include "ack.unsupported" (list $ "private_zone" $v.private_zone "it is used only to look up an existing zone (create_zone: false); a zone with vpc set is private") }}
+{{- include "ack.unsupported" (list $ "vpc_id" $v.vpc_id "it is used only to look up an existing zone (create_zone: false); a private zone's VPCs are vpc") }}
+{{- include "ack.unsupported" (list $ "force_destroy" $v.force_destroy "ACK's HostedZone has no field to delete records made elsewhere before the zone") }}
+{{- include "ack.unsupported" (list $ "enable_accelerated_recovery" $v.enable_accelerated_recovery "ACK's HostedZone (route53-controller v1.8.0) has no field for Route 53 Accelerated Recovery") }}
+{{- include "ack.unsupported" (list $ "timeouts" $v.timeouts "Terraform's create, update and delete timeouts: ACK retries until the zone is synced, and Bundt waits for it") }}
+{{- include "ack.unsupported" (list $ "vpc_association_authorizations" $v.vpc_association_authorizations "aws_route53_vpc_association_authorization has no ACK or ack-extensions kind") }}
+{{- include "ack.unsupported" (list $ "enable_dnssec" $v.enable_dnssec "ack-extensions' KeySigningKey and DNSSEC take the zone's ID only as a string, with no reference to a HostedZone, so they cannot be wired to the zone this render makes") }}
+{{- include "ack.unchanged" (list $ "create_dnssec_kms_key" $v.create_dnssec_kms_key "true" "it is used only with enable_dnssec, which is refused") }}
+{{- include "ack.unsupported" (list $ "dnssec_kms_key_arn" $v.dnssec_kms_key_arn "it is used only with enable_dnssec, which is refused") }}
+{{- include "ack.unchanged" (list $ "dnssec_kms_key_description" $v.dnssec_kms_key_description "\"Route53 DNSSEC KMS Key\"" "it is used only with enable_dnssec, which is refused") }}
+{{- include "ack.unsupported" (list $ "dnssec_kms_key_aliases" $v.dnssec_kms_key_aliases "it is used only with enable_dnssec, which is refused") }}
+{{- include "ack.unsupported" (list $ "dnssec_kms_key_tags" $v.dnssec_kms_key_tags "it is used only with enable_dnssec, which is refused") }}
+{{- include "ack.unsupported" (list $ "dnssec_key_signing_key_name" $v.dnssec_key_signing_key_name "it is used only with enable_dnssec, which is refused") }}

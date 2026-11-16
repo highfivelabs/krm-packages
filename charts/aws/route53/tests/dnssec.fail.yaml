@@ -1,0 +1,3 @@
+# expect: route53: enable_dnssec is not supported
+name: example.com
+enable_dnssec: true

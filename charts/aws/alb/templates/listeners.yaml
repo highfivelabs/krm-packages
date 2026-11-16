@@ -1,0 +1,133 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "Listener(s)" and "Listener Rule(s)": one Listener per entry of
+listeners (aws_lb_listener.this) on this chart's LoadBalancer
+(loadBalancerRef), and one Rule per entry of a listener's rules
+(aws_lb_listener_rule.this, keyed "<listener>/<rule>") on it
+(listenerRef). A listener's certificate_arn is its default certificate.
+The listener attributes (routing_http_*, tcp_idle_timeout_seconds), extra
+certificates, rule transforms and regex conditions have no ACK field and
+are refused.
+*/ -}}
+{{- $v := .Values -}}
+{{- if and $v.create $v.putin_khuylo }}
+{{- range $lk := keys ($v.listeners | default dict) | sortAlpha }}
+{{- $l := index $v.listeners $lk }}
+{{- $where := printf "listeners.%s" $lk }}
+{{- range $f := keys $l | sortAlpha }}
+{{- if and (or (hasPrefix "routing_http_" $f) (eq $f "tcp_idle_timeout_seconds")) (not (kindIs "invalid" (index $l $f))) }}
+{{- fail (printf "alb: %s: listeners.%s is not supported: it is a listener attribute, and ACK's Listener (elbv2-controller v1.10.0) has no attributes field (docs/aws.md)" $where $f) }}
+{{- end }}
+{{- end }}
+{{- if $l.additional_certificate_arns }}
+{{- fail (printf "alb: %s: listeners.additional_certificate_arns is not supported: ACK's Listener takes its default certificate only; extra certificates (AddListenerCertificates) have no ACK kind (docs/aws.md)" $where) }}
+{{- end }}
+{{- if and $l.mutual_authentication $l.mutual_authentication.advertise_trust_store_ca_names }}
+{{- fail (printf "alb: %s: listeners.mutual_authentication.advertise_trust_store_ca_names is not supported: ACK's MutualAuthentication has no such field (docs/aws.md)" $where) }}
+{{- end }}
+{{- $protocol := $l.protocol | default $v.default_protocol }}
+{{- $port := $l.port | default $v.default_port }}
+{{- $actions := include "alb.actions" (dict "root" $ "a" $l "where" $where) | fromJsonArray }}
+{{- if not $actions }}
+{{- fail (printf "alb: %s needs a default action: forward, weighted_forward, redirect, fixed_response, authenticate_cognito or authenticate_oidc" $where) }}
+{{- end }}
+---
+apiVersion: elbv2.services.k8s.aws/v1alpha1
+kind: Listener
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "listener" $lk)) "id" (printf "listener-%s" $lk) "region" $v.region) | nindent 2 }}
+spec:
+  loadBalancerRef:
+    from:
+      name: {{ include "ack.name" (list $.Release.Name "lb") }}
+{{- if ne $protocol "GENEVE" }}
+  port: {{ int64 $port }}
+  protocol: {{ $protocol | quote }}
+{{- end }}
+{{- if has $protocol (list "HTTPS" "TLS") }}
+  sslPolicy: {{ $l.ssl_policy | default "ELBSecurityPolicy-TLS13-1-3-2021-06" | quote }}
+{{- else if $l.ssl_policy }}
+  sslPolicy: {{ $l.ssl_policy | quote }}
+{{- end }}
+{{- with $l.alpn_policy }}
+  alpnPolicy:
+    - {{ . | quote }}
+{{- end }}
+{{- with $l.certificate_arn }}
+  certificates:
+    - certificateARN: {{ . | quote }}
+{{- end }}
+{{- with $l.mutual_authentication }}
+  mutualAuthentication:
+    mode: {{ .mode | quote }}
+{{- if not (kindIs "invalid" .ignore_client_certificate_expiry) }}
+    ignoreClientCertificateExpiry: {{ .ignore_client_certificate_expiry }}
+{{- end }}
+{{- with .trust_store_arn }}
+    trustStoreARN: {{ . | quote }}
+{{- end }}
+{{- end }}
+  defaultActions:
+{{- toYaml $actions | nindent 4 }}
+{{- with include "ack.tags" (list $ $v.tags $l.tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- range $rk := keys ($l.rules | default dict) | sortAlpha }}
+{{- $r := index $l.rules $rk }}
+{{- $rwhere := printf "listeners.%s.rules.%s" $lk $rk }}
+{{- if $r.transform }}
+{{- fail (printf "alb: %s: listeners.rules.transform is not supported: ACK's Rule (elbv2-controller v1.10.0) has no transforms field (docs/aws.md)" $rwhere) }}
+{{- end }}
+{{- if kindIs "invalid" $r.priority }}
+{{- fail (printf "alb: %s needs priority: ACK's Rule requires one; Terraform's next free priority depends on the listener's state" $rwhere) }}
+{{- end }}
+{{- $ractions := list }}
+{{- range $i, $a := $r.actions }}
+{{- $ractions = concat $ractions (include "alb.actions" (dict "root" $ "a" $a "where" (printf "%s.actions[%d]" $rwhere $i)) | fromJsonArray) }}
+{{- end }}
+{{- $conds := list }}
+{{- range $c := $r.conditions }}
+{{- range $f := list "host_header" "http_header" "path_pattern" }}
+{{- if and (index $c $f) (index $c $f).regex_values }}
+{{- fail (printf "alb: %s: listeners.rules.conditions.%s.regex_values is not supported: ACK's RuleCondition (elbv2-controller v1.10.0) has no regex values (docs/aws.md)" $rwhere $f) }}
+{{- end }}
+{{- end }}
+{{- with $c.host_header }}{{ $conds = append $conds (dict "field" "host-header" "hostHeaderConfig" (dict "values" .values)) }}{{ end }}
+{{- with $c.http_header }}{{ $conds = append $conds (dict "field" "http-header" "httpHeaderConfig" (dict "httpHeaderName" .http_header_name "values" .values)) }}{{ end }}
+{{- with $c.http_request_method }}{{ $conds = append $conds (dict "field" "http-request-method" "httpRequestMethodConfig" (dict "values" .values)) }}{{ end }}
+{{- with $c.path_pattern }}{{ $conds = append $conds (dict "field" "path-pattern" "pathPatternConfig" (dict "values" .values)) }}{{ end }}
+{{- with $c.query_string }}
+{{- $qs := list }}
+{{- range . }}
+{{- $q := dict "value" .value }}
+{{- with .key }}{{ $_ := set $q "key" . }}{{ end }}
+{{- $qs = append $qs $q }}
+{{- end }}
+{{- $conds = append $conds (dict "field" "query-string" "queryStringConfig" (dict "values" $qs)) }}
+{{- end }}
+{{- with $c.source_ip }}{{ $conds = append $conds (dict "field" "source-ip" "sourceIPConfig" (dict "values" .values)) }}{{ end }}
+{{- end }}
+---
+apiVersion: elbv2.services.k8s.aws/v1alpha1
+kind: Rule
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "rule" $lk $rk)) "id" (printf "rule-%s/%s" $lk $rk) "region" $v.region) | nindent 2 }}
+spec:
+  listenerRef:
+    from:
+      name: {{ include "ack.name" (list $.Release.Name "listener" $lk) }}
+  priority: {{ int64 $r.priority }}
+  actions:
+{{- toYaml $ractions | nindent 4 }}
+  conditions:
+{{- toYaml $conds | nindent 4 }}
+{{- with include "ack.tags" (list $ $v.tags $r.tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
