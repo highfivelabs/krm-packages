@@ -244,19 +244,19 @@ tasks:
       - '{{.OFFLOAD}} run --machine e2-standard-4 --hours 1 -- env FIXTURES={{.FIXTURES}} offramp/hack/validate.sh'
 
   offramp-live:
-    desc: "The offramp's live proof of one fixture (SHAPE=shared-vpc) in {{.LIVE_PROJECT}}, on an offload VM acting as cce-live-tests@: apply, scan, convert, adopt with Config Connector and config-connector-extensions, check nothing changed, destroy"
+    desc: "The offramp's live proof of one fixture (SHAPE=shared-vpc) in {{.LIVE_PROJECT}}, on an offload VM acting as cce-live-tests@ (folders and platform-project: as OFFRAMP_LIVE_SA, live-tests@, by impersonation, when set): apply, scan, convert, adopt with Config Connector and config-connector-extensions, check nothing changed, destroy"
     deps: [cce-snapshot]
     preconditions:
       - sh: test -n "{{.LIVE_PROJECT}}"
         msg: 'set GCP_PROJECT (or HFL_GCP_TEST_PROJECT, the test estate''s project; see .env.example)'
-      - sh: test -n "{{.GCP_CCE_LIVE_SA}}"
-        msg: 'set GCP_CCE_LIVE_SA (the service account the offramp''s live proof runs as; see .env.example)'
+      - sh: test -n "{{.GCP_CCE_LIVE_SA}}{{.ACT_AS}}"
+        msg: 'set GCP_CCE_LIVE_SA, or OFFRAMP_LIVE_SA for the folders and platform-project shapes (the service account the offramp''s live proof acts as; see .env.example)'
       - sh: test -n "{{.OFFLOAD_BUCKET}}"
         msg: 'set OFFLOAD_BUCKET (the offload bucket, gs://...; see .env.example)'
       - sh: '[ "{{.SHAPE}}" != folders ] && [ "{{.SHAPE}}" != platform-project ] || [ -n "{{.OFFRAMP_PARENT}}" ]'
         msg: 'set OFFRAMP_PARENT, OFFRAMP_ORG_ID and (platform-project) OFFRAMP_BILLING_ACCOUNT (see .env.example)'
     cmds:
-      - '{{.OFFLOAD}} run --sa {{.GCP_CCE_LIVE_SA}} --hours 3 -- env PROJECT={{.LIVE_PROJECT}} GCP_PROJECT={{.GCP_PROJECT}} HFL_GCP_TEST_PROJECT={{.HFL_GCP_TEST_PROJECT}} OFFLOAD_BUCKET={{.OFFLOAD_BUCKET}} CCE_TARBALL={{.CCE_TARBALL}} FIXTURES={{.FIXTURES}} PARENT={{.OFFRAMP_PARENT}} ORG_ID={{.OFFRAMP_ORG_ID}} BILLING_ACCOUNT={{.OFFRAMP_BILLING_ACCOUNT}} ORG_POLICIES={{.OFFRAMP_ORG_POLICIES}} MEMBER={{.OFFRAMP_MEMBER}} FOLDER_FIREWALL={{.OFFRAMP_FOLDER_FIREWALL}} offramp/hack/live.sh {{.SHAPE}}'
+      - '{{.OFFLOAD}} run {{if .ACT_AS}}--impersonate {{.ACT_AS}}{{else}}--sa {{.GCP_CCE_LIVE_SA}}{{end}} --hours 3 -- env PROJECT={{.LIVE_PROJECT}} GCP_PROJECT={{.GCP_PROJECT}} HFL_GCP_TEST_PROJECT={{.HFL_GCP_TEST_PROJECT}} OFFLOAD_BUCKET={{.OFFLOAD_BUCKET}} CCE_TARBALL={{.CCE_TARBALL}} FIXTURES={{.FIXTURES}} PARENT={{.OFFRAMP_PARENT}} ORG_ID={{.OFFRAMP_ORG_ID}} BILLING_ACCOUNT={{.OFFRAMP_BILLING_ACCOUNT}} ORG_POLICIES={{.OFFRAMP_ORG_POLICIES}} MEMBER={{.OFFRAMP_MEMBER}} FOLDER_FIREWALL={{.OFFRAMP_FOLDER_FIREWALL}} offramp/hack/live.sh {{.SHAPE}}'
     vars:
       SHAPE: '{{.SHAPE | default "shared-vpc"}}'
       # The folders and platform-project shapes: the live-tests folder
@@ -266,6 +266,11 @@ tasks:
       # .env.example).
       OFFRAMP_ORG_POLICIES: '{{.OFFRAMP_ORG_POLICIES | default "true"}}'
       OFFRAMP_FOLDER_FIREWALL: '{{.OFFRAMP_FOLDER_FIREWALL | default "true"}}'
+      # The new-org shapes (folders, platform-project) act as
+      # OFFRAMP_LIVE_SA by impersonation when it is set (offload run
+      # --impersonate; the VM stays offload-runner@); the other shapes, and
+      # every shape without it, run the VM as GCP_CCE_LIVE_SA.
+      ACT_AS: '{{if and .OFFRAMP_LIVE_SA (or (eq .SHAPE "folders") (eq .SHAPE "platform-project"))}}{{.OFFRAMP_LIVE_SA}}{{end}}'
 
   test-live:
     desc: Apply charts to real Google Cloud (project {{.LIVE_PROJECT}}, tiny resources, deleted straight after) on an offload VM acting as {{.LIVE_SA}}; LIVE_CHARTS="artifact-registry" picks charts (default the pilot's three; hack/live-apply.sh names the roles each needs)
