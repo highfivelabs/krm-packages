@@ -47,6 +47,9 @@ The decisions of 2026-11-09, applied in the sections below.
    (`task factory`, `tools/factory/README.md`), with the worked example as
    its golden test. The config-connector-extensions parts of the answer
    are that repository's.
+   **Confirmed** (2026-11-16, FACTGEN; the builder, on the Open decisions
+   page: "FACTGEN: as recommended (Confirm all four: one Instance per project; the inline Stack shape (spec.components list with package and inputs, Instance spec.stack with no version); the folders as their own Instance, whose IDs projects take as literals until Bundt binds outputs across Instances; and the gcp-factory Team owning every generated Stack, so a Team-scoped plan deletes what left the tree. Accept the corrections that follow fabric: the prefix on the project ID, fabric's bucket names, and keep only when deletion_policy is ABANDON.)"): the four choices and the corrections listed under
+   "Factories, worked".
 5. **Authoritative IAM**: the kind is `IAMBinding` (first built as
    `IAMRoleBinding`) in config-connector-extensions. Non-authoritative IAM
    is preferred, so the additive `IAMPolicyMember` stays the
@@ -540,6 +543,17 @@ helper not a resource) and `projects-data-source` (a read). The
 
 ## Factories, worked
 
+**Confirmed** (2026-11-16, FACTGEN, the builder: "as recommended"; the
+words are in "Decisions", 4): one Instance per project; the inline Stack
+shape (`spec.components`, a list of `package` and `inputs`; the Instance's
+`spec.stack` with no version); the folders as their own Instance, whose
+IDs projects take as literals until Bundt binds outputs across Instances;
+and the `gcp-factory` Team owning every generated Stack, so a Team-scoped
+plan deletes what left the tree. The corrections that follow fabric are
+accepted too (the end of this section): the prefix on the project ID,
+fabric's bucket names, and `keep` only when `deletion_policy` is
+`ABANDON`.
+
 **Input.** A real fabric project factory file: `data/projects/dev-ta-app0-be.yaml`
 from `modules/project-factory/README.md` at v60.0.0 (`f706bc3b`), with
 lines removed and none changed, and the factory's `defaults` and `context`
@@ -780,10 +794,11 @@ What this shows and what it does not:
   When an Instance can export an output and another bind to it, the
   folders Instance exports `team-a/app-0`'s ID and the project reads it;
   the generator's literal folder IDs, and its two-pass order, go away.
-- It needs a decision from the builder: whether one Instance per project is
-  the unit (recommended: a project is what a team asks for, reviews and
-  deletes), and whether the folders may be an Instance of their own, whose
-  outputs the generator copies into projects as literals until then.
+- It needed a decision from the builder: whether one Instance per project is
+  the unit (a project is what a team asks for, reviews and deletes), and
+  whether the folders may be an Instance of their own, whose outputs the
+  generator copies into projects as literals until then. Both confirmed
+  (2026-11-16, FACTGEN).
 - The generator itself is small: a YAML reader, the table above, and a
   document writer. fabric's context lookups are its only hard part, and
   they are a table.
@@ -796,7 +811,8 @@ What this shows and what it does not:
 `tools/factory/README.md`) writes the documents above from the tree, and
 the example is its golden test (`tools/factory/testdata/worked`, in `task
 tools-test`). Building it corrected the example where it differed from
-fabric or from its own table, so a team moving off fabric keeps its names:
+fabric or from its own table, so a team moving off fabric keeps its names
+(the corrections confirmed 2026-11-16, FACTGEN):
 
 - fabric's `prefix` names the project too (`projects-defaults.tf`), so
   the project component takes `prefix: hfl`, its ID is
@@ -1281,7 +1297,10 @@ below are answered now (each says when and where); none is open:
    (K3q, 2026-11-10, the builder: "confirmed on all of these though i want
    to undertsand the factory generator better. factory files are a bit of
    an edge case though we shoudl have solid ways to handle them"), and the
-   generator was built on 2026-11-15 (RECPF, decision 4 in "Decisions"):
+   generator was built on 2026-11-15 (RECPF, decision 4 in "Decisions").
+   Each of the four, as built, and the generator's corrections were
+   confirmed one by one on 2026-11-16 (FACTGEN, the builder: "as
+   recommended"; decision 4 has the words):
    - one Instance per project, of an inline Stack, as the unit.
      Recommended yes: a project is what a team asks for, reviews and
      deletes.
