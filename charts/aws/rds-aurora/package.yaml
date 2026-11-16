@@ -52,14 +52,14 @@ spec:
     cluster_instances: >-
       resources.filter(k, k.startsWith('instance-')).transformMapEntry(i, k, {k.substring(9): {
         'identifier': resources[k].spec.dbInstanceIdentifier,
-        'arn': resources[k].status.ackResourceMetadata.arn,
-        'endpoint': has(resources[k].status.endpoint) ? resources[k].status.endpoint.address : null,
+        'arn': has(resources[k].status) && has(resources[k].status.ackResourceMetadata) && has(resources[k].status.ackResourceMetadata.arn) ? resources[k].status.ackResourceMetadata.arn : null,
+        'endpoint': has(resources[k].status) && has(resources[k].status.endpoint) ? resources[k].status.endpoint.address : null,
         'instance_class': resources[k].spec.dbInstanceClass}})
     additional_cluster_endpoints: >-
       resources.filter(k, k.startsWith('endpoint-')).transformMapEntry(i, k, {k.substring(9): {
         'id': resources[k].spec.dbClusterEndpointIdentifier,
-        'arn': resources[k].status.ackResourceMetadata.arn,
-        'endpoint': has(resources[k].status.endpoint) ? resources[k].status.endpoint : null}})
+        'arn': has(resources[k].status) && has(resources[k].status.ackResourceMetadata) && has(resources[k].status.ackResourceMetadata.arn) ? resources[k].status.ackResourceMetadata.arn : null,
+        'endpoint': has(resources[k].status) && has(resources[k].status.endpoint) ? resources[k].status.endpoint : null}})
     cluster_role_associations: >-
       resources.filter(k, k.startsWith('role-association-')).transformMapEntry(i, k, {k.substring(17): resources[k].spec})
     enhanced_monitoring_iam_role_name: >-
