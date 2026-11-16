@@ -105,7 +105,7 @@ gcp,organization,iam_bindings_additive,"map(object({condition, member, role}))",
 gcp,organization,iam_by_principals,map(list(string)),yes,,
 gcp,organization,iam_by_principals_additive,map(list(string)),yes,,
 gcp,organization,iam_by_principals_conditional,"map(object({condition, roles}))",yes,,
-gcp,organization,iam_deny_policies,"map(object({display_name, rules}))",partial,IAMDenyPolicy is v1alpha1: needs allow_alpha: true,alpha
+gcp,organization,iam_deny_policies,"map(object({display_name, rules}))",yes,,
 gcp,organization,logging_data_access,"map(object({ADMIN_READ, DATA_READ, DATA_WRITE}))",yes,,
 gcp,organization,logging_exclusions,map(string),yes,,
 gcp,organization,logging_settings,"object({disable_default_sink, kms_key_name, storage_location})",no,Config Connector has no kind for an organization's logging settings (LoggingSettings),gap

@@ -963,7 +963,7 @@
       }
     },
     "iam_deny_policies": {
-      "description": "IAM deny policies on the organization (v1alpha1: needs allow_alpha).",
+      "description": "IAM deny policies on the organization (config-connector-extensions' IAMDenyPolicy, iam.gcp.hfl.dev/v1beta1).",
       "type": [
         "object",
         "null"

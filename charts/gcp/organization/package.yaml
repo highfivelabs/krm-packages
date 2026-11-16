@@ -25,7 +25,7 @@ kind: Package
 metadata:
   name: gcp-organization
 spec:
-  version: 0.5.0
+  version: 0.6.0
   engine: helm
   providers: [kcc]
   outputs:

@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "alpha"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/version: "0.6.0"
   annotations:
     hfl.dev/id: "access-level:trusted_ips"
 spec:
@@ -30,7 +30,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "alpha"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/version: "0.6.0"
   annotations:
     hfl.dev/id: "access-binding:developers_binding"
 spec:
@@ -50,7 +50,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "alpha"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/version: "0.6.0"
   annotations:
     hfl.dev/id: "cloud_armor_policy"
 spec:
@@ -61,59 +61,6 @@ spec:
   excludedProjects: ["projects/222222222222"]
 ---
 # Source: organization/templates/alpha.yaml
-apiVersion: iam.cnrm.cloud.google.com/v1alpha1
-kind: IAMDenyPolicy
-metadata:
-  name: alpha-deny-conditional-key-deny
-  labels:
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: "alpha"
-    app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.5.0"
-  annotations:
-    hfl.dev/id: "deny-policy:conditional-key-deny"
-spec:
-  resourceID: "conditional-key-deny"
-  organizationRef:
-    external: "organizations/1122334455"
-  displayName: "Conditional SA Key Deny"
-  rules:
-    -
-      description: "Deny key creation outside of authorized IPs using a condition."
-      denyRule:
-        deniedPrincipals: ["principalSet://goog/public:all"]
-        deniedPermissions: ["iam.serviceAccountKeys.create"]
-        denialCondition:
-          expression: "!inIpRange(request.auth.access_levels, 'accessPolicies/123456789/accessLevels/trusted_ips')"
-          title: "ip-restriction"
-          description: "Restrict access to specific IP ranges"
----
-# Source: organization/templates/alpha.yaml
-apiVersion: iam.cnrm.cloud.google.com/v1alpha1
-kind: IAMDenyPolicy
-metadata:
-  name: alpha-deny-prevent-sa-token-creation
-  labels:
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: "alpha"
-    app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.5.0"
-  annotations:
-    hfl.dev/id: "deny-policy:prevent-sa-token-creation"
-spec:
-  resourceID: "prevent-sa-token-creation"
-  organizationRef:
-    external: "organizations/1122334455"
-  displayName: "Prevent SA token creation"
-  rules:
-    -
-      description: "Deny service account token creation to all except the central admin group."
-      denyRule:
-        deniedPrincipals: ["principalSet://goog/public:all"]
-        deniedPermissions: ["iam.serviceAccounts.getAccessToken"]
-        exceptionPrincipals: ["principalSet://goog/group/gcp-admins@example.com"]
----
-# Source: organization/templates/alpha.yaml
 apiVersion: modelarmor.cnrm.cloud.google.com/v1alpha1
 kind: ModelArmorFloorSetting
 metadata:
@@ -122,7 +69,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "alpha"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/version: "0.6.0"
   annotations:
     hfl.dev/id: "model_armor_floor_setting"
     cnrm.cloud.google.com/deletion-policy: abandon
@@ -163,7 +110,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "alpha"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/version: "0.6.0"
   annotations:
     hfl.dev/id: "scc-sha-custom-module:cloudkmKeyRotationPeriod"
 spec:

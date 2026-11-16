@@ -62,7 +62,8 @@ iam_by_principals: {}
 iam_by_principals_additive: {}
 # Authoritative conditional IAM, {PRINCIPAL => {roles, condition}}.
 iam_by_principals_conditional: {}
-# IAM deny policies on the organization. Alpha: needs allow_alpha.
+# IAM deny policies on the organization (config-connector-extensions'
+# IAMDenyPolicy, iam.gcp.hfl.dev/v1beta1).
 iam_deny_policies: {}
 # Data access logs, {SERVICE => {ADMIN_READ, DATA_READ, DATA_WRITE}}.
 logging_data_access: {}
@@ -101,8 +102,7 @@ tags_config: {}
 workforce_identity_pools: {}
 
 # Not a fabric variable: true accepts the features that need a v1alpha1
-# Config Connector kind (iam_deny_policies,
-# context_aware_access_bindings, model_armor_floor_setting,
+# Config Connector kind (context_aware_access_bindings, model_armor_floor_setting,
 # scc_sha_custom_modules). Beta kinds are always on. An alpha kind's schema
 # may change between Config Connector releases (docs/design.md, "Alpha
 # kinds").
