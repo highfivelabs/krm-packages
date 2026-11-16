@@ -1,0 +1,421 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "Cluster", "KMS Key", "IAM Role" and "EKS Auto Node IAM Role",
+and node_groups.tf, "EKS IPV6 CNI Policy": the cluster (aws_eks_cluster,
+eks/Cluster), its log group (aws_cloudwatch_log_group,
+cloudwatchlogs/LogGroup), its KMS key and aliases (terraform-aws-kms,
+kms/Key and kms/Alias), its IAM role with the module's policies
+(iam/Role, policies by ARN), the encryption and EKS Auto Mode policies
+(iam/Policy), the EKS Auto Mode node role, and the IPv6 CNI policy.
+bootstrap_self_managed_addons is false, as the module sets it.
+*/ -}}
+{{- include "ack.names" (list $ (list "cluster" "clusterRole" "securityGroup" "nodeSecurityGroup" "nodeRole" "encryptionPolicy")) -}}
+{{- $v := .Values -}}
+{{- if and $v.create $v.putin_khuylo }}
+{{- $cluster := include "ack.resourceName" (list $ "cluster" "EKS cluster" ($v.name | default "") 100) }}
+{{- if not $cluster }}
+{{- fail "eks: name is required: the cluster's name (or names.cluster)" }}
+{{- end }}
+{{- $outposts := not (kindIs "invalid" $v.outpost_config) }}
+{{- $encrypt := and (not (kindIs "invalid" $v.encryption_config)) (not $outposts) }}
+{{- $cc := $v.compute_config }}
+{{- $ccOn := and (not (kindIs "invalid" $cc)) (eq (toString (index ($cc | default dict) "enabled")) "true") }}
+{{- $auto := or $ccOn $v.create_auto_mode_iam_resources }}
+{{- $tags := include "ack.tags" (list $ $v.tags) | fromJson }}
+{{- $k8s := include "ack.name" (list .Release.Name "cluster") }}
+
+{{- /* The cluster IAM role. */}}
+{{- $roleRaw := $v.iam_role_name | default (printf "%s-cluster" $v.name) }}
+{{- $roleName := include "ack.resourceName" (list $ "clusterRole" "IAM role" $roleRaw 64) }}
+{{- $rolePath := $v.iam_role_path | default "/" }}
+{{- $roleARN := "" }}
+{{- if $v.create_iam_role }}
+{{- if $v.account_id }}{{ $roleARN = include "eks.arn" (list $ "role" $rolePath $roleName "") }}{{ end }}
+{{- else }}
+{{- $roleARN = $v.iam_role_arn | default "" }}
+{{- if not $roleARN }}
+{{- fail "eks: iam_role_arn is required with create_iam_role: false: the cluster's role" }}
+{{- end }}
+{{- end }}
+
+{{- /* The KMS key (not on Outposts). */}}
+{{- $makeKey := and $v.create_kms_key $encrypt }}
+{{- $keyK8s := include "ack.name" (list .Release.Name "kms-key") }}
+{{- if $makeKey }}
+{{- if not $v.kms_key_administrators }}
+{{- fail "eks: kms_key_administrators is required with create_kms_key: true: the module defaults the key's administrators to the caller, which a render does not know (upstream.yaml)" }}
+{{- end }}
+{{- if not $roleARN }}
+{{- $roleARN = include "eks.arn" (list $ "role" $rolePath $roleName "the KMS key policy (create_kms_key), which names the cluster role") }}
+{{- end }}
+{{- if and $v.kms_key_enable_default_policy (not $v.account_id) }}
+{{- fail "eks: account_id is required for the KMS key policy's Default statement (create_kms_key, kms_key_enable_default_policy): it names the account's root, and the chart cannot look the account up (values.yaml, account_id)" }}
+{{- end }}
+---
+apiVersion: kms.services.k8s.aws/v1alpha1
+kind: Key
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $keyK8s "id" "kms-key" "region" $v.region) | nindent 2 }}
+spec:
+  description: {{ $v.kms_key_description | default (printf "%s cluster encryption key" $v.name) | quote }}
+  keyUsage: ENCRYPT_DECRYPT
+  enableKeyRotation: {{ $v.enable_kms_key_rotation }}
+  multiRegion: false
+  policy: {{ include "eks.kmsPolicy" (list $ $roleARN) | quote }}
+{{- with $tags }}
+  tags:
+{{- include "ack.tagList" (list . "tagKey" "tagValue") | nindent 4 }}
+{{- end }}
+{{- $aliases := dict "cluster" (printf "eks/%s" $cluster) }}
+{{- range $a := $v.kms_key_aliases | default list }}{{ $_ := set $aliases $a (include "ack.cloudName" (list $ "alias" (trimPrefix "alias/" $a) 250)) }}{{ end }}
+{{- range $k := keys $aliases | sortAlpha }}
+---
+apiVersion: kms.services.k8s.aws/v1alpha1
+kind: Alias
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "kms-alias" $k)) "id" (printf "kms-alias-%s" $k) "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ printf "alias/%s" (index $aliases $k) | quote }}
+  targetKeyRef:
+    from:
+      name: {{ $keyK8s }}
+{{- end }}
+{{- end }}
+
+{{- /* The cluster. */}}
+{{- $sgK8s := include "ack.name" (list .Release.Name "cluster-sg") }}
+{{- if and $v.create_security_group $v.additional_security_group_ids }}
+{{- fail "eks: additional_security_group_ids is not supported with create_security_group: true: ACK's Cluster takes the chart's group by reference (securityGroupRefs) and cannot also take group IDs; set create_security_group: false and give every group, or add the rules to the chart's group (docs/aws.md)" }}
+{{- end }}
+{{- $subnets := $v.control_plane_subnet_ids | default $v.subnet_ids | default list }}
+{{- if not $subnets }}
+{{- fail "eks: subnet_ids (or control_plane_subnet_ids) is required: the cluster's subnets" }}
+{{- end }}
+---
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Cluster
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $k8s "id" "cluster" "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ $cluster | quote }}
+{{- with $v.kubernetes_version }}
+  version: {{ . | quote }}
+{{- end }}
+{{- if $v.create_iam_role }}
+  roleRef:
+    from:
+      name: {{ include "ack.name" (list .Release.Name "cluster-role") }}
+{{- else }}
+  roleARN: {{ $roleARN | quote }}
+{{- end }}
+  accessConfig:
+    authenticationMode: {{ $v.authentication_mode | default "API_AND_CONFIG_MAP" | quote }}
+    bootstrapClusterCreatorAdminPermissions: {{ $v.enable_cluster_creator_admin_permissions }}
+  bootstrapSelfManagedAddons: false
+{{- if not (kindIs "invalid" $v.deletion_protection) }}
+  deletionProtection: {{ $v.deletion_protection }}
+{{- end }}
+{{- with $v.enabled_log_types }}
+  logging:
+    clusterLogging:
+      - enabled: true
+        types:
+{{- toYaml . | nindent 10 }}
+{{- end }}
+{{- with $v.control_plane_scaling_config }}
+  controlPlaneScalingConfig:
+    tier: {{ .tier | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $cc) }}
+  computeConfig:
+    enabled: {{ $ccOn }}
+{{- with $cc.node_pools }}
+    nodePools:
+{{- toYaml . | nindent 6 }}
+{{- if and $v.create_node_iam_role $auto }}
+    nodeRoleARN: {{ include "eks.arn" (list $ "role" ($v.node_iam_role_path | default "/") (include "ack.resourceName" (list $ "nodeRole" "IAM role" ($v.node_iam_role_name | default (printf "%s-eks-auto" $v.name)) 64)) "compute_config.node_pools (the EKS Auto Mode node role's ARN)") | quote }}
+{{- else if $cc.node_role_arn }}
+    nodeRoleARN: {{ $cc.node_role_arn | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+  resourcesVPCConfig:
+{{- with $v.control_plane_egress_mode }}
+    controlPlaneEgressMode: {{ . | quote }}
+{{- end }}
+{{- if $v.create_security_group }}
+    securityGroupRefs:
+      - from:
+          name: {{ $sgK8s }}
+{{- else }}
+{{- $ids := list }}
+{{- range concat ($v.additional_security_group_ids | default list) (list $v.security_group_id) }}{{ if and . (not (has . $ids)) }}{{ $ids = append $ids . }}{{ end }}{{ end }}
+{{- with $ids }}
+    securityGroupIDs:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- end }}
+    subnetIDs:
+{{- toYaml $subnets | nindent 6 }}
+    endpointPrivateAccess: {{ $v.endpoint_private_access }}
+    endpointPublicAccess: {{ $v.endpoint_public_access }}
+{{- with $v.endpoint_public_access_cidrs }}
+    publicAccessCIDRs:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- if not $outposts }}
+  kubernetesNetworkConfig:
+{{- if not (kindIs "invalid" $cc) }}
+    elasticLoadBalancing:
+      enabled: {{ $ccOn }}
+{{- end }}
+{{- with $v.ip_family }}
+    ipFamily: {{ . | quote }}
+{{- end }}
+{{- with $v.service_ipv4_cidr }}
+    serviceIPv4CIDR: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with $v.kube_scheduler_config }}
+  kubeSchedulerConfig:
+{{- with .node_resources_fit }}
+    nodeResourcesFit:
+{{- with .scoring_strategy }}
+      scoringStrategy:
+{{- with .type }}
+        type: {{ . | quote }}
+{{- end }}
+{{- with .resources }}
+        resources:
+{{- range . }}
+          - name: {{ .name | quote }}
+{{- if not (kindIs "invalid" .weight) }}
+            weight: {{ int64 .weight }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with $v.kube_controller_manager_config }}
+  kubeControllerManagerConfig:
+{{- with .horizontal_pod_autoscaler_controller_config }}
+    horizontalPodAutoscalerControllerConfig:
+{{- with .horizontal_pod_autoscaler_sync_period }}
+      horizontalPodAutoscalerSyncPeriod: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with $v.kube_api_server_config }}
+  kubeAPIServerConfig:
+{{- with .event_ttl }}
+    eventTTL: {{ . | quote }}
+{{- end }}
+{{- with .service_node_port_range }}
+    serviceNodePortRange:
+{{- if not (kindIs "invalid" .min_port) }}
+      minPort: {{ int64 .min_port }}
+{{- end }}
+{{- if not (kindIs "invalid" .max_port) }}
+      maxPort: {{ int64 .max_port }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with $v.outpost_config }}
+  outpostConfig:
+{{- with .control_plane_instance_type }}
+    controlPlaneInstanceType: {{ . | quote }}
+{{- end }}
+{{- with .control_plane_placement }}
+    controlPlanePlacement:
+      groupName: {{ .group_name | quote }}
+{{- end }}
+    outpostARNs:
+{{- toYaml .outpost_arns | nindent 6 }}
+{{- end }}
+{{- if $encrypt }}
+{{- $ec := $v.encryption_config | default dict }}
+{{- if and (not $v.create_kms_key) (not $ec.provider_key_arn) }}
+{{- fail "eks: encryption_config.provider_key_arn is required with create_kms_key: false (or set encryption_config: null for no envelope encryption)" }}
+{{- end }}
+  encryptionConfig:
+    - provider:
+{{- if $v.create_kms_key }}
+        keyRef:
+          from:
+            name: {{ $keyK8s }}
+{{- else }}
+        keyARN: {{ $ec.provider_key_arn | quote }}
+{{- end }}
+      resources:
+{{- toYaml (ternary (list "secrets") $ec.resources (kindIs "invalid" $ec.resources)) | nindent 8 }}
+{{- end }}
+{{- if and $v.remote_network_config (not $outposts) }}
+{{- $rn := $v.remote_network_config }}
+  remoteNetworkConfig:
+    remoteNodeNetworks:
+      - cidrs:
+{{- toYaml ($rn.remote_node_networks.cidrs | default list) | nindent 10 }}
+{{- with $rn.remote_pod_networks }}
+    remotePodNetworks:
+      - cidrs:
+{{- toYaml (.cidrs | default list) | nindent 10 }}
+{{- end }}
+{{- end }}
+{{- if not (kindIs "invalid" $cc) }}
+  storageConfig:
+    blockStorage:
+      enabled: {{ $ccOn }}
+{{- end }}
+{{- with $v.upgrade_policy }}
+  upgradePolicy:
+    supportType: {{ .support_type | quote }}
+{{- end }}
+{{- with $v.zonal_shift_config }}
+  zonalShiftConfig:
+    enabled: {{ .enabled }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags $v.cluster_tags) | fromJson }}
+  tags:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+
+{{- /* The log group. */}}
+{{- if $v.create_cloudwatch_log_group }}
+{{- $lg := printf "/aws/eks/%s/cluster" $cluster }}
+---
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "log-group")) "id" "log-group" "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ $lg | quote }}
+{{- if not (kindIs "invalid" $v.cloudwatch_log_group_retention_in_days) }}
+  retentionDays: {{ int64 $v.cloudwatch_log_group_retention_in_days }}
+{{- end }}
+{{- with $v.cloudwatch_log_group_kms_key_id }}
+  kmsKeyID: {{ . | quote }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags $v.cloudwatch_log_group_tags (dict "Name" $lg)) | fromJson }}
+  tags:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* The cluster IAM role and its policies. */}}
+{{- if $v.create_iam_role }}
+{{- $prefix := printf "arn:%s:iam::aws:policy" $v.partition }}
+{{- $attach := dict }}
+{{- if and (not $outposts) (not $auto) }}
+{{- $_ := set $attach "AmazonEKSClusterPolicy" (printf "%s/AmazonEKSClusterPolicy" $prefix) }}
+{{- else if and (not $outposts) $auto }}
+{{- $_ := set $attach "AmazonEKSClusterPolicy" (printf "%s/AmazonEKSClusterPolicy" $prefix) }}
+{{- $_ := set $attach "AmazonEKSComputePolicy" (printf "%s/AmazonEKSComputePolicy" $prefix) }}
+{{- $_ := set $attach "AmazonEKSBlockStoragePolicy" (printf "%s/%s" $prefix (ternary "AmazonEKSBlockStoragePolicyV2" "AmazonEKSBlockStoragePolicy" $v.enable_auto_mode_block_storage_policy_v2)) }}
+{{- $_ := set $attach "AmazonEKSLoadBalancingPolicy" (printf "%s/AmazonEKSLoadBalancingPolicy" $prefix) }}
+{{- $_ := set $attach "AmazonEKSNetworkingPolicy" (printf "%s/AmazonEKSNetworkingPolicy" $prefix) }}
+{{- else if and $outposts (not $auto) }}
+{{- $_ := set $attach "AmazonEKSClusterPolicy" (printf "%s/AmazonEKSLocalOutpostClusterPolicy" $prefix) }}
+{{- end }}
+{{- $arns := list }}
+{{- range $k := keys $attach | sortAlpha }}{{ $arns = append $arns (index $attach $k) }}{{ end }}
+{{- range $k := keys ($v.iam_role_additional_policies | default dict) | sortAlpha }}{{ $arns = append $arns (index $v.iam_role_additional_policies $k) }}{{ end }}
+
+{{- /* The encryption policy. */}}
+{{- if and $v.attach_encryption_policy $encrypt }}
+{{- if $v.create_kms_key }}
+{{- fail "eks: attach_encryption_policy is not supported with create_kms_key: true: the policy names the key's ARN, which exists only in the Key's status, and an IAM policy document has no reference. The key policy already grants the cluster role the key (KeyUsage): set attach_encryption_policy: false (docs/aws.md)" }}
+{{- end }}
+{{- $polRaw := $v.encryption_policy_name | default (printf "%s-ClusterEncryption" $roleRaw) }}
+{{- $polName := include "ack.resourceName" (list $ "encryptionPolicy" "IAM policy" $polRaw 128) }}
+{{- $polPath := $v.encryption_policy_path | default "/" }}
+{{- $doc := dict "Version" "2012-10-17" "Statement" (list (dict "Action" (list "kms:Encrypt" "kms:Decrypt" "kms:ListGrants" "kms:DescribeKey") "Effect" "Allow" "Resource" $v.encryption_config.provider_key_arn)) }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "encryption-policy")) "id" "encryption-policy") | nindent 2 }}
+spec:
+  name: {{ $polName | quote }}
+  path: {{ $polPath | quote }}
+{{- with $v.encryption_policy_description }}
+  description: {{ . | quote }}
+{{- end }}
+  policyDocument: {{ toJson $doc | quote }}
+{{- with include "ack.tags" (list $ $v.tags $v.encryption_policy_tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- $arns = append $arns (include "eks.arn" (list $ "policy" $polPath $polName "attach_encryption_policy (the cluster role attaches the policy by ARN)")) }}
+{{- end }}
+
+{{- /* EKS Auto Mode's custom tags policy. */}}
+{{- if and $auto $v.enable_auto_mode_custom_tags }}
+{{- $p := $v.partition }}
+{{- $clusterTag := dict "test" "StringEquals" "variable" "aws:RequestTag/eks:eks-cluster-name" "values" (list "${aws:PrincipalTag/eks:eks-cluster-name}") }}
+{{- $st := list
+  (dict "sid" "Compute" "actions" (list "ec2:CreateFleet" "ec2:RunInstances" "ec2:CreateLaunchTemplate") "resources" (list "*") "condition" (list $clusterTag (dict "test" "StringLike" "variable" "aws:RequestTag/eks:kubernetes-node-class-name" "values" (list "*")) (dict "test" "StringLike" "variable" "aws:RequestTag/eks:kubernetes-node-pool-name" "values" (list "*"))))
+  (dict "sid" "Storage" "actions" (list "ec2:CreateVolume" "ec2:CreateSnapshot") "resources" (list (printf "arn:%s:ec2:*:*:volume/*" $p) (printf "arn:%s:ec2:*:*:snapshot/*" $p)) "condition" (list $clusterTag))
+  (dict "sid" "Networking" "actions" (list "ec2:CreateNetworkInterface") "resources" (list "*") "condition" (list $clusterTag (dict "test" "StringEquals" "variable" "aws:RequestTag/eks:kubernetes-cni-node-name" "values" (list "*"))))
+  (dict "sid" "LoadBalancer" "actions" (list "elasticloadbalancing:CreateLoadBalancer" "elasticloadbalancing:CreateTargetGroup" "elasticloadbalancing:CreateListener" "elasticloadbalancing:CreateRule" "ec2:CreateSecurityGroup") "resources" (list "*") "condition" (list $clusterTag))
+  (dict "sid" "ShieldProtection" "actions" (list "shield:CreateProtection") "resources" (list "*") "condition" (list $clusterTag))
+  (dict "sid" "ShieldTagResource" "actions" (list "shield:TagResource") "resources" (list (printf "arn:%s:shield::*:protection/*" $p)) "condition" (list $clusterTag)) }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "auto-mode-policy")) "id" "auto-mode-policy") | nindent 2 }}
+spec:
+  {{- /* The module names it as the role (name, path, description). */}}
+  name: {{ $roleName | quote }}
+  path: {{ $rolePath | quote }}
+{{- with $v.iam_role_description }}
+  description: {{ . | quote }}
+{{- end }}
+  policyDocument: {{ include "eks.document" (list "auto mode" list $st list) | quote }}
+{{- with include "ack.tags" (list $ $v.tags $v.iam_role_tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- $arns = append $arns (include "eks.arn" (list $ "policy" $rolePath $roleName "enable_auto_mode_custom_tags (the cluster role attaches the policy by ARN)")) }}
+{{- end }}
+{{- $trust := dict "sid" "EKSClusterAssumeRole" "actions" (list "sts:AssumeRole" "sts:TagSession") "principals" (list (dict "type" "Service" "identifiers" (list "eks.amazonaws.com"))) }}
+{{- if $outposts }}
+{{- $_ := set $trust "principals" (append $trust.principals (dict "type" "Service" "identifiers" (list "ec2.amazonaws.com"))) }}
+{{- end }}
+{{- include "eks.role" (dict "root" $ "k8s" (include "ack.name" (list .Release.Name "cluster-role")) "id" "cluster-role" "name" $roleName "path" $rolePath "description" $v.iam_role_description "boundary" $v.iam_role_permissions_boundary "trust" (include "eks.document" (list "trust" list (list $trust) list)) "arns" $arns "tags" (include "ack.tags" (list $ $v.tags $v.iam_role_tags) | fromJson)) }}
+{{- end }}
+
+{{- /* The EKS Auto Mode node role. */}}
+{{- if and $v.create_node_iam_role $auto }}
+{{- $prefix := printf "arn:%s:iam::aws:policy" $v.partition }}
+{{- $arns := list (printf "%s/AmazonEC2ContainerRegistryPullOnly" $prefix) (printf "%s/AmazonEKSWorkerNodeMinimalPolicy" $prefix) }}
+{{- range $k := keys ($v.node_iam_role_additional_policies | default dict) | sortAlpha }}{{ $arns = append $arns (index $v.node_iam_role_additional_policies $k) }}{{ end }}
+{{- $trust := dict "sid" "EKSAutoNodeAssumeRole" "actions" (list "sts:AssumeRole" "sts:TagSession") "principals" (list (dict "type" "Service" "identifiers" (list "ec2.amazonaws.com"))) }}
+{{- include "eks.role" (dict "root" $ "k8s" (include "ack.name" (list .Release.Name "node-role")) "id" "node-role" "name" (include "ack.resourceName" (list $ "nodeRole" "IAM role" ($v.node_iam_role_name | default (printf "%s-eks-auto" $v.name)) 64)) "path" ($v.node_iam_role_path | default "/") "description" $v.node_iam_role_description "boundary" $v.node_iam_role_permissions_boundary "trust" (include "eks.document" (list "trust" list (list $trust) list)) "arns" $arns "tags" (include "ack.tags" (list $ $v.tags $v.node_iam_role_tags) | fromJson)) }}
+{{- end }}
+
+{{- /* The IPv6 CNI policy (node_groups.tf). */}}
+{{- if $v.create_cni_ipv6_iam_policy }}
+{{- $st := list
+  (dict "sid" "AssignDescribe" "actions" (list "ec2:AssignIpv6Addresses" "ec2:DescribeInstances" "ec2:DescribeSecurityGroups" "ec2:DescribeSubnets" "ec2:DescribeTags" "ec2:DescribeNetworkInterfaces" "ec2:DescribeInstanceTypes") "resources" (list "*"))
+  (dict "sid" "CreateTags" "actions" (list "ec2:CreateTags") "resources" (list (printf "arn:%s:ec2:*:*:network-interface/*" $v.partition))) }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "cni-ipv6-policy")) "id" "cni-ipv6-policy") | nindent 2 }}
+spec:
+  {{- /* Named exactly, as the node groups' roles attach it by name. */}}
+  name: {{ include "ack.cloudName" (list $ "IAM policy" "AmazonEKS_CNI_IPv6_Policy" 128) | quote }}
+  path: "/"
+  description: "IAM policy for EKS CNI to assign IPV6 addresses"
+  policyDocument: {{ include "eks.document" (list "cni ipv6" list $st list) | quote }}
+{{- with $tags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}

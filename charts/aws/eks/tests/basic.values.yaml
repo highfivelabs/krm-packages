@@ -1,0 +1,40 @@
+# The module's README "EKS Managed Node Group" example, as far as the chart
+# carries it: a cluster with add-ons, an access entry and one node group on
+# EKS's own launch template. enable_irsa, the primary security group's tags
+# and the encryption policy are set off (upstream.yaml); the KMS key needs
+# its administrators and the account.
+name: example
+kubernetes_version: "1.33"
+endpoint_public_access: true
+enable_cluster_creator_admin_permissions: true
+enable_irsa: false
+create_primary_security_group_tags: false
+attach_encryption_policy: false
+account_id: "111122223333"
+kms_key_administrators: ["arn:aws:iam::111122223333:role/admin"]
+addons:
+  coredns: {}
+  eks-pod-identity-agent: {before_compute: true}
+  kube-proxy: {}
+  vpc-cni: {before_compute: true}
+vpc_id: vpc-1234556abcdef
+subnet_ids: [subnet-abcde012, subnet-bcde012a, subnet-fghi345a]
+control_plane_subnet_ids: [subnet-xyzde987, subnet-slkjf456, subnet-qeiru789]
+eks_managed_node_groups:
+  example:
+    use_custom_launch_template: false
+    ami_type: AL2023_x86_64_STANDARD
+    instance_types: [m5.xlarge]
+    min_size: 2
+    max_size: 10
+    desired_size: 2
+access_entries:
+  ops:
+    principal_arn: arn:aws:iam::111122223333:role/ops
+    policy_associations:
+      admin:
+        policy_arn: arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy
+        access_scope: {type: namespace, namespaces: [default]}
+tags:
+  Environment: dev
+  Terraform: "true"

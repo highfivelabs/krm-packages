@@ -1,0 +1,11 @@
+# expect: eks: security_group_additional_rules.nodes.source_node_security_group is not supported
+name: x
+vpc_id: vpc-1
+subnet_ids: [subnet-1]
+enable_irsa: false
+create_primary_security_group_tags: false
+create_kms_key: false
+attach_encryption_policy: false
+encryption_config: null
+security_group_additional_rules:
+  nodes: {from_port: 443, to_port: 443, source_node_security_group: true}

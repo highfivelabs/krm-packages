@@ -1,0 +1,8 @@
+# expect: eks: account_id is required
+name: x
+vpc_id: vpc-1
+subnet_ids: [subnet-1]
+enable_irsa: false
+create_primary_security_group_tags: false
+attach_encryption_policy: false
+kms_key_administrators: [arn:aws:iam::111122223333:root]

@@ -1,0 +1,164 @@
+---
+# Source: eks/templates/node-groups.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: existing-node-group-role-v6
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam-role-node-group-v6"
+spec:
+  name: "v6-eks-node-group"
+  path: "/"
+  description: "EKS managed node group IAM role"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"ec2.amazonaws.com\"]},\"Sid\":\"EKSNodeAssumeRole\"}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+    - "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+    - "arn:aws:iam::111122223333:policy/AmazonEKS_CNI_IPv6_Policy"
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Cluster
+metadata:
+  name: existing-cluster
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster"
+    services.k8s.aws/region: "us-east-2"
+spec:
+  name: "existing"
+  roleARN: "arn:aws:iam::111122223333:role/existing-cluster"
+  accessConfig:
+    authenticationMode: "API_AND_CONFIG_MAP"
+    bootstrapClusterCreatorAdminPermissions: false
+  bootstrapSelfManagedAddons: false
+  logging:
+    clusterLogging:
+      - enabled: true
+        types:
+          - audit
+          - api
+          - authenticator
+  resourcesVPCConfig:
+    securityGroupIDs:
+      - sg-0extra
+      - sg-0cluster
+    subnetIDs:
+      - subnet-abcde012
+      - subnet-bcde012a
+    endpointPrivateAccess: true
+    endpointPublicAccess: false
+    publicAccessCIDRs:
+      - 0.0.0.0/0
+  kubernetesNetworkConfig:
+    ipFamily: "ipv6"
+  encryptionConfig:
+    - provider:
+        keyARN: "arn:aws:kms:us-east-2:111122223333:key/abcd"
+      resources:
+        - secrets
+---
+# Source: eks/templates/node-groups.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: FargateProfile
+metadata:
+  name: existing-fargate-profile-apps
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "fargate-profile-apps"
+    services.k8s.aws/region: "us-east-2"
+spec:
+  name: "apps"
+  clusterRef:
+    from:
+      name: existing-cluster
+  podExecutionRoleARN: "arn:aws:iam::111122223333:role/fargate"
+  subnets:
+    - subnet-abcde012
+  selectors:
+    - namespace: "apps"
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: existing-log-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group"
+    services.k8s.aws/region: "us-east-2"
+spec:
+  name: "/aws/eks/existing/cluster"
+  retentionDays: 90
+  tags:
+    Name: /aws/eks/existing/cluster
+---
+# Source: eks/templates/node-groups.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Nodegroup
+metadata:
+  name: existing-node-group-v6
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "node-group-v6"
+    services.k8s.aws/region: "us-east-2"
+spec:
+  name: "v6"
+  clusterRef:
+    from:
+      name: existing-cluster
+  nodeRoleRef:
+    from:
+      name: existing-node-group-role-v6
+  subnets:
+    - subnet-abcde012
+    - subnet-bcde012a
+  scalingConfig:
+    minSize: 1
+    maxSize: 3
+    desiredSize: 1
+  amiType: "AL2023_x86_64_STANDARD"
+  capacityType: "ON_DEMAND"
+  updateConfig:
+    maxUnavailablePercentage: 33
+  tags:
+    Name: v6
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: existing-cni-ipv6-policy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cni-ipv6-policy"
+spec:
+  name: "AmazonEKS_CNI_IPv6_Policy"
+  path: "/"
+  description: "IAM policy for EKS CNI to assign IPV6 addresses"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"ec2:AssignIpv6Addresses\",\"ec2:DescribeInstances\",\"ec2:DescribeSecurityGroups\",\"ec2:DescribeSubnets\",\"ec2:DescribeTags\",\"ec2:DescribeNetworkInterfaces\",\"ec2:DescribeInstanceTypes\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"AssignDescribe\"},{\"Action\":[\"ec2:CreateTags\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:ec2:*:*:network-interface/*\"],\"Sid\":\"CreateTags\"}],\"Version\":\"2012-10-17\"}"

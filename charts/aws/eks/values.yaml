@@ -1,0 +1,455 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values mirror the Terraform variables of terraform-aws-modules' eks module
+# (v21.29.0): same names, types and defaults, so a module block's arguments
+# become a values file one to one. values.schema.json carries the types. A
+# variable the chart cannot carry stays here and stops the render when set
+# (upstream.yaml lists them; README.md says why).
+
+# Names, labels and tags (docs/design.md, "Names, labels and tags"). Not
+# Terraform variables, except tags, which is the module's own.
+#
+# Names in full: {cluster, clusterRole, securityGroup, nodeSecurityGroup,
+# nodeRole, encryptionPolicy}. A name set here takes no namePrefix. Unset,
+# the cluster is named name, its role iam_role_name (else
+# "<name>-cluster"), its groups security_group_name and
+# node_security_group_name (else "<name>-cluster", "<name>-node"), the EKS
+# Auto Mode node role node_iam_role_name (else "<name>-eks-auto") and the
+# encryption policy encryption_policy_name (else
+# "<cluster role>-ClusterEncryption"). Node groups, Fargate profiles and
+# their roles are named by their own values, with the namePrefix.
+names: {}
+# An optional convenience: "<namePrefix>-" in front of every name the chart
+# gives (never one set under names). Empty (the default) changes nothing.
+namePrefix: ""
+# Kubernetes labels on every object. They stay in Kubernetes: ACK does not
+# copy labels to AWS (AWS tags are the module's tags variable).
+labels: {}
+# No kind here is outside ACK's released controllers; kept for the common
+# values (docs/design.md, "Alpha kinds").
+allow_alpha: false
+# The AWS account and partition, which the module reads from the provider.
+# A chart cannot read them, so Bundt fills account_id from the Environment.
+# Needed for the KMS key policy (create_kms_key), for a Fargate profile's
+# role trust, for the IPv6 CNI policy and for a policy the cluster role
+# attaches beside managed ones (ACK's Role takes policy ARNs or references,
+# not both, so the chart's own policies are attached by ARN).
+account_id: null
+partition: aws
+# DELETE (default): deleting the component deletes the cluster and
+# everything with it. ABANDON keeps them (services.k8s.aws/deletion-policy:
+# retain).
+deletion_policy: DELETE
+
+# The module's variables, in its order, with its defaults.
+
+# Controls if resources should be created (affects nearly all resources)
+create: true
+# The separator to use between the prefix and the generated timestamp for
+# resource names
+# In part: accepted, but it has no effect: it joins a name to Terraform's
+# random suffix (the *_use_name_prefix variables), which the chart never
+# adds, since a render must not change between plans.
+prefix_separator: "-"
+# Region where the resource(s) will be managed. Defaults to the Region set
+# in the provider configuration
+region: null
+# A map of tags to add to all resources
+tags: {}
+# Name of the EKS cluster
+name: ""
+# Kubernetes `<major>.<minor>` version to use for the EKS cluster (i.e.:
+# `1.33`)
+kubernetes_version: null
+# A list of the desired control plane logs to enable. For more information,
+# see Amazon EKS Control Plane Logging documentation
+# (https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html)
+enabled_log_types: [audit, api, authenticator]
+# Whether to enable deletion protection for the cluster. When enabled, the
+# cluster cannot be deleted unless deletion protection is first disabled
+deletion_protection: null
+# Force version update by overriding upgrade-blocking readiness checks when
+# updating a cluster
+# Not supported (gap): ACK's Cluster (eks-controller v1.26.0) has no field
+# to force a version update past pod disruption budgets.
+force_update_version: null
+# The authentication mode for the cluster. Valid values are `CONFIG_MAP`,
+# `API` or `API_AND_CONFIG_MAP`
+authentication_mode: "API_AND_CONFIG_MAP"
+# Configuration block for the cluster compute configuration
+compute_config: null
+# Configuration block for the EKS Provisioned Control Plane scaling tier.
+# Valid values for tier are `standard`, `tier-xl`, `tier-2xl`, `tier-4xl`
+# and `tier-8xl`
+control_plane_scaling_config: null
+# Configuration block for the cluster upgrade policy
+upgrade_policy: null
+# Configuration block for the cluster remote network configuration
+remote_network_config: null
+# Configuration block for the cluster zonal shift
+zonal_shift_config: null
+# Configuration block for the cluster scheduler configuration. Valid values
+# for `scoring_strategy.type` are `LeastAllocated` and `MostAllocated`.
+# Resource `weight` must be between `1` and `100`
+kube_scheduler_config: null
+# Configuration block for customizing the Kubernetes controller manager
+kube_controller_manager_config: null
+# Configuration block for customizing the Kubernetes API server
+kube_api_server_config: null
+# List of additional, externally created security group IDs to attach to the
+# cluster control plane
+# In part: accepted with create_security_group: false; with the chart's own
+# cluster security group it is refused, since ACK's Cluster cannot take
+# group references and IDs together.
+additional_security_group_ids: []
+# A list of subnet IDs where the EKS cluster control plane (ENIs) will be
+# provisioned. Used for expanding the pool of subnets used by nodes/node
+# groups without replacing the EKS control plane
+control_plane_subnet_ids: []
+# A list of subnet IDs where the nodes/node groups will be provisioned. If
+# `control_plane_subnet_ids` is not provided, the EKS cluster control plane
+# (ENIs) will be provisioned in these subnets
+subnet_ids: []
+# Egress mode for the EKS control plane. Valid values are `AWS_MANAGED` and
+# `CUSTOMER_ROUTED`
+control_plane_egress_mode: null
+# Indicates whether or not the Amazon EKS private API server endpoint is
+# enabled
+endpoint_private_access: true
+# Indicates whether or not the Amazon EKS public API server endpoint is
+# enabled
+endpoint_public_access: false
+# List of CIDR blocks which can access the Amazon EKS public API server
+# endpoint
+endpoint_public_access_cidrs: [0.0.0.0/0]
+# The IP family used to assign Kubernetes pod and service addresses. Valid
+# values are `ipv4` (default) and `ipv6`. You can only specify an IP family
+# when you create a cluster, changing this value will force a new cluster to
+# be created
+ip_family: "ipv4"
+# The CIDR block to assign Kubernetes service IP addresses from. If you
+# don't specify a block, Kubernetes assigns addresses from either the
+# 10.100.0.0/16 or 172.20.0.0/16 CIDR blocks
+service_ipv4_cidr: null
+# The CIDR block to assign Kubernetes pod and service IP addresses from if
+# `ipv6` was specified when the cluster was created. Kubernetes assigns
+# service addresses from the unique local address range (fc00::/7) because
+# you can't specify a custom IPv6 CIDR block when you create the cluster
+# Not supported (gap): ACK's Cluster (eks-controller v1.26.0) has no
+# serviceIPv6CIDR field (EKS assigns an IPv6 cluster's service range).
+service_ipv6_cidr: null
+# Configuration for the AWS Outpost to provision the cluster on
+outpost_config: null
+# Configuration block with encryption configuration for the cluster
+encryption_config: {}
+# Indicates whether or not to attach an additional policy for the cluster
+# IAM role to utilize the encryption key provided
+# In part: accepted with encryption_config.provider_key_arn (create_kms_key:
+# false); with the key this render makes, true (the default) is refused: the
+# policy names the key's ARN, which exists only in the Key's status, and an
+# IAM policy document has no reference. The key policy already grants the
+# cluster role the key (KeyUsage), so set attach_encryption_policy: false.
+attach_encryption_policy: true
+# A map of additional tags to add to the cluster
+cluster_tags: {}
+# Indicates whether or not to tag the cluster's primary security group. This
+# security group is created by the EKS service, not the module, and
+# therefore tagging is handled after cluster creation
+# In part: accepted false; true (the default) is refused: aws_ec2_tag tags
+# the security group EKS makes for the cluster, which no ACK or
+# ack-extensions kind owns (its ID exists only in the Cluster's status).
+create_primary_security_group_tags: true
+# Create, update, and delete timeout configurations for the cluster
+# Not supported (by-design): Terraform's create, update and delete timeouts:
+# ACK retries until the cluster is synced, and Bundt waits for it.
+timeouts: null
+# Map of access entries to add to the cluster
+access_entries: {}
+# Indicates whether or not to add the cluster creator (the identity used by
+# Terraform) as an administrator via access entry
+# In part: accepted: true sets the cluster's
+# bootstrapClusterCreatorAdminPermissions, which gives the identity that
+# creates the cluster (ACK's eks-controller role, not a Terraform caller)
+# cluster admin through EKS's own access entry; the module's access entry
+# for the caller cannot be built, since a render does not know who applies
+# it.
+enable_cluster_creator_admin_permissions: false
+# Controls if a KMS key for cluster encryption should be created
+# In part: accepted, but kms_key_administrators is required with it
+# (Terraform defaults it to the caller, which a render does not know) and so
+# is account_id (the key policy's Default statement and the cluster role's
+# ARN name the account).
+create_kms_key: true
+# The description of the key as viewed in AWS console
+kms_key_description: null
+# The waiting period, specified in number of days. After the waiting period
+# ends, AWS KMS deletes the KMS key. If you specify a value, it must be
+# between `7` and `30`, inclusive. If you do not specify a value, it
+# defaults to `30`
+# Not supported (gap): ACK's Key (kms-controller v1.7.0) has no field for
+# the waiting period before deletion (KMS's default, 30 days, applies).
+kms_key_deletion_window_in_days: null
+# Specifies whether key rotation is enabled
+enable_kms_key_rotation: true
+# Custom period of time between each key rotation date. If you specify a
+# value, it must be between `90` and `2560`, inclusive. If you do not
+# specify a value, it defaults to `365`
+# Not supported (gap): ACK's Key has no rotation period field
+# (enable_kms_key_rotation is supported, with KMS's default period, 365
+# days).
+kms_key_rotation_period_in_days: null
+# Specifies whether to enable the default key policy
+kms_key_enable_default_policy: true
+# A list of IAM ARNs for those who will have full key permissions (`kms:*`)
+kms_key_owners: []
+# A list of IAM ARNs for [key
+# administrators](https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#key-policy-default-allow-administrators).
+# If no value is provided, the current caller identity is used to ensure at
+# least one key admin is available
+kms_key_administrators: []
+# A list of IAM ARNs for [key
+# users](https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#key-policy-default-allow-users)
+kms_key_users: []
+# A list of IAM ARNs for [key service
+# users](https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#key-policy-service-integration)
+kms_key_service_users: []
+# List of IAM policy documents that are merged together into the exported
+# document. Statements must have unique `sid`s
+kms_key_source_policy_documents: []
+# List of IAM policy documents that are merged together into the exported
+# document. In merging, statements with non-blank `sid`s will override
+# statements with the same `sid`
+kms_key_override_policy_documents: []
+# A list of aliases to create. Note - due to the use of `toset()`, values
+# must be static strings and not computed values
+kms_key_aliases: []
+# Determines whether a log group is created by this module for the cluster
+# logs. If not, AWS will automatically create one if logging is enabled
+create_cloudwatch_log_group: true
+# Number of days to retain log events. Default retention - 90 days
+cloudwatch_log_group_retention_in_days: 90
+# If a KMS Key ARN is set, this key will be used to encrypt the
+# corresponding log group. Please be sure that the KMS Key has an
+# appropriate key policy
+# (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/encrypt-log-data-kms.html)
+cloudwatch_log_group_kms_key_id: null
+# Specified the log class of the log group. Possible values are: `STANDARD`
+# or `INFREQUENT_ACCESS`
+# Not supported (gap): ACK's LogGroup (cloudwatchlogs-controller v1.10.0)
+# has no log group class field.
+cloudwatch_log_group_class: null
+# A map of additional tags to add to the cloudwatch log group created
+cloudwatch_log_group_tags: {}
+# Determines if a security group is created for the cluster. Note: the EKS
+# service creates a primary security group for the cluster by default
+create_security_group: true
+# Existing security group ID to be attached to the cluster
+security_group_id: ""
+# ID of the VPC where the cluster security group will be provisioned
+vpc_id: null
+# Name to use on cluster security group created
+security_group_name: null
+# Determines whether cluster security group name
+# (`cluster_security_group_name`) is used as a prefix
+# In part: accepted: true (the default) names the cluster security group as
+# given, without Terraform's random suffix, since a render must not change
+# between plans; the namePrefix value keeps two Instances' groups apart.
+security_group_use_name_prefix: true
+# Description of the cluster security group created
+security_group_description: "EKS cluster security group"
+# List of additional security group rules to add to the cluster security
+# group created. Set `source_node_security_group = true` inside rules to set
+# the `node_security_group` as source
+# In part: accepted, except source_node_security_group: true: the node
+# security group already references the cluster's, and ACK resolves a
+# reference only once the referenced group is synced, so two groups that
+# reference each other are never made; give the node group's ID as
+# source_security_group_id from another component.
+security_group_additional_rules: {}
+# A map of additional tags to add to the cluster security group created
+security_group_tags: {}
+# Determines whether to create an
+# [`AmazonEKS_CNI_IPv6_Policy`](https://docs.aws.amazon.com/eks/latest/userguide/cni-iam-role.html#cni-iam-role-create-ipv6-policy)
+create_cni_ipv6_iam_policy: false
+# Determines whether to create a security group for the node groups or use
+# the existing `node_security_group_id`
+# In part: accepted, but with create_security_group the cluster group's rule
+# from the node group (ingress_nodes_443) is not rendered: the node group's
+# rules reference the cluster group, and ACK resolves a reference only once
+# the referenced group is synced, so two groups that reference each other
+# would never be made. Nodes reach the API through the cluster's primary
+# security group, which EKS attaches to managed node groups without a custom
+# launch template.
+create_node_security_group: true
+# ID of an existing security group to attach to the node groups created
+# In part: accepted, but it has no effect: the module attaches it only
+# through a node group's custom launch template, which is refused.
+node_security_group_id: ""
+# Name to use on node security group created
+node_security_group_name: null
+# Determines whether node security group name (`node_security_group_name`)
+# is used as a prefix
+# In part: accepted: true (the default) names the node security group as
+# given, without Terraform's random suffix, since a render must not change
+# between plans; the namePrefix value keeps two Instances' groups apart.
+node_security_group_use_name_prefix: true
+# Description of the node security group created
+node_security_group_description: "EKS node shared security group"
+# List of additional security group rules to add to the node security group
+# created. Set `source_cluster_security_group = true` inside rules to set
+# the `cluster_security_group` as source
+node_security_group_additional_rules: {}
+# Determines whether to enable recommended security group rules for the node
+# security group created. This includes node-to-node TCP ingress on
+# ephemeral ports and allows all egress traffic
+node_security_group_enable_recommended_rules: true
+# A map of additional tags to add to the node security group created
+node_security_group_tags: {}
+# Determines whether to create an OpenID Connect Provider for EKS to enable
+# IRSA
+# In part: accepted false; true (the default) is refused: the IAM
+# OpenIDConnectProvider needs the cluster's OIDC issuer URL, which exists
+# only in the Cluster's status, and ACK's OpenIDConnectProvider takes it
+# only as a string, with no reference; make it in a second component from
+# this one's cluster_oidc_issuer_url output.
+enable_irsa: true
+# List of OpenID Connect audience client IDs to add to the IRSA provider
+# Not supported (gap): used only with enable_irsa, which is accepted only
+# false.
+openid_connect_audiences: []
+# Determines whether to include the root CA thumbprint in the OpenID Connect
+# (OIDC) identity provider's server certificate(s)
+# Not supported (gap): used only with enable_irsa, which is accepted only
+# false (the thumbprint is read from the issuer's TLS certificate, which a
+# render cannot fetch).
+include_oidc_root_ca_thumbprint: true
+# Additional list of server certificate thumbprints for the OpenID Connect
+# (OIDC) identity provider's server certificate(s)
+# Not supported (gap): used only with enable_irsa, which is accepted only
+# false.
+custom_oidc_thumbprints: []
+# Determines whether an IAM role is created for the cluster
+create_iam_role: true
+# Existing IAM role ARN for the cluster. Required if `create_iam_role` is
+# set to `false`
+iam_role_arn: null
+# Name to use on IAM role created
+iam_role_name: null
+# Determines whether the IAM role name (`iam_role_name`) is used as a prefix
+# In part: accepted: true (the default) names the cluster IAM role as given,
+# without Terraform's random suffix, since a render must not change between
+# plans; the namePrefix value keeps two Instances' roles apart.
+iam_role_use_name_prefix: true
+# The IAM role path
+iam_role_path: null
+# Description of the role
+iam_role_description: null
+# ARN of the policy that is used to set the permissions boundary for the IAM
+# role
+iam_role_permissions_boundary: null
+# Additional policies to be added to the IAM role
+iam_role_additional_policies: {}
+# A map of additional tags to add to the IAM role created
+iam_role_tags: {}
+# Determines whether cluster encryption policy name
+# (`cluster_encryption_policy_name`) is used as a prefix
+# In part: accepted: true (the default) names the cluster encryption policy
+# as given, without Terraform's random suffix, since a render must not
+# change between plans; the namePrefix value keeps two Instances' policies
+# apart.
+encryption_policy_use_name_prefix: true
+# Name to use on cluster encryption policy created
+encryption_policy_name: null
+# Description of the cluster encryption policy created
+encryption_policy_description: "Cluster encryption policy to allow cluster role to utilize CMK provided"
+# Cluster encryption policy path
+encryption_policy_path: null
+# A map of additional tags to add to the cluster encryption policy created
+encryption_policy_tags: {}
+# Duration to wait after the EKS cluster has become active before creating
+# the dataplane components (EKS managed node group(s), self-managed node
+# group(s), Fargate profile(s))
+# Not supported (by-design): a time_sleep between the cluster and its node
+# groups: ACK's clusterRef already holds node groups, Fargate profiles and
+# add-ons until the cluster is synced, and a render has no sleep.
+dataplane_wait_duration: "30s"
+# Determines whether to use the v2 AmazonEKSBlockStoragePolicy instead of
+# the legacy v1 policy for the EKS Auto Mode cluster IAM role. Defaults to
+# false (uses v1).
+enable_auto_mode_block_storage_policy_v2: false
+# Determines whether to enable permissions for custom tags resources created
+# by EKS Auto Mode
+enable_auto_mode_custom_tags: true
+# Determines whether to create/attach IAM resources for EKS Auto Mode.
+# Useful for when using only custom node pools and not built-in EKS Auto
+# Mode node pools
+create_auto_mode_iam_resources: false
+# Map of cluster addon configurations to enable for the cluster. Addon name
+# can be the map keys or set with `name`
+# In part: accepted, but namespace_config (no field on ACK's Addon),
+# most_recent (unset addon_version takes EKS's default version, not the most
+# recent: the module looks the version up), resolve_conflicts_on_create
+# (ACK's Addon has one resolveConflicts, set from
+# resolve_conflicts_on_update), preserve (ACK deletes an add-on's Kubernetes
+# objects with it), before_compute (no ordering against node groups) and
+# timeouts are not carried.
+addons: null
+# Create, update, and delete timeout configurations for the cluster addons
+# Not supported (by-design): Terraform's add-on timeouts: ACK retries until
+# each add-on is synced, and Bundt waits for it.
+addons_timeouts: {}
+# Map of cluster identity provider configurations to enable for the cluster.
+# Note - this is different/separate from IRSA
+identity_providers: null
+# Determines whether an EKS Auto node IAM role is created
+create_node_iam_role: true
+# Name to use on the EKS Auto node IAM role created
+node_iam_role_name: null
+# Determines whether the EKS Auto node IAM role name (`node_iam_role_name`)
+# is used as a prefix
+# In part: accepted: true (the default) names the EKS Auto Mode node IAM
+# role as given, without Terraform's random suffix, since a render must not
+# change between plans; the namePrefix value keeps two Instances' roles
+# apart.
+node_iam_role_use_name_prefix: true
+# The EKS Auto node IAM role path
+node_iam_role_path: null
+# Description of the EKS Auto node IAM role
+node_iam_role_description: null
+# ARN of the policy that is used to set the permissions boundary for the EKS
+# Auto node IAM role
+node_iam_role_permissions_boundary: null
+# Additional policies to be added to the EKS Auto node IAM role
+node_iam_role_additional_policies: {}
+# A map of additional tags to add to the EKS Auto node IAM role created
+node_iam_role_tags: {}
+# Map of Fargate Profile definitions to create
+# In part: accepted, but each profile's timeouts is refused (ACK retries
+# until synced), and iam_role_use_name_prefix: true names the role as given
+# (no random suffix); a profile's role trust names the cluster's account and
+# region, so account_id and region are required.
+fargate_profiles: null
+# Map of self-managed node group definitions to create
+# Not supported (gap): an Auto Scaling group with a launch template whose
+# user data needs the cluster's endpoint and certificate authority (both
+# only in the Cluster's status) and whose security groups need the node
+# group's ID (ACK's LaunchTemplate takes security group IDs only, with no
+# reference); autoscaling-controller is not pinned either.
+self_managed_node_groups: null
+# Map of EKS managed node group definitions to create
+# In part: accepted with use_custom_launch_template: false (EKS's own launch
+# template); a custom launch template (the default) is refused, with every
+# field only it carries (AMI ID, user data, block devices, metadata, network
+# interfaces, placement and the rest), because ACK's LaunchTemplate takes
+# security group IDs only, with no reference to the node security group this
+# render makes. The group's own security group (only on a custom launch
+# template), node_repair_config and warm_pool_config (no field on ACK's
+# Nodegroup), force_update_version, update_config.update_strategy and
+# timeouts are refused; use_name_prefix and iam_role_use_name_prefix name
+# the group and role as given (no random suffix).
+eks_managed_node_groups: null
+# Do you agree that Putin doesn't respect Ukrainian sovereignty and
+# territorial integrity? More info:
+# https://en.wikipedia.org/wiki/Putin_khuylo!
+putin_khuylo: true

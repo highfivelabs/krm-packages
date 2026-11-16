@@ -1,0 +1,27 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: v2
+name: eks
+description: >-
+  An Amazon EKS cluster with its IAM role, KMS key, security groups, log
+  group, access entries, add-ons, identity providers, EKS managed node
+  groups and Fargate profiles, as AWS Controllers for Kubernetes (ACK)
+  objects. A port of terraform-aws-modules' eks module (its root).
+type: application
+version: 0.1.0
+# The module release this chart was ported from (UPSTREAM.md).
+appVersion: "terraform-aws-eks-v21.29.0"
+kubeVersion: ">=1.27.0-0"
+keywords: [aws, ack, eks, kubernetes, cluster, node-group, terraform-aws-modules]
+home: https://github.com/highfivelabs/catalog
+sources:
+  - https://github.com/terraform-aws-modules/terraform-aws-eks/tree/91f11ea01656c26b8e6b8eb1b74f19863f60056c
+annotations:
+  hfl.dev/source: terraform-aws-eks
+  hfl.dev/source-version: v21.29.0
+  hfl.dev/source-commit: 91f11ea01656c26b8e6b8eb1b74f19863f60056c
+  hfl.dev/ack-eks-controller: "v1.26.0"
+  hfl.dev/ack-iam-controller: "v1.11.3"
+  hfl.dev/ack-ec2-controller: "v1.23.1"
+  hfl.dev/ack-kms-controller: "v1.7.0"
+  hfl.dev/ack-cloudwatchlogs-controller: "v1.10.0"

@@ -1,0 +1,21 @@
+# EKS Auto Mode (the module's eks-auto-mode example): compute_config with
+# the built-in node pools, the module's Auto Mode policies on the cluster
+# role, its custom tags policy and the node role (both by ARN, so
+# account_id is needed); no KMS key (encryption_config: null).
+name: auto
+account_id: "111122223333"
+kubernetes_version: "1.33"
+endpoint_public_access: true
+enable_irsa: false
+create_primary_security_group_tags: false
+encryption_config: null
+compute_config:
+  enabled: true
+  node_pools: [general-purpose, system]
+enable_auto_mode_block_storage_policy_v2: true
+node_iam_role_additional_policies: {ssm: arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore}
+node_iam_role_tags: {Role: auto-nodes}
+create_cloudwatch_log_group: false
+enabled_log_types: []
+vpc_id: vpc-1234556abcdef
+subnet_ids: [subnet-abcde012, subnet-bcde012a]

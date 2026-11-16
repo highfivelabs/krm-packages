@@ -1,0 +1,140 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "Access Entry", "EKS Addons" and "EKS Identity Provider": the
+access entries (aws_eks_access_entry, eks/AccessEntry) with their policy
+associations (aws_eks_access_policy_association) inline as
+accessPolicies, the add-ons (aws_eks_addon, eks/Addon) and the OIDC
+identity providers (aws_eks_identity_provider_config,
+eks/IdentityProviderConfig), each on the cluster by reference
+(clusterRef), so each waits for it. enable_cluster_creator_admin_permissions
+is the Cluster's bootstrapClusterCreatorAdminPermissions (cluster.yaml).
+*/ -}}
+{{- $v := .Values -}}
+{{- if and $v.create $v.putin_khuylo }}
+{{- $outposts := not (kindIs "invalid" $v.outpost_config) }}
+{{- $clusterRef := include "ack.name" (list .Release.Name "cluster") }}
+{{- $nodeTypes := list "EC2_LINUX" "EC2_WINDOWS" "FARGATE_LINUX" "HYBRID_LINUX" }}
+{{- range $k := keys ($v.access_entries | default dict) | sortAlpha }}
+{{- $e := index $v.access_entries $k }}
+{{- if not $e.principal_arn }}
+{{- fail (printf "eks: access_entries.%s.principal_arn is required" $k) }}
+{{- end }}
+{{- $type := $e.type | default "STANDARD" }}
+---
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: AccessEntry
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "access-entry" $k)) "id" (printf "access-entry-%s" $k) "region" $v.region) | nindent 2 }}
+spec:
+  clusterRef:
+    from:
+      name: {{ $clusterRef }}
+  principalARN: {{ $e.principal_arn | quote }}
+  type: {{ $type | quote }}
+{{- with $e.kubernetes_groups }}
+  kubernetesGroups:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $e.user_name }}
+  username: {{ . | quote }}
+{{- end }}
+{{- if not (has $type $nodeTypes) }}
+{{- with $e.policy_associations }}
+  accessPolicies:
+{{- range $pk := keys . | sortAlpha }}
+{{- $p := index $e.policy_associations $pk }}
+    - policyARN: {{ $p.policy_arn | quote }}
+      accessScope:
+        type: {{ $p.access_scope.type | quote }}
+{{- with $p.access_scope.namespaces }}
+        namespaces:
+{{- toYaml . | nindent 10 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags $e.tags) | fromJson }}
+  tags:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- if not $outposts }}
+{{- range $k := keys ($v.addons | default dict) | sortAlpha }}
+{{- $a := index $v.addons $k }}
+{{- with $a.namespace_config }}
+{{- fail (printf "eks: addons.%s.namespace_config is not supported: ACK's Addon (eks-controller v1.26.0) has no namespace field (docs/aws.md)" $k) }}
+{{- end }}
+---
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Addon
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "addon" $k)) "id" (printf "addon-%s" $k) "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ $a.name | default $k | quote }}
+  clusterRef:
+    from:
+      name: {{ $clusterRef }}
+{{- with $a.addon_version }}
+  addonVersion: {{ . | quote }}
+{{- end }}
+{{- with $a.configuration_values }}
+  configurationValues: {{ . | quote }}
+{{- end }}
+{{- with $a.pod_identity_association }}
+  podIdentityAssociations:
+{{- range . }}
+    - roleARN: {{ .role_arn | quote }}
+      serviceAccount: {{ .service_account | quote }}
+{{- end }}
+{{- end }}
+  resolveConflicts: {{ $a.resolve_conflicts_on_update | default "OVERWRITE" | quote }}
+{{- with $a.service_account_role_arn }}
+  serviceAccountRoleARN: {{ . | quote }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags $a.tags) | fromJson }}
+  tags:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- range $k := keys ($v.identity_providers | default dict) | sortAlpha }}
+{{- $p := index $v.identity_providers $k }}
+---
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: IdentityProviderConfig
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "identity-provider" $k)) "id" (printf "identity-provider-%s" $k) "region" $v.region) | nindent 2 }}
+spec:
+  clusterRef:
+    from:
+      name: {{ $clusterRef }}
+  oidc:
+    clientID: {{ $p.client_id | quote }}
+    identityProviderConfigName: {{ $p.identity_provider_config_name | default $k | quote }}
+    issuerURL: {{ $p.issuer_url | quote }}
+{{- with $p.groups_claim }}
+    groupsClaim: {{ . | quote }}
+{{- end }}
+{{- with $p.groups_prefix }}
+    groupsPrefix: {{ . | quote }}
+{{- end }}
+{{- with $p.required_claims }}
+    requiredClaims:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- with $p.username_claim }}
+    usernameClaim: {{ . | quote }}
+{{- end }}
+{{- with $p.username_prefix }}
+    usernamePrefix: {{ . | quote }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags $p.tags) | fromJson }}
+  tags:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

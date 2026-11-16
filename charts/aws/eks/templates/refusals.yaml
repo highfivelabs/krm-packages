@@ -1,0 +1,32 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+The module variables this chart keeps in its values but cannot carry
+(upstream.yaml, "refused"): each stops the render, naming the gap, when it
+is set to anything but its Terraform default. Renders nothing. Variables
+accepted only in part are checked where they are rendered.
+*/ -}}
+{{- $v := .Values -}}
+{{- $irsa := "it is used only with enable_irsa, which is accepted only false" -}}
+{{- include "ack.unsupported" (list $ "force_update_version" $v.force_update_version "ACK's Cluster (eks-controller v1.26.0) has no field to force a version update past pod disruption budgets") }}
+{{- include "ack.unsupported" (list $ "service_ipv6_cidr" $v.service_ipv6_cidr "ACK's Cluster (eks-controller v1.26.0) has no serviceIPv6CIDR field (EKS assigns an IPv6 cluster's service range)") }}
+{{- include "ack.unsupported" (list $ "timeouts" $v.timeouts "Terraform's create, update and delete timeouts: ACK retries until the cluster is synced, and Bundt waits for it") }}
+{{- include "ack.unsupported" (list $ "kms_key_deletion_window_in_days" $v.kms_key_deletion_window_in_days "ACK's Key (kms-controller v1.7.0) has no field for the waiting period before deletion (KMS's default, 30 days, applies)") }}
+{{- include "ack.unsupported" (list $ "kms_key_rotation_period_in_days" $v.kms_key_rotation_period_in_days "ACK's Key has no rotation period field (enable_kms_key_rotation is supported, with KMS's default period, 365 days)") }}
+{{- include "ack.unsupported" (list $ "cloudwatch_log_group_class" $v.cloudwatch_log_group_class "ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no log group class field") }}
+{{- include "ack.unsupported" (list $ "openid_connect_audiences" $v.openid_connect_audiences $irsa) }}
+{{- include "ack.unchanged" (list $ "include_oidc_root_ca_thumbprint" $v.include_oidc_root_ca_thumbprint "true" (printf "%s (the thumbprint is read from the issuer's TLS certificate, which a render cannot fetch)" $irsa)) }}
+{{- include "ack.unsupported" (list $ "custom_oidc_thumbprints" $v.custom_oidc_thumbprints $irsa) }}
+{{- include "ack.unchanged" (list $ "dataplane_wait_duration" $v.dataplane_wait_duration "\"30s\"" "a time_sleep between the cluster and its node groups: ACK's clusterRef already holds node groups, Fargate profiles and add-ons until the cluster is synced, and a render has no sleep") }}
+{{- include "ack.unsupported" (list $ "addons_timeouts" $v.addons_timeouts "Terraform's add-on timeouts: ACK retries until each add-on is synced, and Bundt waits for it") }}
+{{- include "ack.unsupported" (list $ "self_managed_node_groups" $v.self_managed_node_groups "an Auto Scaling group with a launch template whose user data needs the cluster's endpoint and certificate authority (both only in the Cluster's status) and whose security groups need the node group's ID (ACK's LaunchTemplate takes security group IDs only, with no reference); use eks_managed_node_groups") }}
+{{- if and $v.create $v.putin_khuylo }}
+{{- if and $v.enable_irsa (kindIs "invalid" $v.outpost_config) }}
+{{- fail "eks: enable_irsa is not supported: true (the default) needs the IAM OpenIDConnectProvider's url, the cluster's OIDC issuer, which exists only in the Cluster's status, and ACK's OpenIDConnectProvider takes it only as a string, with no reference. Set enable_irsa: false and make the provider in a second component from this one's cluster_oidc_issuer_url output (docs/aws.md)" }}
+{{- end }}
+{{- $primaryTags := omit (merge dict ($v.cluster_tags | default dict) ($v.tags | default dict)) "Name" }}
+{{- if and $v.create_primary_security_group_tags $primaryTags }}
+{{- fail "eks: create_primary_security_group_tags is not supported: true (the default), with tags or cluster_tags, tags the security group EKS makes for the cluster (aws_ec2_tag), which no ACK or ack-extensions kind owns, and whose ID exists only in the Cluster's status. Set create_primary_security_group_tags: false (docs/aws.md)" }}
+{{- end }}
+{{- end }}

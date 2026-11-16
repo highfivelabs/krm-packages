@@ -1,0 +1,151 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (docs/design.md, "Outputs"): the module's
+# outputs from the live Cluster (resources.cluster), its role
+# (resources.cluster-role), KMS key (resources.kms-key), security groups
+# (resources.security-group, resources.node-security-group), log group
+# (resources.log-group), EKS Auto Mode node role (resources.node-role) and
+# the access entries, add-ons, identity providers, node groups and Fargate
+# profiles by key (resources.<kind>-<key>). The maps are the one field
+# consumers take from each, its ARN, by key (outputs are selective;
+# Terraform's outputs are the whole resources). EC2 reports no ARN for a
+# group, so the security group ARNs are built as the Terraform provider
+# builds them. Not provided: access_policy_associations (inline on each
+# access entry), oidc_provider_arn and cluster_tls_certificate_sha1_fingerprint
+# (enable_irsa is refused), self_managed_node_groups and
+# self_managed_node_groups_autoscaling_group_names (refused).
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: aws-eks
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [ack]
+  outputs:
+    cluster_arn: >-
+      'cluster' in resources && has(resources.cluster.status.ackResourceMetadata.arn)
+      ? dyn(resources.cluster.status.ackResourceMetadata.arn) : null
+    cluster_certificate_authority_data: >-
+      'cluster' in resources && has(resources.cluster.status.certificateAuthority) && has(resources.cluster.status.certificateAuthority.data)
+      ? dyn(resources.cluster.status.certificateAuthority.data) : null
+    cluster_endpoint: >-
+      'cluster' in resources && has(resources.cluster.status.endpoint)
+      ? dyn(resources.cluster.status.endpoint) : null
+    cluster_id: >-
+      'cluster' in resources && has(resources.cluster.status.id)
+      ? dyn(resources.cluster.status.id) : dyn('')
+    cluster_name: >-
+      'cluster' in resources ? dyn(resources.cluster.spec.name) : dyn('')
+    cluster_oidc_issuer_url: >-
+      'cluster' in resources && has(resources.cluster.status.identity) && has(resources.cluster.status.identity.oidc)
+      && has(resources.cluster.status.identity.oidc.issuer)
+      ? dyn(resources.cluster.status.identity.oidc.issuer) : null
+    cluster_dualstack_oidc_issuer_url: >-
+      'cluster' in resources && has(resources.cluster.status.identity) && has(resources.cluster.status.identity.oidc)
+      && has(resources.cluster.status.identity.oidc.issuer)
+      ? dyn(resources.cluster.status.identity.oidc.issuer
+          .replace('https://oidc.eks.', 'https://oidc-eks.').replace('.amazonaws.com/', '.api.aws/'))
+      : null
+    oidc_provider: >-
+      'cluster' in resources && has(resources.cluster.status.identity) && has(resources.cluster.status.identity.oidc)
+      && has(resources.cluster.status.identity.oidc.issuer)
+      ? dyn(resources.cluster.status.identity.oidc.issuer.replace('https://', '')) : null
+    cluster_version: >-
+      'cluster' in resources && has(resources.cluster.spec.version)
+      ? dyn(resources.cluster.spec.version) : null
+    cluster_platform_version: >-
+      'cluster' in resources && has(resources.cluster.status.platformVersion)
+      ? dyn(resources.cluster.status.platformVersion) : null
+    cluster_status: >-
+      'cluster' in resources && has(resources.cluster.status.status)
+      ? dyn(resources.cluster.status.status) : null
+    cluster_primary_security_group_id: >-
+      'cluster' in resources && has(resources.cluster.status.clusterSecurityGroupID)
+      ? dyn(resources.cluster.status.clusterSecurityGroupID) : null
+    cluster_service_cidr: >-
+      'cluster' in resources && has(resources.cluster.spec.kubernetesNetworkConfig)
+      && has(resources.cluster.spec.kubernetesNetworkConfig.serviceIPv4CIDR)
+      ? dyn(resources.cluster.spec.kubernetesNetworkConfig.serviceIPv4CIDR) : null
+    cluster_ip_family: >-
+      'cluster' in resources && has(resources.cluster.spec.kubernetesNetworkConfig)
+      && has(resources.cluster.spec.kubernetesNetworkConfig.ipFamily)
+      ? dyn(resources.cluster.spec.kubernetesNetworkConfig.ipFamily) : null
+    cluster_control_plane_scaling_tier: >-
+      'cluster' in resources && has(resources.cluster.spec.controlPlaneScalingConfig)
+      && has(resources.cluster.spec.controlPlaneScalingConfig.tier)
+      ? dyn(resources.cluster.spec.controlPlaneScalingConfig.tier) : null
+    access_entries: >-
+      resources.filter(k, k.startsWith('access-entry-')).transformMapEntry(i, k, {
+        k.substring(13): has(resources[k].status.ackResourceMetadata.arn) ? resources[k].status.ackResourceMetadata.arn : ''})
+    kms_key_arn: >-
+      'kms-key' in resources && has(resources['kms-key'].status.ackResourceMetadata.arn)
+      ? dyn(resources['kms-key'].status.ackResourceMetadata.arn) : null
+    kms_key_id: >-
+      'kms-key' in resources && has(resources['kms-key'].status.keyID)
+      ? dyn(resources['kms-key'].status.keyID) : null
+    kms_key_policy: >-
+      'kms-key' in resources && has(resources['kms-key'].spec.policy)
+      ? dyn(resources['kms-key'].spec.policy) : null
+    cluster_security_group_id: >-
+      'security-group' in resources && has(resources['security-group'].status.id)
+      ? dyn(resources['security-group'].status.id) : null
+    cluster_security_group_arn: >-
+      'security-group' in resources && has(resources['security-group'].status.id)
+      ? dyn('arn:'
+        + (resources['security-group'].status.ackResourceMetadata.region.startsWith('cn-') ? 'aws-cn'
+          : (resources['security-group'].status.ackResourceMetadata.region.startsWith('us-gov-') ? 'aws-us-gov' : 'aws'))
+        + ':ec2:' + resources['security-group'].status.ackResourceMetadata.region
+        + ':' + resources['security-group'].status.ackResourceMetadata.ownerAccountID
+        + ':security-group/' + resources['security-group'].status.id)
+      : null
+    node_security_group_id: >-
+      'node-security-group' in resources && has(resources['node-security-group'].status.id)
+      ? dyn(resources['node-security-group'].status.id) : null
+    node_security_group_arn: >-
+      'node-security-group' in resources && has(resources['node-security-group'].status.id)
+      ? dyn('arn:'
+        + (resources['node-security-group'].status.ackResourceMetadata.region.startsWith('cn-') ? 'aws-cn'
+          : (resources['node-security-group'].status.ackResourceMetadata.region.startsWith('us-gov-') ? 'aws-us-gov' : 'aws'))
+        + ':ec2:' + resources['node-security-group'].status.ackResourceMetadata.region
+        + ':' + resources['node-security-group'].status.ackResourceMetadata.ownerAccountID
+        + ':security-group/' + resources['node-security-group'].status.id)
+      : null
+    cluster_iam_role_name: >-
+      'cluster-role' in resources ? dyn(resources['cluster-role'].spec.name) : null
+    cluster_iam_role_arn: >-
+      'cluster-role' in resources && has(resources['cluster-role'].status.ackResourceMetadata.arn)
+      ? dyn(resources['cluster-role'].status.ackResourceMetadata.arn) : null
+    cluster_iam_role_unique_id: >-
+      'cluster-role' in resources && has(resources['cluster-role'].status.roleID)
+      ? dyn(resources['cluster-role'].status.roleID) : null
+    node_iam_role_name: >-
+      'node-role' in resources ? dyn(resources['node-role'].spec.name) : null
+    node_iam_role_arn: >-
+      'node-role' in resources && has(resources['node-role'].status.ackResourceMetadata.arn)
+      ? dyn(resources['node-role'].status.ackResourceMetadata.arn) : null
+    node_iam_role_unique_id: >-
+      'node-role' in resources && has(resources['node-role'].status.roleID)
+      ? dyn(resources['node-role'].status.roleID) : null
+    cluster_addons: >-
+      resources.filter(k, k.startsWith('addon-')).transformMapEntry(i, k, {
+        k.substring(6): has(resources[k].status.ackResourceMetadata.arn) ? resources[k].status.ackResourceMetadata.arn : ''})
+    cluster_identity_providers: >-
+      resources.filter(k, k.startsWith('identity-provider-')).transformMapEntry(i, k, {
+        k.substring(18): has(resources[k].status.ackResourceMetadata.arn) ? resources[k].status.ackResourceMetadata.arn : ''})
+    cloudwatch_log_group_name: >-
+      'log-group' in resources ? dyn(resources['log-group'].spec.name) : null
+    cloudwatch_log_group_arn: >-
+      'log-group' in resources && has(resources['log-group'].status.ackResourceMetadata.arn)
+      ? dyn(resources['log-group'].status.ackResourceMetadata.arn) : null
+    fargate_profiles: >-
+      resources.filter(k, k.startsWith('fargate-profile-')).transformMapEntry(i, k, {
+        k.substring(16): has(resources[k].status.ackResourceMetadata.arn) ? resources[k].status.ackResourceMetadata.arn : ''})
+    eks_managed_node_groups: >-
+      resources.filter(k, k.startsWith('node-group-')).transformMapEntry(i, k, {
+        k.substring(11): has(resources[k].status.ackResourceMetadata.arn) ? resources[k].status.ackResourceMetadata.arn : ''})
+    eks_managed_node_groups_autoscaling_group_names: >-
+      resources.filter(k, k.startsWith('node-group-')
+          && has(resources[k].status.resources) && has(resources[k].status.resources.autoScalingGroups))
+        .map(k, resources[k].status.resources.autoScalingGroups.map(g, g.name)).flatten()

@@ -1466,7 +1466,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/eks/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-eks/tree/v21.29.0
-    chart: null
+    chart: charts/aws/eks
   - id: aws/kms
     cloud: aws
     module: kms

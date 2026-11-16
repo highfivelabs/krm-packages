@@ -1,0 +1,205 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Where this chart came from: the Terraform module it ports and the release
+# it was ported from. Machine-readable; `task upstream-check` keeps it equal
+# to upstream/modules.yaml and Chart.yaml. To take a newer release, see
+# UPSTREAM.md ("Moving the pins").
+module: aws/eks
+repo: https://github.com/terraform-aws-modules/terraform-aws-eks
+path: .
+version: v21.29.0
+commit: 91f11ea01656c26b8e6b8eb1b74f19863f60056c
+license: Apache-2.0
+copyright: null
+module_url: https://github.com/terraform-aws-modules/terraform-aws-eks/tree/v21.29.0
+registry_url: https://registry.terraform.io/modules/terraform-aws-modules/eks/aws
+synced: 2026-11-16
+# Module variables the chart keeps in values.yaml (so tfvars convert one to
+# one) but refuses when set (to anything but the module's default), or
+# accepts only in part. Read by `task coverage`; `task coverage-verify`
+# renders the chart to check that each one is refused. kind: gap (no ACK or
+# ack-extensions kind or field), not-ported (ACK has it, the chart does not
+# map it yet) or by-design (Bundt replaces it). partial: the variable is
+# accepted, the reason says what is not carried.
+refused:
+- variable: additional_security_group_ids
+  kind: gap
+  reason: "accepted with create_security_group: false; with the chart's own cluster security group it is refused, since ACK's Cluster cannot take group references and IDs together"
+  partial: true
+- variable: addons
+  kind: gap
+  reason: "accepted, but namespace_config (no field on ACK's Addon), most_recent (unset addon_version takes EKS's default version, not the most recent: the module looks the version up), resolve_conflicts_on_create (ACK's Addon has one resolveConflicts, set from resolve_conflicts_on_update), preserve (ACK deletes an add-on's Kubernetes objects with it), before_compute (no ordering against node groups) and timeouts are not carried"
+  partial: true
+  fields:
+  - before_compute
+  - most_recent
+  - namespace_config
+  - preserve
+  - resolve_conflicts_on_create
+  - timeouts
+- variable: addons_timeouts
+  kind: by-design
+  reason: "Terraform's add-on timeouts: ACK retries until each add-on is synced, and Bundt waits for it"
+- variable: attach_encryption_policy
+  kind: gap
+  reason: "accepted with encryption_config.provider_key_arn (create_kms_key: false); with the key this render makes, true (the default) is refused: the policy names the key's ARN, which exists only in the Key's status, and an IAM policy document has no reference. The key policy already grants the cluster role the key (KeyUsage), so set attach_encryption_policy: false"
+  partial: true
+- variable: cloudwatch_log_group_class
+  kind: gap
+  reason: "ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no log group class field"
+- variable: create_kms_key
+  kind: gap
+  reason: "accepted, but kms_key_administrators is required with it (Terraform defaults it to the caller, which a render does not know) and so is account_id (the key policy's Default statement and the cluster role's ARN name the account)"
+  partial: true
+- variable: create_node_security_group
+  kind: gap
+  reason: "accepted, but with create_security_group the cluster group's rule from the node group (ingress_nodes_443) is not rendered: the node group's rules reference the cluster group, and ACK resolves a reference only once the referenced group is synced, so two groups that reference each other would never be made. Nodes reach the API through the cluster's primary security group, which EKS attaches to managed node groups without a custom launch template"
+  partial: true
+- variable: create_primary_security_group_tags
+  kind: gap
+  reason: "accepted false; true (the default) is refused: aws_ec2_tag tags the security group EKS makes for the cluster, which no ACK or ack-extensions kind owns (its ID exists only in the Cluster's status)"
+  partial: true
+- variable: custom_oidc_thumbprints
+  kind: gap
+  reason: "used only with enable_irsa, which is accepted only false"
+- variable: dataplane_wait_duration
+  kind: by-design
+  reason: "a time_sleep between the cluster and its node groups: ACK's clusterRef already holds node groups, Fargate profiles and add-ons until the cluster is synced, and a render has no sleep"
+- variable: eks_managed_node_groups
+  kind: gap
+  reason: "accepted with use_custom_launch_template: false (EKS's own launch template); a custom launch template (the default) is refused, with every field only it carries (AMI ID, user data, block devices, metadata, network interfaces, placement and the rest), because ACK's LaunchTemplate takes security group IDs only, with no reference to the node security group this render makes. The group's own security group (only on a custom launch template), node_repair_config and warm_pool_config (no field on ACK's Nodegroup), force_update_version, update_config.update_strategy and timeouts are refused; use_name_prefix and iam_role_use_name_prefix name the group and role as given (no random suffix)"
+  partial: true
+  fields:
+  - ami_id
+  - attach_cluster_primary_security_group
+  - block_device_mappings
+  - bootstrap_extra_args
+  - capacity_reservation_specification
+  - cloudinit_post_nodeadm
+  - cloudinit_pre_nodeadm
+  - cluster_primary_security_group_id
+  - cpu_options
+  - create_launch_template
+  - create_placement_group
+  - create_security_group
+  - credit_specification
+  - disable_api_termination
+  - ebs_optimized
+  - efa_indices
+  - enable_bootstrap_user_data
+  - enable_efa_only
+  - enable_efa_support
+  - enable_monitoring
+  - enclave_options
+  - force_update_version
+  - iam_role_use_name_prefix
+  - instance_market_options
+  - kernel_id
+  - key_name
+  - launch_template_default_version
+  - launch_template_description
+  - launch_template_id
+  - launch_template_name
+  - launch_template_tags
+  - launch_template_use_name_prefix
+  - launch_template_version
+  - license_specifications
+  - maintenance_options
+  - metadata_options
+  - network_interfaces
+  - network_performance_options
+  - node_repair_config
+  - placement
+  - post_bootstrap_user_data
+  - pre_bootstrap_user_data
+  - private_dns_name_options
+  - ram_disk_id
+  - security_group_description
+  - security_group_egress_rules
+  - security_group_ingress_rules
+  - security_group_name
+  - security_group_tags
+  - security_group_use_name_prefix
+  - tag_specifications
+  - timeouts
+  - update_config.update_strategy
+  - update_launch_template_default_version
+  - use_custom_launch_template
+  - use_name_prefix
+  - user_data_template_path
+  - vpc_security_group_ids
+  - warm_pool_config
+- variable: enable_cluster_creator_admin_permissions
+  kind: by-design
+  reason: "accepted: true sets the cluster's bootstrapClusterCreatorAdminPermissions, which gives the identity that creates the cluster (ACK's eks-controller role, not a Terraform caller) cluster admin through EKS's own access entry; the module's access entry for the caller cannot be built, since a render does not know who applies it"
+  partial: true
+- variable: enable_irsa
+  kind: gap
+  reason: "accepted false; true (the default) is refused: the IAM OpenIDConnectProvider needs the cluster's OIDC issuer URL, which exists only in the Cluster's status, and ACK's OpenIDConnectProvider takes it only as a string, with no reference; make it in a second component from this one's cluster_oidc_issuer_url output"
+  partial: true
+- variable: encryption_policy_use_name_prefix
+  kind: gap
+  reason: "accepted: true (the default) names the cluster encryption policy as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' policies apart"
+  partial: true
+- variable: fargate_profiles
+  kind: gap
+  reason: "accepted, but each profile's timeouts is refused (ACK retries until synced), and iam_role_use_name_prefix: true names the role as given (no random suffix); a profile's role trust names the cluster's account and region, so account_id and region are required"
+  partial: true
+  fields:
+  - iam_role_use_name_prefix
+  - timeouts
+- variable: force_update_version
+  kind: gap
+  reason: "ACK's Cluster (eks-controller v1.26.0) has no field to force a version update past pod disruption budgets"
+- variable: iam_role_use_name_prefix
+  kind: gap
+  reason: "accepted: true (the default) names the cluster IAM role as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' roles apart"
+  partial: true
+- variable: include_oidc_root_ca_thumbprint
+  kind: gap
+  reason: "used only with enable_irsa, which is accepted only false (the thumbprint is read from the issuer's TLS certificate, which a render cannot fetch)"
+- variable: kms_key_deletion_window_in_days
+  kind: gap
+  reason: "ACK's Key (kms-controller v1.7.0) has no field for the waiting period before deletion (KMS's default, 30 days, applies)"
+- variable: kms_key_rotation_period_in_days
+  kind: gap
+  reason: "ACK's Key has no rotation period field (enable_kms_key_rotation is supported, with KMS's default period, 365 days)"
+- variable: node_iam_role_use_name_prefix
+  kind: gap
+  reason: "accepted: true (the default) names the EKS Auto Mode node IAM role as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' roles apart"
+  partial: true
+- variable: node_security_group_id
+  kind: gap
+  reason: "accepted, but it has no effect: the module attaches it only through a node group's custom launch template, which is refused"
+  partial: true
+- variable: node_security_group_use_name_prefix
+  kind: gap
+  reason: "accepted: true (the default) names the node security group as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' groups apart"
+  partial: true
+- variable: openid_connect_audiences
+  kind: gap
+  reason: "used only with enable_irsa, which is accepted only false"
+- variable: prefix_separator
+  kind: by-design
+  reason: "accepted, but it has no effect: it joins a name to Terraform's random suffix (the *_use_name_prefix variables), which the chart never adds, since a render must not change between plans"
+  partial: true
+- variable: security_group_additional_rules
+  kind: gap
+  reason: "accepted, except source_node_security_group: true: the node security group already references the cluster's, and ACK resolves a reference only once the referenced group is synced, so two groups that reference each other are never made; give the node group's ID as source_security_group_id from another component"
+  partial: true
+  fields:
+  - source_node_security_group
+- variable: security_group_use_name_prefix
+  kind: gap
+  reason: "accepted: true (the default) names the cluster security group as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' groups apart"
+  partial: true
+- variable: self_managed_node_groups
+  kind: gap
+  reason: "an Auto Scaling group with a launch template whose user data needs the cluster's endpoint and certificate authority (both only in the Cluster's status) and whose security groups need the node group's ID (ACK's LaunchTemplate takes security group IDs only, with no reference); autoscaling-controller is not pinned either"
+- variable: service_ipv6_cidr
+  kind: gap
+  reason: "ACK's Cluster (eks-controller v1.26.0) has no serviceIPv6CIDR field (EKS assigns an IPv6 cluster's service range)"
+- variable: timeouts
+  kind: by-design
+  reason: "Terraform's create, update and delete timeouts: ACK retries until the cluster is synced, and Bundt waits for it"

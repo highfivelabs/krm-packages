@@ -1,0 +1,206 @@
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: names-cluster-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+    team: "a"
+  annotations:
+    hfl.dev/id: "cluster-role"
+spec:
+  name: "team-a-prod-eks-role"
+  path: "/"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\",\"sts:TagSession\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"eks.amazonaws.com\"]},\"Sid\":\"EKSClusterAssumeRole\"}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+    - "arn:aws:iam::111122223333:policy/team-a-prod-eks-encryption"
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Cluster
+metadata:
+  name: names-cluster
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+    team: "a"
+  annotations:
+    hfl.dev/id: "cluster"
+spec:
+  name: "team-a-prod-eks"
+  roleRef:
+    from:
+      name: names-cluster-role
+  accessConfig:
+    authenticationMode: "API_AND_CONFIG_MAP"
+    bootstrapClusterCreatorAdminPermissions: false
+  bootstrapSelfManagedAddons: false
+  logging:
+    clusterLogging:
+      - enabled: true
+        types:
+          - audit
+          - api
+          - authenticator
+  resourcesVPCConfig:
+    securityGroupRefs:
+      - from:
+          name: names-cluster-sg
+    subnetIDs:
+      - subnet-1
+      - subnet-2
+    endpointPrivateAccess: true
+    endpointPublicAccess: false
+    publicAccessCIDRs:
+      - 0.0.0.0/0
+  kubernetesNetworkConfig:
+    ipFamily: "ipv4"
+  encryptionConfig:
+    - provider:
+        keyARN: "arn:aws:kms:us-east-1:111122223333:key/abcd"
+      resources:
+        - secrets
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: names-log-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+    team: "a"
+  annotations:
+    hfl.dev/id: "log-group"
+spec:
+  name: "/aws/eks/team-a-prod-eks/cluster"
+  retentionDays: 90
+  tags:
+    Name: /aws/eks/team-a-prod-eks/cluster
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: names-encryption-policy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+    team: "a"
+  annotations:
+    hfl.dev/id: "encryption-policy"
+spec:
+  name: "team-a-prod-eks-encryption"
+  path: "/"
+  description: "Cluster encryption policy to allow cluster role to utilize CMK provided"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"kms:Encrypt\",\"kms:Decrypt\",\"kms:ListGrants\",\"kms:DescribeKey\"],\"Effect\":\"Allow\",\"Resource\":\"arn:aws:kms:us-east-1:111122223333:key/abcd\"}],\"Version\":\"2012-10-17\"}"
+---
+# Source: eks/templates/security-groups.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: names-cluster-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+    team: "a"
+  annotations:
+    hfl.dev/id: "security-group"
+spec:
+  name: "team-a-prod-eks-cp"
+  description: "EKS cluster security group"
+  vpcID: "vpc-1"
+  tags:
+    - key: "Name"
+      value: "team-a-prod-eks-cp"
+---
+# Source: eks/templates/security-groups.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: names-node-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+    team: "a"
+  annotations:
+    hfl.dev/id: "node-security-group"
+spec:
+  name: "team-a-prod-eks-nodes"
+  description: "EKS node shared security group"
+  vpcID: "vpc-1"
+  ingressRules:
+    - ipProtocol: "tcp"
+      fromPort: 10251
+      toPort: 10251
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 10251/tcp webhook","groupRef":{"from":{"name":"names-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 443
+      toPort: 443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node groups","groupRef":{"from":{"name":"names-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 4443
+      toPort: 4443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 4443/tcp webhook","groupRef":{"from":{"name":"names-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 6443
+      toPort: 6443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 6443/tcp webhook","groupRef":{"from":{"name":"names-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 8443
+      toPort: 8443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 8443/tcp webhook","groupRef":{"from":{"name":"names-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 9443
+      toPort: 9443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 9443/tcp webhook","groupRef":{"from":{"name":"names-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 10250
+      toPort: 10250
+      userIDGroupPairs:
+        - {"description":"Cluster API to node kubelets","groupRef":{"from":{"name":"names-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 1025
+      toPort: 65535
+      userIDGroupPairs:
+        - {"description":"Node to node ingress on ephemeral ports"}
+    - ipProtocol: "tcp"
+      fromPort: 53
+      toPort: 53
+      userIDGroupPairs:
+        - {"description":"Node to node CoreDNS"}
+    - ipProtocol: "udp"
+      fromPort: 53
+      toPort: 53
+      userIDGroupPairs:
+        - {"description":"Node to node CoreDNS UDP"}
+  egressRules:
+    - ipProtocol: "-1"
+      ipRanges:
+        - {"cidrIP":"0.0.0.0/0","description":"Allow all egress"}
+  tags:
+    - key: "Name"
+      value: "team-a-prod-eks-nodes"
+    - key: "kubernetes.io/cluster/team-a-prod-eks"
+      value: "owned"

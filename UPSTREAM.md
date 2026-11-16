@@ -51,7 +51,7 @@ charts use are copied in `crds/ack-extensions`.
 | `dynamodb-controller` | `v1.14.2` | `2fcea71a4f8d6049c9e03d729561a26735245346` | Table |
 | `sfn-controller` | `v1.9.1` | `8de3cc822d99a9fd8682789a21dd65acb0ecc3de` | StateMachine |
 | `cloudwatchlogs-controller` | `v1.10.0` | `01e3ea012e97a2bb079e8cd4c9c5036bb33ef217` | LogGroup |
-| `eks-controller` | `v1.26.0` | `2549d1be1a9f1841aaf3a4303a0d5696ea941473` | PodIdentityAssociation |
+| `eks-controller` | `v1.26.0` | `2549d1be1a9f1841aaf3a4303a0d5696ea941473` | PodIdentityAssociation, Cluster, Nodegroup, FargateProfile, AccessEntry, Addon, IdentityProviderConfig |
 | `secretsmanager-controller` | `v1.8.2` | `dc099cdc08aa51b1914962010afaecbe018395f9` | Secret |
 | `ecr-controller` | `v1.11.1` | `72590cedeb2a4a92d086175762a97aa2ed2bc979` | Repository, PullThroughCacheRule |
 | `elbv2-controller` | `v1.10.0` | `03c52d6cd1110c5f51e76ac11914deea190d7d88` | LoadBalancer, Listener, Rule, TargetGroup |

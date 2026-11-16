@@ -1,0 +1,17 @@
+# Names in full (docs/design.md, "Names, labels and tags"): each takes no
+# namePrefix.
+name: x
+names:
+  cluster: team-a-prod-eks
+  clusterRole: team-a-prod-eks-role
+  securityGroup: team-a-prod-eks-cp
+  nodeSecurityGroup: team-a-prod-eks-nodes
+  encryptionPolicy: team-a-prod-eks-encryption
+enable_irsa: false
+create_primary_security_group_tags: false
+create_kms_key: false
+encryption_config: {provider_key_arn: "arn:aws:kms:us-east-1:111122223333:key/abcd"}
+account_id: "111122223333"
+vpc_id: vpc-1
+subnet_ids: [subnet-1, subnet-2]
+labels: {team: a}

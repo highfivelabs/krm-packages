@@ -1,0 +1,91 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "Cluster Security Group", and node_groups.tf, "Node Security
+Group": the cluster's group and the nodes' shared group
+(aws_security_group) with their rules (aws_security_group_rule), which
+ACK keeps inline as SecurityGroup.ingressRules and egressRules. The node
+group's rules from the cluster group take it by reference (groupRef). The
+cluster group's rule from the node group (ingress_nodes_443) is not
+rendered: the two groups would reference each other, and ACK resolves a
+reference only once the referenced group is synced, so neither would be
+made (upstream.yaml, create_node_security_group).
+*/ -}}
+{{- $v := .Values -}}
+{{- if and $v.create $v.putin_khuylo }}
+{{- $cluster := include "ack.resourceName" (list $ "cluster" "EKS cluster" ($v.name | default "") 100) }}
+{{- $clusterSG := include "ack.name" (list .Release.Name "cluster-sg") }}
+{{- $nodeSG := include "ack.name" (list .Release.Name "node-sg") }}
+{{- if or $v.create_security_group $v.create_node_security_group }}
+{{- if not $v.vpc_id }}
+{{- fail "eks: vpc_id is required with create_security_group or create_node_security_group (the defaults): ACK's SecurityGroup needs its VPC's ID, and the chart cannot look up the account's default VPC, which Terraform takes when vpc_id is unset (docs/aws.md)" }}
+{{- end }}
+{{- end }}
+
+{{- if $v.create_security_group }}
+{{- $name := include "ack.resourceName" (list $ "securityGroup" "security group" ($v.security_group_name | default (printf "%s-cluster" $v.name)) 255) }}
+{{- $rules := dict }}
+{{- range $k, $r := $v.security_group_additional_rules | default dict }}
+{{- if $r.source_node_security_group }}
+{{- if $v.create_node_security_group }}
+{{- fail (printf "eks: security_group_additional_rules.%s.source_node_security_group is not supported with create_node_security_group: true: the node security group already references the cluster's, and ACK resolves a reference only once the referenced group is synced, so two groups that reference each other are never made; give the node group's ID as source_security_group_id (docs/aws.md)" $k) }}
+{{- end }}
+{{- end }}
+{{- $_ := set $rules $k $r }}
+{{- end }}
+---
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $clusterSG "id" "security-group" "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ $name | quote }}
+  description: {{ $v.security_group_description | quote }}
+  vpcID: {{ $v.vpc_id | quote }}
+{{- with include "eks.rules" (dict "root" $ "rules" $rules "sourceFlag" "source_node_security_group" "source" (dict "id" $v.node_security_group_id) "what" "security_group_additional_rules") | trim }}
+{{- . | nindent 2 }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags (dict "Name" $name) $v.security_group_tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- if $v.create_node_security_group }}
+{{- $name := include "ack.resourceName" (list $ "nodeSecurityGroup" "security group" ($v.node_security_group_name | default (printf "%s-node" $v.name)) 255) }}
+{{- $rules := dict
+  "ingress_cluster_443" (dict "description" "Cluster API to node groups" "protocol" "tcp" "from_port" 443 "to_port" 443 "type" "ingress" "source_cluster_security_group" true)
+  "ingress_cluster_kubelet" (dict "description" "Cluster API to node kubelets" "protocol" "tcp" "from_port" 10250 "to_port" 10250 "type" "ingress" "source_cluster_security_group" true)
+  "ingress_self_coredns_tcp" (dict "description" "Node to node CoreDNS" "protocol" "tcp" "from_port" 53 "to_port" 53 "type" "ingress" "self" true)
+  "ingress_self_coredns_udp" (dict "description" "Node to node CoreDNS UDP" "protocol" "udp" "from_port" 53 "to_port" 53 "type" "ingress" "self" true) }}
+{{- if $v.node_security_group_enable_recommended_rules }}
+{{- $_ := set $rules "ingress_nodes_ephemeral" (dict "description" "Node to node ingress on ephemeral ports" "protocol" "tcp" "from_port" 1025 "to_port" 65535 "type" "ingress" "self" true) }}
+{{- range $p := list 4443 10251 6443 8443 9443 }}
+{{- $_ := set $rules (printf "ingress_cluster_%d_webhook" $p) (dict "description" (printf "Cluster API to node %d/tcp webhook" $p) "protocol" "tcp" "from_port" $p "to_port" $p "type" "ingress" "source_cluster_security_group" true) }}
+{{- end }}
+{{- $egress := dict "description" "Allow all egress" "protocol" "-1" "from_port" 0 "to_port" 0 "type" "egress" "cidr_blocks" (list "0.0.0.0/0") }}
+{{- if eq $v.ip_family "ipv6" }}{{ $_ := set $egress "ipv6_cidr_blocks" (list "::/0") }}{{ end }}
+{{- $_ := set $rules "egress_all" $egress }}
+{{- end }}
+{{- range $k, $r := $v.node_security_group_additional_rules | default dict }}{{ $_ := set $rules $k $r }}{{ end }}
+{{- $src := dict "id" $v.security_group_id }}
+{{- if $v.create_security_group }}{{ $src = dict "ref" $clusterSG }}{{ end }}
+---
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $nodeSG "id" "node-security-group" "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ $name | quote }}
+  description: {{ $v.node_security_group_description | quote }}
+  vpcID: {{ $v.vpc_id | quote }}
+{{- with include "eks.rules" (dict "root" $ "rules" $rules "sourceFlag" "source_cluster_security_group" "source" $src "what" "node_security_group_additional_rules") | trim }}
+{{- . | nindent 2 }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags (dict "Name" $name (printf "kubernetes.io/cluster/%s" $cluster) "owned") $v.node_security_group_tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,31 @@
+# A cluster on resources made elsewhere: an existing role and security
+# groups (create_iam_role, create_security_group and
+# create_node_security_group false), an IPv6 cluster with the module's IPv6
+# CNI policy and a node group attaching it, and a Fargate profile on an
+# existing role.
+name: existing
+region: us-east-2
+account_id: "111122223333"
+ip_family: ipv6
+create_cni_ipv6_iam_policy: true
+enable_irsa: false
+create_primary_security_group_tags: false
+create_kms_key: false
+attach_encryption_policy: false
+encryption_config: {provider_key_arn: "arn:aws:kms:us-east-2:111122223333:key/abcd"}
+create_iam_role: false
+iam_role_arn: arn:aws:iam::111122223333:role/existing-cluster
+create_security_group: false
+security_group_id: sg-0cluster
+additional_security_group_ids: [sg-0extra, sg-0cluster]
+create_node_security_group: false
+subnet_ids: [subnet-abcde012, subnet-bcde012a]
+eks_managed_node_groups:
+  v6:
+    use_custom_launch_template: false
+fargate_profiles:
+  apps:
+    create_iam_role: false
+    iam_role_arn: arn:aws:iam::111122223333:role/fargate
+    subnet_ids: [subnet-abcde012]
+    selectors: [{namespace: apps}]
