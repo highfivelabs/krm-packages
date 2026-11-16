@@ -94,7 +94,8 @@ updated `part-1`'s document and made and attached `part-2`; all three
 objects `ACK.ResourceSynced`. A `Policy` is adopted by its ARN, not its
 name: each carries `services.k8s.aws/adoption-fields: {"arn": ...}` beside
 `adopt-or-create` (without it ACK called `CreatePolicy` and was refused
-`EntityAlreadyExists`).
+`EntityAlreadyExists`). Applied a third time the same day, with the
+actions the tests' fixture clean-ups and Auto Scaling groups need.
 
 `tests/ack-extensions-live-tests.values.yaml` is the instance for
 ack-extensions' live tests: the role `ack-extensions-live-tests` in the AWS
