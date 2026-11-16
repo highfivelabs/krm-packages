@@ -199,6 +199,13 @@ On 2026-11-16 (0.6.0, run `off-catalog-1116041737-16616`, config-connector-exten
 `IAMDenyPolicy` (`iam.gcp.hfl.dev`) on the organization Ready and deleted,
 with all 13 objects of the case.
 
+And on 2026-11-16 (0.7.0, run `off-catalog-1116143047-24863`,
+config-connector-extensions `5c223962`) with `logging_settings` added
+(config-connector-extensions' `LoggingSettings`): all 14 objects Ready,
+the outputs evaluated (`logging_identities.kms` the organization's Log
+Router service account; mockgcp returns no `loggingServiceAccountId`, so
+`logging` was null), all deleted.
+
 Not applied live: live runs are pending KEYLIVE, and a live run needs an
 organization the test identity may change (nothing can create one).
 

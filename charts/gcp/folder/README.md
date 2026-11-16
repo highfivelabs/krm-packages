@@ -124,6 +124,19 @@ kind for `google_scc_v2_folder_mute_config` (config-connector-extensions'
   delete a service identity. config-connector-extensions #141 (in
   `a65d1edb`, the pin since then) resolves nothing on delete, and the
   service agent is back in `tests/mock.values.yaml` (Tests, below).
+- **config-connector-extensions' `LoggingSettings` on a `Folder` object
+  cannot be deleted once the `Folder` object is gone**, though it is
+  abandoned (config-connector-extensions `5c223962`, run
+  `off-catalog-1116143047-24863`): Ready, then, when every object was
+  deleted at once, stuck with "Update call failed: referenced Folder
+  catalog-folder/mock not found": it resolves `folderRef.name` even to
+  abandon, and its delete changes nothing in the cloud. The fix is the
+  one #141 made for `ServiceIdentity` (resolve nothing on delete); until
+  then the fake-cloud case leaves `logging_settings` out, and a component
+  that makes its folder should drop `logging_settings` before it is
+  deleted (or remove the object's finalizer). On an existing folder
+  (`folder_create: false`) the reference is external and nothing needs
+  resolving.
 
 ## Upstream
 
@@ -175,6 +188,12 @@ On 2026-11-16 (run `off-catalog-1116041737-16616`, config-connector-extensions
 `a65d1edb`) with the service agent back: the `ServiceIdentity` on the
 `Folder` object Ready (`service_agents` evaluated) and deleted with
 everything else at once, all 9 objects of the case.
+
+And on 2026-11-16 (0.5.0, run `off-catalog-1116143047-24863`,
+config-connector-extensions `5c223962`) with `logging_settings` added:
+every object Ready and the outputs evaluated; all deleted but the
+`LoggingSettings` ("Config Connector bugs"); the case no longer sets it,
+and it is render-tested (`full`, `existing`).
 
 Not applied live: live runs are pending KEYLIVE (and the test provisioner's
 folder, `docs/design.md`, "The test provisioner").

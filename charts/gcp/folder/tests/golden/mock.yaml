@@ -174,25 +174,6 @@ spec:
   interceptChildren: true
   disabled: false
 ---
-# Source: folder/templates/logging.yaml
-apiVersion: logging.gcp.hfl.dev/v1beta1
-kind: LoggingSettings
-metadata:
-  name: mock-logging-settings
-  labels:
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: "mock"
-    app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.5.0"
-  annotations:
-    hfl.dev/id: "logging-settings"
-    cnrm.cloud.google.com/deletion-policy: abandon
-spec:
-  folderRef:
-    name: mock
-  disableDefaultSink: true
-  storageLocation: "europe-west1"
----
 # Source: folder/templates/service-agents.yaml
 apiVersion: serviceusage.gcp.hfl.dev/v1beta1
 kind: ServiceIdentity
