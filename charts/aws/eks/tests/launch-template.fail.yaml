@@ -1,0 +1,10 @@
+# expect: eks: eks_managed_node_groups.ng.use_custom_launch_template is not supported
+name: x
+vpc_id: vpc-1
+subnet_ids: [subnet-1]
+enable_irsa: false
+create_primary_security_group_tags: false
+create_kms_key: false
+attach_encryption_policy: false
+encryption_config: null
+eks_managed_node_groups: {ng: {}}

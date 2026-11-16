@@ -1791,114 +1791,114 @@ aws,vpc,vpc_tags,map(string),yes,,
 aws,vpc,vpn_gateway_az,string,no,"the VPN gateway is not ported: ack-extensions' VPNGateway takes the VPC as a plain ID (spec.vpc) and VPNGatewayRoutePropagation the route table as a plain ID (spec.routeTableID), both known only after apply; neither has a reference field",gap
 aws,vpc,vpn_gateway_id,string,no,"the VPN gateway is not ported: ack-extensions' VPNGateway takes the VPC as a plain ID (spec.vpc) and VPNGatewayRoutePropagation the route table as a plain ID (spec.routeTableID), both known only after apply; neither has a reference field",gap
 aws,vpc,vpn_gateway_tags,map(string),no,"the VPN gateway is not ported: ack-extensions' VPNGateway takes the VPC as a plain ID (spec.vpc) and VPNGatewayRoutePropagation the route table as a plain ID (spec.routeTableID), both known only after apply; neither has a reference field",gap
-aws,eks,access_entries,"map(object({kubernetes_groups, policy_associations, principal_arn, tags, type, user_name}))",no,,no-chart
-aws,eks,additional_security_group_ids,list(string),no,,no-chart
-aws,eks,addons,"map(object({addon_version, before_compute, configuration_values, most_recent, name, namespace_config, +7}))",no,,no-chart
-aws,eks,addons_timeouts,"object({create, delete, update})",no,,no-chart
-aws,eks,attach_encryption_policy,bool,no,,no-chart
-aws,eks,authentication_mode,string,no,,no-chart
-aws,eks,cloudwatch_log_group_class,string,no,,no-chart
-aws,eks,cloudwatch_log_group_kms_key_id,string,no,,no-chart
-aws,eks,cloudwatch_log_group_retention_in_days,number,no,,no-chart
-aws,eks,cloudwatch_log_group_tags,map(string),no,,no-chart
-aws,eks,cluster_tags,map(string),no,,no-chart
-aws,eks,compute_config,"object({enabled, node_pools, node_role_arn})",no,,no-chart
-aws,eks,control_plane_egress_mode,string,no,,no-chart
-aws,eks,control_plane_scaling_config,object({tier}),no,,no-chart
-aws,eks,control_plane_subnet_ids,list(string),no,,no-chart
-aws,eks,create,bool,no,,no-chart
-aws,eks,create_auto_mode_iam_resources,bool,no,,no-chart
-aws,eks,create_cloudwatch_log_group,bool,no,,no-chart
-aws,eks,create_cni_ipv6_iam_policy,bool,no,,no-chart
-aws,eks,create_iam_role,bool,no,,no-chart
-aws,eks,create_kms_key,bool,no,,no-chart
-aws,eks,create_node_iam_role,bool,no,,no-chart
-aws,eks,create_node_security_group,bool,no,,no-chart
-aws,eks,create_primary_security_group_tags,bool,no,,no-chart
-aws,eks,create_security_group,bool,no,,no-chart
-aws,eks,custom_oidc_thumbprints,list(string),no,,no-chart
-aws,eks,dataplane_wait_duration,string,no,,no-chart
-aws,eks,deletion_protection,bool,no,,no-chart
-aws,eks,eks_managed_node_groups,"map(object({ami_id, ami_release_version, ami_type, attach_cluster_primary_security_group, block_device_mappings, bootstrap_extra_args, +81}))",no,,no-chart
-aws,eks,enable_auto_mode_block_storage_policy_v2,bool,no,,no-chart
-aws,eks,enable_auto_mode_custom_tags,bool,no,,no-chart
-aws,eks,enable_cluster_creator_admin_permissions,bool,no,,no-chart
-aws,eks,enable_irsa,bool,no,,no-chart
-aws,eks,enable_kms_key_rotation,bool,no,,no-chart
-aws,eks,enabled_log_types,list(string),no,,no-chart
-aws,eks,encryption_config,"object({provider_key_arn, resources})",no,,no-chart
-aws,eks,encryption_policy_description,string,no,,no-chart
-aws,eks,encryption_policy_name,string,no,,no-chart
-aws,eks,encryption_policy_path,string,no,,no-chart
-aws,eks,encryption_policy_tags,map(string),no,,no-chart
-aws,eks,encryption_policy_use_name_prefix,bool,no,,no-chart
-aws,eks,endpoint_private_access,bool,no,,no-chart
-aws,eks,endpoint_public_access,bool,no,,no-chart
-aws,eks,endpoint_public_access_cidrs,list(string),no,,no-chart
-aws,eks,fargate_profiles,"map(object({create, create_iam_role, create_iam_role_policy, iam_role_additional_policies, iam_role_arn, iam_role_attach_cni_policy, +12}))",no,,no-chart
-aws,eks,force_update_version,bool,no,,no-chart
-aws,eks,iam_role_additional_policies,map(string),no,,no-chart
-aws,eks,iam_role_arn,string,no,,no-chart
-aws,eks,iam_role_description,string,no,,no-chart
-aws,eks,iam_role_name,string,no,,no-chart
-aws,eks,iam_role_path,string,no,,no-chart
-aws,eks,iam_role_permissions_boundary,string,no,,no-chart
-aws,eks,iam_role_tags,map(string),no,,no-chart
-aws,eks,iam_role_use_name_prefix,bool,no,,no-chart
-aws,eks,identity_providers,"map(object({client_id, groups_claim, groups_prefix, identity_provider_config_name, issuer_url, required_claims, +3}))",no,,no-chart
-aws,eks,include_oidc_root_ca_thumbprint,bool,no,,no-chart
-aws,eks,ip_family,string,no,,no-chart
-aws,eks,kms_key_administrators,list(string),no,,no-chart
-aws,eks,kms_key_aliases,list(string),no,,no-chart
-aws,eks,kms_key_deletion_window_in_days,number,no,,no-chart
-aws,eks,kms_key_description,string,no,,no-chart
-aws,eks,kms_key_enable_default_policy,bool,no,,no-chart
-aws,eks,kms_key_override_policy_documents,list(string),no,,no-chart
-aws,eks,kms_key_owners,list(string),no,,no-chart
-aws,eks,kms_key_rotation_period_in_days,number,no,,no-chart
-aws,eks,kms_key_service_users,list(string),no,,no-chart
-aws,eks,kms_key_source_policy_documents,list(string),no,,no-chart
-aws,eks,kms_key_users,list(string),no,,no-chart
-aws,eks,kube_api_server_config,"object({event_ttl, service_node_port_range})",no,,no-chart
-aws,eks,kube_controller_manager_config,object({horizontal_pod_autoscaler_controller_config}),no,,no-chart
-aws,eks,kube_scheduler_config,object({node_resources_fit}),no,,no-chart
-aws,eks,kubernetes_version,string,no,,no-chart
-aws,eks,name,string,no,,no-chart
-aws,eks,node_iam_role_additional_policies,map(string),no,,no-chart
-aws,eks,node_iam_role_description,string,no,,no-chart
-aws,eks,node_iam_role_name,string,no,,no-chart
-aws,eks,node_iam_role_path,string,no,,no-chart
-aws,eks,node_iam_role_permissions_boundary,string,no,,no-chart
-aws,eks,node_iam_role_tags,map(string),no,,no-chart
-aws,eks,node_iam_role_use_name_prefix,bool,no,,no-chart
-aws,eks,node_security_group_additional_rules,"map(object({cidr_blocks, description, from_port, ipv6_cidr_blocks, prefix_list_ids, protocol, +5}))",no,,no-chart
-aws,eks,node_security_group_description,string,no,,no-chart
-aws,eks,node_security_group_enable_recommended_rules,bool,no,,no-chart
-aws,eks,node_security_group_id,string,no,,no-chart
-aws,eks,node_security_group_name,string,no,,no-chart
-aws,eks,node_security_group_tags,map(string),no,,no-chart
-aws,eks,node_security_group_use_name_prefix,bool,no,,no-chart
-aws,eks,openid_connect_audiences,list(string),no,,no-chart
-aws,eks,outpost_config,"object({control_plane_instance_type, control_plane_placement, outpost_arns})",no,,no-chart
-aws,eks,prefix_separator,string,no,,no-chart
-aws,eks,putin_khuylo,bool,no,,no-chart
-aws,eks,region,string,no,,no-chart
-aws,eks,remote_network_config,"object({remote_node_networks, remote_pod_networks})",no,,no-chart
-aws,eks,security_group_additional_rules,"map(object({cidr_blocks, description, from_port, ipv6_cidr_blocks, prefix_list_ids, protocol, +5}))",no,,no-chart
-aws,eks,security_group_description,string,no,,no-chart
-aws,eks,security_group_id,string,no,,no-chart
-aws,eks,security_group_name,string,no,,no-chart
-aws,eks,security_group_tags,map(string),no,,no-chart
-aws,eks,security_group_use_name_prefix,bool,no,,no-chart
-aws,eks,self_managed_node_groups,"map(object({additional_cluster_dns_ips, ami_id, ami_type, attach_cluster_primary_security_group, autoscaling_group_tags, availability_zones, +96}))",no,,no-chart
-aws,eks,service_ipv4_cidr,string,no,,no-chart
-aws,eks,service_ipv6_cidr,string,no,,no-chart
-aws,eks,subnet_ids,list(string),no,,no-chart
-aws,eks,tags,map(string),no,,no-chart
-aws,eks,timeouts,"object({create, delete, update})",no,,no-chart
-aws,eks,upgrade_policy,object({support_type}),no,,no-chart
-aws,eks,vpc_id,string,no,,no-chart
-aws,eks,zonal_shift_config,object({enabled}),no,,no-chart
+aws,eks,access_entries,"map(object({kubernetes_groups, policy_associations, principal_arn, tags, type, user_name}))",yes,,
+aws,eks,additional_security_group_ids,list(string),partial,"accepted with create_security_group: false; with the chart's own cluster security group it is refused, since ACK's Cluster cannot take group references and IDs together",gap
+aws,eks,addons,"map(object({addon_version, before_compute, configuration_values, most_recent, name, namespace_config, +7}))",partial,"accepted, but namespace_config (no field on ACK's Addon), most_recent (unset addon_version takes EKS's default version, not the most recent: the module looks the version up), resolve_conflicts_on_create (ACK's Addon has one resolveConflicts, set from resolve_conflicts_on_update), preserve (ACK deletes an add-on's Kubernetes objects with it), before_compute (no ordering against node groups) and timeouts are not carried",gap
+aws,eks,addons_timeouts,"object({create, delete, update})",no,"Terraform's add-on timeouts: ACK retries until each add-on is synced, and Bundt waits for it",by-design
+aws,eks,attach_encryption_policy,bool,partial,"accepted with encryption_config.provider_key_arn (create_kms_key: false); with the key this render makes, true (the default) is refused: the policy names the key's ARN, which exists only in the Key's status, and an IAM policy document has no reference. The key policy already grants the cluster role the key (KeyUsage), so set attach_encryption_policy: false",gap
+aws,eks,authentication_mode,string,yes,,
+aws,eks,cloudwatch_log_group_class,string,no,ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no log group class field,gap
+aws,eks,cloudwatch_log_group_kms_key_id,string,yes,,
+aws,eks,cloudwatch_log_group_retention_in_days,number,yes,,
+aws,eks,cloudwatch_log_group_tags,map(string),yes,,
+aws,eks,cluster_tags,map(string),yes,,
+aws,eks,compute_config,"object({enabled, node_pools, node_role_arn})",yes,,
+aws,eks,control_plane_egress_mode,string,yes,,
+aws,eks,control_plane_scaling_config,object({tier}),yes,,
+aws,eks,control_plane_subnet_ids,list(string),yes,,
+aws,eks,create,bool,yes,,
+aws,eks,create_auto_mode_iam_resources,bool,yes,,
+aws,eks,create_cloudwatch_log_group,bool,yes,,
+aws,eks,create_cni_ipv6_iam_policy,bool,yes,,
+aws,eks,create_iam_role,bool,yes,,
+aws,eks,create_kms_key,bool,partial,"accepted, but kms_key_administrators is required with it (Terraform defaults it to the caller, which a render does not know) and so is account_id (the key policy's Default statement and the cluster role's ARN name the account)",gap
+aws,eks,create_node_iam_role,bool,yes,,
+aws,eks,create_node_security_group,bool,partial,"accepted, but with create_security_group the cluster group's rule from the node group (ingress_nodes_443) is not rendered: the node group's rules reference the cluster group, and ACK resolves a reference only once the referenced group is synced, so two groups that reference each other would never be made. Nodes reach the API through the cluster's primary security group, which EKS attaches to managed node groups without a custom launch template",gap
+aws,eks,create_primary_security_group_tags,bool,partial,"accepted false; true (the default) is refused: aws_ec2_tag tags the security group EKS makes for the cluster, which no ACK or ack-extensions kind owns (its ID exists only in the Cluster's status)",gap
+aws,eks,create_security_group,bool,yes,,
+aws,eks,custom_oidc_thumbprints,list(string),no,"used only with enable_irsa, which is accepted only false",gap
+aws,eks,dataplane_wait_duration,string,no,"a time_sleep between the cluster and its node groups: ACK's clusterRef already holds node groups, Fargate profiles and add-ons until the cluster is synced, and a render has no sleep",by-design
+aws,eks,deletion_protection,bool,yes,,
+aws,eks,eks_managed_node_groups,"map(object({ami_id, ami_release_version, ami_type, attach_cluster_primary_security_group, block_device_mappings, bootstrap_extra_args, +81}))",partial,"accepted with use_custom_launch_template: false (EKS's own launch template); a custom launch template (the default) is refused, with every field only it carries (AMI ID, user data, block devices, metadata, network interfaces, placement and the rest), because ACK's LaunchTemplate takes security group IDs only, with no reference to the node security group this render makes. The group's own security group (only on a custom launch template), node_repair_config and warm_pool_config (no field on ACK's Nodegroup), force_update_version, update_config.update_strategy and timeouts are refused; use_name_prefix and iam_role_use_name_prefix name the group and role as given (no random suffix)",gap
+aws,eks,enable_auto_mode_block_storage_policy_v2,bool,yes,,
+aws,eks,enable_auto_mode_custom_tags,bool,yes,,
+aws,eks,enable_cluster_creator_admin_permissions,bool,partial,"accepted: true sets the cluster's bootstrapClusterCreatorAdminPermissions, which gives the identity that creates the cluster (ACK's eks-controller role, not a Terraform caller) cluster admin through EKS's own access entry; the module's access entry for the caller cannot be built, since a render does not know who applies it",by-design
+aws,eks,enable_irsa,bool,partial,"accepted false; true (the default) is refused: the IAM OpenIDConnectProvider needs the cluster's OIDC issuer URL, which exists only in the Cluster's status, and ACK's OpenIDConnectProvider takes it only as a string, with no reference; make it in a second component from this one's cluster_oidc_issuer_url output",gap
+aws,eks,enable_kms_key_rotation,bool,yes,,
+aws,eks,enabled_log_types,list(string),yes,,
+aws,eks,encryption_config,"object({provider_key_arn, resources})",yes,,
+aws,eks,encryption_policy_description,string,yes,,
+aws,eks,encryption_policy_name,string,yes,,
+aws,eks,encryption_policy_path,string,yes,,
+aws,eks,encryption_policy_tags,map(string),yes,,
+aws,eks,encryption_policy_use_name_prefix,bool,partial,"accepted: true (the default) names the cluster encryption policy as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' policies apart",gap
+aws,eks,endpoint_private_access,bool,yes,,
+aws,eks,endpoint_public_access,bool,yes,,
+aws,eks,endpoint_public_access_cidrs,list(string),yes,,
+aws,eks,fargate_profiles,"map(object({create, create_iam_role, create_iam_role_policy, iam_role_additional_policies, iam_role_arn, iam_role_attach_cni_policy, +12}))",partial,"accepted, but each profile's timeouts is refused (ACK retries until synced), and iam_role_use_name_prefix: true names the role as given (no random suffix); a profile's role trust names the cluster's account and region, so account_id and region are required",gap
+aws,eks,force_update_version,bool,no,ACK's Cluster (eks-controller v1.26.0) has no field to force a version update past pod disruption budgets,gap
+aws,eks,iam_role_additional_policies,map(string),yes,,
+aws,eks,iam_role_arn,string,yes,,
+aws,eks,iam_role_description,string,yes,,
+aws,eks,iam_role_name,string,yes,,
+aws,eks,iam_role_path,string,yes,,
+aws,eks,iam_role_permissions_boundary,string,yes,,
+aws,eks,iam_role_tags,map(string),yes,,
+aws,eks,iam_role_use_name_prefix,bool,partial,"accepted: true (the default) names the cluster IAM role as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' roles apart",gap
+aws,eks,identity_providers,"map(object({client_id, groups_claim, groups_prefix, identity_provider_config_name, issuer_url, required_claims, +3}))",yes,,
+aws,eks,include_oidc_root_ca_thumbprint,bool,no,"used only with enable_irsa, which is accepted only false (the thumbprint is read from the issuer's TLS certificate, which a render cannot fetch)",gap
+aws,eks,ip_family,string,yes,,
+aws,eks,kms_key_administrators,list(string),yes,,
+aws,eks,kms_key_aliases,list(string),yes,,
+aws,eks,kms_key_deletion_window_in_days,number,no,"ACK's Key (kms-controller v1.7.0) has no field for the waiting period before deletion (KMS's default, 30 days, applies)",gap
+aws,eks,kms_key_description,string,yes,,
+aws,eks,kms_key_enable_default_policy,bool,yes,,
+aws,eks,kms_key_override_policy_documents,list(string),yes,,
+aws,eks,kms_key_owners,list(string),yes,,
+aws,eks,kms_key_rotation_period_in_days,number,no,"ACK's Key has no rotation period field (enable_kms_key_rotation is supported, with KMS's default period, 365 days)",gap
+aws,eks,kms_key_service_users,list(string),yes,,
+aws,eks,kms_key_source_policy_documents,list(string),yes,,
+aws,eks,kms_key_users,list(string),yes,,
+aws,eks,kube_api_server_config,"object({event_ttl, service_node_port_range})",yes,,
+aws,eks,kube_controller_manager_config,object({horizontal_pod_autoscaler_controller_config}),yes,,
+aws,eks,kube_scheduler_config,object({node_resources_fit}),yes,,
+aws,eks,kubernetes_version,string,yes,,
+aws,eks,name,string,yes,,
+aws,eks,node_iam_role_additional_policies,map(string),yes,,
+aws,eks,node_iam_role_description,string,yes,,
+aws,eks,node_iam_role_name,string,yes,,
+aws,eks,node_iam_role_path,string,yes,,
+aws,eks,node_iam_role_permissions_boundary,string,yes,,
+aws,eks,node_iam_role_tags,map(string),yes,,
+aws,eks,node_iam_role_use_name_prefix,bool,partial,"accepted: true (the default) names the EKS Auto Mode node IAM role as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' roles apart",gap
+aws,eks,node_security_group_additional_rules,"map(object({cidr_blocks, description, from_port, ipv6_cidr_blocks, prefix_list_ids, protocol, +5}))",yes,,
+aws,eks,node_security_group_description,string,yes,,
+aws,eks,node_security_group_enable_recommended_rules,bool,yes,,
+aws,eks,node_security_group_id,string,partial,"accepted, but it has no effect: the module attaches it only through a node group's custom launch template, which is refused",gap
+aws,eks,node_security_group_name,string,yes,,
+aws,eks,node_security_group_tags,map(string),yes,,
+aws,eks,node_security_group_use_name_prefix,bool,partial,"accepted: true (the default) names the node security group as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' groups apart",gap
+aws,eks,openid_connect_audiences,list(string),no,"used only with enable_irsa, which is accepted only false",gap
+aws,eks,outpost_config,"object({control_plane_instance_type, control_plane_placement, outpost_arns})",yes,,
+aws,eks,prefix_separator,string,partial,"accepted, but it has no effect: it joins a name to Terraform's random suffix (the *_use_name_prefix variables), which the chart never adds, since a render must not change between plans",by-design
+aws,eks,putin_khuylo,bool,yes,,
+aws,eks,region,string,yes,,
+aws,eks,remote_network_config,"object({remote_node_networks, remote_pod_networks})",yes,,
+aws,eks,security_group_additional_rules,"map(object({cidr_blocks, description, from_port, ipv6_cidr_blocks, prefix_list_ids, protocol, +5}))",partial,"accepted, except source_node_security_group: true: the node security group already references the cluster's, and ACK resolves a reference only once the referenced group is synced, so two groups that reference each other are never made; give the node group's ID as source_security_group_id from another component",gap
+aws,eks,security_group_description,string,yes,,
+aws,eks,security_group_id,string,yes,,
+aws,eks,security_group_name,string,yes,,
+aws,eks,security_group_tags,map(string),yes,,
+aws,eks,security_group_use_name_prefix,bool,partial,"accepted: true (the default) names the cluster security group as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' groups apart",gap
+aws,eks,self_managed_node_groups,"map(object({additional_cluster_dns_ips, ami_id, ami_type, attach_cluster_primary_security_group, autoscaling_group_tags, availability_zones, +96}))",no,"an Auto Scaling group with a launch template whose user data needs the cluster's endpoint and certificate authority (both only in the Cluster's status) and whose security groups need the node group's ID (ACK's LaunchTemplate takes security group IDs only, with no reference); autoscaling-controller is not pinned either",gap
+aws,eks,service_ipv4_cidr,string,yes,,
+aws,eks,service_ipv6_cidr,string,no,ACK's Cluster (eks-controller v1.26.0) has no serviceIPv6CIDR field (EKS assigns an IPv6 cluster's service range),gap
+aws,eks,subnet_ids,list(string),yes,,
+aws,eks,tags,map(string),yes,,
+aws,eks,timeouts,"object({create, delete, update})",no,"Terraform's create, update and delete timeouts: ACK retries until the cluster is synced, and Bundt waits for it",by-design
+aws,eks,upgrade_policy,object({support_type}),yes,,
+aws,eks,vpc_id,string,yes,,
+aws,eks,zonal_shift_config,object({enabled}),yes,,
 aws,kms,aliases,list(string),yes,,
 aws,kms,aliases_use_name_prefix,bool,no,an alias name with a random suffix (name_prefix) would change between renders,gap
 aws,kms,bypass_policy_lockout_safety_check,bool,yes,,

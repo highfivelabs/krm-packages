@@ -1,0 +1,10 @@
+# expect: names: Additional property eks is not allowed
+name: x
+names: {eks: y}
+vpc_id: vpc-1
+subnet_ids: [subnet-1]
+enable_irsa: false
+create_primary_security_group_tags: false
+create_kms_key: false
+attach_encryption_policy: false
+encryption_config: null

@@ -1,0 +1,428 @@
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: basic-cluster-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster-role"
+spec:
+  name: "example-cluster"
+  path: "/"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\",\"sts:TagSession\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"eks.amazonaws.com\"]},\"Sid\":\"EKSClusterAssumeRole\"}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+  tags:
+    - key: "Environment"
+      value: "dev"
+    - key: "Terraform"
+      value: "true"
+---
+# Source: eks/templates/node-groups.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: basic-node-group-role-example
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam-role-node-group-example"
+spec:
+  name: "example-eks-node-group"
+  path: "/"
+  description: "EKS managed node group IAM role"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"ec2.amazonaws.com\"]},\"Sid\":\"EKSNodeAssumeRole\"}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+    - "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+    - "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+  tags:
+    - key: "Environment"
+      value: "dev"
+    - key: "Terraform"
+      value: "true"
+---
+# Source: eks/templates/access.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: AccessEntry
+metadata:
+  name: basic-access-entry-ops
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "access-entry-ops"
+spec:
+  clusterRef:
+    from:
+      name: basic-cluster
+  principalARN: "arn:aws:iam::111122223333:role/ops"
+  type: "STANDARD"
+  accessPolicies:
+    - policyARN: "arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy"
+      accessScope:
+        type: "namespace"
+        namespaces:
+          - default
+  tags:
+    Environment: dev
+    Terraform: "true"
+---
+# Source: eks/templates/access.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Addon
+metadata:
+  name: basic-addon-coredns
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "addon-coredns"
+spec:
+  name: "coredns"
+  clusterRef:
+    from:
+      name: basic-cluster
+  resolveConflicts: "OVERWRITE"
+  tags:
+    Environment: dev
+    Terraform: "true"
+---
+# Source: eks/templates/access.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Addon
+metadata:
+  name: basic-addon-eks-pod-identity-agent
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "addon-eks-pod-identity-agent"
+spec:
+  name: "eks-pod-identity-agent"
+  clusterRef:
+    from:
+      name: basic-cluster
+  resolveConflicts: "OVERWRITE"
+  tags:
+    Environment: dev
+    Terraform: "true"
+---
+# Source: eks/templates/access.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Addon
+metadata:
+  name: basic-addon-kube-proxy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "addon-kube-proxy"
+spec:
+  name: "kube-proxy"
+  clusterRef:
+    from:
+      name: basic-cluster
+  resolveConflicts: "OVERWRITE"
+  tags:
+    Environment: dev
+    Terraform: "true"
+---
+# Source: eks/templates/access.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Addon
+metadata:
+  name: basic-addon-vpc-cni
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "addon-vpc-cni"
+spec:
+  name: "vpc-cni"
+  clusterRef:
+    from:
+      name: basic-cluster
+  resolveConflicts: "OVERWRITE"
+  tags:
+    Environment: dev
+    Terraform: "true"
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: kms.services.k8s.aws/v1alpha1
+kind: Alias
+metadata:
+  name: basic-kms-alias-cluster
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "kms-alias-cluster"
+spec:
+  name: "alias/eks/example"
+  targetKeyRef:
+    from:
+      name: basic-kms-key
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Cluster
+metadata:
+  name: basic-cluster
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster"
+spec:
+  name: "example"
+  version: "1.33"
+  roleRef:
+    from:
+      name: basic-cluster-role
+  accessConfig:
+    authenticationMode: "API_AND_CONFIG_MAP"
+    bootstrapClusterCreatorAdminPermissions: true
+  bootstrapSelfManagedAddons: false
+  logging:
+    clusterLogging:
+      - enabled: true
+        types:
+          - audit
+          - api
+          - authenticator
+  resourcesVPCConfig:
+    securityGroupRefs:
+      - from:
+          name: basic-cluster-sg
+    subnetIDs:
+      - subnet-xyzde987
+      - subnet-slkjf456
+      - subnet-qeiru789
+    endpointPrivateAccess: true
+    endpointPublicAccess: true
+    publicAccessCIDRs:
+      - 0.0.0.0/0
+  kubernetesNetworkConfig:
+    ipFamily: "ipv4"
+  encryptionConfig:
+    - provider:
+        keyRef:
+          from:
+            name: basic-kms-key
+      resources:
+        - secrets
+  tags:
+    Environment: dev
+    Terraform: "true"
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: kms.services.k8s.aws/v1alpha1
+kind: Key
+metadata:
+  name: basic-kms-key
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "kms-key"
+spec:
+  description: "example cluster encryption key"
+  keyUsage: ENCRYPT_DECRYPT
+  enableKeyRotation: true
+  multiRegion: false
+  policy: "{\"Statement\":[{\"Action\":[\"kms:*\"],\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam::111122223333:root\"]},\"Resource\":[\"*\"],\"Sid\":\"Default\"},{\"Action\":[\"kms:Create*\",\"kms:Describe*\",\"kms:Enable*\",\"kms:List*\",\"kms:Put*\",\"kms:Update*\",\"kms:Revoke*\",\"kms:Disable*\",\"kms:Get*\",\"kms:Delete*\",\"kms:TagResource\",\"kms:UntagResource\",\"kms:ScheduleKeyDeletion\",\"kms:CancelKeyDeletion\",\"kms:ReplicateKey\",\"kms:ImportKeyMaterial\"],\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam::111122223333:role/admin\"]},\"Resource\":[\"*\"],\"Sid\":\"KeyAdministration\"},{\"Action\":[\"kms:Encrypt\",\"kms:Decrypt\",\"kms:ReEncrypt*\",\"kms:GenerateDataKey*\",\"kms:DescribeKey\"],\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam::111122223333:role/example-cluster\"]},\"Resource\":[\"*\"],\"Sid\":\"KeyUsage\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - tagKey: "Environment"
+      tagValue: "dev"
+    - tagKey: "Terraform"
+      tagValue: "true"
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: basic-log-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group"
+spec:
+  name: "/aws/eks/example/cluster"
+  retentionDays: 90
+  tags:
+    Environment: dev
+    Name: /aws/eks/example/cluster
+    Terraform: "true"
+---
+# Source: eks/templates/node-groups.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Nodegroup
+metadata:
+  name: basic-node-group-example
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "node-group-example"
+spec:
+  name: "example"
+  clusterRef:
+    from:
+      name: basic-cluster
+  nodeRoleRef:
+    from:
+      name: basic-node-group-role-example
+  subnets:
+    - subnet-abcde012
+    - subnet-bcde012a
+    - subnet-fghi345a
+  scalingConfig:
+    minSize: 2
+    maxSize: 10
+    desiredSize: 2
+  amiType: "AL2023_x86_64_STANDARD"
+  version: "1.33"
+  capacityType: "ON_DEMAND"
+  instanceTypes:
+    - m5.xlarge
+  updateConfig:
+    maxUnavailablePercentage: 33
+  tags:
+    Environment: dev
+    Name: example
+    Terraform: "true"
+---
+# Source: eks/templates/security-groups.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: basic-cluster-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "security-group"
+spec:
+  name: "example-cluster"
+  description: "EKS cluster security group"
+  vpcID: "vpc-1234556abcdef"
+  tags:
+    - key: "Environment"
+      value: "dev"
+    - key: "Name"
+      value: "example-cluster"
+    - key: "Terraform"
+      value: "true"
+---
+# Source: eks/templates/security-groups.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: basic-node-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "node-security-group"
+spec:
+  name: "example-node"
+  description: "EKS node shared security group"
+  vpcID: "vpc-1234556abcdef"
+  ingressRules:
+    - ipProtocol: "tcp"
+      fromPort: 10251
+      toPort: 10251
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 10251/tcp webhook","groupRef":{"from":{"name":"basic-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 443
+      toPort: 443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node groups","groupRef":{"from":{"name":"basic-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 4443
+      toPort: 4443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 4443/tcp webhook","groupRef":{"from":{"name":"basic-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 6443
+      toPort: 6443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 6443/tcp webhook","groupRef":{"from":{"name":"basic-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 8443
+      toPort: 8443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 8443/tcp webhook","groupRef":{"from":{"name":"basic-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 9443
+      toPort: 9443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 9443/tcp webhook","groupRef":{"from":{"name":"basic-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 10250
+      toPort: 10250
+      userIDGroupPairs:
+        - {"description":"Cluster API to node kubelets","groupRef":{"from":{"name":"basic-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 1025
+      toPort: 65535
+      userIDGroupPairs:
+        - {"description":"Node to node ingress on ephemeral ports"}
+    - ipProtocol: "tcp"
+      fromPort: 53
+      toPort: 53
+      userIDGroupPairs:
+        - {"description":"Node to node CoreDNS"}
+    - ipProtocol: "udp"
+      fromPort: 53
+      toPort: 53
+      userIDGroupPairs:
+        - {"description":"Node to node CoreDNS UDP"}
+  egressRules:
+    - ipProtocol: "-1"
+      ipRanges:
+        - {"cidrIP":"0.0.0.0/0","description":"Allow all egress"}
+  tags:
+    - key: "Environment"
+      value: "dev"
+    - key: "Name"
+      value: "example-node"
+    - key: "Terraform"
+      value: "true"
+    - key: "kubernetes.io/cluster/example"
+      value: "owned"

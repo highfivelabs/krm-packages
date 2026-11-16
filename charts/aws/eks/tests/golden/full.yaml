@@ -1,0 +1,619 @@
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: full-cluster-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster-role"
+spec:
+  name: "full-control-plane"
+  path: "/eks/"
+  description: "The full cluster's role"
+  permissionsBoundary: "arn:aws:iam::111122223333:policy/boundary"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\",\"sts:TagSession\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"eks.amazonaws.com\"]},\"Sid\":\"EKSClusterAssumeRole\"}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+    - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+    - "arn:aws:iam::111122223333:policy/eks/full-control-plane-ClusterEncryption"
+  tags:
+    - key: "Environment"
+      value: "test"
+    - key: "Role"
+      value: "cluster"
+---
+# Source: eks/templates/node-groups.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: full-node-group-role-general
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam-role-node-group-general"
+spec:
+  name: "general-nodes"
+  path: "/"
+  description: "EKS managed node group IAM role"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"ec2.amazonaws.com\"]},\"Sid\":\"EKSNodeAssumeRole\"}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+    - "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+    - "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+    - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  inlinePolicies:
+    "general-nodes": "{\"Statement\":[{\"Action\":[\"logs:PutLogEvents\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"Logs\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "Environment"
+      value: "test"
+    - key: "Group"
+      value: "general"
+    - key: "Role"
+      value: "nodes"
+---
+# Source: eks/templates/node-groups.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: full-fargate-profile-role-kube-system
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam-role-fargate-profile-kube-system"
+spec:
+  name: "kube-system"
+  path: "/"
+  description: "Fargate profile IAM role"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Condition\":{\"ArnLike\":{\"aws:SourceArn\":[\"arn:aws:eks:eu-west-1:111122223333:fargateprofile/full/*\"]}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"eks-fargate-pods.amazonaws.com\"]}}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - "arn:aws:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy"
+    - "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+  inlinePolicies:
+    "kube-system": "{\"Statement\":[{\"Action\":[\"ecr:GetAuthorizationToken\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"Ecr\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "Environment"
+      value: "test"
+    - key: "Profile"
+      value: "kube-system"
+---
+# Source: eks/templates/access.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: AccessEntry
+metadata:
+  name: full-access-entry-admins
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "access-entry-admins"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  clusterRef:
+    from:
+      name: full-cluster
+  principalARN: "arn:aws:iam::111122223333:role/admins"
+  type: "STANDARD"
+  kubernetesGroups:
+    - platform
+  username: "admin"
+  accessPolicies:
+    - policyARN: "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+      accessScope:
+        type: "cluster"
+  tags:
+    Access: admin
+    Environment: test
+---
+# Source: eks/templates/access.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: AccessEntry
+metadata:
+  name: full-access-entry-nodes
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "access-entry-nodes"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  clusterRef:
+    from:
+      name: full-cluster
+  principalARN: "arn:aws:iam::111122223333:role/self-managed-nodes"
+  type: "EC2_LINUX"
+  tags:
+    Environment: test
+---
+# Source: eks/templates/access.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Addon
+metadata:
+  name: full-addon-aws-ebs-csi-driver
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "addon-aws-ebs-csi-driver"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "aws-ebs-csi-driver"
+  clusterRef:
+    from:
+      name: full-cluster
+  podIdentityAssociations:
+    - roleARN: "arn:aws:iam::111122223333:role/ebs-csi"
+      serviceAccount: "ebs-csi-controller-sa"
+  resolveConflicts: "OVERWRITE"
+  tags:
+    Environment: test
+---
+# Source: eks/templates/access.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Addon
+metadata:
+  name: full-addon-coredns
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "addon-coredns"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "coredns"
+  clusterRef:
+    from:
+      name: full-cluster
+  addonVersion: "v1.11.4-eksbuild.2"
+  configurationValues: "{\"replicaCount\":3}"
+  resolveConflicts: "PRESERVE"
+  tags:
+    Environment: test
+---
+# Source: eks/templates/access.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Addon
+metadata:
+  name: full-addon-vpc-cni
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "addon-vpc-cni"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "vpc-cni"
+  clusterRef:
+    from:
+      name: full-cluster
+  resolveConflicts: "OVERWRITE"
+  serviceAccountRoleARN: "arn:aws:iam::111122223333:role/vpc-cni"
+  tags:
+    Addon: vpc-cni
+    Environment: test
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Cluster
+metadata:
+  name: full-cluster
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "full"
+  version: "1.33"
+  roleRef:
+    from:
+      name: full-cluster-role
+  accessConfig:
+    authenticationMode: "API"
+    bootstrapClusterCreatorAdminPermissions: false
+  bootstrapSelfManagedAddons: false
+  deletionProtection: false
+  logging:
+    clusterLogging:
+      - enabled: true
+        types:
+          - api
+          - audit
+  controlPlaneScalingConfig:
+    tier: "tier-xl"
+  resourcesVPCConfig:
+    controlPlaneEgressMode: "VPC"
+    securityGroupRefs:
+      - from:
+          name: full-cluster-sg
+    subnetIDs:
+      - subnet-abcde012
+      - subnet-bcde012a
+    endpointPrivateAccess: true
+    endpointPublicAccess: true
+    publicAccessCIDRs:
+      - 203.0.113.0/24
+  kubernetesNetworkConfig:
+    ipFamily: "ipv4"
+    serviceIPv4CIDR: "172.20.0.0/16"
+  kubeSchedulerConfig:
+    nodeResourcesFit:
+      scoringStrategy:
+        type: "MostAllocated"
+        resources:
+          - name: "cpu"
+            weight: 1
+          - name: "memory"
+  kubeControllerManagerConfig:
+    horizontalPodAutoscalerControllerConfig:
+      horizontalPodAutoscalerSyncPeriod: "30s"
+  kubeAPIServerConfig:
+    eventTTL: "2h"
+    serviceNodePortRange:
+      minPort: 30000
+      maxPort: 32767
+  encryptionConfig:
+    - provider:
+        keyARN: "arn:aws:kms:eu-west-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+      resources:
+        - secrets
+  remoteNetworkConfig:
+    remoteNodeNetworks:
+      - cidrs:
+          - 172.16.0.0/18
+    remotePodNetworks:
+      - cidrs:
+          - 172.16.64.0/18
+  upgradePolicy:
+    supportType: "STANDARD"
+  zonalShiftConfig:
+    enabled: true
+  tags:
+    Cluster: full
+    Environment: test
+---
+# Source: eks/templates/node-groups.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: FargateProfile
+metadata:
+  name: full-fargate-profile-kube-system
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "fargate-profile-kube-system"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "kube-system"
+  clusterRef:
+    from:
+      name: full-cluster
+  podExecutionRoleRef:
+    from:
+      name: full-fargate-profile-role-kube-system
+  subnets:
+    - subnet-abcde012
+    - subnet-bcde012a
+  selectors:
+    - namespace: "kube-system"
+      labels:
+        k8s-app: kube-dns
+  tags:
+    Environment: test
+    Profile: kube-system
+---
+# Source: eks/templates/access.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: IdentityProviderConfig
+metadata:
+  name: full-identity-provider-okta
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "identity-provider-okta"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  clusterRef:
+    from:
+      name: full-cluster
+  oidc:
+    clientID: "eks"
+    identityProviderConfigName: "okta"
+    issuerURL: "https://example.okta.com"
+    groupsClaim: "groups"
+    groupsPrefix: "okta:"
+    requiredClaims:
+      aud: eks
+    usernameClaim: "email"
+  tags:
+    Environment: test
+    Idp: okta
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: full-log-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "/aws/eks/full/cluster"
+  retentionDays: 30
+  kmsKeyID: "arn:aws:kms:eu-west-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+  tags:
+    Environment: test
+    Logs: "yes"
+    Name: /aws/eks/full/cluster
+---
+# Source: eks/templates/node-groups.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Nodegroup
+metadata:
+  name: full-node-group-external-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "node-group-external-role"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "external-role"
+  clusterRef:
+    from:
+      name: full-cluster
+  nodeRole: "arn:aws:iam::111122223333:role/existing-nodes"
+  subnets:
+    - subnet-abcde012
+    - subnet-bcde012a
+  scalingConfig:
+    minSize: 1
+    maxSize: 3
+    desiredSize: 1
+  amiType: "AL2023_x86_64_STANDARD"
+  version: "1.33"
+  capacityType: "ON_DEMAND"
+  updateConfig:
+    maxUnavailablePercentage: 33
+  tags:
+    Environment: test
+    Name: external-role
+---
+# Source: eks/templates/node-groups.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Nodegroup
+metadata:
+  name: full-node-group-general
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "node-group-general"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "general-purpose"
+  clusterRef:
+    from:
+      name: full-cluster
+  nodeRoleRef:
+    from:
+      name: full-node-group-role-general
+  subnets:
+    - subnet-abcde012
+  scalingConfig:
+    minSize: 1
+    maxSize: 3
+    desiredSize: 1
+  amiType: "AL2023_x86_64_STANDARD"
+  releaseVersion: "1.32.0-20250101"
+  version: "1.32"
+  capacityType: "SPOT"
+  diskSize: 50
+  instanceTypes:
+    - m6i.large
+    - m5.large
+  labels:
+    workload: general
+  remoteAccess:
+    ec2SshKey: "ops"
+    sourceSecurityGroups:
+      - sg-0bastion
+  taints:
+    - key: "dedicated"
+      value: "general"
+      effect: "NO_SCHEDULE"
+  updateConfig:
+    maxUnavailable: 1
+  tags:
+    Environment: test
+    Group: general
+    Name: general-purpose
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: full-encryption-policy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "encryption-policy"
+spec:
+  name: "full-control-plane-ClusterEncryption"
+  path: "/eks/"
+  description: "Cluster encryption policy to allow cluster role to utilize CMK provided"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"kms:Encrypt\",\"kms:Decrypt\",\"kms:ListGrants\",\"kms:DescribeKey\"],\"Effect\":\"Allow\",\"Resource\":\"arn:aws:kms:eu-west-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "Environment"
+      value: "test"
+    - key: "Policy"
+      value: "encryption"
+---
+# Source: eks/templates/security-groups.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: full-cluster-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "security-group"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "full-control-plane"
+  description: "EKS cluster security group"
+  vpcID: "vpc-1234556abcdef"
+  ingressRules:
+    - ipProtocol: "tcp"
+      fromPort: 443
+      toPort: 443
+      ipRanges:
+        - {"cidrIP":"10.99.0.0/16","description":"VPN to the API"}
+      ipv6Ranges:
+        - {"cidrIPv6":"fd00::/8","description":"VPN to the API"}
+  egressRules:
+    - ipProtocol: "-1"
+      prefixListIDs:
+        - {"prefixListID":"pl-12345678"}
+  tags:
+    - key: "Environment"
+      value: "test"
+    - key: "Group"
+      value: "cluster"
+    - key: "Name"
+      value: "full-control-plane"
+---
+# Source: eks/templates/security-groups.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: full-node-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "node-security-group"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "full-node"
+  description: "EKS node shared security group"
+  vpcID: "vpc-1234556abcdef"
+  ingressRules:
+    - ipProtocol: "tcp"
+      fromPort: 22
+      toPort: 22
+      userIDGroupPairs:
+        - {"groupID":"sg-0bastion"}
+    - ipProtocol: "tcp"
+      fromPort: 10251
+      toPort: 10251
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 10251/tcp webhook","groupRef":{"from":{"name":"full-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 15017
+      toPort: 15017
+      userIDGroupPairs:
+        - {"description":"Istio webhook","groupRef":{"from":{"name":"full-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 443
+      toPort: 443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node groups","groupRef":{"from":{"name":"full-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 4443
+      toPort: 4443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 4443/tcp webhook","groupRef":{"from":{"name":"full-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 6443
+      toPort: 6443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 6443/tcp webhook","groupRef":{"from":{"name":"full-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 8443
+      toPort: 8443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 8443/tcp webhook","groupRef":{"from":{"name":"full-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 9443
+      toPort: 9443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 9443/tcp webhook","groupRef":{"from":{"name":"full-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 10250
+      toPort: 10250
+      userIDGroupPairs:
+        - {"description":"Cluster API to node kubelets","groupRef":{"from":{"name":"full-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 1025
+      toPort: 65535
+      userIDGroupPairs:
+        - {"description":"Node to node ingress on ephemeral ports"}
+    - ipProtocol: "tcp"
+      fromPort: 53
+      toPort: 53
+      userIDGroupPairs:
+        - {"description":"Node to node CoreDNS"}
+    - ipProtocol: "udp"
+      fromPort: 53
+      toPort: 53
+      userIDGroupPairs:
+        - {"description":"Node to node CoreDNS UDP"}
+  egressRules:
+    - ipProtocol: "-1"
+      ipRanges:
+        - {"cidrIP":"0.0.0.0/0","description":"Allow all egress"}
+  tags:
+    - key: "Environment"
+      value: "test"
+    - key: "Group"
+      value: "nodes"
+    - key: "Name"
+      value: "full-node"
+    - key: "kubernetes.io/cluster/full"
+      value: "owned"

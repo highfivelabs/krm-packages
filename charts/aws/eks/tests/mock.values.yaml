@@ -1,0 +1,35 @@
+# Applied to the fake AWS by hack/mock-apply-aws.sh: a cluster in the VPC
+# and subnets tests/mock.needs.yaml makes (tests/mock.set.yaml), encrypted
+# with its own KMS key, with its role, both security groups, its log group,
+# an access entry, a managed node group on EKS's own launch template and a
+# Fargate profile. Add-ons and identity providers are render-tested only.
+name: catalog-eks
+region: us-east-1
+kubernetes_version: "1.33"
+account_id: "000000000000"
+vpc_id: vpc-set-by-mock-set-yaml
+subnet_ids: [subnet-set-by-mock-set-yaml, subnet-set-by-mock-set-yaml]
+endpoint_public_access: true
+enable_irsa: false
+create_primary_security_group_tags: false
+attach_encryption_policy: false
+kms_key_administrators: [set-by-mock-set-yaml]
+cloudwatch_log_group_retention_in_days: 1
+access_entries:
+  viewer:
+    principal_arn: set-by-mock-set-yaml
+    policy_associations:
+      view:
+        policy_arn: arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy
+        access_scope: {type: cluster}
+eks_managed_node_groups:
+  default:
+    use_custom_launch_template: false
+    instance_types: [t3.medium]
+    min_size: 1
+    max_size: 2
+    desired_size: 1
+fargate_profiles:
+  default:
+    selectors: [{namespace: default}]
+tags: {catalog-test: "true"}

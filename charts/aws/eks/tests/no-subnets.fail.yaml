@@ -1,0 +1,6 @@
+# expect: eks: subnet_ids (or control_plane_subnet_ids) is required
+name: x
+vpc_id: vpc-1
+enable_irsa: false
+create_primary_security_group_tags: false
+encryption_config: null

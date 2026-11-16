@@ -1,0 +1,233 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+node_groups.tf, "EKS Managed Node Group" and "Fargate Profile", with the
+submodules modules/eks-managed-node-group and modules/fargate-profile:
+each managed node group (aws_eks_node_group, eks/Nodegroup) on EKS's own
+launch template, and each Fargate profile (aws_eks_fargate_profile,
+eks/FargateProfile), with its IAM role (iam/Role: the submodule's
+policies by ARN, its role policy inline). Each takes the cluster
+(clusterRef) and its role (nodeRoleRef, podExecutionRoleRef) by
+reference. A submodule variable left unset takes the submodule's default.
+Not on Outposts, as in the module.
+*/ -}}
+{{- $v := .Values -}}
+{{- if and $v.create $v.putin_khuylo (kindIs "invalid" $v.outpost_config) }}
+{{- $cluster := include "ack.resourceName" (list $ "cluster" "EKS cluster" ($v.name | default "") 100) }}
+{{- $clusterRef := include "ack.name" (list .Release.Name "cluster") }}
+{{- $prefix := printf "arn:%s:iam::aws:policy" $v.partition }}
+{{- $ipv6 := eq $v.ip_family "ipv6" }}
+{{- /* Fields only a custom launch template (or the group's own security group, made only for one) carries. */}}
+{{- $ltOnly := list "ami_id" "attach_cluster_primary_security_group" "enable_efa_support" "enable_efa_only" "security_group_ingress_rules" "security_group_egress_rules" "node_repair_config" "warm_pool_config" "force_update_version" "timeouts" }}
+{{- $ltWhy := dict
+  "ami_id" "a custom AMI needs a custom launch template, which is refused"
+  "attach_cluster_primary_security_group" "the module attaches the group through the custom launch template, which is refused"
+  "enable_efa_support" "EFA is set up on the custom launch template and the group's own security group, which are refused"
+  "enable_efa_only" "EFA is set up on the custom launch template, which is refused"
+  "security_group_ingress_rules" "the group's own security group is attached only through the custom launch template, which is refused"
+  "security_group_egress_rules" "the group's own security group is attached only through the custom launch template, which is refused"
+  "node_repair_config" "ACK's Nodegroup (eks-controller v1.26.0) has no node repair field"
+  "warm_pool_config" "ACK's Nodegroup (eks-controller v1.26.0) has no warm pool field"
+  "force_update_version" "ACK's Nodegroup has no field to force a version update past pod disruption budgets"
+  "timeouts" "Terraform's timeouts: ACK retries until the node group is synced, and Bundt waits for it" }}
+
+{{- range $k := keys ($v.eks_managed_node_groups | default dict) | sortAlpha }}
+{{- $ng := index $v.eks_managed_node_groups $k | default dict }}
+{{- if ne (toJson $ng.create) "false" }}
+{{- if ne (toJson $ng.use_custom_launch_template) "false" }}
+{{- fail (printf "eks: eks_managed_node_groups.%s.use_custom_launch_template is not supported: true (the default) makes a launch template with the node security group, and ACK's LaunchTemplate takes security group IDs only, with no reference to the group this render makes; set use_custom_launch_template: false for EKS's own launch template (docs/aws.md)" $k) }}
+{{- end }}
+{{- range $f := $ltOnly }}
+{{- $x := index $ng $f }}
+{{- if and (not (kindIs "invalid" $x)) (not (empty $x)) }}
+{{- fail (printf "eks: eks_managed_node_groups.%s.%s is not supported: %s (docs/aws.md)" $k $f (index $ltWhy $f)) }}
+{{- end }}
+{{- end }}
+{{- with $ng.update_config }}{{ with .update_strategy }}
+{{- fail (printf "eks: eks_managed_node_groups.%s.update_config.update_strategy is not supported: ACK's Nodegroup (eks-controller v1.26.0) has no update strategy field (docs/aws.md)" $k) }}
+{{- end }}{{ end }}
+{{- $raw := $ng.name | default $k }}
+{{- $name := include "ack.cloudName" (list $ "node group" $raw 63) }}
+{{- $subnets := $ng.subnet_ids | default $v.subnet_ids | default list }}
+{{- if not $subnets }}
+{{- fail (printf "eks: eks_managed_node_groups.%s needs subnet_ids (its own, or the module's)" $k) }}
+{{- end }}
+{{- $ngTags := include "ack.tags" (list $ $v.tags $ng.tags) | fromJson }}
+{{- $createRole := ne (toJson $ng.create_iam_role) "false" }}
+{{- $roleK8s := include "ack.name" (list $.Release.Name "node-group-role" $k) }}
+{{- if $createRole }}
+{{- $roleName := include "ack.cloudName" (list $ "IAM role" ($ng.iam_role_name | default (printf "%s-eks-node-group" $raw)) 64) }}
+{{- $arns := list (printf "%s/AmazonEC2ContainerRegistryReadOnly" $prefix) (printf "%s/AmazonEKSWorkerNodePolicy" $prefix) }}
+{{- if ne (toJson $ng.iam_role_attach_cni_policy) "false" }}
+{{- if $ipv6 }}
+{{- $arns = append $arns (include "eks.arn" (list $ "policy" "/" (include "ack.cloudName" (list $ "IAM policy" "AmazonEKS_CNI_IPv6_Policy" 128)) "a node group's IPv6 CNI policy")) }}
+{{- else }}
+{{- $arns = append $arns (printf "%s/AmazonEKS_CNI_Policy" $prefix) }}
+{{- end }}
+{{- end }}
+{{- range $pk := keys ($ng.iam_role_additional_policies | default dict) | sortAlpha }}{{ $arns = append $arns (index $ng.iam_role_additional_policies $pk) }}{{ end }}
+{{- $inline := dict }}
+{{- if and (ne (toJson $ng.create_iam_role_policy) "false") (not (kindIs "invalid" $ng.iam_role_policy_statements)) }}
+{{- with include "eks.document" (list (printf "eks_managed_node_groups.%s" $k) list $ng.iam_role_policy_statements list) }}{{ $_ := set $inline $roleName . }}{{ end }}
+{{- end }}
+{{- $trust := dict "sid" "EKSNodeAssumeRole" "actions" (list "sts:AssumeRole") "principals" (list (dict "type" "Service" "identifiers" (list "ec2.amazonaws.com"))) }}
+{{- include "eks.role" (dict "root" $ "k8s" $roleK8s "id" (printf "iam-role-node-group-%s" $k) "name" $roleName "path" ($ng.iam_role_path | default "/") "description" (ternary "EKS managed node group IAM role" $ng.iam_role_description (kindIs "invalid" $ng.iam_role_description)) "boundary" $ng.iam_role_permissions_boundary "trust" (include "eks.document" (list "trust" list (list $trust) list)) "arns" $arns "inline" $inline "tags" (include "ack.tags" (list $ $ngTags $ng.iam_role_tags) | fromJson)) }}
+{{- else if not $ng.iam_role_arn }}
+{{- fail (printf "eks: eks_managed_node_groups.%s.iam_role_arn is required with create_iam_role: false" $k) }}
+{{- end }}
+---
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Nodegroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "node-group" $k)) "id" (printf "node-group-%s" $k) "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ $name | quote }}
+  clusterRef:
+    from:
+      name: {{ $clusterRef }}
+{{- if $createRole }}
+  nodeRoleRef:
+    from:
+      name: {{ $roleK8s }}
+{{- else }}
+  nodeRole: {{ $ng.iam_role_arn | quote }}
+{{- end }}
+  subnets:
+{{- toYaml $subnets | nindent 4 }}
+  scalingConfig:
+    minSize: {{ int64 (ternary 1 $ng.min_size (kindIs "invalid" $ng.min_size)) }}
+    maxSize: {{ int64 (ternary 3 $ng.max_size (kindIs "invalid" $ng.max_size)) }}
+    desiredSize: {{ int64 (ternary 1 $ng.desired_size (kindIs "invalid" $ng.desired_size)) }}
+  amiType: {{ $ng.ami_type | default "AL2023_x86_64_STANDARD" | quote }}
+{{- if and (eq (toJson $ng.use_latest_ami_release_version) "false") $ng.ami_release_version }}
+  releaseVersion: {{ $ng.ami_release_version | quote }}
+{{- end }}
+{{- with ($ng.kubernetes_version | default $v.kubernetes_version) }}
+  version: {{ . | quote }}
+{{- end }}
+{{- $capacity := $ng.capacity_type | default "ON_DEMAND" }}
+  capacityType: {{ $capacity | quote }}
+{{- if not (kindIs "invalid" $ng.disk_size) }}
+  diskSize: {{ int64 $ng.disk_size }}
+{{- end }}
+{{- if ne $capacity "CAPACITY_BLOCK" }}
+{{- with $ng.instance_types }}
+  instanceTypes:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- with $ng.labels }}
+  labels:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $ng.remote_access }}
+  remoteAccess:
+{{- with .ec2_ssh_key }}
+    ec2SshKey: {{ . | quote }}
+{{- end }}
+{{- with .source_security_group_ids }}
+    sourceSecurityGroups:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- end }}
+{{- with $ng.taints }}
+  taints:
+{{- range $tk := keys . | sortAlpha }}
+{{- $t := index $ng.taints $tk }}
+    - key: {{ $t.key | quote }}
+{{- if not (kindIs "invalid" $t.value) }}
+      value: {{ $t.value | quote }}
+{{- end }}
+      effect: {{ $t.effect | quote }}
+{{- end }}
+{{- end }}
+{{- $uc := $ng.update_config | default (dict "max_unavailable_percentage" 33) }}
+  updateConfig:
+{{- if not (kindIs "invalid" $uc.max_unavailable) }}
+    maxUnavailable: {{ int64 $uc.max_unavailable }}
+{{- end }}
+{{- if not (kindIs "invalid" $uc.max_unavailable_percentage) }}
+    maxUnavailablePercentage: {{ int64 $uc.max_unavailable_percentage }}
+{{- end }}
+{{- with include "ack.tags" (list $ $ngTags (dict "Name" $name)) | fromJson }}
+  tags:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- range $k := keys ($v.fargate_profiles | default dict) | sortAlpha }}
+{{- $fp := index $v.fargate_profiles $k | default dict }}
+{{- if ne (toJson $fp.create) "false" }}
+{{- with $fp.timeouts }}
+{{- fail (printf "eks: fargate_profiles.%s.timeouts is not supported: Terraform's timeouts: ACK retries until the profile is synced, and Bundt waits for it (docs/aws.md)" $k) }}
+{{- end }}
+{{- $raw := $fp.name | default $k }}
+{{- $name := include "ack.cloudName" (list $ "Fargate profile" $raw 63) }}
+{{- $subnets := $fp.subnet_ids | default $v.subnet_ids | default list }}
+{{- $fpTags := include "ack.tags" (list $ $v.tags $fp.tags) | fromJson }}
+{{- $createRole := ne (toJson $fp.create_iam_role) "false" }}
+{{- $roleK8s := include "ack.name" (list $.Release.Name "fargate-profile-role" $k) }}
+{{- if $createRole }}
+{{- if not $v.region }}
+{{- fail (printf "eks: region is required with fargate_profiles.%s: the profile's role trust names the cluster's region (aws:SourceArn), which the module reads from the provider and the chart cannot" $k) }}
+{{- end }}
+{{- $_ := include "eks.arn" (list $ "role" "/" "x" (printf "fargate_profiles.%s (the role trust's aws:SourceArn names the account)" $k)) }}
+{{- $roleName := include "ack.cloudName" (list $ "IAM role" ($fp.iam_role_name | default $raw) 64) }}
+{{- $arns := list (printf "%s/AmazonEKSFargatePodExecutionRolePolicy" $prefix) }}
+{{- if ne (toJson $fp.iam_role_attach_cni_policy) "false" }}
+{{- if $ipv6 }}
+{{- $arns = append $arns (include "eks.arn" (list $ "policy" "/" (include "ack.cloudName" (list $ "IAM policy" "AmazonEKS_CNI_IPv6_Policy" 128)) "a Fargate profile's IPv6 CNI policy")) }}
+{{- else }}
+{{- $arns = append $arns (printf "%s/AmazonEKS_CNI_Policy" $prefix) }}
+{{- end }}
+{{- end }}
+{{- range $pk := keys ($fp.iam_role_additional_policies | default dict) | sortAlpha }}{{ $arns = append $arns (index $fp.iam_role_additional_policies $pk) }}{{ end }}
+{{- $inline := dict }}
+{{- if and (ne (toJson $fp.create_iam_role_policy) "false") (not (kindIs "invalid" $fp.iam_role_policy_statements)) }}
+{{- with include "eks.document" (list (printf "fargate_profiles.%s" $k) list $fp.iam_role_policy_statements list) }}{{ $_ := set $inline $roleName . }}{{ end }}
+{{- end }}
+{{- $trust := dict "effect" "Allow" "actions" (list "sts:AssumeRole") "principals" (list (dict "type" "Service" "identifiers" (list "eks-fargate-pods.amazonaws.com"))) "condition" (list (dict "test" "ArnLike" "variable" "aws:SourceArn" "values" (list (printf "arn:%s:eks:%s:%s:fargateprofile/%s/*" $v.partition $v.region $v.account_id $cluster)))) }}
+{{- include "eks.role" (dict "root" $ "k8s" $roleK8s "id" (printf "iam-role-fargate-profile-%s" $k) "name" $roleName "path" ($fp.iam_role_path | default "/") "description" (ternary "Fargate profile IAM role" $fp.iam_role_description (kindIs "invalid" $fp.iam_role_description)) "boundary" $fp.iam_role_permissions_boundary "trust" (include "eks.document" (list "trust" list (list $trust) list)) "arns" $arns "inline" $inline "tags" (include "ack.tags" (list $ $fpTags $fp.iam_role_tags) | fromJson)) }}
+{{- else if not $fp.iam_role_arn }}
+{{- fail (printf "eks: fargate_profiles.%s.iam_role_arn is required with create_iam_role: false" $k) }}
+{{- end }}
+---
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: FargateProfile
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "fargate-profile" $k)) "id" (printf "fargate-profile-%s" $k) "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ $name | quote }}
+  clusterRef:
+    from:
+      name: {{ $clusterRef }}
+{{- if $createRole }}
+  podExecutionRoleRef:
+    from:
+      name: {{ $roleK8s }}
+{{- else }}
+  podExecutionRoleARN: {{ $fp.iam_role_arn | quote }}
+{{- end }}
+{{- with $subnets }}
+  subnets:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $fp.selectors }}
+  selectors:
+{{- range . }}
+    - namespace: {{ .namespace | quote }}
+{{- with .labels }}
+      labels:
+{{- toYaml . | nindent 8 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with $fpTags }}
+  tags:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

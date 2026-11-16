@@ -1,0 +1,8 @@
+# expect: eks: attach_encryption_policy is not supported with create_kms_key: true
+name: x
+vpc_id: vpc-1
+subnet_ids: [subnet-1]
+enable_irsa: false
+create_primary_security_group_tags: false
+account_id: "111122223333"
+kms_key_administrators: [arn:aws:iam::111122223333:root]

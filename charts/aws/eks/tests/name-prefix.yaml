@@ -1,0 +1,22 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The namePrefix convention (docs/design.md, "Names, labels and tags"): the
+# cluster's, its roles', policies', security groups', node groups' and
+# Fargate profiles' names carry the namePrefix (unique per account, or per
+# account and region), and so do the log group and the KMS alias, which the
+# module names after the cluster. Each is spec.name.
+exempt:
+  Key: "a KMS key has no name; AWS gives it an ID (its aliases carry the namePrefix)"
+  AccessEntry: "a cluster and a principal identify it; it has no name"
+  Addon: "the add-on's name is EKS's (coredns, vpc-cni, ...), one per cluster"
+  IdentityProviderConfig: "its name is unique only within its cluster, which carries the namePrefix"
+nameFields:
+  Cluster: name
+  Role: name
+  Policy: name
+  SecurityGroup: name
+  LogGroup: name
+  Alias: name
+  Nodegroup: name
+  FargateProfile: name

@@ -1,0 +1,383 @@
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: mock-cluster-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster-role"
+spec:
+  name: "catalog-eks-cluster"
+  path: "/"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\",\"sts:TagSession\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"eks.amazonaws.com\"]},\"Sid\":\"EKSClusterAssumeRole\"}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+  tags:
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: eks/templates/node-groups.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: mock-node-group-role-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam-role-node-group-default"
+spec:
+  name: "default-eks-node-group"
+  path: "/"
+  description: "EKS managed node group IAM role"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"ec2.amazonaws.com\"]},\"Sid\":\"EKSNodeAssumeRole\"}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+    - "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+    - "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+  tags:
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: eks/templates/node-groups.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: mock-fargate-profile-role-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam-role-fargate-profile-default"
+spec:
+  name: "default"
+  path: "/"
+  description: "Fargate profile IAM role"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Condition\":{\"ArnLike\":{\"aws:SourceArn\":[\"arn:aws:eks:us-east-1:000000000000:fargateprofile/catalog-eks/*\"]}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"eks-fargate-pods.amazonaws.com\"]}}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - "arn:aws:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy"
+    - "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+  tags:
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: eks/templates/access.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: AccessEntry
+metadata:
+  name: mock-access-entry-viewer
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "access-entry-viewer"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  clusterRef:
+    from:
+      name: mock-cluster
+  principalARN: "set-by-mock-set-yaml"
+  type: "STANDARD"
+  accessPolicies:
+    - policyARN: "arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy"
+      accessScope:
+        type: "cluster"
+  tags:
+    catalog-test: "true"
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: kms.services.k8s.aws/v1alpha1
+kind: Alias
+metadata:
+  name: mock-kms-alias-cluster
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "kms-alias-cluster"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "alias/eks/catalog-eks"
+  targetKeyRef:
+    from:
+      name: mock-kms-key
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Cluster
+metadata:
+  name: mock-cluster
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "catalog-eks"
+  version: "1.33"
+  roleRef:
+    from:
+      name: mock-cluster-role
+  accessConfig:
+    authenticationMode: "API_AND_CONFIG_MAP"
+    bootstrapClusterCreatorAdminPermissions: false
+  bootstrapSelfManagedAddons: false
+  logging:
+    clusterLogging:
+      - enabled: true
+        types:
+          - audit
+          - api
+          - authenticator
+  resourcesVPCConfig:
+    securityGroupRefs:
+      - from:
+          name: mock-cluster-sg
+    subnetIDs:
+      - subnet-set-by-mock-set-yaml
+      - subnet-set-by-mock-set-yaml
+    endpointPrivateAccess: true
+    endpointPublicAccess: true
+    publicAccessCIDRs:
+      - 0.0.0.0/0
+  kubernetesNetworkConfig:
+    ipFamily: "ipv4"
+  encryptionConfig:
+    - provider:
+        keyRef:
+          from:
+            name: mock-kms-key
+      resources:
+        - secrets
+  tags:
+    catalog-test: "true"
+---
+# Source: eks/templates/node-groups.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: FargateProfile
+metadata:
+  name: mock-fargate-profile-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "fargate-profile-default"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "default"
+  clusterRef:
+    from:
+      name: mock-cluster
+  podExecutionRoleRef:
+    from:
+      name: mock-fargate-profile-role-default
+  subnets:
+    - subnet-set-by-mock-set-yaml
+    - subnet-set-by-mock-set-yaml
+  selectors:
+    - namespace: "default"
+  tags:
+    catalog-test: "true"
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: kms.services.k8s.aws/v1alpha1
+kind: Key
+metadata:
+  name: mock-kms-key
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "kms-key"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  description: "catalog-eks cluster encryption key"
+  keyUsage: ENCRYPT_DECRYPT
+  enableKeyRotation: true
+  multiRegion: false
+  policy: "{\"Statement\":[{\"Action\":[\"kms:*\"],\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam::000000000000:root\"]},\"Resource\":[\"*\"],\"Sid\":\"Default\"},{\"Action\":[\"kms:Create*\",\"kms:Describe*\",\"kms:Enable*\",\"kms:List*\",\"kms:Put*\",\"kms:Update*\",\"kms:Revoke*\",\"kms:Disable*\",\"kms:Get*\",\"kms:Delete*\",\"kms:TagResource\",\"kms:UntagResource\",\"kms:ScheduleKeyDeletion\",\"kms:CancelKeyDeletion\",\"kms:ReplicateKey\",\"kms:ImportKeyMaterial\"],\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"set-by-mock-set-yaml\"]},\"Resource\":[\"*\"],\"Sid\":\"KeyAdministration\"},{\"Action\":[\"kms:Encrypt\",\"kms:Decrypt\",\"kms:ReEncrypt*\",\"kms:GenerateDataKey*\",\"kms:DescribeKey\"],\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam::000000000000:role/catalog-eks-cluster\"]},\"Resource\":[\"*\"],\"Sid\":\"KeyUsage\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - tagKey: "catalog-test"
+      tagValue: "true"
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: mock-log-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "/aws/eks/catalog-eks/cluster"
+  retentionDays: 1
+  tags:
+    Name: /aws/eks/catalog-eks/cluster
+    catalog-test: "true"
+---
+# Source: eks/templates/node-groups.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Nodegroup
+metadata:
+  name: mock-node-group-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "node-group-default"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "default"
+  clusterRef:
+    from:
+      name: mock-cluster
+  nodeRoleRef:
+    from:
+      name: mock-node-group-role-default
+  subnets:
+    - subnet-set-by-mock-set-yaml
+    - subnet-set-by-mock-set-yaml
+  scalingConfig:
+    minSize: 1
+    maxSize: 2
+    desiredSize: 1
+  amiType: "AL2023_x86_64_STANDARD"
+  version: "1.33"
+  capacityType: "ON_DEMAND"
+  instanceTypes:
+    - t3.medium
+  updateConfig:
+    maxUnavailablePercentage: 33
+  tags:
+    Name: default
+    catalog-test: "true"
+---
+# Source: eks/templates/security-groups.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: mock-cluster-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "security-group"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "catalog-eks-cluster"
+  description: "EKS cluster security group"
+  vpcID: "vpc-set-by-mock-set-yaml"
+  tags:
+    - key: "Name"
+      value: "catalog-eks-cluster"
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: eks/templates/security-groups.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: mock-node-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "node-security-group"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "catalog-eks-node"
+  description: "EKS node shared security group"
+  vpcID: "vpc-set-by-mock-set-yaml"
+  ingressRules:
+    - ipProtocol: "tcp"
+      fromPort: 10251
+      toPort: 10251
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 10251/tcp webhook","groupRef":{"from":{"name":"mock-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 443
+      toPort: 443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node groups","groupRef":{"from":{"name":"mock-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 4443
+      toPort: 4443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 4443/tcp webhook","groupRef":{"from":{"name":"mock-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 6443
+      toPort: 6443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 6443/tcp webhook","groupRef":{"from":{"name":"mock-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 8443
+      toPort: 8443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 8443/tcp webhook","groupRef":{"from":{"name":"mock-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 9443
+      toPort: 9443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 9443/tcp webhook","groupRef":{"from":{"name":"mock-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 10250
+      toPort: 10250
+      userIDGroupPairs:
+        - {"description":"Cluster API to node kubelets","groupRef":{"from":{"name":"mock-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 1025
+      toPort: 65535
+      userIDGroupPairs:
+        - {"description":"Node to node ingress on ephemeral ports"}
+    - ipProtocol: "tcp"
+      fromPort: 53
+      toPort: 53
+      userIDGroupPairs:
+        - {"description":"Node to node CoreDNS"}
+    - ipProtocol: "udp"
+      fromPort: 53
+      toPort: 53
+      userIDGroupPairs:
+        - {"description":"Node to node CoreDNS UDP"}
+  egressRules:
+    - ipProtocol: "-1"
+      ipRanges:
+        - {"cidrIP":"0.0.0.0/0","description":"Allow all egress"}
+  tags:
+    - key: "Name"
+      value: "catalog-eks-node"
+    - key: "catalog-test"
+      value: "true"
+    - key: "kubernetes.io/cluster/catalog-eks"
+      value: "owned"

@@ -1,0 +1,151 @@
+# Most of what the chart carries: a cluster encrypted with a given key
+# (create_kms_key: false) and the module's encryption policy, the control
+# plane settings, extra rules on both security groups, identity providers,
+# add-ons with pod identity, a node group with taints, labels and an inline
+# role policy, and a Fargate profile (which needs region and account_id).
+name: full
+region: eu-west-1
+account_id: "111122223333"
+kubernetes_version: "1.33"
+deletion_protection: false
+authentication_mode: API
+enabled_log_types: [api, audit]
+endpoint_public_access: true
+endpoint_public_access_cidrs: [203.0.113.0/24]
+control_plane_egress_mode: VPC
+service_ipv4_cidr: 172.20.0.0/16
+control_plane_scaling_config: {tier: tier-xl}
+upgrade_policy: {support_type: STANDARD}
+zonal_shift_config: {enabled: true}
+remote_network_config:
+  remote_node_networks: {cidrs: [172.16.0.0/18]}
+  remote_pod_networks: {cidrs: [172.16.64.0/18]}
+kube_scheduler_config:
+  node_resources_fit:
+    scoring_strategy:
+      type: MostAllocated
+      resources: [{name: cpu, weight: 1}, {name: memory}]
+kube_controller_manager_config:
+  horizontal_pod_autoscaler_controller_config: {horizontal_pod_autoscaler_sync_period: 30s}
+kube_api_server_config:
+  event_ttl: 2h
+  service_node_port_range: {min_port: 30000, max_port: 32767}
+enable_irsa: false
+create_primary_security_group_tags: false
+create_kms_key: false
+encryption_config:
+  provider_key_arn: arn:aws:kms:eu-west-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+encryption_policy_path: /eks/
+encryption_policy_tags: {Policy: encryption}
+cloudwatch_log_group_retention_in_days: 30
+cloudwatch_log_group_kms_key_id: arn:aws:kms:eu-west-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+cloudwatch_log_group_tags: {Logs: "yes"}
+cluster_tags: {Cluster: full}
+iam_role_name: full-control-plane
+iam_role_path: /eks/
+iam_role_description: The full cluster's role
+iam_role_permissions_boundary: arn:aws:iam::111122223333:policy/boundary
+iam_role_additional_policies:
+  ssm: arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+iam_role_tags: {Role: cluster}
+vpc_id: vpc-1234556abcdef
+subnet_ids: [subnet-abcde012, subnet-bcde012a]
+security_group_name: full-control-plane
+security_group_tags: {Group: cluster}
+security_group_additional_rules:
+  ingress_vpn:
+    description: VPN to the API
+    from_port: 443
+    to_port: 443
+    cidr_blocks: [10.99.0.0/16]
+    ipv6_cidr_blocks: ["fd00::/8"]
+  egress_prefix:
+    type: egress
+    protocol: "-1"
+    from_port: 0
+    to_port: 0
+    prefix_list_ids: [pl-12345678]
+node_security_group_tags: {Group: nodes}
+node_security_group_additional_rules:
+  ingress_cluster_15017:
+    description: Istio webhook
+    from_port: 15017
+    to_port: 15017
+    source_cluster_security_group: true
+  ingress_bastion:
+    from_port: 22
+    to_port: 22
+    source_security_group_id: sg-0bastion
+identity_providers:
+  okta:
+    client_id: eks
+    issuer_url: https://example.okta.com
+    groups_claim: groups
+    groups_prefix: "okta:"
+    username_claim: email
+    required_claims: {aud: eks}
+    tags: {Idp: okta}
+addons:
+  coredns:
+    addon_version: v1.11.4-eksbuild.2
+    configuration_values: '{"replicaCount":3}'
+    resolve_conflicts_on_update: PRESERVE
+  aws-ebs-csi-driver:
+    pod_identity_association:
+      - {role_arn: "arn:aws:iam::111122223333:role/ebs-csi", service_account: ebs-csi-controller-sa}
+  vpc-cni:
+    service_account_role_arn: arn:aws:iam::111122223333:role/vpc-cni
+    tags: {Addon: vpc-cni}
+access_entries:
+  admins:
+    principal_arn: arn:aws:iam::111122223333:role/admins
+    kubernetes_groups: [platform]
+    user_name: admin
+    tags: {Access: admin}
+    policy_associations:
+      cluster:
+        policy_arn: arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy
+        access_scope: {type: cluster}
+  nodes:
+    principal_arn: arn:aws:iam::111122223333:role/self-managed-nodes
+    type: EC2_LINUX
+eks_managed_node_groups:
+  general:
+    use_custom_launch_template: false
+    name: general-purpose
+    subnet_ids: [subnet-abcde012]
+    kubernetes_version: "1.32"
+    use_latest_ami_release_version: false
+    ami_release_version: 1.32.0-20250101
+    capacity_type: SPOT
+    disk_size: 50
+    instance_types: [m6i.large, m5.large]
+    labels: {workload: general}
+    taints:
+      dedicated: {key: dedicated, value: general, effect: NO_SCHEDULE}
+    update_config: {max_unavailable: 1}
+    remote_access: {ec2_ssh_key: ops, source_security_group_ids: [sg-0bastion]}
+    iam_role_name: general-nodes
+    iam_role_additional_policies: {ssm: arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore}
+    iam_role_policy_statements:
+      - sid: Logs
+        actions: [logs:PutLogEvents]
+        resources: ["*"]
+    iam_role_tags: {Role: nodes}
+    tags: {Group: general}
+  external-role:
+    use_custom_launch_template: false
+    create_iam_role: false
+    iam_role_arn: arn:aws:iam::111122223333:role/existing-nodes
+fargate_profiles:
+  kube-system:
+    selectors:
+      - namespace: kube-system
+        labels: {k8s-app: kube-dns}
+    iam_role_policy_statements:
+      - sid: Ecr
+        actions: [ecr:GetAuthorizationToken]
+        resources: ["*"]
+    tags: {Profile: kube-system}
+tags:
+  Environment: test

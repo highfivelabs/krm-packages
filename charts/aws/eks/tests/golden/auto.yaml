@@ -1,0 +1,209 @@
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: auto-cluster-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "auto"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster-role"
+spec:
+  name: "auto-cluster"
+  path: "/"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\",\"sts:TagSession\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"eks.amazonaws.com\"]},\"Sid\":\"EKSClusterAssumeRole\"}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - "arn:aws:iam::aws:policy/AmazonEKSBlockStoragePolicyV2"
+    - "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+    - "arn:aws:iam::aws:policy/AmazonEKSComputePolicy"
+    - "arn:aws:iam::aws:policy/AmazonEKSLoadBalancingPolicy"
+    - "arn:aws:iam::aws:policy/AmazonEKSNetworkingPolicy"
+    - "arn:aws:iam::111122223333:policy/auto-cluster"
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: auto-node-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "auto"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "node-role"
+spec:
+  name: "auto-eks-auto"
+  path: "/"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\",\"sts:TagSession\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"ec2.amazonaws.com\"]},\"Sid\":\"EKSAutoNodeAssumeRole\"}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPullOnly"
+    - "arn:aws:iam::aws:policy/AmazonEKSWorkerNodeMinimalPolicy"
+    - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  tags:
+    - key: "Role"
+      value: "auto-nodes"
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: eks.services.k8s.aws/v1alpha1
+kind: Cluster
+metadata:
+  name: auto-cluster
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "auto"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster"
+spec:
+  name: "auto"
+  version: "1.33"
+  roleRef:
+    from:
+      name: auto-cluster-role
+  accessConfig:
+    authenticationMode: "API_AND_CONFIG_MAP"
+    bootstrapClusterCreatorAdminPermissions: false
+  bootstrapSelfManagedAddons: false
+  computeConfig:
+    enabled: true
+    nodePools:
+      - general-purpose
+      - system
+    nodeRoleARN: "arn:aws:iam::111122223333:role/auto-eks-auto"
+  resourcesVPCConfig:
+    securityGroupRefs:
+      - from:
+          name: auto-cluster-sg
+    subnetIDs:
+      - subnet-abcde012
+      - subnet-bcde012a
+    endpointPrivateAccess: true
+    endpointPublicAccess: true
+    publicAccessCIDRs:
+      - 0.0.0.0/0
+  kubernetesNetworkConfig:
+    elasticLoadBalancing:
+      enabled: true
+    ipFamily: "ipv4"
+  storageConfig:
+    blockStorage:
+      enabled: true
+---
+# Source: eks/templates/cluster.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: auto-auto-mode-policy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "auto"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "auto-mode-policy"
+spec:
+  name: "auto-cluster"
+  path: "/"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"ec2:CreateFleet\",\"ec2:RunInstances\",\"ec2:CreateLaunchTemplate\"],\"Condition\":{\"StringEquals\":{\"aws:RequestTag/eks:eks-cluster-name\":[\"${aws:PrincipalTag/eks:eks-cluster-name}\"]},\"StringLike\":{\"aws:RequestTag/eks:kubernetes-node-class-name\":[\"*\"],\"aws:RequestTag/eks:kubernetes-node-pool-name\":[\"*\"]}},\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"Compute\"},{\"Action\":[\"ec2:CreateVolume\",\"ec2:CreateSnapshot\"],\"Condition\":{\"StringEquals\":{\"aws:RequestTag/eks:eks-cluster-name\":[\"${aws:PrincipalTag/eks:eks-cluster-name}\"]}},\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:ec2:*:*:volume/*\",\"arn:aws:ec2:*:*:snapshot/*\"],\"Sid\":\"Storage\"},{\"Action\":[\"ec2:CreateNetworkInterface\"],\"Condition\":{\"StringEquals\":{\"aws:RequestTag/eks:eks-cluster-name\":[\"${aws:PrincipalTag/eks:eks-cluster-name}\"],\"aws:RequestTag/eks:kubernetes-cni-node-name\":[\"*\"]}},\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"Networking\"},{\"Action\":[\"elasticloadbalancing:CreateLoadBalancer\",\"elasticloadbalancing:CreateTargetGroup\",\"elasticloadbalancing:CreateListener\",\"elasticloadbalancing:CreateRule\",\"ec2:CreateSecurityGroup\"],\"Condition\":{\"StringEquals\":{\"aws:RequestTag/eks:eks-cluster-name\":[\"${aws:PrincipalTag/eks:eks-cluster-name}\"]}},\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"LoadBalancer\"},{\"Action\":[\"shield:CreateProtection\"],\"Condition\":{\"StringEquals\":{\"aws:RequestTag/eks:eks-cluster-name\":[\"${aws:PrincipalTag/eks:eks-cluster-name}\"]}},\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"ShieldProtection\"},{\"Action\":[\"shield:TagResource\"],\"Condition\":{\"StringEquals\":{\"aws:RequestTag/eks:eks-cluster-name\":[\"${aws:PrincipalTag/eks:eks-cluster-name}\"]}},\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:shield::*:protection/*\"],\"Sid\":\"ShieldTagResource\"}],\"Version\":\"2012-10-17\"}"
+---
+# Source: eks/templates/security-groups.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: auto-cluster-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "auto"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "security-group"
+spec:
+  name: "auto-cluster"
+  description: "EKS cluster security group"
+  vpcID: "vpc-1234556abcdef"
+  tags:
+    - key: "Name"
+      value: "auto-cluster"
+---
+# Source: eks/templates/security-groups.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: auto-node-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "auto"
+    app.kubernetes.io/name: eks
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "node-security-group"
+spec:
+  name: "auto-node"
+  description: "EKS node shared security group"
+  vpcID: "vpc-1234556abcdef"
+  ingressRules:
+    - ipProtocol: "tcp"
+      fromPort: 10251
+      toPort: 10251
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 10251/tcp webhook","groupRef":{"from":{"name":"auto-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 443
+      toPort: 443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node groups","groupRef":{"from":{"name":"auto-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 4443
+      toPort: 4443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 4443/tcp webhook","groupRef":{"from":{"name":"auto-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 6443
+      toPort: 6443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 6443/tcp webhook","groupRef":{"from":{"name":"auto-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 8443
+      toPort: 8443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 8443/tcp webhook","groupRef":{"from":{"name":"auto-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 9443
+      toPort: 9443
+      userIDGroupPairs:
+        - {"description":"Cluster API to node 9443/tcp webhook","groupRef":{"from":{"name":"auto-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 10250
+      toPort: 10250
+      userIDGroupPairs:
+        - {"description":"Cluster API to node kubelets","groupRef":{"from":{"name":"auto-cluster-sg"}}}
+    - ipProtocol: "tcp"
+      fromPort: 1025
+      toPort: 65535
+      userIDGroupPairs:
+        - {"description":"Node to node ingress on ephemeral ports"}
+    - ipProtocol: "tcp"
+      fromPort: 53
+      toPort: 53
+      userIDGroupPairs:
+        - {"description":"Node to node CoreDNS"}
+    - ipProtocol: "udp"
+      fromPort: 53
+      toPort: 53
+      userIDGroupPairs:
+        - {"description":"Node to node CoreDNS UDP"}
+  egressRules:
+    - ipProtocol: "-1"
+      ipRanges:
+        - {"cidrIP":"0.0.0.0/0","description":"Allow all egress"}
+  tags:
+    - key: "Name"
+      value: "auto-node"
+    - key: "kubernetes.io/cluster/auto"
+      value: "owned"

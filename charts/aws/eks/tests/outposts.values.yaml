@@ -1,0 +1,16 @@
+# A local cluster on AWS Outposts: no Kubernetes network config, encryption,
+# OIDC, add-ons, identity providers, node groups or Fargate profiles (the
+# module skips them), and the role trusts EC2 too and takes the local
+# Outposts policy.
+name: outpost
+outpost_config:
+  control_plane_instance_type: m5.large
+  control_plane_placement: {group_name: outpost-pg}
+  outpost_arns: [arn:aws:outposts:us-west-2:111122223333:outpost/op-0123456789abcdef0]
+create_primary_security_group_tags: false
+addons:
+  coredns: {}
+eks_managed_node_groups:
+  skipped: {use_custom_launch_template: false}
+vpc_id: vpc-1234556abcdef
+subnet_ids: [subnet-abcde012]

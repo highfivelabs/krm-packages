@@ -1,0 +1,13 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values hack/mock-apply-aws.sh reads from tests/mock.needs.yaml's objects
+# once they are Ready (<value>: <resource>/<name> <jsonpath>), or from the
+# fake's own account, which the key policy, the cluster role's ARN and the
+# Fargate role's trust name (<value>: account <format>).
+vpc_id: vpcs.ec2.services.k8s.aws/eks-vpc {.status.vpcID}
+subnet_ids[0]: subnets.ec2.services.k8s.aws/eks-subnet-a {.status.subnetID}
+subnet_ids[1]: subnets.ec2.services.k8s.aws/eks-subnet-b {.status.subnetID}
+account_id: account %s
+kms_key_administrators[0]: account arn:aws:iam::%s:root
+access_entries.viewer.principal_arn: account arn:aws:iam::%s:root
