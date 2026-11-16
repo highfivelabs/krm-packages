@@ -45,26 +45,31 @@ module at the same release.
 | gke | `network` | fabric `net-vpc` v60.0.0 | `net-vpc` | exists |
 | gke | `gke_standard` (`gke_autopilot` with `autopilot = true`) | tgm `kubernetes-engine//modules/beta-private-cluster` (`beta-autopilot-private-cluster`) 47.0.0 | `gke-cluster` (PR #16; `mode: autopilot`) | exists on its branch; its render sets `datapathProvider` and `initialNodeCount` where the planned state holds neither, so the call stays frozen until a live run settles it |
 
-Only shared-vpc has run live end to end (on the old organization). Since
-2026-11-15 the folders and platform-project shapes run against the new
-organization's live-tests folder (`OFFRAMP_*` in `.env`, see
-`.env.example`), and each still stops at `terraform apply`:
+shared-vpc (on the old organization) and folders (on the new one) have
+run live end to end. Since 2026-11-15 the folders and platform-project
+shapes run against the new organization's live-tests folder (`OFFRAMP_*`
+in `.env`, see `.env.example`):
 
-- folders: applied, `terraform plan` empty, the folder-scope scan
-  answered by Cloud Asset Inventory, export 6 of 6, and the four calls
-  graduated to their charts with matching renders (run
-  `ofr-11152324-1c64`); it stops applying the objects to kind, because the
-  folders chart renders authoritative bindings as config-connector-
-  extensions' `IAMBinding` (`iam.gcp.hfl.dev`), whose CRD and controller
-  live.sh does not install yet. Google Cloud grants a folder's creator
-  `folderAdmin` and `folderEditor` on it, so the new organization's
-  domain-restricted sharing (`iam.allowedPolicyMemberDomains`) sometimes
-  refuses the create itself for the live-test service account, whose
-  project was made in the old organization (register item O34f); the
-  fixtures' own grants go to `OFFRAMP_MEMBER`. Its organization policies need
-  `orgpolicy.policyAdmin` (`OFFRAMP_ORG_POLICIES=false` leaves them out);
-  its hierarchical firewall policy needs `compute.globalOperations.get` on
-  the organization (O34d; `OFFRAMP_FOLDER_FIREWALL=false` leaves it out).
+- folders: **proved a no-op** (run `ofr-11160002-a4c3`, 2026-11-16, with
+  the hierarchical firewall policy and without the organization
+  policies): 14 resources applied, `terraform plan` empty, export 6 of 6,
+  all five calls graduated to their charts with matching renders, the 14
+  objects applied to kind with config-connector-extensions' CRDs and
+  manager beside Config Connector's (its `IAMBinding` renders the
+  authoritative bindings), preview 13 good and 0 bad with no `GCP_WRITE`
+  (preview runs Config Connector's kinds only), 14 of 14 `Ready`
+  `UpToDate`, no write in either manager's log, Bundt's server-side dry
+  run and `terraform plan` both empty, and no Admin Activity entry by the
+  run's account in the adoption window in the organization's, the
+  live-tests folder's or the project's log (the run's own folders' logs
+  were not readable from the VM, and went with the folders). Google Cloud grants a folder's
+  creator `folderAdmin` and `folderEditor` on it, so the new
+  organization's domain-restricted sharing (`iam.allowedPolicyMemberDomains`)
+  sometimes refuses the create itself for the live-test service account,
+  whose project was made in the old organization (register item O34f; the
+  run before `ofr-11160002-a4c3` was refused so); the fixtures' own grants
+  go to `OFFRAMP_MEMBER`. Its organization policies need
+  `orgpolicy.policyAdmin` (`OFFRAMP_ORG_POLICIES=false` leaves them out).
 - platform-project: the project is created and linked to billing, then the
   provider's deletion of its default network fails before the project's
   Compute Engine API is usable (O34e: `compute.skipDefaultNetworkCreation`
