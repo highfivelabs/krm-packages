@@ -9,8 +9,8 @@ at v60.0.0 (`f706bc3b`), Apache-2.0, Copyright Google LLC. Bundt Package
 v1.160.0's `CloudDeployDeliveryPipeline` and config-connector-extensions'
 `CloudDeployTarget`, `CloudDeployAutomation`, `CloudDeployDeployPolicy`
 (`clouddeploy.gcp.hfl.dev/v1beta1`), `IAMBinding`
-(`iam.gcp.hfl.dev/v1beta1`) and `IAMMember` (`iam.gcp.hfl.dev/v1alpha1`),
-at `384d07c0`. Config Connector's own `CloudDeployTarget` is `v1alpha1`,
+(`iam.gcp.hfl.dev/v1beta1`) and `IAMMember` (`iam.gcp.hfl.dev/v1beta1`),
+at `81c3f9b5`. Config Connector's own `CloudDeployTarget` is `v1alpha1`,
 it has no automation or deploy policy kind, and its IAM kinds cannot
 reference a pipeline or a target.
 
@@ -56,8 +56,8 @@ The module's variables, with the same names, types and defaults.
 | `deploy_policies` | one `CloudDeployDeployPolicy` per key: a rollout restriction per key of `rollout_restrictions` (actions, invokers, time zone, weekly and one-time windows), the selectors (default every pipeline), `suspended`, `annotations`, `labels`, `description` |
 | `iam`, `iam_by_principals` | one `IAMBinding` per role on the pipeline, exact, the two merged as fabric merges them |
 | `iam_bindings` | one `IAMBinding` per entry on the pipeline, exact, with its condition |
-| `iam_bindings_additive` | one `IAMMember` per entry on the pipeline (additive), with its condition; `IAMMember` is `v1alpha1`, so it needs `allow_alpha: true` (so does a target's) |
-| `allow_alpha` | not a fabric variable: accept the `v1alpha1` `IAMMember` |
+| `iam_bindings_additive` | one `IAMMember` per entry on the pipeline (additive), with its condition |
+| `allow_alpha` | not a fabric variable: no kind of this chart is alpha any more (`IAMMember` is `v1beta1` since config-connector-extensions `81c3f9b5`); kept so components that set it still render, it changes nothing |
 | `deletion_policy` | not a fabric variable; `ABANDON` keeps the pipeline, targets, automations and deploy policies (not the IAM) |
 
 Refused:
@@ -108,7 +108,7 @@ IAM is on the pipeline and targets by their full names
 
 A `module "x" { source = ".../modules/cloud-deploy" ... }` block's
 arguments become the values unchanged, with `service_account` set on
-every automation and `allow_alpha: true` when it has additive IAM. The
+every automation. The
 pipeline, targets, automations and policies keep their names, so they
 adopt what Terraform made (`docs/design.md`, "From Terraform").
 
@@ -130,11 +130,14 @@ against Config Connector's CRDs and those in
 `crds/config-connector-extensions`, and the refusals in
 `tests/*.fail.yaml`.
 
-Fake cloud (`task test-mock`, `tests/mock.values.yaml`): a pipeline, a Cloud Run target, an automation, a deploy policy, and a role on the pipeline and on the target. On 2026-11-15 (offload VM `off-catalog-1115095124-18431`, config-connector-extensions `384d07c0`, whose fake cloud serves any `getIamPolicy` path) all six objects became Ready, the outputs evaluated and all six were deleted. Canary strategies, multi-targets, the other automation rules, one-time windows, `iam_bindings` (with conditions) and the `v1alpha1` `IAMMember`s are only render-tested.
+Fake cloud (`task test-mock`, `tests/mock.values.yaml`): a pipeline, a Cloud Run target, an automation, a deploy policy, and a role on the pipeline and on the target. On 2026-11-15 (offload VM `off-catalog-1115095124-18431`, config-connector-extensions `384d07c0`, whose fake cloud serves any `getIamPolicy` path) all six objects became Ready, the outputs evaluated and all six were deleted. Canary strategies, multi-targets, the other automation rules, one-time windows, `iam_bindings` (with conditions) and the `IAMMember`s are only render-tested.
 
 Not applied live.
 
 ## Changes
 
+- **0.2.0** (2026-11-15): `IAMMember` renders
+  `iam.gcp.hfl.dev/v1beta1` without `allow_alpha` (config-connector-extensions
+  `81c3f9b5`).
 - **0.1.0** (2026-11-15): the port: the pipeline, targets, automations,
   deploy policies and IAM.

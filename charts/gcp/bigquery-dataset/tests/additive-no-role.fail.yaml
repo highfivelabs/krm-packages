@@ -1,5 +1,4 @@
 # expect: bigquery-dataset: every entry of iam_bindings_additive needs role
-allow_alpha: true
 project_id: my-project
 id: my_dataset
 iam_bindings_additive:

@@ -1,5 +1,4 @@
 # expect: ncc-spoke-ra: Route policy term priority must be unique within the policy.
-allow_alpha: true
 hub: {id: h}
 name: s
 project_id: p

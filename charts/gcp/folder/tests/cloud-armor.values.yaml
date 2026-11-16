@@ -1,6 +1,7 @@
-# A Cloud Armor policy associated with an existing folder (allow_alpha).
+# A Cloud Armor policy associated with an existing folder, with a project
+# excluded (config-connector-extensions' v1beta1 association).
 folder_create: false
 id: folders/1234567890
-allow_alpha: true
 cloud_armor_policy:
   policy_id: locations/global/securityPolicies/123456789
+  excluded_projects: [projects/111111111111]

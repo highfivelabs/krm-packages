@@ -66,9 +66,9 @@ iam_bindings_additive: {}
 factories_data:
   data_quality_spec: null
 
-# Not a fabric variable: iam_bindings_additive renders config-connector-
-# extensions' IAMMember, which is v1alpha1; set true to accept that its
-# schema may change (docs/design.md, "Alpha kinds").
+# Not a fabric variable: no kind of this chart is alpha any more
+# (config-connector-extensions' IAMMember is v1beta1 since 81c3f9b5); kept
+# so components that set it still render, it changes nothing.
 allow_alpha: false
 # Not a fabric variable: DELETE (the default) or ABANDON, which keeps the
 # scan when the component is deleted. PREVENT has no Config Connector

@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "backend_service:default"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -40,7 +40,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "backend_service:hybrid"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -72,7 +72,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "backend_service:psc"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -100,7 +100,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "backend_service:run"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -134,7 +134,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "backend_service:web"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -168,7 +168,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "forwarding_rule"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -195,7 +195,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "health_check:default"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -215,7 +215,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "endpoint:hybrid-e-0"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -237,7 +237,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "endpoint:zonal-e-0"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -261,7 +261,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "neg:hybrid"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -282,7 +282,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "neg:zonal"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -297,7 +297,7 @@ spec:
     external: "projects/my-project/regions/europe-west8/subnetworks/my-subnet"
 ---
 # Source: net-lb-app-ext-regional/templates/negs.yaml
-apiVersion: compute.gcp.hfl.dev/v1alpha1
+apiVersion: compute.gcp.hfl.dev/v1beta1
 kind: ComputeRegionNetworkEndpoint
 metadata:
   name: negs-ep-ip-e-0
@@ -305,7 +305,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "internet_endpoint:ip-e-0"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -319,7 +319,7 @@ spec:
   port: 80
 ---
 # Source: net-lb-app-ext-regional/templates/negs.yaml
-apiVersion: compute.gcp.hfl.dev/v1alpha1
+apiVersion: compute.gcp.hfl.dev/v1beta1
 kind: ComputeRegionNetworkEndpoint
 metadata:
   name: negs-ep-web-e-0
@@ -327,7 +327,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "internet_endpoint:web-e-0"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -349,7 +349,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "serverless_neg:fn"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -371,7 +371,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "internet_neg:ip"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -392,7 +392,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "psc_neg:psc"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -412,7 +412,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "serverless_neg:run"
     cnrm.cloud.google.com/project-id: "other-project"
@@ -435,7 +435,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "internet_neg:web"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -456,7 +456,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "target_proxy"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -476,7 +476,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "negs"
     app.kubernetes.io/name: net-lb-app-ext-regional
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "url_map"
     cnrm.cloud.google.com/project-id: "my-project"

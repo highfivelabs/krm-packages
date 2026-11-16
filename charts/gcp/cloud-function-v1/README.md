@@ -41,7 +41,7 @@ The module's variables, with the same names, types and defaults.
 | `trigger_config`, `https_security_level` | without `trigger_config`, an `httpsTrigger` with `securityLevel` (`SECURE_ALWAYS` when null), as fabric's `trigger_http`; with it, an `eventTrigger`: `event` (`eventType`), `resource` (`resourceRef.external`), `retry` (`failurePolicy`) |
 | `vpc_connector`, `vpc_connector_create` | `vpcConnectorRef` (the created connector by reference, else `vpc_connector.name`) and `vpcConnectorEgressSettings`; `vpc_connector_create` a `VPCAccessConnector` named its `name` or `name` |
 | `service_account_config` | with `create` (the default), an `IAMServiceAccount` (`name` or `name`; `display_name`, else the account's name), the function's `serviceAccountRef`, and one `IAMPolicyMember` on the project per `roles` entry; else `email`, if any, runs the function |
-| `iam` | one `IAMPartialPolicy` on the function, a binding per role (`docs/design.md`, "IAM") |
+| `iam` | one `IAMBinding` of config-connector-extensions (`iam.gcp.hfl.dev/v1beta1`) per role on the function, by its full name (`projects/<project>/locations/<region>/functions/<name>`): exact, as fabric's `google_cloudfunctions_function_iam_binding` (`docs/design.md`, "IAM") |
 | `repository_settings` | only fabric's default, `registry: ARTIFACT_REGISTRY` and no `repository`, which is Google Cloud's default too; another registry or a `repository` is **refused** |
 | `build_environment_variables`, `build_worker_pool`, `kms_key`, `secrets` | **refused** when set: Config Connector's `CloudFunctionsFunction` (v1.160.0) has no field for them, and config-connector-extensions has no 1st gen function kind. The `cloud-function-v2` chart takes all four |
 | `context` | **refused**: Bundt's `${...}` expressions and `valueFrom` replace fabric's `$context` lookups |
@@ -78,12 +78,9 @@ objects) are not outputs.
   `buildWorkerPool`, `kmsKeyName`, `dockerRegistry`, `dockerRepository`,
   `secretEnvironmentVariables` or `secretVolumes`. A function that needs
   them is a 2nd gen function (`cloud-function-v2`).
-- `iam` is an `IAMPartialPolicy`: the listed members are kept and members
-  added out of band are left alone, where fabric's
-  `google_cloudfunctions_function_iam_binding` removes them. config-connector-extensions'
-  `IAMBinding`, the exact kind, does not take a `CloudFunctionsFunction`
-  (`docs/design.md`, "IAM"). fabric's `replace_triggered_by` has no
-  equivalent: the policy names the function by reference.
+- fabric's `replace_triggered_by` on the IAM binding has no equivalent:
+  the `IAMBinding` names the function by its full name, and a new function
+  of the same name gets the same binding.
 - The service account and a created VPC connector are referenced by
   object (`serviceAccountRef.name`, `vpcConnectorRef.name`), so the
   function waits for them.
@@ -123,14 +120,18 @@ MOCK_CHARTS="cloud-function-v1 workstation-cluster"`, run
 its source and its service account with one project role: all 4 objects
 Ready, the outputs evaluated, all deleted. mockgcp reports an empty
 function URL, so `invoke_command` is null there (the run showed a command
-with no URL; the output now waits for a non-empty one). `iam`
-(`IAMPartialPolicy` on the function) and the VPC Access connector are
-render-tested only.
+with no URL; the output now waits for a non-empty one). The VPC Access
+connector is render-tested only.
 
 Not applied live.
 
 ## Changes
 
+- **0.2.0** (2026-11-15): `iam` renders config-connector-extensions'
+  `IAMBinding` per role on the function (exact, as fabric's binding),
+  instead of an `IAMPartialPolicy`, which left members added out of band;
+  config-connector-extensions 81c3f9b5 (its #138) takes a
+  `CloudFunctionsFunction`.
 - **0.1.0** (2026-11-15): the port: the function from a Cloud Storage
   bundle, its source bucket, service account, VPC Access connector, and
   IAM on the function.

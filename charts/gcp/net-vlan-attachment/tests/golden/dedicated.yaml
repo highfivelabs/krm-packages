@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "dedicated"
     app.kubernetes.io/name: net-vlan-attachment
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "attachment"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -39,7 +39,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "dedicated"
     app.kubernetes.io/name: net-vlan-attachment
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "router"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -61,7 +61,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "dedicated"
     app.kubernetes.io/name: net-vlan-attachment
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "router_interface"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -83,7 +83,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "dedicated"
     app.kubernetes.io/name: net-vlan-attachment
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "router_peer"
     cnrm.cloud.google.com/project-id: "my-project"

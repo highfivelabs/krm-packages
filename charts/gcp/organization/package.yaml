@@ -10,9 +10,12 @@
 # value's tagKeys/N or tagValues/N name: TagsTagKey's and TagsTagValue's
 # status.name is the bare number), workforce_identity_pool_ids and
 # workforce_identity_provider_names (each pool's and provider's
-# locations/global/workforcePools/... name). Not outputs:
-# asset_search_results, logging_identities, scc_mute_configs, scim_tenants
-# and service_agents (their variables are refused),
+# locations/global/workforcePools/... name), and service_agents (each
+# ServiceIdentity's status.email, keyed by its service: fabric outputs
+# whole agent objects keyed by agent name, and several of its agents share
+# a service). Not outputs:
+# asset_search_results, logging_identities, scc_mute_configs and
+# scim_tenants (their variables are refused),
 # scc_custom_sha_modules_ids (Google Cloud assigns a module's ID, and the
 # alpha kind does not report it), and fabric's whole objects
 # (access_levels, context_aware_access_bindings, custom_roles,
@@ -22,7 +25,7 @@ kind: Package
 metadata:
   name: gcp-organization
 spec:
-  version: 0.3.0
+  version: 0.4.0
   engine: helm
   providers: [kcc]
   outputs:
@@ -55,3 +58,5 @@ spec:
         {k.substring(19): 'locations/global/workforcePools/'
           + resources['workforce-pool:' + k.substring(19).split('/')[0]].spec.resourceID
           + '/providers/' + v.spec.resourceID})
+    service_agents: >-
+      resources.transformMapEntry(k, v, v.kind == 'ServiceIdentity', {v.spec.resourceID: v.status.email})

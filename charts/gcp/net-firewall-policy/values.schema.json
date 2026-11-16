@@ -344,7 +344,7 @@
       }
     },
     "allow_alpha": {
-      "description": "Accept the v1alpha1 kinds a regional policy and packet mirroring rules need (not a fabric variable; docs/design.md, \"Alpha kinds\").",
+      "description": "Accept the v1alpha1 kind packet mirroring rules need (not a fabric variable; docs/design.md, \"Alpha kinds\").",
       "type": [
         "boolean",
         "null"

@@ -16,5 +16,6 @@ exempt:
   EssentialContactsContact: "keyed by the contact's email"
   TagsTagBinding: "a binding of a tag value to the folder; it has no name of its own"
   KMSAutokeyConfig: "the folder's one Autokey configuration; it has no name of its own"
+  ServiceIdentity: "named by its service: a folder has one identity per service"
 nameFields:
   Folder: displayName

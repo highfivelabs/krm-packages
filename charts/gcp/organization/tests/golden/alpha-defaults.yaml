@@ -1,6 +1,6 @@
 ---
-# Source: organization/templates/alpha.yaml
-apiVersion: compute.cnrm.cloud.google.com/v1alpha1
+# Source: organization/templates/cloud-armor.yaml
+apiVersion: compute.gcp.hfl.dev/v1beta1
 kind: ComputeOrganizationSecurityPolicyAssociation
 metadata:
   name: alpha-defaults-cloud-armor
@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "alpha-defaults"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "cloud_armor_policy"
 spec:
@@ -25,7 +25,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "alpha-defaults"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "model_armor_floor_setting"
     cnrm.cloud.google.com/deletion-policy: abandon
@@ -54,7 +54,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "alpha-defaults"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "scc-sha-custom-module:bare"
 spec:

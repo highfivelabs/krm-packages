@@ -1,5 +1,0 @@
-# expect: cloud-deploy: iam_bindings_additive needs the alpha Config Connector kind IAMMember
-project_id: my-project
-region: europe-west1
-name: p
-iam_bindings_additive: {u: {role: roles/clouddeploy.viewer, member: "user:a@example.com"}}

@@ -310,7 +310,7 @@ Rank 2. Terraform module: [`modules/folder`](https://github.com/GoogleCloudPlatf
 | `google_folder_iam_audit_config` | IAMAuditConfig |  |
 | `google_folder_iam_binding` | IAMPartialPolicy -> Folder |  |
 | `google_folder_iam_member` | IAMPolicyMember -> Folder |  |
-| `google_folder_service_identity` | ServiceIdentity (serviceusage.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_folder_service_identity` | ServiceIdentity (serviceusage.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_iam_deny_policy` | IAMDenyPolicy (iam.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_kms_autokey_config` | KMSAutokeyConfig |  |
 | `google_logging_folder_exclusion` | LoggingLogExclusion |  |
@@ -354,7 +354,7 @@ Rank 3. Terraform module: [`modules/organization`](https://github.com/GoogleClou
 | `google_organization_iam_binding` | IAMPartialPolicy -> Organization |  |
 | `google_organization_iam_custom_role` | IAMCustomRole |  |
 | `google_organization_iam_member` | IAMPolicyMember -> Organization |  |
-| `google_organization_service_identity` | ServiceIdentity (serviceusage.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_organization_service_identity` | ServiceIdentity (serviceusage.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_privileged_access_manager_entitlement` | PrivilegedAccessManagerEntitlement |  |
 | `google_project_iam_member` | IAMPolicyMember -> Project |  |
 | `google_pubsub_topic_iam_member` | IAMPolicyMember -> PubSubTopic |  |

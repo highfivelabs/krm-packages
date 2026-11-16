@@ -1,11 +1,10 @@
 # The live case "regional" (LIVE_CHARTS=net-firewall-policy:regional): a
 # regional network policy (config-connector-extensions'
-# ComputeRegionNetworkFirewallPolicy, its association and rules; v1alpha1,
-# so allow_alpha) attached to a network of the run.
+# ComputeRegionNetworkFirewallPolicy, its association and rules; v1beta1)
+# attached to a network of the run.
 name: ${RUN}-rfwp
 parent_id: ${PROJECT}
 region: ${REGION}
-allow_alpha: true
 description: catalog live test ${RUN}
 attachments: {fwp: projects/${PROJECT}/global/networks/${RUN}-rfwp-net}
 ingress_rules:

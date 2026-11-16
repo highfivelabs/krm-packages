@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: net-vlan-attachment
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "attachment"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -32,7 +32,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: net-vlan-attachment
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "router"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -51,7 +51,7 @@ spec:
     keepaliveInterval: 20
 ---
 # Source: net-vlan-attachment/templates/main.yaml
-apiVersion: compute.gcp.hfl.dev/v1alpha1
+apiVersion: compute.gcp.hfl.dev/v1beta1
 kind: ComputeRouterRoutePolicy
 metadata:
   name: full-route-policy-import
@@ -59,7 +59,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: net-vlan-attachment
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "route_policy:import"
     cnrm.cloud.google.com/project-id: "my-project"

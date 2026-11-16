@@ -1,8 +1,7 @@
 # Applied to the fake cloud by hack/mock-apply.sh, on the network in
 # tests/mock.needs.yaml: the HA gateway, an external peer gateway, the
-# router and an import route policy (allow_alpha: config-connector-
+# router and an import route policy (config-connector-
 # extensions' fake cloud runs its ComputeRouterRoutePolicy controller).
-allow_alpha: true
 project_id: mock-project
 region: us-central1
 name: catalog-mock-havpn

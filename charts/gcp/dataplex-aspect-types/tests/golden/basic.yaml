@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "basic"
     app.kubernetes.io/name: dataplex-aspect-types
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "aspect-type:tf-test-template"
     cnrm.cloud.google.com/project-id: "test-project"
@@ -43,7 +43,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "basic"
     app.kubernetes.io/name: dataplex-aspect-types
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "iam:tf-test-template.roles/dataplex.aspectTypeOwner"
     cnrm.cloud.google.com/project-id: "test-project"
@@ -57,7 +57,7 @@ spec:
     - "group:data-owners@example.com"
 ---
 # Source: dataplex-aspect-types/templates/iam.yaml
-apiVersion: iam.gcp.hfl.dev/v1alpha1
+apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMMember
 metadata:
   name: basic-iam-member-user
@@ -65,7 +65,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "basic"
     app.kubernetes.io/name: dataplex-aspect-types
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "iam-member:user"
     cnrm.cloud.google.com/project-id: "test-project"

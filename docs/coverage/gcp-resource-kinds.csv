@@ -215,7 +215,7 @@ folder,google_folder,1,stable,Folder
 folder,google_folder_iam_audit_config,1,stable,IAMAuditConfig
 folder,google_folder_iam_binding,2,stable,IAMPartialPolicy -> Folder
 folder,google_folder_iam_member,1,stable,IAMPolicyMember -> Folder
-folder,google_folder_service_identity,1,extensions,ServiceIdentity (serviceusage.gcp.hfl.dev/v1alpha1)
+folder,google_folder_service_identity,1,extensions,ServiceIdentity (serviceusage.gcp.hfl.dev/v1beta1)
 folder,google_iam_deny_policy,1,extensions,IAMDenyPolicy (iam.gcp.hfl.dev/v1beta1)
 folder,google_kms_autokey_config,1,stable,KMSAutokeyConfig
 folder,google_logging_folder_exclusion,1,stable,LoggingLogExclusion
@@ -500,7 +500,7 @@ organization,google_organization_iam_audit_config,1,stable,IAMAuditConfig
 organization,google_organization_iam_binding,2,stable,IAMPartialPolicy -> Organization
 organization,google_organization_iam_custom_role,1,stable,IAMCustomRole
 organization,google_organization_iam_member,1,stable,IAMPolicyMember -> Organization
-organization,google_organization_service_identity,1,extensions,ServiceIdentity (serviceusage.gcp.hfl.dev/v1alpha1)
+organization,google_organization_service_identity,1,extensions,ServiceIdentity (serviceusage.gcp.hfl.dev/v1beta1)
 organization,google_privileged_access_manager_entitlement,1,stable,PrivilegedAccessManagerEntitlement
 organization,google_project_iam_member,2,stable,IAMPolicyMember -> Project
 organization,google_pubsub_topic_iam_member,1,stable,IAMPolicyMember -> PubSubTopic

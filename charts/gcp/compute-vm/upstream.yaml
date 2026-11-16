@@ -81,8 +81,3 @@ refused:
     kind: gap
     reason: "carried on an instance (params and the boot disk's resourceManagerTags); refused with create_template: ComputeInstanceTemplate has no resourceManagerTags field"
     partial: true
-  - variable: iap_tunnel_iam_bindings_additive
-    kind: alpha
-    reason: "each entry is config-connector-extensions' IAMMember, which is v1alpha1: needs allow_alpha: true"
-    partial: true
-    needs_allow_alpha: true

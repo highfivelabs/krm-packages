@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "authorized"
     app.kubernetes.io/name: bigquery-dataset
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "dataset"
     cnrm.cloud.google.com/project-id: "private_project"
@@ -29,7 +29,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "authorized"
     app.kubernetes.io/name: bigquery-dataset
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "authorized-view:auth_view_project_auth_view_dataset_auth_view"
     cnrm.cloud.google.com/project-id: "private_project"
@@ -51,7 +51,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "authorized"
     app.kubernetes.io/name: bigquery-dataset
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "authorized-view:view_project_view_dataset_view_id_2"
     cnrm.cloud.google.com/project-id: "private_project"
@@ -73,7 +73,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "authorized"
     app.kubernetes.io/name: bigquery-dataset
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "authorized-view:view_project_view_dataset_view_id_3"
     cnrm.cloud.google.com/project-id: "private_project"
@@ -95,7 +95,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "authorized"
     app.kubernetes.io/name: bigquery-dataset
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "authorized-dataset:auth_dataset_project_auth_dataset"
     cnrm.cloud.google.com/project-id: "private_project"

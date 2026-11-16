@@ -1,8 +1,8 @@
 # The module README's examples for the parts that need a v1alpha1 kind,
-# with allow_alpha: IAM deny policies, the hierarchical Cloud Armor policy
-# association (less its exclusions, refused), a user access binding on the
+# with allow_alpha: IAM deny policies, a user access binding on the
 # chart's access level, the Model Armor floor setting and a Security
-# Health Analytics custom module.
+# Health Analytics custom module; and the hierarchical Cloud Armor policy
+# association, which needs no allow_alpha since 0.4.0, with its exclusions.
 organization_id: organizations/1122334455
 allow_alpha: true
 iam_deny_policies:
@@ -26,6 +26,8 @@ iam_deny_policies:
 cloud_armor_policy:
   name: org-baseline
   policy_id: "1234567890"
+  excluded_folders: [folders/1111111111]
+  excluded_projects: [projects/222222222222]
 access_policy: "1234567890"
 access_levels:
   trusted_ips:

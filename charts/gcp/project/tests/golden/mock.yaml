@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "service:compute.googleapis.com"
@@ -28,7 +28,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "service:storage.googleapis.com"
@@ -48,7 +48,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "quota:catalog-mock-cpus"
@@ -62,6 +62,30 @@ spec:
     preferredValue: 8
   dimensions: {"region":"us-central1"}
 ---
+# Source: project/templates/asset-feeds.yaml
+apiVersion: asset.gcp.hfl.dev/v1beta1
+kind: AssetFeed
+metadata:
+  name: mock-feed-catalog-mock-feed
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: project
+    app.kubernetes.io/version: "0.11.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "asset-feed:catalog-mock-feed"
+spec:
+  resourceID: "catalog-mock-feed"
+  projectRef:
+    name: mock
+  contentType: "RESOURCE"
+  assetTypes: ["storage.googleapis.com/Bucket"]
+  feedOutputConfig:
+    pubsubDestination:
+      topicRef:
+        external: "projects/catalog-mock-prj/topics/assets"
+---
 # Source: project/templates/bigquery-reservation.yaml
 apiVersion: bigqueryreservation.cnrm.cloud.google.com/v1beta1
 kind: BigQueryReservationReservation
@@ -71,7 +95,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "bigquery-reservation:catalog-mock-res"
@@ -95,7 +119,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "contact:ops@example.com"
@@ -115,7 +139,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "data-access:storage.googleapis.com"
@@ -137,7 +161,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "custom-role:catalogMockRole"
@@ -158,7 +182,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "iam_deny_policy:catalog-mock-deny"
@@ -183,7 +207,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "iam"
@@ -206,7 +230,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "iam-additive-logs"
@@ -227,7 +251,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "logging-sink-writer:catalog-mock-sink"
@@ -254,7 +278,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "kms-autokey:catalog-mock-disk"
@@ -274,7 +298,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "logging-exclusion:catalog-mock-exclusion"
@@ -294,7 +318,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "logging-metric:catalog-mock-metric"
@@ -316,7 +340,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "logging-sink:catalog-mock-sink"
@@ -341,7 +365,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "alert:catalog-mock-alert"
@@ -371,7 +395,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "notification-channel:catalog-mock-email"
@@ -389,7 +413,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "org_policy:compute.disableSerialPortAccess"
@@ -410,7 +434,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "pam-entitlement:catalog-mock-pam"
@@ -438,7 +462,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "project"
@@ -460,7 +484,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "tag-key:catalog-mock-env"
@@ -478,7 +502,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
     env: "test"
   annotations:
     hfl.dev/id: "tag-value:catalog-mock-env/dev"

@@ -11,7 +11,7 @@ a ComputeExternalVPNGateway per external peer gateway, <name>-<key>.
 google_compute_router.router (router_config.create): a ComputeRouter,
 router_config.name or vpn-<name>. google_compute_router_route_policy
 .default: a config-connector-extensions ComputeRouterRoutePolicy per
-policy (v1alpha1: allow_alpha). google_compute_vpn_tunnel.tunnels: a
+policy (v1beta1). google_compute_vpn_tunnel.tunnels: a
 ComputeVPNTunnel per tunnel, its shared secret a reference to a Kubernetes
 Secret (docs/secrets.md); google_compute_router_interface.router_interface
 and google_compute_router_peer.bgp_peer: a ComputeRouterInterface and a

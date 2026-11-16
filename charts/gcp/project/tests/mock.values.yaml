@@ -1,8 +1,7 @@
 # Applied to the fake cloud by hack/mock-apply.sh. No lien and no Shared
 # VPC: mockgcp has neither. No vpc_sc: it needs an access policy and a
-# perimeter the case does not make; no asset feed: it needs a reused
-# project's number (README.md, "Config Connector bugs"). Both are
-# render-tested only.
+# perimeter the case does not make (render-tested only). The asset feed
+# names the chart's new project by its Project object.
 name: catalog-mock-prj
 parent: organizations/123456789
 billing_account: 010101-ABCDEF-010101
@@ -71,3 +70,8 @@ iam_deny_policies:
     rules:
       - denied_principals: ["principalSet://goog/public:all"]
         denied_permissions: ["iam.googleapis.com/serviceAccountKeys.create"]
+asset_feeds:
+  catalog-mock-feed:
+    content_type: RESOURCE
+    asset_types: [storage.googleapis.com/Bucket]
+    feed_output_config: {pubsub_destination: {topic: projects/catalog-mock-prj/topics/assets}}

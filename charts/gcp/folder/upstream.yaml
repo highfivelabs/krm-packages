@@ -24,8 +24,9 @@ synced: 2026-11-13
 # accepted, the reason says what is refused.
 refused:
   - variable: asset_feeds
-    kind: alpha
-    reason: "CloudAssetFolderFeed is v1alpha1; not ported yet, even with allow_alpha"
+    kind: gap
+    reason: "billing_project is not carried: AssetFeed has no field for it, and Config Connector bills the call to the project its controller is configured with"
+    partial: true
   - variable: asset_search
     kind: by-design
     reason: "a Cloud Asset Inventory search is a read at plan time, not a resource; Bundt does not run one"
@@ -33,11 +34,9 @@ refused:
     kind: alpha
     reason: "AssuredWorkloadsWorkload is v1alpha1; not ported yet, even with allow_alpha"
   - variable: cloud_armor_policy
-    kind: alpha
-    reason: "ComputeOrganizationSecurityPolicyAssociation is v1alpha1: needs allow_alpha: true; excluded_folders and excluded_projects are refused (the kind has no such fields), and it needs an existing folder (folder_create: false): its attachmentId is the folder's number, known only after a new folder is made"
+    kind: gap
+    reason: "it needs an existing folder (folder_create: false): its attachmentId is the folder's number, known only after a new folder is made; excluded_folders is refused, as fabric refuses it on a folder"
     partial: true
-    fields: [excluded_folders, excluded_projects]
-    needs_allow_alpha: true
   - variable: context
     kind: by-design
     reason: "Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs"
@@ -63,6 +62,3 @@ refused:
   - variable: scc_sha_custom_modules
     kind: alpha
     reason: "SecurityCenterManagementSecurityHealthAnalyticsCustomModule is v1alpha1; not ported yet, even with allow_alpha"
-  - variable: service_agents_config
-    kind: gap
-    reason: "Config Connector has no kind for a folder's service identities (ServiceIdentity)"

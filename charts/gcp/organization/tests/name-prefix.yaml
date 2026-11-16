@@ -20,6 +20,7 @@ exempt:
   IAMWorkforcePoolProvider: "its ID is scoped to its pool, which carries the namePrefix"
   AccessContextManagerGCPUserAccessBinding: "Google Cloud assigns its ID; it binds a group to access levels"
   ModelArmorFloorSetting: "the organization's one floor setting; it has no name of its own"
+  ServiceIdentity: "named by its service: an organization has one identity per service"
   SecurityCenterManagementSecurityHealthAnalyticsCustomModule: "Google Cloud assigns its ID; its display name is fabric's key, letters, digits and \"_\""
 nameFields:
   TagsTagKey: shortName

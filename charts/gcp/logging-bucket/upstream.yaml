@@ -31,6 +31,6 @@ refused:
     reason: "LoggingLogBucket has no cmekSettings, so a bucket cannot be given a CMEK key"
   - variable: views
     kind: gap
-    reason: "IAM on a view (iam, iam_bindings, iam_bindings_additive) is accepted on a project's bucket only: config-connector-extensions' IAMBinding and IAMMember take a project's log view only. iam_bindings_additive also needs allow_alpha: true (IAMMember is v1alpha1)"
+    reason: "IAM on a view (iam, iam_bindings, iam_bindings_additive) is accepted on a project's bucket only: config-connector-extensions' IAMBinding and IAMMember take a project's log view only."
     partial: true
     fields: [iam, iam_bindings, iam_bindings_additive]

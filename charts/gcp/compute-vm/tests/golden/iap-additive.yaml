@@ -3,12 +3,12 @@
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeInstance
 metadata:
-  name: alpha
+  name: iap-additive
   labels:
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: "alpha"
+    app.kubernetes.io/instance: "iap-additive"
     app.kubernetes.io/name: compute-vm
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "instance"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -43,15 +43,15 @@ spec:
     provisioningModel: "STANDARD"
 ---
 # Source: compute-vm/templates/iam.yaml
-apiVersion: iam.gcp.hfl.dev/v1alpha1
+apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMMember
 metadata:
-  name: alpha-iap-iam-member-dev
+  name: iap-additive-iap-iam-member-dev
   labels:
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: "alpha"
+    app.kubernetes.io/instance: "iap-additive"
     app.kubernetes.io/name: compute-vm
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "iap_iam_member:dev"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -67,15 +67,15 @@ spec:
     description: "Until next year."
 ---
 # Source: compute-vm/templates/iam.yaml
-apiVersion: iam.gcp.hfl.dev/v1alpha1
+apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMMember
 metadata:
-  name: alpha-iap-iam-member-ops
+  name: iap-additive-iap-iam-member-ops
   labels:
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: "alpha"
+    app.kubernetes.io/instance: "iap-additive"
     app.kubernetes.io/name: compute-vm
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "iap_iam_member:ops"
     cnrm.cloud.google.com/project-id: "my-project"

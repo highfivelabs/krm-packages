@@ -15,7 +15,8 @@ google_access_context_manager_service_perimeter_dry_run_resource).
 
 google_compute_organization_security_policy_association.default
 (cloud_armor_policy): a ComputeOrganizationSecurityPolicyAssociation
-(v1alpha1, behind allow_alpha) of the hierarchical Cloud Armor policy with
+(compute.gcp.hfl.dev/v1beta1, config-connector-extensions) of the
+hierarchical Cloud Armor policy with
 the project, named project-<number> unless named, as the folder chart
 renders it. Its attachmentId is the project's number, a plain string, so
 it needs project_reuse with attributes.number: a new project's number is
@@ -53,7 +54,6 @@ spec:
     {{- end }}
 {{- end }}
 {{- with $v.cloud_armor_policy }}
-{{- include "kcc.alpha" (list $ "cloud_armor_policy" . "ComputeOrganizationSecurityPolicyAssociation") }}
 {{- if or .excluded_folders .excluded_projects }}
 {{- fail "project: Exclusions are not supported for project-level Cloud Armor policy associations." }}
 {{- end }}
@@ -65,7 +65,7 @@ spec:
 {{- fail "project: cloud_armor_policy needs an existing project (project_reuse with attributes.number): the association's attachmentId is the project's number, which is known only after a new project is made" }}
 {{- end }}
 ---
-apiVersion: compute.cnrm.cloud.google.com/v1alpha1
+apiVersion: compute.gcp.hfl.dev/v1beta1
 kind: ComputeOrganizationSecurityPolicyAssociation
 metadata:
   {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "cloud-armor")) "id" "cloud_armor_policy" "abandon" $abandon) | nindent 2 }}

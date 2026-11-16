@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: dataplex-aspect-types
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     cost-center: "c42"
     domain: "ownership"
     env: "prod"
@@ -50,7 +50,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: dataplex-aspect-types
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     cost-center: "c42"
     domain: "quality"
     env: "prod"
@@ -92,7 +92,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: dataplex-aspect-types
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     cost-center: "c42"
     env: "prod"
     hfl.dev/team: "data"
@@ -117,7 +117,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: dataplex-aspect-types
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     cost-center: "c42"
     env: "prod"
     hfl.dev/team: "data"
@@ -142,7 +142,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: dataplex-aspect-types
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     cost-center: "c42"
     env: "prod"
     hfl.dev/team: "data"
@@ -163,7 +163,7 @@ spec:
     description: "until the end of 2030"
 ---
 # Source: dataplex-aspect-types/templates/iam.yaml
-apiVersion: iam.gcp.hfl.dev/v1alpha1
+apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMMember
 metadata:
   name: full-iam-member-quality-sa
@@ -171,7 +171,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: dataplex-aspect-types
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     cost-center: "c42"
     env: "prod"
     hfl.dev/team: "data"

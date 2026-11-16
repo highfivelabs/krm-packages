@@ -1,10 +1,9 @@
 # Applied to the fake cloud by hack/mock-apply.sh, on the network in
 # tests/mock.needs.yaml: the HA VPN gateway, the external peer gateway, the
-# router and an import route policy (allow_alpha: config-connector-
+# router and an import route policy (config-connector-
 # extensions' fake cloud runs its ComputeRouterRoutePolicy controller).
 # mockgcp has no interconnect attachments, so the gateway's interfaces name
 # two that do not exist; mockgcp does not look them up.
-allow_alpha: true
 project_id: mock-project
 region: us-central1
 name: catalog-mock-ipsec

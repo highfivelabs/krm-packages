@@ -1,13 +1,12 @@
 # fabric's "IAM" example, with roles on the configuration too: IAMBinding
 # per role (iam) and per entry (iam_bindings); the additive entries are
-# IAMMember (v1alpha1, so allow_alpha).
+# IAMMember (v1beta1).
 project_id: my-project
 id: my-workstation-cluster
 location: europe-west1
 network_config:
   network: projects/my-project/global/networks/vpc
   subnetwork: projects/my-project/regions/europe-west1/subnetworks/subnet
-allow_alpha: true
 workstation_configs:
   my-workstation-config:
     iam:

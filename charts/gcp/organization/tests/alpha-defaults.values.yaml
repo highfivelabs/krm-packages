@@ -1,5 +1,5 @@
-# The alpha parts with fabric's defaults: an association named
-# organization-<id>, a floor setting with no filters, a module with no
+# Fabric's defaults: an association named organization-<id> (not alpha
+# since 0.4.0), and the alpha parts: a floor setting with no filters, a module with no
 # description, and a floor setting with SDP templates.
 organization_id: organizations/1122334455
 allow_alpha: true

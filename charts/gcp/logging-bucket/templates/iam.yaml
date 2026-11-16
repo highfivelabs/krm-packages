@@ -10,7 +10,7 @@ its iam, exact per role as fabric's.
 google_logging_log_view_iam_binding.bindings: one IAMBinding per entry of a
 view's iam_bindings.
 google_logging_log_view_iam_member.members: one IAMMember
-(config-connector-extensions, iam.gcp.hfl.dev/v1alpha1, so allow_alpha) per
+(config-connector-extensions, iam.gcp.hfl.dev/v1beta1) per
 entry of a view's iam_bindings_additive.
 IAM on a folder's, organization's or billing account's view is refused:
 config-connector-extensions takes a project's log view only.
@@ -60,10 +60,9 @@ spec:
     {{- include "kcc.condition" . | nindent 4 }}
   {{- end }}
 {{- end }}
-{{- include "kcc.alpha" (list $ (printf "views.%s.iam_bindings_additive" $vk) $view.iam_bindings_additive "IAMMember (config-connector-extensions)") }}
 {{- range $key, $b := ($view.iam_bindings_additive | default dict) }}
 ---
-apiVersion: iam.gcp.hfl.dev/v1alpha1
+apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMMember
 metadata:
   {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "view" $vk "iam-member" $key)) "id" (printf "view:%s:iam-member:%s" $vk $key) "project" $project) | nindent 2 }}

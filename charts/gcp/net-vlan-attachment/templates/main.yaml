@@ -16,7 +16,7 @@ IPSEC_INTERCONNECT ComputeAddress, pool-<name>. google_compute_router
 .encrypted (IPsec) or .unencrypted (router_config.create): a ComputeRouter,
 <name>-underlay (encrypted) or router_config.name. google_compute_router
 _route_policy.default: a config-connector-extensions
-ComputeRouterRoutePolicy per policy (v1alpha1: allow_alpha).
+ComputeRouterRoutePolicy per policy (v1beta1).
 google_compute_router_interface.default and google_compute_router_peer
 .default (a dedicated attachment only): a ComputeRouterInterface,
 <name>-intf, and a ComputeRouterPeer, <name>-peer, on the router.

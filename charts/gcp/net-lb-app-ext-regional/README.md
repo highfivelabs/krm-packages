@@ -17,7 +17,7 @@ Connector v1.160.0 (`ComputeForwardingRule`, `ComputeTargetHTTPProxy`,
 `ComputeNetworkEndpointGroup`, `ComputeRegionNetworkEndpointGroup`) and
 config-connector-extensions' `ComputeNetworkEndpoint`
 (`compute.gcp.hfl.dev/v1beta1`) and `ComputeRegionNetworkEndpoint`
-(`v1alpha1`) at `384d07c0`.
+(`v1beta1`) at `81c3f9b5`.
 
 Regional external application load balancers need a proxy-only subnet
 with purpose `REGIONAL_MANAGED_PROXY` in the region (net-vpc's
@@ -72,18 +72,15 @@ The module's variables, with the same names, types and defaults.
 | `backend_service_configs` | one regional `ComputeBackendService` (`EXTERNAL_MANAGED`) per key, named `<name>-<key>` unless it has a name: description, cookie TTL, draining timeout, CDN and its policy, health checks (keys of the chart's or existing IDs; `["default"]` unless set, `[]` for none), locality LB policy, logging, port name (`lower(protocol)` unless set, as fabric), protocol, security policy, session affinity, timeout, circuit breakers, consistent hash, IAP (the client secret a Secret reference), outlier detection and the backends (with `max_connections` and `max_rate`). `log_config.optional_mode` and `optional_fields` are refused (below) |
 | `health_check_configs` | one regional `ComputeHealthCheck` per key, named `<name>-<key>` unless it has a name, of one type. `null` (the default) is fabric's default; `{}` makes none |
 | `group_configs` | one unmanaged `ComputeInstanceGroup` per key |
-| `neg_configs` | per key, one of: `gce`, a zonal `ComputeNetworkEndpointGroup` (`GCE_VM_IP_PORT`) with one `ComputeNetworkEndpoint` per endpoint; `hybrid`, the same of type `NON_GCP_PRIVATE_IP_PORT`; `cloudrun` or `cloudfunction`, a serverless `ComputeRegionNetworkEndpointGroup` in the entry's project; `internet`, a `ComputeRegionNetworkEndpointGroup` on the entry's network, `INTERNET_FQDN_PORT` when an endpoint has an `fqdn` (else `INTERNET_IP_PORT`), with one `ComputeRegionNetworkEndpoint` per endpoint (alpha: `allow_alpha`); `psc`, a `ComputeRegionNetworkEndpointGroup` to a PSC target service. Named `<name>-<key>` |
+| `neg_configs` | per key, one of: `gce`, a zonal `ComputeNetworkEndpointGroup` (`GCE_VM_IP_PORT`) with one `ComputeNetworkEndpoint` per endpoint; `hybrid`, the same of type `NON_GCP_PRIVATE_IP_PORT`; `cloudrun` or `cloudfunction`, a serverless `ComputeRegionNetworkEndpointGroup` in the entry's project; `internet`, a `ComputeRegionNetworkEndpointGroup` on the entry's network, `INTERNET_FQDN_PORT` when an endpoint has an `fqdn` (else `INTERNET_IP_PORT`), with one `ComputeRegionNetworkEndpoint` per endpoint; `psc`, a `ComputeRegionNetworkEndpointGroup` to a PSC target service. Named `<name>-<key>` |
 | `context` | refused: Bundt expressions (`${...}`) and `valueFrom` replace fabric's `$context` lookups |
-| `allow_alpha` | not a fabric variable: accept config-connector-extensions' `v1alpha1` `ComputeRegionNetworkEndpoint` (internet NEG endpoints) |
+| `allow_alpha` | not a fabric variable, and no longer used: no kind of this chart is alpha (internet NEG endpoints' `ComputeRegionNetworkEndpoint` is `v1beta1` since config-connector-extensions `81c3f9b5`). It changes nothing and is kept so components that set it still render |
 | `deletion_policy` | not a fabric variable; `ABANDON` keeps every resource |
 
 Refused, by name:
 
 - `backend_service_configs.<key>.log_config.optional_mode` and
   `optional_fields`: `ComputeBackendService`'s `logConfig` has neither.
-- `neg_configs.<key>.internet.endpoints` without `allow_alpha: true`:
-  config-connector-extensions' `ComputeRegionNetworkEndpoint` is
-  `v1alpha1`.
 - `ssl_certificates.create_configs.<key>.private_key` and
   `backend_service_configs.<key>.iap_config.oauth2_client_secret` given as
   a value: they take a reference to a Kubernetes Secret,
@@ -153,7 +150,7 @@ release, see [`UPSTREAM.md`](../../../UPSTREAM.md), "Moving the pins".
 
 `task test CHART=net-lb-app-ext-regional`: render cases from fabric's README,
 `basic` ("Minimal Example"), `https`, `negs` (every NEG type, internet
-endpoints alpha); and `full` (every variable the chart carries, with
+endpoints); and `full` (every variable the chart carries, with
 every URL map block), `names` and `mock`. Each is validated against
 Config Connector v1.160.0's CRD schemas and config-connector-extensions'
 CRDs; the refusals are in `tests/*.fail.yaml`.
@@ -166,4 +163,7 @@ and its certificates, the PSC and internet NEGs are only render-tested.
 
 ## Changes
 
+- **0.2.0** (2026-11-15): internet NEG endpoints render config-connector-extensions'
+  `v1beta1` `ComputeRegionNetworkEndpoint` and need no `allow_alpha` (now
+  a no-op).
 - **0.1.0** (2026-11-15): the port.

@@ -1,8 +1,7 @@
 # Every value the chart carries on a partner attachment without IPsec:
 # disabled, MTU 1440, a router with keepalive and custom advertisements,
-# and route policies (allow_alpha). bgp_peer is accepted and, as in fabric,
+# and route policies. bgp_peer is accepted and, as in fabric,
 # unused without a dedicated attachment.
-allow_alpha: true
 project_id: my-project
 region: europe-west8
 network: https://www.googleapis.com/compute/v1/projects/my-project/global/networks/my-network

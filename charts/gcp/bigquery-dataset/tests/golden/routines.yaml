@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "routines"
     app.kubernetes.io/name: bigquery-dataset
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "dataset"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -29,7 +29,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "routines"
     app.kubernetes.io/name: bigquery-dataset
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "routine:auth_routine"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -59,7 +59,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "routines"
     app.kubernetes.io/name: bigquery-dataset
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "routine:custom_masking_routine"
     cnrm.cloud.google.com/project-id: "my-project"

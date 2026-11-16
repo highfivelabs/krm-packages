@@ -3,5 +3,4 @@ name: lb
 project_id: my-project
 region: europe-west1
 vpc_config: {network: projects/my-project/global/networks/my-vpc}
-allow_alpha: true
 neg_configs: {a: {internet: {region: europe-west1, network: projects/my-project/global/networks/my-vpc, endpoints: {e: {port: 443}}}}}

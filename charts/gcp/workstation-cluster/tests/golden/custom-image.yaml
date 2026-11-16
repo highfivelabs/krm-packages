@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "custom-image"
     app.kubernetes.io/name: workstation-cluster
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "workstation:my-workstation-config-my-workstation"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -29,7 +29,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "custom-image"
     app.kubernetes.io/name: workstation-cluster
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "cluster"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -52,7 +52,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "custom-image"
     app.kubernetes.io/name: workstation-cluster
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "config:my-workstation-config"
     cnrm.cloud.google.com/project-id: "my-project"

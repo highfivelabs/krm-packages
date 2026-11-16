@@ -8,7 +8,7 @@ at v60.0.0 (`f706bc3b`), Apache-2.0, Copyright Google LLC. Bundt Package
 `gcp-logging-bucket` (`package.yaml`). The bucket, views, link and tag
 bindings are Config Connector kinds (`v1beta1`); IAM on a view is
 config-connector-extensions' `IAMBinding` (`v1beta1`) and `IAMMember`
-(`v1alpha1`), at `d54a2075`, since Config Connector's IAM kinds cannot
+(`v1beta1`), at `81c3f9b5`, since Config Connector's IAM kinds cannot
 reference a log view. config-connector-extensions takes a project's log
 view only, so IAM on a folder's, organization's or billing account's view
 is refused.
@@ -37,7 +37,7 @@ chart carries 10 of the 12; two are refused, and one is accepted in part.
 | `names` | not a fabric variable: `names.bucket` sets the bucket's ID in full |
 | `namePrefix` | not a fabric variable: `<namePrefix>-` in front of the bucket's ID. Views and the link are named within the bucket |
 | `labels`, `tags` | not fabric variables: Kubernetes labels on every object (log buckets, views and links have no cloud labels) |
-| `allow_alpha` | not a fabric variable: required for a view's `iam_bindings_additive` |
+| `allow_alpha` | not a fabric variable: no kind of this chart is alpha any more (`IAMMember` is `v1beta1` since config-connector-extensions `81c3f9b5`); kept so components that set it still render, it changes nothing |
 | `deletion_policy` | not a fabric variable: `DELETE` (default) or `ABANDON`; `PREVENT` is refused |
 | `parent_type`, `parent` | the bucket's and each view's `projectRef`, `folderRef`, `organizationRef` or `billingAccountRef`, `external`: a project ID, `folders/<id>`, `organizations/<id>` or a billing account ID, as fabric takes them |
 | `name` | the bucket's ID (`resourceID`) |
@@ -45,7 +45,7 @@ chart carries 10 of the 12; two are refused, and one is accepted in part.
 | `description`, `retention` | `description`, `retentionDays` |
 | `locked` | `locked`; a project bucket's only, as fabric's validation says |
 | `log_analytics` | `enable` is a project bucket's `enableAnalytics`, as fabric sets it on project buckets only; `dataset_link_id` makes a `LoggingLink` with `description` on a project bucket |
-| `views` | one `LoggingLogView` per key, named by the key, with `filter`, `description` and `location`. On a project's bucket, `iam`: one `IAMBinding` per role on the view, exact per role; `iam_bindings`: one `IAMBinding` per entry, with its condition; `iam_bindings_additive`: one `IAMMember` per entry, with `allow_alpha: true`; each names the view by its full name (`<id>/views/<view>`), the only form config-connector-extensions resolves. **IAM on a view of a folder's, organization's or billing account's bucket is refused** (a gap): config-connector-extensions takes a project's log view only |
+| `views` | one `LoggingLogView` per key, named by the key, with `filter`, `description` and `location`. On a project's bucket, `iam`: one `IAMBinding` per role on the view, exact per role; `iam_bindings`: one `IAMBinding` per entry, with its condition; `iam_bindings_additive`: one `IAMMember` per entry; each names the view by its full name (`<id>/views/<view>`), the only form config-connector-extensions resolves. **IAM on a view of a folder's, organization's or billing account's bucket is refused** (a gap): config-connector-extensions takes a project's log view only |
 | `tag_bindings` | one `TagsTagBinding` per entry on `//logging.googleapis.com/<id>` |
 | `kms_key_name` | **refused when set** (a gap): `LoggingLogBucket` has no `cmekSettings` |
 | `context` | **refused when set** (by design): Bundt expressions (`${...}`) and `valueFrom` replace fabric's `$context` lookups |
@@ -71,8 +71,7 @@ chart carries 10 of the 12; two are refused, and one is accepted in part.
 ## From Terraform
 
 A `module "x" { source = ".../modules/logging-bucket" ... }` block's
-arguments become the values unchanged, with `allow_alpha: true` when a
-view has `iam_bindings_additive`. The bucket keeps its name, so it adopts
+arguments become the values unchanged. The bucket keeps its name, so it adopts
 the bucket Terraform made (`docs/design.md`, "From Terraform"); a
 project's or folder's `_Default` bucket, which always exists, is adopted
 the same way, as fabric's README example does with Terraform.
@@ -110,5 +109,8 @@ Not applied live: live runs are pending KEYLIVE.
 
 ## Changes
 
+- **0.2.0** (2026-11-15): `IAMMember` renders
+  `iam.gcp.hfl.dev/v1beta1` without `allow_alpha` (config-connector-extensions
+  `81c3f9b5`).
 - **0.1.0** (2026-11-13): the port: the bucket in any of its four parents,
   views and their IAM, the linked dataset and tag bindings.

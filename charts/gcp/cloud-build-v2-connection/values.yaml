@@ -40,8 +40,7 @@ iam: {}
 # Authoritative IAM bindings in {KEY => {role = ROLE, members = [],
 # condition = {}}}. Keys are arbitrary.
 iam_bindings: {}
-# Individual additive IAM bindings. Keys are arbitrary. IAMMember is
-# v1alpha1: needs allow_alpha.
+# Individual additive IAM bindings. Keys are arbitrary.
 iam_bindings_additive: {}
 # Authoritative IAM binding in {PRINCIPAL => [ROLES]} format. Merged with iam.
 iam_by_principals: {}
@@ -55,10 +54,9 @@ project_id: ""
 # needs allow_alpha.
 repositories: {}
 
-# Not a fabric variable: repositories (and their triggers) and
-# iam_bindings_additive render config-connector-extensions'
-# CloudBuildRepository and IAMMember, which are v1alpha1; set true to accept
-# that their schemas may change (docs/design.md, "Alpha kinds").
+# Not a fabric variable: repositories (and their triggers) render
+# config-connector-extensions' CloudBuildRepository, which is v1alpha1; set
+# true to accept that its schema may change (docs/design.md, "Alpha kinds").
 allow_alpha: false
 # Not a fabric variable: DELETE (the default) or ABANDON, which keeps the
 # connection, repositories and triggers when the component is deleted.

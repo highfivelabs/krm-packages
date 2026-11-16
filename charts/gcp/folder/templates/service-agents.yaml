@@ -1,0 +1,35 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/folder/service-agents.tf and
+service-agents.yaml (v60.0.0), Copyright 2025 Google LLC, Apache-2.0.
+
+google_folder_service_identity.default: with service_agents_config
+.create_agents (true by default), one ServiceIdentity
+(serviceusage.gcp.hfl.dev/v1beta1, config-connector-extensions) per
+service of service_agents_config.services that has a folder-level service
+agent in fabric's list, on the folder (the Folder object, or folders/N when
+it exists). Fabric makes one per agent; the two OS Config agents share
+osconfig.googleapis.com, and the API makes a service's identities in one
+call, so the chart makes one per service. A service with no folder-level
+agent is skipped, as fabric skips it.
+*/ -}}
+{{- $v := .Values }}
+{{- $abandon := include "kcc.abandon" . }}
+{{- $c := $v.service_agents_config | default dict }}
+{{- $known := list "accessapproval.googleapis.com" "assuredworkloads.googleapis.com" "auditmanager.googleapis.com" "cloudcontrolspartner.googleapis.com" "logging.googleapis.com" "observability.googleapis.com" "osconfig.googleapis.com" "privilegedaccessmanager.googleapis.com" "progressiverollout.googleapis.com" }}
+{{- if ne (toString $c.create_agents) "false" }}
+{{- range $svc := ($c.services | default list) | uniq | sortAlpha }}
+{{- if has $svc $known }}
+---
+apiVersion: serviceusage.gcp.hfl.dev/v1beta1
+kind: ServiceIdentity
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "agent" (first (splitList "." $svc)))) "id" (printf "service-identity:%s" $svc) "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ $svc | quote }}
+  folderRef:
+    {{- include "folder.ref" $ | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}

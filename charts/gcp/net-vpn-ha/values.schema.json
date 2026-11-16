@@ -61,7 +61,7 @@
       }
     },
     "allow_alpha": {
-      "description": "Accept the v1alpha1 kind route policies need, config-connector-extensions' ComputeRouterRoutePolicy (not a fabric variable).",
+      "description": "Not a fabric variable, and no longer used: no kind of this chart is alpha (route policies' ComputeRouterRoutePolicy is v1beta1 since config-connector-extensions 81c3f9b5). It changes nothing and is kept so components that set it still render.",
       "type": [
         "boolean",
         "null"
@@ -304,7 +304,7 @@
               }
             }
           },
-          "description": "BGP route policies on the router, keyed by name (ComputeRouterRoutePolicy, v1alpha1: allow_alpha)."
+          "description": "BGP route policies on the router, keyed by name (ComputeRouterRoutePolicy)."
         },
         "override_name": {
           "type": [

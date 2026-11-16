@@ -1,7 +1,6 @@
 # An existing gateway and router: no gateway and no router are made; the
-# route policies (allow_alpha) and a tunnel's interface and peer go on the
+# route policies and a tunnel's interface and peer go on the
 # router router_config names, the tunnel on the gateway vpn_gateway names.
-allow_alpha: true
 project_id: my-project
 region: europe-west1
 network: projects/my-project/global/networks/my-network

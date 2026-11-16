@@ -26,11 +26,6 @@ refused:
   - variable: context
     kind: by-design
     reason: "Bundt replaces fabric's $context lookups with ${...} expressions and valueFrom in the component's inputs"
-  - variable: router_config
-    kind: alpha
-    reason: "accepted; route_policies need config-connector-extensions' v1alpha1 ComputeRouterRoutePolicy: set allow_alpha: true"
-    partial: true
-    alpha_fields: [route_policies]
   - variable: tunnels
     kind: gap
     reason: "cipher_suite is refused (ComputeVPNTunnel has no cipherSuite field), and bgp_peer's md5_authentication_key, export_policies, import_policies and custom_learned_ip_ranges (ComputeRouterPeer has no such fields). A tunnel's shared_secret is a reference to a Kubernetes Secret (sharedSecret.valueFrom, docs/secrets.md) and is required: fabric's generated secret (random_id) is refused, the catalog never generates one"

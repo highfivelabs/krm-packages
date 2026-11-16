@@ -1,7 +1,6 @@
-# An existing router: none is made, and the route policies (allow_alpha)
+# An existing router: none is made, and the route policies
 # and tunnel a's interface and peer go on the router router_config names;
 # tunnel b names its own router, with every BGP advertisement.
-allow_alpha: true
 project_id: my-project
 region: europe-west1
 network: projects/my-project/global/networks/my-network

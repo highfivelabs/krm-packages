@@ -1,7 +1,6 @@
 # Every value the chart carries: attachments as self links, a named peer
 # gateway with one interface, a named router with keepalive and custom
-# advertisements, and route policies (allow_alpha).
-allow_alpha: true
+# advertisements, and route policies.
 project_id: my-project
 region: europe-west8
 network: https://www.googleapis.com/compute/v1/projects/my-project/global/networks/my-network

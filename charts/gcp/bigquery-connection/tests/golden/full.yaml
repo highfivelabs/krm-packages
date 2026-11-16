@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: bigquery-connection
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "connection"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -37,7 +37,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: bigquery-connection
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "iam:roles/bigquery.connectionAdmin"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -58,7 +58,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: bigquery-connection
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "iam:roles/bigquery.connectionUser"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -80,7 +80,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: bigquery-connection
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "iam-binding:conditional"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -97,7 +97,7 @@ spec:
     description: "Expires in 2030."
 ---
 # Source: bigquery-connection/templates/iam.yaml
-apiVersion: iam.gcp.hfl.dev/v1alpha1
+apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMMember
 metadata:
   name: full-iam-member-conditional
@@ -105,7 +105,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: bigquery-connection
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "iam-member:conditional"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -120,7 +120,7 @@ spec:
     expression: "request.time < timestamp('2030-01-01T00:00:00Z')"
 ---
 # Source: bigquery-connection/templates/iam.yaml
-apiVersion: iam.gcp.hfl.dev/v1alpha1
+apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMMember
 metadata:
   name: full-iam-member-one
@@ -128,7 +128,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: bigquery-connection
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
   annotations:
     hfl.dev/id: "iam-member:one"
     cnrm.cloud.google.com/project-id: "my-project"

@@ -5,16 +5,18 @@
 # Outputs are fabric's declared outputs that are not whole objects, for what
 # the chart ports: id (folders/N: the new folder's, read from its status,
 # else id), name (the new folder's display name), organization_policies_ids
-# and sink_writer_identities, keyed as fabric keys them. Not outputs:
-# asset_search_results (refused), assured_workload (refused),
-# scc_custom_sha_modules_ids (refused), service_agents (refused), and
+# and sink_writer_identities, keyed as fabric keys them, and service_agents
+# (each ServiceIdentity's status.email, keyed by its service: fabric
+# outputs whole agent objects keyed by agent name, and its two OS Config
+# agents share one service). Not outputs: asset_search_results (refused),
+# assured_workload (refused), scc_custom_sha_modules_ids (refused), and
 # fabric's whole object (folder; docs/design.md, "Outputs").
 apiVersion: hfl.dev/v1
 kind: Package
 metadata:
   name: gcp-folder
 spec:
-  version: 0.2.0
+  version: 0.3.0
   engine: helm
   providers: [kcc]
   outputs:
@@ -31,3 +33,5 @@ spec:
           + '/policies/' + v.spec.resourceID})
     sink_writer_identities: >-
       resources.transformMapEntry(k, v, v.kind == 'LoggingLogSink', {k.substring(13): v.status.writerIdentity})
+    service_agents: >-
+      resources.transformMapEntry(k, v, v.kind == 'ServiceIdentity', {v.spec.resourceID: v.status.email})

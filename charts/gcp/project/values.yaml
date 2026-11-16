@@ -139,21 +139,20 @@ quotas: {}
 iam_deny_policies: {}
 # Cloud Asset Inventory feeds, {ID: {content_type, asset_types,
 # asset_names, feed_output_config: {pubsub_destination: {topic}},
-# condition}}; only on a reused project with project_reuse.attributes.number
-# (README.md, "Config Connector bugs"); billing_project is not carried.
+# condition}}, on the project by its Project object or, reused, its ID;
+# billing_project is not carried.
 asset_feeds: {}
 # The VPC Service Controls perimeter the project is in, {perimeter_name:
 # accessPolicies/N/servicePerimeters/NAME}; is_dry_run is refused. On a
 # reused project it needs project_reuse.attributes.number.
 vpc_sc: null
 # The hierarchical Cloud Armor policy associated with the project,
-# {policy_id, name}; a v1alpha1 kind, so it needs allow_alpha, and an
-# existing project (project_reuse with attributes.number). Exclusions are
-# refused, as fabric refuses them.
+# {policy_id, name}; it needs an existing project (project_reuse with
+# attributes.number). Exclusions are refused, as fabric refuses them.
 cloud_armor_policy: null
 
 # Not a fabric variable: accept features that need a v1alpha1 Config
-# Connector kind (log_scopes, cloud_armor_policy), whose schema may change between releases
+# Connector kind (log_scopes), whose schema may change between releases
 # (docs/design.md, "Alpha kinds").
 allow_alpha: false
 

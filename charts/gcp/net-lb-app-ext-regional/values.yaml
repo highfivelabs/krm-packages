@@ -75,9 +75,10 @@ urlmap_config: null
 # VPC-level configuration: {network}.
 vpc_config: {}
 
-# Not a fabric variable: accept alpha (v1alpha1) kinds, here
-# config-connector-extensions' ComputeRegionNetworkEndpoint for internet
-# NEG endpoints (docs/design.md, "Alpha kinds").
+# Not a fabric variable, and no longer used: no kind of this chart is alpha
+# (internet NEG endpoints' ComputeRegionNetworkEndpoint is v1beta1 since
+# config-connector-extensions 81c3f9b5). It changes nothing and is kept so
+# components that set it still render.
 allow_alpha: false
 # Not a fabric variable: DELETE (the default) or ABANDON, which keeps the
 # load balancer's resources when the component is deleted. PREVENT has no

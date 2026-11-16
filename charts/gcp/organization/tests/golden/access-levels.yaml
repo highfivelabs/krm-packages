@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "access-levels"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "access-level:trusted_ips"
 spec:
@@ -22,7 +22,7 @@ spec:
         ipSubnetworks: ["203.0.113.0/24","198.51.100.0/24"]
 ---
 # Source: organization/templates/asset-feeds.yaml
-apiVersion: asset.cnrm.cloud.google.com/v1beta1
+apiVersion: asset.gcp.hfl.dev/v1beta1
 kind: AssetFeed
 metadata:
   name: access-levels-feed-all-iam
@@ -30,7 +30,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "access-levels"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "asset-feed:all-iam"
 spec:

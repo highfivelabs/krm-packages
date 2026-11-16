@@ -13,7 +13,7 @@ kind: Package
 metadata:
   name: gcp-net-ipsec-over-interconnect
 spec:
-  version: 0.2.0
+  version: 0.3.0
   engine: helm
   providers: [kcc]
   outputs:

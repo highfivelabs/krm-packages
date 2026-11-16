@@ -10,12 +10,12 @@ at v60.0.0 (`f706bc3b`), Apache-2.0, Copyright Google LLC. Bundt Package
 v1.160.0 (`ComputeInstance`, `ComputeDisk`, `ComputeInstanceTemplate`,
 `ComputeInstanceGroup`, `ComputeResourcePolicy`, `IAMServiceAccount`,
 `IAMPartialPolicy`) and config-connector-extensions' kinds at its pin
-`384d07c`: `ComputeDiskResourcePolicyAttachment` and
+`81c3f9b5`: `ComputeDiskResourcePolicyAttachment` and
 `ComputeRegionDiskResourcePolicyAttachment` (`compute.gcp.hfl.dev/v1beta1`;
 Config Connector's own are `v1alpha1`), `IAMBinding`
-(`iam.gcp.hfl.dev/v1beta1`) and `IAMMember` (`v1alpha1`, behind
-`allow_alpha`) on the IAP tunnel instance. A managed group of these VMs is
-`compute-mig`, which takes the template this chart makes by its
+(`iam.gcp.hfl.dev/v1beta1`) and `IAMMember`
+(`iam.gcp.hfl.dev/v1beta1`) on the IAP tunnel instance. A managed group
+of these VMs is `compute-mig`, which takes the template this chart makes by its
 `template_name` output.
 
 ## Example
@@ -60,11 +60,11 @@ The module's variables, with the same names, types and defaults.
 | `group` | `named_ports` (or `{}`): a `ComputeInstanceGroup` named as the instance, holding it, on the first interface's network |
 | `iam` | one `IAMPartialPolicy` on the instance (`docs/design.md`, "IAM") |
 | `iap_tunnel_iam`, `iap_tunnel_iam_bindings` | one `IAMBinding` per role, or per entry, on the IAP tunnel instance (`projects/<p>/iap_tunnel/zones/<z>/instances/<name>`), exact per role as fabric's `google_iap_tunnel_instance_iam_binding` |
-| `iap_tunnel_iam_bindings_additive` | one `IAMMember` (`v1alpha1`) per entry: needs `allow_alpha: true` |
+| `iap_tunnel_iam_bindings_additive` | one `IAMMember` (`iam.gcp.hfl.dev/v1beta1`) per entry |
 | `tag_bindings_immutable` | the instance's `params.resourceManagerTags` and the boot disk's `initializeParams.resourceManagerTags` |
 | `create_template` | `{}`: a global `ComputeInstanceTemplate` instead of an instance ("Templates") |
 | `project_number` | nothing: fabric uses it only in tag bindings, refused here |
-| `deletion_policy`, `allow_alpha` | not fabric variables; `ABANDON` keeps every resource; `allow_alpha` accepts `IAMMember` |
+| `deletion_policy`, `allow_alpha` | not fabric variables; `ABANDON` keeps every resource; `allow_alpha` changes nothing (no kind of this chart is alpha any more: `IAMMember` is `v1beta1` since config-connector-extensions `81c3f9b5`) and is kept so components that set it still render |
 
 Refused (`upstream.yaml`), each naming its gap:
 
@@ -165,7 +165,7 @@ with every other module the catalog tracks. To take a newer release, see
 
 `task test CHART=compute-vm`: render cases `simple` (fabric's first README
 example), `full` (every field the chart carries on an instance),
-`template`, `alpha` (the additive IAP tunnel IAM), `names` and `mock`, each
+`template`, `iap-additive` (the additive IAP tunnel IAM), `names` and `mock`, each
 validated against Config Connector v1.160.0's CRD schemas and
 config-connector-extensions' CRDs, and the refusals in `tests/*.fail.yaml`.
 
@@ -184,5 +184,8 @@ template.
 
 ## Changes
 
+- **0.2.0** (2026-11-15): `IAMMember` renders
+  `iam.gcp.hfl.dev/v1beta1` without `allow_alpha` (config-connector-extensions
+  `81c3f9b5`).
 - **0.1.0** (2026-11-15): the port: the instance or a global template,
   its disks, schedules, group, service account and IAM.

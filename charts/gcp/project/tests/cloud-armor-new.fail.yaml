@@ -1,5 +1,4 @@
 # expect: cloud_armor_policy needs an existing project (project_reuse with attributes.number)
 name: my-project
 parent: folders/1
-allow_alpha: true
 cloud_armor_policy: {policy_id: "123"}

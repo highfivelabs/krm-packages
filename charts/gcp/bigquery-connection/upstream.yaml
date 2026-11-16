@@ -34,7 +34,3 @@ refused:
     reason: "cloud_sql.credential's username and password are refused: they would be in the rendered manifest; BigQueryConnectionConnection takes them from a Kubernetes Secret (cloudSQL.credential.secretRef), which the chart takes as cloud_sql.credential.secret_name instead"
     partial: true
     fields: [cloud_sql]
-  - variable: iam_bindings_additive
-    kind: alpha
-    reason: "config-connector-extensions' IAMMember is v1alpha1: rendered only with allow_alpha: true"
-    partial: true

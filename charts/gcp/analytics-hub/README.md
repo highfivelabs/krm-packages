@@ -8,7 +8,7 @@ at v60.0.0 (`f706bc3b`), Apache-2.0, Copyright Google LLC. Bundt Package
 v1.160.0's `BigQueryAnalyticsHubDataExchange` and
 `BigQueryAnalyticsHubListing`, and config-connector-extensions'
 `IAMBinding` (`iam.gcp.hfl.dev/v1beta1`) and `IAMMember`
-(`iam.gcp.hfl.dev/v1alpha1`), at `384d07c0`: Config Connector's own IAM
+(`iam.gcp.hfl.dev/v1beta1`), at `81c3f9b5`: Config Connector's own IAM
 kinds cannot reference either resource.
 
 ## Example
@@ -48,10 +48,10 @@ The module's variables, with the same names, types and defaults.
 | `description`, `documentation`, `primary_contact` | the exchange's `description`, `documentation`, `primaryContact` |
 | `listings` | one `BigQueryAnalyticsHubListing` per key, its ID and display name the key, in the exchange: `bigquery_dataset` as the shared dataset, `description`, `documentation`, `categories`, `primary_contact`, `request_access`, `restricted_export_config` as `restrictedExportPolicy`, and `iam` as one `IAMBinding` per role on the listing. `data_provider` and `publisher` are accepted and not sent, as fabric does; `icon` is refused (below) |
 | `iam`, `iam_by_principals`, `iam_bindings` | one `IAMBinding` per role on the exchange, exact: the three merged by role as fabric merges them (an `iam_bindings` key makes no binding of its own) |
-| `iam_bindings_additive` | one `IAMMember` per entry on the exchange (additive); `IAMMember` is `v1alpha1`, so it needs `allow_alpha: true` |
+| `iam_bindings_additive` | one `IAMMember` per entry on the exchange (additive) |
 | `factories_config` | refused (below) |
 | `icon` | refused (below) |
-| `allow_alpha` | not a fabric variable: accept the `v1alpha1` `IAMMember` |
+| `allow_alpha` | not a fabric variable: no kind of this chart is alpha any more (`IAMMember` is `v1beta1` since config-connector-extensions `81c3f9b5`); kept so components that set it still render, it changes nothing |
 | `deletion_policy` | not a fabric variable; `ABANDON` keeps the exchange and its listings (not the IAM) |
 
 Refused:
@@ -84,8 +84,7 @@ so the IAM objects can be deleted after theirs.
 A `module "x" { source = ".../modules/analytics-hub" ... }` block's
 arguments become the values unchanged, apart from `icon` and
 `factories_config` (refused; a factory's listing files become entries of
-`listings`), plus `allow_alpha: true` when it has additive IAM. The
-exchange and listings keep their IDs, so they adopt what Terraform made
+`listings`). The exchange and listings keep their IDs, so they adopt what Terraform made
 (`docs/design.md`, "From Terraform").
 
 ## Upstream
@@ -107,11 +106,14 @@ against Config Connector's CRDs and those in
 `tests/*.fail.yaml`.
 
 Fake cloud (`task test-mock`, `tests/mock.values.yaml`, with the shared
-dataset in `tests/mock.needs.yaml`): an exchange in `us`, a listing sharing a dataset, and a role on each. On 2026-11-15 (offload VM `off-catalog-1115092825-18945`, config-connector-extensions `384d07c0`, whose fake cloud serves any `getIamPolicy` path) the exchange, the listing and both `IAMBinding`s became Ready, the outputs evaluated and all four were deleted (the dataset too). The `v1alpha1` `IAMMember`s are only render-tested.
+dataset in `tests/mock.needs.yaml`): an exchange in `us`, a listing sharing a dataset, and a role on each. On 2026-11-15 (offload VM `off-catalog-1115092825-18945`, config-connector-extensions `384d07c0`, whose fake cloud serves any `getIamPolicy` path) the exchange, the listing and both `IAMBinding`s became Ready, the outputs evaluated and all four were deleted (the dataset too). The `IAMMember`s are only render-tested.
 
 Not applied live.
 
 ## Changes
 
+- **0.2.0** (2026-11-15): `IAMMember` renders
+  `iam.gcp.hfl.dev/v1beta1` without `allow_alpha` (config-connector-extensions
+  `81c3f9b5`).
 - **0.1.0** (2026-11-15): the port: the exchange, its listings and IAM on
   both.

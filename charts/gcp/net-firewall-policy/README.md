@@ -12,11 +12,12 @@ The module was `blocked` in the coverage (`docs/coverage`): Config
 Connector has a global network policy's rule
 (`ComputeNetworkFirewallPolicyRule`) only as `v1alpha1`, and no regional
 policy or packet mirroring kinds. config-connector-extensions now provides
-the rule as `compute.gcp.hfl.dev/v1beta1`, so a global policy's rules need
-no `allow_alpha`; its regional policy, association and rule kinds and its
-packet mirroring rule are `v1alpha1`, so a regional policy and mirroring
-rules need `allow_alpha: true` (`docs/design.md`, "Alpha kinds"). The CRDs
-are copied in `crds/config-connector-extensions`.
+the rule and its regional policy, association and rule kinds as
+`compute.gcp.hfl.dev/v1beta1` (the regional ones since `81c3f9b5`), so a
+global or regional policy needs no `allow_alpha`; its packet mirroring rule
+is `v1alpha1`, so mirroring rules need `allow_alpha: true`
+(`docs/design.md`, "Alpha kinds"). The CRDs are copied in
+`crds/config-connector-extensions`.
 
 ## Example
 
@@ -43,8 +44,8 @@ The module's variables, with the same names, types and defaults.
 | `names.policy` | not a fabric variable: the policy's name in full (a hierarchical policy's short name), used as given (no `namePrefix`) and checked (63 characters, a leading letter) (`docs/design.md`, "Names, labels and tags") |
 | `namePrefix` | not a fabric variable: an optional convenience; when set, the derived policy name, and so the associations' names, start with `<namePrefix>-`; empty changes nothing |
 | `labels`, `tags` | Kubernetes labels on every object; firewall policies take no Google Cloud labels |
-| `allow_alpha` | not a fabric variable: accepts a regional policy and packet mirroring rules (config-connector-extensions' `v1alpha1` kinds) |
-| `name`, `parent_id`, `region`, `description` | the policy: with `region` null a `ComputeFirewallPolicy` under `parent_id` (`folders/…` or `organizations/…`); with `global` a `ComputeNetworkFirewallPolicy` in project `parent_id`; with a region a `ComputeRegionNetworkFirewallPolicy` (`allow_alpha`) |
+| `allow_alpha` | not a fabric variable: accepts packet mirroring rules (config-connector-extensions' `v1alpha1` `ComputeNetworkFirewallPolicyPacketMirroringRule`) |
+| `name`, `parent_id`, `region`, `description` | the policy: with `region` null a `ComputeFirewallPolicy` under `parent_id` (`folders/…` or `organizations/…`); with `global` a `ComputeNetworkFirewallPolicy` in project `parent_id`; with a region a `ComputeRegionNetworkFirewallPolicy` |
 | `attachments` | an association per entry, named `<policy>-<key>`: a folder or the organization for a hierarchical policy, a VPC for a network policy (a VPC ID is rendered as its self link, as Terraform records it) |
 | `ingress_rules`, `egress_rules` | a rule per entry, keyed `<direction>/<name>`, with fabric's defaults (ingress `allow`, egress `deny`, `disabled: false`, every protocol): ranges (distinct), address groups, FQDNs, region codes and threat intelligences on the source (ingress) or destination (egress) side, target service accounts, secure tags (network policies), target resources (hierarchical) |
 | `ingress_mirroring_rules`, `egress_mirroring_rules` | a `ComputeNetworkFirewallPolicyPacketMirroringRule` (`allow_alpha`) per entry on a global policy, as fabric only makes them there: action (`mirror`), security profile group (a key of `security_profile_group_ids`, or as given), target secure tags, ranges and protocols |
@@ -106,8 +107,8 @@ schemas, and the refusals in `tests/*.fail.yaml`.
 The fake-cloud case (`tests/mock.values.yaml`, `task test-mock
 MOCK_CHARTS=net-firewall-policy`) applies a global network policy, which
 is Config Connector's own kind. Its rules, the regional kinds and the
-mirroring rules are render-tested only: the fake cloud's pin
-(`CCE_COMMIT`) predates those config-connector-extensions kinds.
+mirroring rules are render-tested only (the fake-cloud case does not set
+them yet; the pin, `81c3f9b5`, serves them).
 Hierarchical policies need an organization or folder and are not applied.
 
 Live (`hack/live-apply.sh`, `tests/live.yaml` and `tests/live-regional.yaml`;
@@ -123,4 +124,7 @@ the rerun (2026-11-14, `cat-11140025-cb6a`) passed.
 
 ## Changes
 
+- **0.2.0** (2026-11-15): a regional policy, its associations and rules
+  render config-connector-extensions' `v1beta1` kinds and need no
+  `allow_alpha`.
 - **0.1.0** (2026-11-12): the port.

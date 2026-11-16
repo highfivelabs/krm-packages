@@ -1,5 +1,5 @@
 # fabric's "Controlling HTTP access" example, plus a second role: one
-# IAMPartialPolicy on the function, a binding per role.
+# IAMBinding (config-connector-extensions) per role on the function.
 project_id: my-project
 region: europe-west1
 name: test-cf-http

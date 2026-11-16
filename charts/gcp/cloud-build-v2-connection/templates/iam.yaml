@@ -10,7 +10,7 @@ merged with iam_by_principals, as fabric's local.iam merges them.
 google_cloudbuildv2_connection_iam_binding.bindings: one IAMBinding per
 entry of iam_bindings.
 google_cloudbuildv2_connection_iam_member.bindings: one IAMMember
-(config-connector-extensions, iam.gcp.hfl.dev/v1alpha1, so allow_alpha) per
+(config-connector-extensions, iam.gcp.hfl.dev/v1beta1) per
 entry of iam_bindings_additive.
 fabric sends no condition for either (its variables accept one), so
 neither does the chart. On the chart's connection, or on the connection of
@@ -58,11 +58,10 @@ spec:
     - {{ $m | quote }}
   {{- end }}
 {{- end }}
-{{- include "kcc.alpha" (list $ "iam_bindings_additive" $v.iam_bindings_additive "IAMMember (config-connector-extensions)") }}
 {{- range $bk := keys ($v.iam_bindings_additive | default dict) | sortAlpha }}
 {{- $b := index $v.iam_bindings_additive $bk }}
 ---
-apiVersion: iam.gcp.hfl.dev/v1alpha1
+apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMMember
 metadata:
   {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "iam-member" $bk)) "id" (printf "iam-member:%s" $bk) "project" $v.project_id) | nindent 2 }}

@@ -21,9 +21,9 @@ namePrefix: ""
 labels: {}
 # Cloud labels on every object.
 tags: {}
-# Accept the v1alpha1 kinds: BigQueryDatasetAccess (access,
-# authorized_views and authorized_datasets with dataset_access: false) and
-# config-connector-extensions' IAMMember (iam_bindings_additive).
+# Accept the v1alpha1 kind BigQueryDatasetAccess (access, authorized_views
+# and authorized_datasets with dataset_access: false). config-connector-
+# extensions' IAMMember (iam_bindings_additive) is v1beta1 since 81c3f9b5.
 allow_alpha: false
 # DELETE (default) or ABANDON (keeps the dataset and everything in it).
 deletion_policy: DELETE
@@ -54,8 +54,8 @@ friendly_name: null
 iam: {}
 # Authoritative IAM bindings, {KEY => {role, members, condition}}.
 iam_bindings: {}
-# Additive IAM bindings, {KEY => {role, member, condition}}: needs
-# allow_alpha (IAMMember is v1alpha1).
+# Additive IAM bindings, {KEY => {role, member, condition}}: one IAMMember
+# (iam.gcp.hfl.dev/v1beta1) each.
 iam_bindings_additive: {}
 # Authoritative IAM, {PRINCIPAL => [ROLES]}, merged with iam.
 iam_by_principals: {}

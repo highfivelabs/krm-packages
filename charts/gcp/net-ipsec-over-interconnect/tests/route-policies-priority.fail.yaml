@@ -1,5 +1,4 @@
 # expect: net-ipsec-over-interconnect: Route policy term priority must be unique within the policy.
-allow_alpha: true
 project_id: p
 region: europe-west8
 network: projects/p/global/networks/n

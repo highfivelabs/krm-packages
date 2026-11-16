@@ -42,7 +42,7 @@
       "additionalProperties": {"type": "string", "pattern": "^([a-z0-9]([a-z0-9_-]{0,61}[a-z0-9])?)?$"}
     },
     "allow_alpha": {
-      "description": "Accept config-connector-extensions' v1alpha1 IAMMember for a view's iam_bindings_additive (not a Terraform variable).",
+      "description": "No kind of this chart is alpha any more: config-connector-extensions' IAMMember is v1beta1 (since 81c3f9b5). Kept so components that set it still render; it changes nothing. Not a Terraform variable.",
       "type": "boolean"
     },
     "deletion_policy": {

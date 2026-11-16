@@ -9,7 +9,6 @@ description: Every variable.
 annotations: {owner: platform}
 labels: {team: platform}
 suspended: false
-allow_alpha: true
 deletion_policy: ABANDON
 targets:
   - name: dev

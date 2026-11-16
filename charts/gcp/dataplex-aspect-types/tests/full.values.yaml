@@ -3,7 +3,6 @@
 # labels, authoritative bindings with a condition and an additive member.
 project_id: my-project
 location: europe-west1
-allow_alpha: true
 deletion_policy: ABANDON
 labels: {hfl.dev/team: data, env: prod}
 tags: {cost-center: c42}

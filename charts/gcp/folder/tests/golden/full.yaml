@@ -1,4 +1,30 @@
 ---
+# Source: folder/templates/asset-feeds.yaml
+apiVersion: asset.gcp.hfl.dev/v1beta1
+kind: AssetFeed
+metadata:
+  name: full-feed-buckets
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: folder
+    app.kubernetes.io/version: "0.3.0"
+  annotations:
+    hfl.dev/id: "asset-feed:buckets"
+spec:
+  resourceID: "buckets"
+  folderRef:
+    name: full
+  contentType: "RESOURCE"
+  assetTypes: ["storage.googleapis.com/Bucket"]
+  feedOutputConfig:
+    pubsubDestination:
+      topicRef:
+        external: "projects/feeds-project/topics/assets"
+  condition:
+    expression: "!temporal_asset.deleted"
+    title: "live"
+---
 # Source: folder/templates/folder.yaml
 apiVersion: compute.cnrm.cloud.google.com/v1beta1
 kind: ComputeFirewallPolicyAssociation
@@ -8,7 +34,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "firewall_policy"
 spec:
@@ -28,7 +54,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "contact:admins@example.org"
 spec:
@@ -47,7 +73,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "contact:security@example.org"
 spec:
@@ -66,7 +92,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "folder"
 spec:
@@ -83,7 +109,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "data-access:allServices"
 spec:
@@ -105,7 +131,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "data-access:storage.googleapis.com"
 spec:
@@ -127,7 +153,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "iam-binding-admins"
 spec:
@@ -152,7 +178,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "iam-binding-iam-bpc:roles/storage.admin-test"
 spec:
@@ -176,7 +202,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "iam"
 spec:
@@ -201,7 +227,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "iam-additive-browser"
 spec:
@@ -221,7 +247,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "iam-additive-iam-bpa:user:two@example.org-roles/browser"
 spec:
@@ -241,7 +267,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "logging-sink-writer:info"
 spec:
@@ -263,7 +289,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "logging-sink-writer:notice"
 spec:
@@ -289,7 +315,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "logging-sink-writer:warnings"
 spec:
@@ -311,7 +337,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "autokey_config"
 spec:
@@ -329,7 +355,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "logging-exclusion:no-gce-instances"
 spec:
@@ -348,7 +374,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "logging-sink:debug"
 spec:
@@ -373,7 +399,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "logging-sink:info"
 spec:
@@ -397,7 +423,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "logging-sink:notice"
 spec:
@@ -423,7 +449,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "logging-sink:warnings"
 spec:
@@ -447,7 +473,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "org_policy:compute.disableGuestAttributesAccess"
 spec:
@@ -467,7 +493,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "org_policy:compute.restrictCloudNATUsage"
 spec:
@@ -490,7 +516,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "org_policy:iam.allowedPolicyMemberDomains"
 spec:
@@ -516,7 +542,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "pam-entitlement:net-admins"
 spec:
@@ -545,6 +571,40 @@ spec:
   additionalNotificationTargets:
     adminEmailRecipients: ["admins@example.org"]
 ---
+# Source: folder/templates/service-agents.yaml
+apiVersion: serviceusage.gcp.hfl.dev/v1beta1
+kind: ServiceIdentity
+metadata:
+  name: full-agent-logging
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: folder
+    app.kubernetes.io/version: "0.3.0"
+  annotations:
+    hfl.dev/id: "service-identity:logging.googleapis.com"
+spec:
+  resourceID: "logging.googleapis.com"
+  folderRef:
+    name: full
+---
+# Source: folder/templates/service-agents.yaml
+apiVersion: serviceusage.gcp.hfl.dev/v1beta1
+kind: ServiceIdentity
+metadata:
+  name: full-agent-osconfig
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: folder
+    app.kubernetes.io/version: "0.3.0"
+  annotations:
+    hfl.dev/id: "service-identity:osconfig.googleapis.com"
+spec:
+  resourceID: "osconfig.googleapis.com"
+  folderRef:
+    name: full
+---
 # Source: folder/templates/folder.yaml
 apiVersion: tags.cnrm.cloud.google.com/v1beta1
 kind: TagsTagBinding
@@ -554,7 +614,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "tag-binding:env-prod"
 spec:

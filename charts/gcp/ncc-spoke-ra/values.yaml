@@ -23,8 +23,10 @@ namePrefix: ""
 labels: {}
 # Cloud labels on every resource that takes them.
 tags: {}
-# Not a fabric variable: true accepts the v1alpha1 kind route policies need
-# (docs/design.md, "Alpha kinds").
+# Not a fabric variable, and no longer used: no kind of this chart is alpha
+# (route policies' ComputeRouterRoutePolicy is v1beta1 since
+# config-connector-extensions 81c3f9b5). It changes nothing and is kept so
+# components that set it still render.
 allow_alpha: false
 
 # Site-to-site data transfer feature, available only in some regions.

@@ -126,6 +126,33 @@ The decisions of 2026-11-09, applied in the sections below.
     (`docs/secrets.md`), rendered as the `valueFrom.secretKeyRef`; the
     secret itself, a string, stops the render
     (`charts/gcp/looker-core/README.md`).
+15. **config-connector-extensions' promoted and new kinds replace alpha
+    kinds and refusals** (2026-11-15), following the builder's answers of
+    that day to config-connector-extensions' questions: EXTQ6-1 ("Yes:
+    promote field-gap kinds under the same rule. The catalog's charts
+    refuse alpha kinds whatever gap a kind fills."), CCEQ ("build the
+    service-agents config under decision 18") and RECPF ("yes to
+    config-connector-extensions' IAMBinding taking CloudFunctionsFunction,
+    AssetFeed's parent comparison fix, and a stable Cloud Armor
+    association"). At its pin `81c3f9b5` (its decisions 34 to 36): every
+    kind of it that is `v1beta1` renders as `v1beta1` with no
+    `allow_alpha` (`IAMMember`, `ComputeRouterRoutePolicy`,
+    `ComputeRegionNetworkEndpoint`, the three regional network firewall
+    policy kinds; a chart left with no alpha kind keeps `allow_alpha` as a
+    value that changes nothing, so components that set it still render);
+    `asset_feeds` in `project`, `folder` and `organization` render its
+    `AssetFeed` (`asset.gcp.hfl.dev/v1beta1`), so a project feed names the
+    project by its `Project` object or ID and no longer needs
+    `project_reuse.attributes.number`; `cloud_armor_policy` in `project`,
+    `folder` and `organization` renders its
+    `ComputeOrganizationSecurityPolicyAssociation`
+    (`compute.gcp.hfl.dev/v1beta1`) with fabric's exclusions (a folder's
+    `excluded_folders` and any project exclusion stay refused, as fabric
+    refuses them); `service_agents_config` in `folder` and `organization`
+    renders one `ServiceIdentity` (`serviceusage.gcp.hfl.dev/v1beta1`) per
+    service, and `service_agents` outputs each one's `status.email`; and
+    `cloud-function-v1`'s `iam` is one `IAMBinding` per role on the
+    function, exact as fabric's binding.
 
 ## Summary
 

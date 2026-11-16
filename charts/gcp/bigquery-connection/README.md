@@ -8,7 +8,7 @@ at v60.0.0 (`f706bc3b`), Apache-2.0, Copyright Google LLC. Bundt Package
 `gcp-bigquery-connection` (`package.yaml`). Checked against Config
 Connector v1.160.0's `BigQueryConnectionConnection` and
 config-connector-extensions' `IAMBinding` (`iam.gcp.hfl.dev/v1beta1`) and
-`IAMMember` (`iam.gcp.hfl.dev/v1alpha1`), at `384d07c0`: Config
+`IAMMember` (`iam.gcp.hfl.dev/v1beta1`), at `81c3f9b5`: Config
 Connector's own IAM kinds cannot reference a connection.
 
 ## Example
@@ -49,10 +49,10 @@ The module's variables, with the same names, types and defaults.
 | `connection_config` | the connection's `cloudSQL` (instance, database and type; the credential from a Kubernetes Secret, below), `aws` (`accessRole.iamRoleID`), `azure` (customer tenant, federated application client), `cloudSpanner` (database, parallelism, Data Boost, maximum parallelism, database role), `cloudResource`, or `spark` (metastore service and Spark history server, as references by name) |
 | `iam`, `iam_by_principals` | one `IAMBinding` per role, exact, the two merged as fabric merges them |
 | `iam_bindings` | one `IAMBinding` per entry, exact, with its condition |
-| `iam_bindings_additive` | one `IAMMember` per entry (additive), with its condition; `IAMMember` is `v1alpha1`, so it needs `allow_alpha: true` |
+| `iam_bindings_additive` | one `IAMMember` per entry (additive), with its condition |
 | `encryption_key` | refused (below) |
 | `context` | refused: Bundt expressions (`${...}`) and `valueFrom` replace fabric's `$context` lookups |
-| `allow_alpha` | not a fabric variable: accept the `v1alpha1` `IAMMember` |
+| `allow_alpha` | not a fabric variable: no kind of this chart is alpha any more (`IAMMember` is `v1beta1` since config-connector-extensions `81c3f9b5`); kept so components that set it still render, it changes nothing |
 | `deletion_policy` | not a fabric variable; `ABANDON` keeps the connection (not the IAM) |
 
 Refused:
@@ -96,7 +96,7 @@ objects can be deleted after the connection's.
 A `module "x" { source = ".../modules/bigquery-connection" ... }` block's
 arguments become the values unchanged, apart from `context` and
 `encryption_key` (refused) and a Cloud SQL credential (put it in a
-Secret), plus `allow_alpha: true` when it has additive IAM. The connection
+Secret). The connection
 keeps its ID, so it adopts what Terraform made (`docs/design.md`, "From
 Terraform").
 
@@ -118,10 +118,13 @@ variable), `names` and `mock`, each validated against Config Connector's
 CRDs and those in `crds/config-connector-extensions`, and the refusals in
 `tests/*.fail.yaml`.
 
-Fake cloud (`task test-mock`, `tests/mock.values.yaml`): a Cloud resource connection in `us` and a role on it (`iam`). On 2026-11-15 (offload VM `off-catalog-1115092825-18945`, config-connector-extensions `384d07c0`, whose fake cloud serves any `getIamPolicy` path) the connection and its `IAMBinding` became Ready, the outputs evaluated and both were deleted. The other connection types, `iam_by_principals`, `iam_bindings` (with conditions) and the `v1alpha1` `IAMMember`s are only render-tested; mockgcp reads no Cloud SQL Secret, so the Cloud SQL credential is unproven there.
+Fake cloud (`task test-mock`, `tests/mock.values.yaml`): a Cloud resource connection in `us` and a role on it (`iam`). On 2026-11-15 (offload VM `off-catalog-1115092825-18945`, config-connector-extensions `384d07c0`, whose fake cloud serves any `getIamPolicy` path) the connection and its `IAMBinding` became Ready, the outputs evaluated and both were deleted. The other connection types, `iam_by_principals`, `iam_bindings` (with conditions) and the `IAMMember`s are only render-tested; mockgcp reads no Cloud SQL Secret, so the Cloud SQL credential is unproven there.
 
 Not applied live.
 
 ## Changes
 
+- **0.2.0** (2026-11-15): `IAMMember` renders
+  `iam.gcp.hfl.dev/v1beta1` without `allow_alpha` (config-connector-extensions
+  `81c3f9b5`).
 - **0.1.0** (2026-11-15): the port: the connection and IAM on it.

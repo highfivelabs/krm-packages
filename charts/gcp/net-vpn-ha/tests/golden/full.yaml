@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: net-vpn-ha
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "external_gateway:aws"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -35,7 +35,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: net-vpn-ha
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "external_gateway:onprem"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -58,7 +58,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: net-vpn-ha
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "router"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -78,7 +78,7 @@ spec:
     keepaliveInterval: 25
 ---
 # Source: net-vpn-ha/templates/main.yaml
-apiVersion: compute.gcp.hfl.dev/v1alpha1
+apiVersion: compute.gcp.hfl.dev/v1beta1
 kind: ComputeRouterRoutePolicy
 metadata:
   name: full-route-policy-export-all
@@ -86,7 +86,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: net-vpn-ha
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "route_policy:export-all"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -110,7 +110,7 @@ spec:
           location: "here"
 ---
 # Source: net-vpn-ha/templates/main.yaml
-apiVersion: compute.gcp.hfl.dev/v1alpha1
+apiVersion: compute.gcp.hfl.dev/v1beta1
 kind: ComputeRouterRoutePolicy
 metadata:
   name: full-route-policy-import-onprem
@@ -118,7 +118,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: net-vpn-ha
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "route_policy:import-onprem"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -151,7 +151,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: net-vpn-ha
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "gateway"
     cnrm.cloud.google.com/project-id: "my-project"

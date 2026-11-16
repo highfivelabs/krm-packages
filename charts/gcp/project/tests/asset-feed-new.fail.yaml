@@ -1,4 +1,0 @@
-# expect: asset_feeds needs an existing project (project_reuse with attributes.number)
-name: my-project
-parent: folders/1
-asset_feeds: {f: {feed_output_config: {pubsub_destination: {topic: projects/p/topics/t}}}}

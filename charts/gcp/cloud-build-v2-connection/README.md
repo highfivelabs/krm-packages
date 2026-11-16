@@ -10,8 +10,8 @@ at v60.0.0 (`f706bc3b`), Apache-2.0, Copyright Google LLC. Bundt Package
 Connector v1.160.0's `CloudBuildTrigger` and config-connector-extensions'
 `CloudBuildConnection` (`cloudbuild.gcp.hfl.dev/v1beta1`),
 `CloudBuildRepository` (`cloudbuild.gcp.hfl.dev/v1alpha1`), `IAMBinding`
-(`iam.gcp.hfl.dev/v1beta1`) and `IAMMember` (`iam.gcp.hfl.dev/v1alpha1`),
-at `0ee17dd4`. Config Connector's own `CloudBuildConnection` is
+(`iam.gcp.hfl.dev/v1beta1`) and `IAMMember` (`iam.gcp.hfl.dev/v1beta1`),
+at `81c3f9b5`. Config Connector's own `CloudBuildConnection` is
 `v1alpha1`, and it has no repository kind.
 
 ## Example
@@ -61,9 +61,9 @@ The module's variables, with the same names, types and defaults.
 | `repositories.*.triggers` | one `CloudBuildTrigger` per trigger, keyed `<repository>-<trigger>` as fabric keys it, on the repository's `push` or `pull_request` events (exactly one, as fabric checks), with `description`, `disabled`, `filename`, `include_build_logs`, `substitutions`, `service_account` (as `serviceAccountRef.external`) and `tags` |
 | `iam`, `iam_by_principals` | one `IAMBinding` per role, exact, the two merged as fabric merges them |
 | `iam_bindings` | one `IAMBinding` per entry, exact |
-| `iam_bindings_additive` | one `IAMMember` per entry (additive); `IAMMember` is `v1alpha1`, so it needs `allow_alpha: true` |
+| `iam_bindings_additive` | one `IAMMember` per entry (additive) |
 | `context` | refused: Bundt expressions (`${...}`) and `valueFrom` replace fabric's `$context` lookups (`$iam_principals:`, `$custom_roles:`, `$project_ids:`) |
-| `allow_alpha` | not a fabric variable: accept the `v1alpha1` `CloudBuildRepository` and `IAMMember` |
+| `allow_alpha` | not a fabric variable: accept the `v1alpha1` `CloudBuildRepository` (`IAMMember` is `v1beta1` since config-connector-extensions `81c3f9b5` and needs nothing) |
 | `deletion_policy` | not a fabric variable; `ABANDON` keeps the connection, repositories and triggers (not the IAM) |
 
 Refused:
@@ -108,11 +108,11 @@ outputs (`docs/design.md`, "Outputs").
 
 A `module "x" { source = ".../modules/cloud-build-v2-connection" ... }`
 block's arguments become the values unchanged, apart from `context`
-(refused), plus `allow_alpha: true` when it has repositories or additive
-IAM. The connection and repositories keep their IDs, so they adopt what
-Terraform made (`docs/design.md`, "From Terraform"). A trigger cannot be
-adopted by its name (above): Config Connector would make a new one unless
-the object is given the existing trigger's ID.
+(refused), plus `allow_alpha: true` when it has repositories. The
+connection and repositories keep their IDs, so they adopt what Terraform
+made (`docs/design.md`, "From Terraform"). A trigger cannot be adopted
+by its name (above): Config Connector would make a new one unless the
+object is given the existing trigger's ID.
 
 ## Upstream
 
@@ -143,9 +143,9 @@ repositories or triggers in the case) and both were deleted. mockgcp
 reads neither the secret version nor the app installation, so a
 credential that does not exist passes there and fails in the real cloud.
 The `iam_by_principals`, `iam_bindings` and `iam_bindings_additive`
-variables render the same `IAMBinding` kind (or the `v1alpha1`
+variables render the same `IAMBinding` kind (or the
 `IAMMember`) and are only render-tested. Repositories and triggers (on the `v1alpha1`
-`CloudBuildRepository`) and the `IAMMember`s (`v1alpha1`) are only
+`CloudBuildRepository`) are only
 render-tested: alpha features are not in fake-cloud cases.
 
 Not applied live: a real connection needs a GitHub, GitLab or Bitbucket
@@ -157,5 +157,8 @@ service account has a Cloud Build role, and this work changes no IAM.
 
 ## Changes
 
+- **0.2.0** (2026-11-15): `IAMMember` renders
+  `iam.gcp.hfl.dev/v1beta1` without `allow_alpha` (config-connector-extensions
+  `81c3f9b5`).
 - **0.1.0** (2026-11-12): the port: the connection, repositories and
   triggers, and IAM on the connection.

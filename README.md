@@ -134,10 +134,10 @@ How much of the Terraform modules people use today the catalog carries, counted 
 
 | Source | Modules | Bar | Variables covered |
 | --- | ---: | --- | ---: |
-| Google Cloud: Cloud Foundation Fabric and terraform-google-modules | 98 | ![gcp](docs/coverage/gcp.svg) | 1215 of 1478 (82.2%) |
+| Google Cloud: Cloud Foundation Fabric and terraform-google-modules | 98 | ![gcp](docs/coverage/gcp.svg) | 1218 of 1478 (82.4%) |
 | AWS: terraform-aws-modules | 42 | ![aws](docs/coverage/aws.svg) | 575 of 2348 (24.5%) |
 | Azure: Azure Verified Modules | 37 | ![azure](docs/coverage/azure.svg) | 1056 of 1170 (90.3%) |
-| **All** | **177** | | **2846 of 4996 (57.0%)** |
+| **All** | **177** | | **2849 of 4996 (57.0%)** |
 
 ### Google Cloud: Cloud Foundation Fabric and terraform-google-modules
 
@@ -148,8 +148,8 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | Module | Variables covered | Outputs | Resource types with a stable kind | Status |
 | --- | --- | ---: | ---: | --- |
 | [`project`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/project) ([chart](charts/gcp/project)) | ![project](docs/coverage/bars/gcp-project.svg) 45 of 58 | 14 of 27 | 41 of 49 | partial |
-| [`folder`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/folder) ([chart](charts/gcp/folder)) | ![folder](docs/coverage/bars/gcp-folder.svg) 22 of 31 | 4 of 9 | 16 of 24 | partial |
-| [`organization`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/organization) ([chart](charts/gcp/organization)) | ![organization](docs/coverage/bars/gcp-organization.svg) 29 of 35 | 12 of 23 | 25 of 35 | partial |
+| [`folder`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/folder) ([chart](charts/gcp/folder)) | ![folder](docs/coverage/bars/gcp-folder.svg) 24 of 31 | 5 of 9 | 16 of 24 | partial |
+| [`organization`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/organization) ([chart](charts/gcp/organization)) | ![organization](docs/coverage/bars/gcp-organization.svg) 30 of 35 | 13 of 23 | 25 of 35 | partial |
 | [`iam-service-account`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/iam-service-account) ([chart](charts/gcp/iam-service-account)) | ![iam-service-account](docs/coverage/bars/gcp-iam-service-account.svg) 24 of 28 | 5 of 6 | 9 of 9 | partial |
 | [`net-vpc`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/net-vpc) ([chart](charts/gcp/net-vpc)) | ![net-vpc](docs/coverage/bars/gcp-net-vpc.svg) 24 of 29 | 13 of 23 | 12 of 19 | partial |
 | [`net-vpc-firewall`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v60.0.0/modules/net-vpc-firewall) ([chart](charts/gcp/net-vpc-firewall)) | ![net-vpc-firewall](docs/coverage/bars/gcp-net-vpc-firewall.svg) 7 of 8 | 0 of 2 | 1 of 1 | partial |

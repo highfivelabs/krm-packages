@@ -13,7 +13,7 @@ redundant ComputeRouterInterfaces in the subnet. google_compute_router_peer
 .peer_0 and .peer_1: two ComputeRouterPeers per appliance, one on each
 interface. google_compute_router_route_policy.default: a
 ComputeRouterRoutePolicy of config-connector-extensions per policy
-(v1alpha1: allow_alpha).
+(v1beta1).
 */ -}}
 {{- $v := .Values }}
 {{- include "kcc.names" (list $ (list "spoke" "router" "hub")) }}
@@ -25,7 +25,6 @@ ComputeRouterRoutePolicy of config-connector-extensions per policy
 {{- end }}
 {{- $rc := $v.router_config }}
 {{- $policies := $rc.route_policies | default dict }}
-{{- include "kcc.alpha" (list $ "router_config.route_policies" $policies "ComputeRouterRoutePolicy (config-connector-extensions)") }}
 {{- range $k, $p := $policies }}
 {{- $seen := dict }}
 {{- range $t := $p.terms }}
@@ -154,7 +153,7 @@ spec:
 {{- end }}
 {{- range $key, $p := $policies }}
 ---
-apiVersion: compute.gcp.hfl.dev/v1alpha1
+apiVersion: compute.gcp.hfl.dev/v1beta1
 kind: ComputeRouterRoutePolicy
 metadata:
   {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "route-policy" $key)) "id" (printf "route_policy:%s" $key) "project" $v.project_id "abandon" $abandon) | nindent 2 }}

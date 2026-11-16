@@ -1,0 +1,11 @@
+# The hierarchical Cloud Armor policy association without allow_alpha
+# (config-connector-extensions' v1beta1 kind, 0.4.0), named
+# organization-<id>, and service agents: one ServiceIdentity per service
+# (securitycenter.googleapis.com has four agents; compute.googleapis.com has
+# no organization-level agent and is skipped, as fabric skips it).
+organization_id: organizations/1122334455
+cloud_armor_policy:
+  policy_id: "1234567890"
+  excluded_projects: [projects/222222222222]
+service_agents_config:
+  services: [securitycenter.googleapis.com, privilegedaccessmanager.googleapis.com, compute.googleapis.com]

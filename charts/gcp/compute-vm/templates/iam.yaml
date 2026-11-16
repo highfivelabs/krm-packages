@@ -10,7 +10,7 @@ iap_tunnel_iam, exact per role as fabric's.
 google_iap_tunnel_instance_iam_binding.bindings: one IAMBinding per entry
 of iap_tunnel_iam_bindings.
 google_iap_tunnel_instance_iam_member.bindings: one IAMMember
-(config-connector-extensions, iam.gcp.hfl.dev/v1alpha1, so allow_alpha) per
+(config-connector-extensions, iam.gcp.hfl.dev/v1beta1) per
 entry of iap_tunnel_iam_bindings_additive.
 config-connector-extensions resolves an IAP tunnel instance only from
 external (projects/<p>/iap_tunnel/zones/<z>/instances/<name>).
@@ -52,13 +52,12 @@ spec:
     {{- include "kcc.condition" . | nindent 4 }}
   {{- end }}
 {{- end }}
-{{- include "kcc.alpha" (list $ "iap_tunnel_iam_bindings_additive" $v.iap_tunnel_iam_bindings_additive "IAMMember (config-connector-extensions)") }}
 {{- range $key, $b := ($v.iap_tunnel_iam_bindings_additive | default dict) }}
 {{- if not (and $b.member $b.role) }}
 {{- fail (printf "compute-vm: iap_tunnel_iam_bindings_additive.%s: member and role are required" $key) }}
 {{- end }}
 ---
-apiVersion: iam.gcp.hfl.dev/v1alpha1
+apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMMember
 metadata:
   {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "iap-iam-member" $key)) "id" (printf "iap_iam_member:%s" $key) "project" $v.project_id) | nindent 2 }}

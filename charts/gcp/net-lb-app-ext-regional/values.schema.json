@@ -3359,7 +3359,7 @@
       }
     },
     "allow_alpha": {
-      "description": "Accept alpha (v1alpha1) kinds: config-connector-extensions' ComputeRegionNetworkEndpoint for internet NEG endpoints (not a fabric variable; docs/design.md, \"Alpha kinds\").",
+      "description": "Not a fabric variable, and no longer used: no kind of this chart is alpha (internet NEG endpoints' ComputeRegionNetworkEndpoint is v1beta1 since config-connector-extensions 81c3f9b5). It changes nothing and is kept so components that set it still render.",
       "type": "boolean"
     },
     "deletion_policy": {

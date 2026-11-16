@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "security"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
   annotations:
     hfl.dev/id: "vpc_sc"
 spec:
@@ -26,7 +26,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "security"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
   annotations:
     hfl.dev/id: "iam_deny_policy:no-sa-keys"
 spec:
@@ -56,7 +56,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "security"
     app.kubernetes.io/name: project
-    app.kubernetes.io/version: "0.10.0"
+    app.kubernetes.io/version: "0.11.0"
   annotations:
     hfl.dev/id: "project"
     cnrm.cloud.google.com/auto-create-network: "false"

@@ -32,7 +32,7 @@ refused:
     fields: [optional_mode, optional_fields]
   - variable: neg_configs
     kind: gap
-    reason: "ComputeRegionNetworkEndpointGroup has no pscData (producer_port); an internet NEG's endpoints are config-connector-extensions' ComputeRegionNetworkEndpoint, which is v1alpha1: needs allow_alpha: true"
+    reason: "ComputeRegionNetworkEndpointGroup has no pscData (producer_port)"
     partial: true
     fields: [producer_port]
   - variable: service_attachment

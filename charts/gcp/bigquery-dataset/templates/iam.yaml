@@ -13,7 +13,7 @@ exact per role as fabric's.
 google_bigquery_dataset_iam_binding.bindings: one IAMBinding per entry of
 iam_bindings.
 google_bigquery_dataset_iam_member.bindings: one IAMMember
-(iam.gcp.hfl.dev/v1alpha1, so allow_alpha) per entry of
+(iam.gcp.hfl.dev/v1beta1) per entry of
 iam_bindings_additive.
 With dataset_access the dataset's spec.access owns the whole list, so IAM
 objects beside it would be undone on every reconcile: refused, as fabric
@@ -70,11 +70,10 @@ spec:
     {{- include "kcc.condition" . | nindent 4 }}
   {{- end }}
 {{- end }}
-{{- include "kcc.alpha" (list $ "iam_bindings_additive" $v.iam_bindings_additive "IAMMember (config-connector-extensions)") }}
 {{- range $key, $b := ($v.iam_bindings_additive | default dict) }}
 {{- include "bigqueryDataset.require" (list $ "iam_bindings_additive" $b (list "member" "role")) }}
 ---
-apiVersion: iam.gcp.hfl.dev/v1alpha1
+apiVersion: iam.gcp.hfl.dev/v1beta1
 kind: IAMMember
 metadata:
   {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "iam-member" $key)) "id" (printf "iam-member:%s" $key) "project" $project) | nindent 2 }}

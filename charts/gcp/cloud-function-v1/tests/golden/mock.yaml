@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: cloud-function-v1
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     env: "test"
   annotations:
     hfl.dev/id: "function"
@@ -30,6 +30,28 @@ spec:
   httpsTrigger:
     securityLevel: "SECURE_ALWAYS"
 ---
+# Source: cloud-function-v1/templates/main.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMBinding
+metadata:
+  name: mock-iam-roles-cloudfunctions-invoker-b7d8edf0
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: cloud-function-v1
+    app.kubernetes.io/version: "0.2.0"
+    env: "test"
+  annotations:
+    hfl.dev/id: "iam:roles/cloudfunctions.invoker"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  resourceRef:
+    kind: CloudFunctionsFunction
+    external: projects/mock-project/locations/us-central1/functions/mock-cf1
+  role: "roles/cloudfunctions.invoker"
+  members:
+    - "user:dev@example.com"
+---
 # Source: cloud-function-v1/templates/serviceaccount.yaml
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
@@ -39,7 +61,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: cloud-function-v1
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     env: "test"
   annotations:
     hfl.dev/id: "sa-role:roles/logging.logWriter"
@@ -62,7 +84,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: cloud-function-v1
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     env: "test"
   annotations:
     hfl.dev/id: "service_account"
@@ -80,7 +102,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: cloud-function-v1
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     env: "test"
   annotations:
     hfl.dev/id: "bucket"

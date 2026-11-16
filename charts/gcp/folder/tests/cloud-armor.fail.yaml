@@ -3,5 +3,4 @@
 # a new folder's number is not known before it is made.
 parent: organizations/123456789012
 name: f
-allow_alpha: true
 cloud_armor_policy: {policy_id: "123"}
