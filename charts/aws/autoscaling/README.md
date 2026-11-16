@@ -93,6 +93,19 @@ the role is named `iam_instance_profile_name` else `iam_role_name`, and
 the profile `iam_role_name` (else the role's name, where Terraform would
 generate one).
 
+**Ordering on the first apply.** Nothing orders the group after the
+instance profile: the launch template names it, and the group names the
+template. EC2 Auto Scaling validates the template's profile when the group
+is created, and ACK treats that `ValidationError` as terminal. On AWS
+Emulator (`off-catalog-1116145851-10925`) the group was created before the
+profile was visible and stayed failed ("Invalid IAM Instance Profile
+name"); on moto it passed. With `create_iam_instance_profile`, if the
+group reports that error, delete the `AutoScalingGroup` object once the
+profile is synced and let Bundt apply it again, or make the role and
+profile their own component (`charts/aws/iam-role`) and pass
+`iam_instance_profile_name`. A `launchTemplateRef` on ACK's group would fix
+the order (`docs/aws.md`, gaps).
+
 **Set once at creation**: `initial_lifecycle_hooks` and
 `traffic_source_attachments` are fields of `CreateAutoScalingGroup` only,
 and ACK neither updates nor attaches them later. Terraform's
