@@ -1,0 +1,333 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf: the subnet group (aws_db_subnet_group.this, rds/DBSubnetGroup),
+the cluster and DB parameter groups (aws_rds_cluster_parameter_group.this,
+rds/DBClusterParameterGroup; aws_db_parameter_group.this,
+rds/DBParameterGroup), the cluster (aws_rds_cluster.this, rds/DBCluster)
+and its log groups (aws_cloudwatch_log_group.this,
+cloudwatchlogs/LogGroup). The cluster takes the groups, the security group
+and the monitoring role by their Kubernetes objects.
+*/ -}}
+{{- include "ack.names" (list $ (list "cluster" "dbSubnetGroup" "clusterParameterGroup" "dbParameterGroup" "securityGroup" "monitoringRole")) -}}
+{{- $v := .Values -}}
+{{- if include "aurora.on" $ }}
+{{- $rel := .Release.Name }}
+{{- $region := $v.region }}
+{{- $cid := include "aurora.clusterID" $ }}
+{{- $serverless := include "aurora.serverless" $ }}
+{{- if kindIs "invalid" $v.engine }}
+{{- fail "rds-aurora: engine is required (aurora-mysql, aurora-postgresql, mysql or postgres): ACK's DBCluster requires it, where Terraform's provider takes aurora" }}
+{{- end }}
+{{- include "aurora.applyImmediately" (list $ "apply_immediately" $v.apply_immediately) }}
+
+{{- /* DB Subnet Group: local.internal_db_subnet_group_name, coalesce(db_subnet_group_name, name) */}}
+{{- $subnetGroupObj := "" }}
+{{- $subnetGroupName := $v.db_subnet_group_name | default $v.name }}
+{{- if $v.create_db_subnet_group }}
+{{- $sgName := include "ack.resourceName" (list $ "dbSubnetGroup" "DB subnet group" (lower $subnetGroupName) 255) }}
+{{- $subnetGroupObj = include "ack.name" (list $rel "subnet-group") }}
+---
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBSubnetGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $subnetGroupObj "id" "db-subnet-group" "region" $region) | nindent 2 }}
+spec:
+  name: {{ $sgName | quote }}
+  description: {{ printf "For Aurora cluster %s" $v.name | quote }}
+  subnetIDs:
+{{- range $v.subnets }}
+    - {{ . | quote }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* Cluster Parameter Group and DB Parameter Group */}}
+{{- $pgObjs := dict }}
+{{- range $p := list (list "cluster_parameter_group" "clusterParameterGroup" "DBClusterParameterGroup" "cluster-parameter-group" "db-cluster-parameter-group" "DB cluster parameter group") (list "db_parameter_group" "dbParameterGroup" "DBParameterGroup" "db-parameter-group" "db-parameter-group" "DB parameter group") }}
+{{- $pg := index $v (index $p 0) }}
+{{- if not (kindIs "invalid" $pg) }}
+{{- if not $pg.family }}
+{{- fail (printf "rds-aurora: %s.family is required (aurora-postgresql16, aurora-mysql8.0, ...)" (index $p 0)) }}
+{{- end }}
+{{- $base := $pg.name | default $v.name }}
+{{- $obj := include "ack.name" (list $rel (index $p 3)) }}
+{{- $_ := set $pgObjs (index $p 0) $obj }}
+---
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: {{ index $p 2 }}
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $obj "id" (index $p 4) "region" $region) | nindent 2 }}
+spec:
+  name: {{ include "ack.resourceName" (list $ (index $p 1) (index $p 5) (lower $base) 255 "letter") | quote }}
+  description: {{ $pg.description | default (printf "%s for Aurora cluster %s" $pg.family $v.name) | quote }}
+  family: {{ $pg.family | quote }}
+{{- with $pg.parameters }}
+  parameterOverrides:
+{{- range . }}
+    {{ .name | quote }}: {{ .value | toString | quote }}
+{{- end }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- /* Cluster */}}
+{{- $primary := $v.is_primary_cluster }}
+{{- $managed := and $v.manage_master_user_password (kindIs "invalid" $v.global_cluster_identifier) }}
+{{- $ann := dict "rds.services.k8s.aws/skip-final-snapshot" (toString $v.skip_final_snapshot) }}
+{{- if not (kindIs "invalid" $v.delete_automated_backups) }}
+{{- $_ := set $ann "rds.services.k8s.aws/delete-automated-backups" (toString $v.delete_automated_backups) }}
+{{- end }}
+{{- if not $v.skip_final_snapshot }}
+{{- /* RDS needs a final snapshot's name; unset (where Terraform fails on destroy), the chart names it <cluster identifier>-final */}}
+{{- $_ := set $ann "rds.services.k8s.aws/final-db-snapshot-identifier" ($v.final_snapshot_identifier | default (printf "%s-final" $cid)) }}
+{{- end }}
+---
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBCluster
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "cluster")) "id" "cluster" "region" $region "annotations" $ann) | nindent 2 }}
+spec:
+  dbClusterIdentifier: {{ $cid | quote }}
+  engine: {{ $v.engine | quote }}
+{{- /* local.backtrack_window: aurora-mysql and aurora only, not serverless */}}
+{{- if and (has (toString $v.engine) (list "aurora-mysql" "aurora")) (not $serverless) (not (kindIs "invalid" $v.backtrack_window)) }}
+  backtrackWindow: {{ int64 $v.backtrack_window }}
+{{- end }}
+{{- with $v.engine_mode }}
+  engineMode: {{ . | quote }}
+{{- end }}
+{{- with $v.engine_version }}
+  engineVersion: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.allocated_storage) }}
+  allocatedStorage: {{ int64 $v.allocated_storage }}
+{{- /* the module takes allocated_storage as the sign of a Multi-AZ DB cluster */}}
+{{- with $v.cluster_instance_class }}
+  dbClusterInstanceClass: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.auto_minor_version_upgrade) }}
+  autoMinorVersionUpgrade: {{ $v.auto_minor_version_upgrade }}
+{{- end }}
+{{- with $v.availability_zones }}
+  availabilityZones:
+{{- range . }}
+    - {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.backup_retention_period) }}
+  backupRetentionPeriod: {{ int64 $v.backup_retention_period }}
+{{- end }}
+  copyTagsToSnapshot: {{ $v.copy_tags_to_snapshot }}
+{{- with $v.database_insights_mode }}
+  databaseInsightsMode: {{ . | quote }}
+{{- end }}
+{{- if and $primary $v.database_name }}
+  databaseName: {{ $v.database_name | quote }}
+{{- end }}
+{{- if hasKey $pgObjs "cluster_parameter_group" }}
+  dbClusterParameterGroupRef:
+    from:
+      name: {{ index $pgObjs "cluster_parameter_group" }}
+{{- else if $v.cluster_parameter_group_name }}
+  dbClusterParameterGroupName: {{ $v.cluster_parameter_group_name | quote }}
+{{- end }}
+{{- if $subnetGroupObj }}
+  dbSubnetGroupRef:
+    from:
+      name: {{ $subnetGroupObj }}
+{{- else if $subnetGroupName }}
+  dbSubnetGroupName: {{ $subnetGroupName | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.deletion_protection) }}
+  deletionProtection: {{ $v.deletion_protection }}
+{{- end }}
+{{- with $v.domain }}
+  domain: {{ . | quote }}
+{{- end }}
+{{- with $v.domain_iam_role_name }}
+  domainIAMRoleName: {{ . | quote }}
+{{- end }}
+{{- with $v.enabled_cloudwatch_logs_exports }}
+  enableCloudwatchLogsExports:
+{{- range . }}
+    - {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.enable_global_write_forwarding) }}
+  enableGlobalWriteForwarding: {{ $v.enable_global_write_forwarding }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.enable_http_endpoint) }}
+  enableHTTPEndpoint: {{ $v.enable_http_endpoint }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.iam_database_authentication_enabled) }}
+  enableIAMDatabaseAuthentication: {{ $v.iam_database_authentication_enabled }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.cluster_performance_insights_enabled) }}
+  enablePerformanceInsights: {{ $v.cluster_performance_insights_enabled }}
+{{- end }}
+{{- with $v.cluster_performance_insights_kms_key_id }}
+  performanceInsightsKMSKeyID: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.cluster_performance_insights_retention_period) }}
+  performanceInsightsRetentionPeriod: {{ int64 $v.cluster_performance_insights_retention_period }}
+{{- end }}
+{{- with $v.global_cluster_identifier }}
+  globalClusterIdentifier: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.iops) }}
+  iops: {{ int64 $v.iops }}
+{{- end }}
+{{- with $v.kms_key_id }}
+  kmsKeyID: {{ . | quote }}
+{{- end }}
+{{- if $managed }}
+  manageMasterUserPassword: true
+{{- with $v.master_user_secret_kms_key_id }}
+  masterUserSecretKMSKeyID: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with (include "aurora.secretRef" (list $ "master_password_wo" $v.master_password_wo)) }}
+{{- if and $primary (not $managed) }}
+{{- $ref := fromJson . }}
+  masterUserPassword:
+    name: {{ $ref.name | quote }}
+    key: {{ $ref.key | quote }}
+{{- end }}
+{{- end }}
+{{- if and $primary $v.master_username }}
+  masterUsername: {{ $v.master_username | quote }}
+{{- end }}
+  monitoringInterval: {{ int64 ($v.cluster_monitoring_interval | default 0) }}
+{{- if gt (int64 ($v.cluster_monitoring_interval | default 0)) 0 }}
+{{- if include "aurora.monitoringRole" $ }}
+  monitoringRoleRef:
+    from:
+      name: {{ include "ack.name" (list $rel "monitoring-role") }}
+{{- else if $v.monitoring_role_arn }}
+  monitoringRoleARN: {{ $v.monitoring_role_arn | quote }}
+{{- end }}
+{{- end }}
+{{- with $v.network_type }}
+  networkType: {{ . | quote }}
+{{- end }}
+  port: {{ include "aurora.port" $ }}
+{{- if and $v.preferred_backup_window (not $serverless) }}
+  preferredBackupWindow: {{ $v.preferred_backup_window | quote }}
+{{- end }}
+{{- with $v.preferred_maintenance_window }}
+  preferredMaintenanceWindow: {{ . | quote }}
+{{- end }}
+{{- with $v.replication_source_identifier }}
+  replicationSourceIdentifier: {{ . | quote }}
+{{- end }}
+{{- with $v.restore_to_point_in_time }}
+{{- if .source_cluster_resource_id }}
+{{- fail "rds-aurora: restore_to_point_in_time.source_cluster_resource_id is not supported: ACK's DBCluster (rds-controller v1.14.2) has no field for it; name the source by source_cluster_identifier (docs/aws.md)" }}
+{{- end }}
+{{- if not .source_cluster_identifier }}
+{{- fail "rds-aurora: restore_to_point_in_time.source_cluster_identifier is required: ACK restores to a point in time when sourceDBClusterIdentifier is set" }}
+{{- end }}
+  sourceDBClusterIdentifier: {{ .source_cluster_identifier | quote }}
+{{- with .restore_to_time }}
+  restoreToTime: {{ . | quote }}
+{{- end }}
+{{- with .restore_type }}
+  restoreType: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .use_latest_restorable_time) }}
+  useLatestRestorableTime: {{ .use_latest_restorable_time }}
+{{- end }}
+{{- end }}
+{{- if and $v.scaling_configuration $serverless }}
+{{- $s := $v.scaling_configuration }}
+  scalingConfiguration:
+{{- if not (kindIs "invalid" $s.auto_pause) }}
+    autoPause: {{ $s.auto_pause }}
+{{- end }}
+{{- range $f := list (list "max_capacity" "maxCapacity") (list "min_capacity" "minCapacity") (list "seconds_before_timeout" "secondsBeforeTimeout") (list "seconds_until_auto_pause" "secondsUntilAutoPause") }}
+{{- if not (kindIs "invalid" (index $s (index $f 0))) }}
+    {{ index $f 1 }}: {{ int64 (index $s (index $f 0)) }}
+{{- end }}
+{{- end }}
+{{- with $s.timeout_action }}
+    timeoutAction: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- if and $v.serverlessv2_scaling_configuration (eq (toString $v.engine_mode) "provisioned") }}
+{{- $s := $v.serverlessv2_scaling_configuration }}
+  serverlessV2ScalingConfiguration:
+    maxCapacity: {{ $s.max_capacity }}
+{{- if not (kindIs "invalid" $s.min_capacity) }}
+    minCapacity: {{ $s.min_capacity }}
+{{- end }}
+{{- if not (kindIs "invalid" $s.seconds_until_auto_pause) }}
+    secondsUntilAutoPause: {{ int64 $s.seconds_until_auto_pause }}
+{{- end }}
+{{- end }}
+{{- with $v.snapshot_identifier }}
+  snapshotIdentifier: {{ . | quote }}
+{{- end }}
+{{- with $v.source_region }}
+  sourceRegion: {{ . | quote }}
+{{- end }}
+  storageEncrypted: {{ $v.storage_encrypted }}
+{{- with $v.storage_type }}
+  storageType: {{ . | quote }}
+{{- end }}
+{{- if and $v.create_security_group $v.vpc_security_group_ids }}
+{{- fail "rds-aurora: vpc_security_group_ids with create_security_group: true is not supported: ACK's DBCluster cannot take group references (the chart's own group) and IDs together; set create_security_group: false, or leave vpc_security_group_ids empty (docs/aws.md)" }}
+{{- end }}
+{{- if $v.create_security_group }}
+  vpcSecurityGroupRefs:
+    - from:
+        name: {{ include "ack.name" (list $rel "sg") }}
+{{- else if $v.vpc_security_group_ids }}
+  vpcSecurityGroupIDs:
+{{- range $v.vpc_security_group_ids }}
+    - {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags $v.cluster_tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+
+{{- /* CloudWatch Log Group: one per export, /aws/rds/cluster/<identifier>/<log> */}}
+{{- if $v.create_cloudwatch_log_group }}
+{{- range $log := $v.enabled_cloudwatch_logs_exports }}
+---
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+{{- $lann := dict }}
+{{- if $v.cloudwatch_log_group_skip_destroy }}{{ $lann = dict "services.k8s.aws/deletion-policy" "retain" }}{{ end }}
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "log" $log)) "id" (printf "log-group-%s" $log) "region" $region "annotations" $lann) | nindent 2 }}
+spec:
+  name: {{ printf "/aws/rds/cluster/%s/%s" $cid $log | quote }}
+{{- if not (kindIs "invalid" $v.cloudwatch_log_group_retention_in_days) }}
+  retentionDays: {{ int64 $v.cloudwatch_log_group_retention_in_days }}
+{{- end }}
+{{- with $v.cloudwatch_log_group_kms_key_id }}
+  kmsKeyID: {{ . | quote }}
+{{- end }}
+{{- $lt := include "ack.tags" (list $ $v.tags $v.cloudwatch_log_group_tags) | fromJson }}
+{{- if $lt }}
+  {{- /* LogGroup takes its tags as a map */}}
+  tags:
+{{- range $k := keys $lt | sortAlpha }}
+    {{ $k | quote }}: {{ index $lt $k | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

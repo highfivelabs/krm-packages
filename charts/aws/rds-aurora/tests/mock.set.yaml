@@ -1,0 +1,8 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values hack/mock-apply-aws.sh reads from tests/mock.needs.yaml's objects
+# once they are Ready: <value>: <resource>/<name> <jsonpath>.
+vpc_id: vpcs.ec2.services.k8s.aws/aurora-vpc {.status.vpcID}
+subnets[0]: subnets.ec2.services.k8s.aws/aurora-subnet-a {.status.subnetID}
+subnets[1]: subnets.ec2.services.k8s.aws/aurora-subnet-b {.status.subnetID}

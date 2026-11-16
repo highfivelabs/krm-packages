@@ -1,0 +1,230 @@
+---
+# Source: rds-aurora/templates/cluster.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBCluster
+metadata:
+  name: mock-cluster
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster"
+    services.k8s.aws/region: "us-east-1"
+    rds.services.k8s.aws/skip-final-snapshot: "true"
+spec:
+  dbClusterIdentifier: "catalog-aurora"
+  engine: "aurora-postgresql"
+  engineMode: "provisioned"
+  engineVersion: "16.4"
+  copyTagsToSnapshot: true
+  databaseName: "catalog"
+  dbClusterParameterGroupRef:
+    from:
+      name: mock-cluster-parameter-group
+  dbSubnetGroupRef:
+    from:
+      name: mock-subnet-group
+  enableCloudwatchLogsExports:
+    - "postgresql"
+  manageMasterUserPassword: true
+  masterUsername: "catalog"
+  monitoringInterval: 0
+  port: 5432
+  storageEncrypted: true
+  vpcSecurityGroupRefs:
+    - from:
+        name: mock-sg
+  tags:
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: rds-aurora/templates/instances.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBClusterEndpoint
+metadata:
+  name: mock-endpoint-readers
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "endpoint-readers"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  dbClusterEndpointIdentifier: "catalog-aurora-readers"
+  dbClusterIdentifierRef:
+    from:
+      name: mock-cluster
+  endpointType: "READER"
+  tags:
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: rds-aurora/templates/cluster.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBClusterParameterGroup
+metadata:
+  name: mock-cluster-parameter-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "db-cluster-parameter-group"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "catalog-aurora"
+  description: "aurora-postgresql16 for Aurora cluster catalog-aurora"
+  family: "aurora-postgresql16"
+  tags:
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: rds-aurora/templates/instances.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBInstance
+metadata:
+  name: mock-instance-one
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "instance-one"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  dbInstanceIdentifier: "catalog-aurora-one"
+  dbClusterIdentifierRef:
+    from:
+      name: mock-cluster
+  dbInstanceClass: "db.t4g.medium"
+  engine: "aurora-postgresql"
+  copyTagsToSnapshot: true
+  monitoringInterval: 0
+  tags:
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: rds-aurora/templates/cluster.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBSubnetGroup
+metadata:
+  name: mock-subnet-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "db-subnet-group"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "catalog-aurora"
+  description: "For Aurora cluster catalog-aurora"
+  subnetIDs:
+    - "subnet-set-by-mock-set-yaml-a"
+    - "subnet-set-by-mock-set-yaml-b"
+  tags:
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: rds-aurora/templates/cluster.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: mock-log-postgresql
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group-postgresql"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "/aws/rds/cluster/catalog-aurora/postgresql"
+  retentionDays: 7
+  tags:
+    "catalog-test": "true"
+---
+# Source: rds-aurora/templates/monitoring.yaml
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalableTarget
+metadata:
+  name: mock-autoscaling-target
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "autoscaling-target"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  serviceNamespace: rds
+  scalableDimension: rds:cluster:ReadReplicaCount
+  resourceID: "cluster:catalog-aurora"
+  minCapacity: 0
+  maxCapacity: 2
+---
+# Source: rds-aurora/templates/monitoring.yaml
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalingPolicy
+metadata:
+  name: mock-autoscaling-policy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "autoscaling-policy"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  policyName: "target-metric"
+  policyType: TargetTrackingScaling
+  serviceNamespace: rds
+  scalableDimension: rds:cluster:ReadReplicaCount
+  resourceRef:
+    from:
+      name: mock-autoscaling-target
+  targetTrackingScalingPolicyConfiguration:
+    predefinedMetricSpecification:
+      predefinedMetricType: "RDSReaderAverageCPUUtilization"
+    scaleInCooldown: 300
+    scaleOutCooldown: 300
+    targetValue: 70
+---
+# Source: rds-aurora/templates/security-group.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: mock-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "security-group"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "catalog-aurora"
+  description: "Control traffic to/from RDS Aurora catalog-aurora"
+  vpcID: "vpc-set-by-mock-set-yaml"
+  ingressRules:
+    - ipProtocol: "tcp"
+      fromPort: 5432
+      toPort: 5432
+      ipRanges:
+        - {"cidrIP":"10.60.0.0/16"}
+  tags:
+    - key: "Name"
+      value: "catalog-aurora"
+    - key: "catalog-test"
+      value: "true"

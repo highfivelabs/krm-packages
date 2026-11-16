@@ -1,0 +1,83 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "Security Group": the cluster's group (aws_security_group.this)
+and its rules (aws_vpc_security_group_ingress_rule.this and
+aws_vpc_security_group_egress_rule.this), which ACK keeps inline as
+SecurityGroup.ingressRules and egressRules, as charts/aws/security-group
+does. The cluster takes it by reference (vpcSecurityGroupRefs).
+*/ -}}
+{{- $v := .Values -}}
+{{- if and (include "aurora.on" $) $v.create_security_group }}
+{{- $base := $v.security_group_name | default $v.name }}
+{{- $name := include "ack.resourceName" (list $ "securityGroup" "security group" $base 255) }}
+{{- if not $v.vpc_id }}
+{{- fail "rds-aurora: vpc_id is required with create_security_group: true (the default): ACK's SecurityGroup needs its VPC's ID, and the chart cannot look up the account's default VPC, which Terraform takes when vpc_id is unset (docs/aws.md)" }}
+{{- end }}
+{{- $port := include "aurora.port" $ }}
+---
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "sg")) "id" "security-group" "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ $name | quote }}
+  description: {{ $v.security_group_description | default (printf "Control traffic to/from RDS Aurora %s" $base) | quote }}
+  vpcID: {{ $v.vpc_id | quote }}
+{{- range $dir := list "ingress" "egress" }}
+{{- $rules := index $v (printf "security_group_%s_rules" $dir) | default dict }}
+{{- if $rules }}
+  {{ $dir }}Rules:
+{{- range $key := keys $rules | sortAlpha }}
+{{- $r := index $rules $key | default dict }}
+{{- if and $r.region (ne (toString $r.region) (toString $v.region)) }}
+{{- fail (printf "rds-aurora: security_group_%s_rules.%s.region is not supported: ACK keeps a group's rules inline, in the group's own region" $dir $key) }}
+{{- end }}
+{{- $set := list }}
+{{- range $f := list "cidr_ipv4" "cidr_ipv6" "prefix_list_id" "referenced_security_group_id" }}
+{{- if index $r $f }}{{ $set = append $set $f }}{{ end }}
+{{- end }}
+{{- if ne (len $set) 1 }}
+{{- fail (printf "rds-aurora: security_group_%s_rules.%s must set exactly one of cidr_ipv4, cidr_ipv6, prefix_list_id or referenced_security_group_id" $dir $key) }}
+{{- end }}
+{{- /* The module: from_port defaults to the port (an egress rule's to to_port first), to_port to from_port (ingress) or the port. */}}
+{{- $from := $r.from_port }}
+{{- $to := $r.to_port }}
+{{- if eq $dir "ingress" }}
+{{- if kindIs "invalid" $from }}{{ $from = $port }}{{ end }}
+{{- if kindIs "invalid" $to }}{{ $to = $from }}{{ end }}
+{{- else }}
+{{- if kindIs "invalid" $from }}{{ $from = (kindIs "invalid" $to | ternary $port $to) }}{{ end }}
+{{- if kindIs "invalid" $to }}{{ $to = $port }}{{ end }}
+{{- end }}
+{{- $desc := dict }}
+{{- with $r.description }}{{ $desc = dict "description" . }}{{ end }}
+    - ipProtocol: {{ $r.ip_protocol | default "tcp" | toString | quote }}
+      fromPort: {{ int64 $from }}
+      toPort: {{ int64 $to }}
+{{- if $r.cidr_ipv4 }}
+      ipRanges:
+        - {{ toJson (merge (dict "cidrIP" $r.cidr_ipv4) $desc) }}
+{{- else if $r.cidr_ipv6 }}
+      ipv6Ranges:
+        - {{ toJson (merge (dict "cidrIPv6" $r.cidr_ipv6) $desc) }}
+{{- else if $r.prefix_list_id }}
+      prefixListIDs:
+        - {{ toJson (merge (dict "prefixListID" $r.prefix_list_id) $desc) }}
+{{- else if eq $r.referenced_security_group_id "self" }}
+      {{- /* self: a pair without a group ID is this group (ACK fills its ID in) */}}
+      userIDGroupPairs:
+        - {{ toJson $desc }}
+{{- else }}
+      userIDGroupPairs:
+        - {{ toJson (merge (dict "groupID" $r.referenced_security_group_id) $desc) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags $v.security_group_tags (dict "Name" $base)) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}

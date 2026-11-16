@@ -1,0 +1,5 @@
+# expect: rds-aurora: instances.one needs an instance class
+name: x
+engine: aurora-postgresql
+vpc_id: vpc-12345678
+instances: {one: {}}

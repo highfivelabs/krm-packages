@@ -1,0 +1,5 @@
+# expect: values don't meet the specifications of the schema
+name: x
+engine: aurora-postgresql
+vpc_id: vpc-12345678
+cluster_parameter_group: {name: x}

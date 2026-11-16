@@ -1,0 +1,5 @@
+# expect: rds-aurora: DB cluster identifier name "shop-dev-nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn" is 64 characters, more than the 63 AWS allows
+name: nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+engine: aurora-postgresql
+vpc_id: vpc-12345678
+namePrefix: shop-dev

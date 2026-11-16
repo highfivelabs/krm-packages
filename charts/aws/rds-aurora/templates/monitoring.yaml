@@ -1,0 +1,81 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "Enhanced Monitoring" (aws_iam_role.rds_enhanced_monitoring and
+its policy attachment, iam/Role with the managed policy in policies) and
+"Autoscaling" (aws_appautoscaling_target.this and
+aws_appautoscaling_policy.this, applicationautoscaling/ScalableTarget and
+ScalingPolicy on the cluster's read replica count; not for a serverless
+cluster).
+*/ -}}
+{{- $v := .Values -}}
+{{- if include "aurora.on" $ }}
+{{- $rel := .Release.Name }}
+{{- $region := $v.region }}
+{{- if include "aurora.monitoringRole" $ }}
+{{- $roleName := include "ack.resourceName" (list $ "monitoringRole" "IAM role" ($v.iam_role_name | default (printf "%s-monitor" $v.name)) 64) }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "monitoring-role")) "id" "enhanced-monitoring-role") | nindent 2 }}
+spec:
+  name: {{ $roleName | quote }}
+{{- with $v.iam_role_description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with $v.iam_role_path }}
+  path: {{ . | quote }}
+{{- end }}
+  assumeRolePolicyDocument: {{ toJson (dict "Version" "2012-10-17" "Statement" (list (dict "Effect" "Allow" "Action" (list "sts:AssumeRole") "Principal" (dict "Service" (list "monitoring.rds.amazonaws.com"))))) | quote }}
+{{- with $v.iam_role_permissions_boundary }}
+  permissionsBoundary: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.iam_role_max_session_duration) }}
+  maxSessionDuration: {{ int64 $v.iam_role_max_session_duration }}
+{{- end }}
+  policies:
+    - {{ printf "arn:%s:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole" (ternary "aws-cn" (ternary "aws-us-gov" "aws" (hasPrefix "us-gov-" (toString $region))) (hasPrefix "cn-" (toString $region))) | quote }}
+{{- with include "ack.tags" (list $ $v.tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- if and $v.autoscaling_enabled (not (include "aurora.serverless" $)) }}
+{{- $resource := printf "cluster:%s" (include "aurora.clusterID" $) }}
+{{- $targetObj := include "ack.name" (list $rel "autoscaling-target") }}
+---
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalableTarget
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $targetObj "id" "autoscaling-target" "region" $region) | nindent 2 }}
+spec:
+  serviceNamespace: rds
+  scalableDimension: rds:cluster:ReadReplicaCount
+  resourceID: {{ $resource | quote }}
+  minCapacity: {{ int64 $v.autoscaling_min_capacity }}
+  maxCapacity: {{ int64 $v.autoscaling_max_capacity }}
+---
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalingPolicy
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "autoscaling-policy")) "id" "autoscaling-policy" "region" $region) | nindent 2 }}
+spec:
+  policyName: {{ $v.autoscaling_policy_name | quote }}
+  policyType: TargetTrackingScaling
+  serviceNamespace: rds
+  scalableDimension: rds:cluster:ReadReplicaCount
+  {{- /* the target by reference, so ACK makes the policy once the target exists (the module's depends_on) */}}
+  resourceRef:
+    from:
+      name: {{ $targetObj }}
+  targetTrackingScalingPolicyConfiguration:
+    predefinedMetricSpecification:
+      predefinedMetricType: {{ $v.predefined_metric_type | quote }}
+    scaleInCooldown: {{ int64 $v.autoscaling_scale_in_cooldown }}
+    scaleOutCooldown: {{ int64 $v.autoscaling_scale_out_cooldown }}
+    targetValue: {{ ternary $v.autoscaling_target_cpu $v.autoscaling_target_connections (eq (toString $v.predefined_metric_type) "RDSReaderAverageCPUUtilization") }}
+{{- end }}
+{{- end }}

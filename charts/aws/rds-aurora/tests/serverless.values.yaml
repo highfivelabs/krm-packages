@@ -1,0 +1,19 @@
+# The module's serverless example (engine_mode serverless, v1): no
+# instances, endpoints or autoscaling, the scaling configuration instead;
+# an existing security group, and no final snapshot.
+name: example-serverless
+engine: aurora-postgresql
+engine_mode: serverless
+storage_encrypted: true
+master_username: root
+vpc_id: vpc-0123456789abcdef0
+db_subnet_group_name: example
+create_security_group: false
+vpc_security_group_ids: [sg-0123456789abcdef0]
+monitoring_role_arn: arn:aws:iam::111122223333:role/ignored
+instances: {one: {}}
+endpoints: {r: {identifier: ignored, type: READER}}
+autoscaling_enabled: true
+enable_http_endpoint: true
+skip_final_snapshot: true
+scaling_configuration: {auto_pause: true, min_capacity: 2, max_capacity: 16, seconds_until_auto_pause: 300, timeout_action: ForceApplyCapacityChange}

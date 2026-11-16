@@ -1,0 +1,5 @@
+# expect: namePrefix: Does not match pattern
+name: x
+engine: aurora-postgresql
+vpc_id: vpc-12345678
+namePrefix: "-lead"
