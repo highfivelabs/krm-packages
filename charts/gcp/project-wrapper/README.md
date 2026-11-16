@@ -109,6 +109,9 @@ neither yet.
 
 ## Changes
 
+- **0.1.3** (2026-11-15): depends on project 0.11.0 (`asset_feeds` as
+  config-connector-extensions' `AssetFeed`, `cloud_armor_policy` without
+  `allow_alpha`).
 - **0.1.2** (2026-11-15): depends on project 0.10.0 (IAM deny policies,
   asset feeds, `vpc_sc` and, behind `allow_alpha`, `cloud_armor_policy`).
 - **0.1.1** (2026-11-13): depends on project 0.9.1 (its tag outputs carry
