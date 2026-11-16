@@ -1,0 +1,17 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The namePrefix convention (docs/design.md, "Names, labels and tags"): the
+# group's, launch template's, IAM role's and instance profile's names,
+# unique in their account and Region, carry the namePrefix. A scaling
+# policy, scheduled action and warm pool are named within their group,
+# whose name carries it.
+exempt:
+  ScalingPolicy: "named within its Auto Scaling group, whose name carries the namePrefix"
+  ScheduledAction: "named within its Auto Scaling group, whose name carries the namePrefix"
+  WarmPool: "one per Auto Scaling group, which it names; it has no name of its own"
+nameFields:
+  AutoScalingGroup: name
+  LaunchTemplate: name
+  Role: name
+  InstanceProfile: name

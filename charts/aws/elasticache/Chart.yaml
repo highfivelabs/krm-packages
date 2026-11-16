@@ -8,7 +8,7 @@ description: >-
   and log groups, as AWS Controllers for Kubernetes (ACK) objects. A port
   of terraform-aws-modules' elasticache module (its root).
 type: application
-version: 0.1.0
+version: 0.2.0
 # The module release this chart was ported from (UPSTREAM.md).
 appVersion: "terraform-aws-elasticache-v1.11.2"
 kubeVersion: ">=1.27.0-0"

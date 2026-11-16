@@ -1,0 +1,98 @@
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: CacheSubnetGroup
+metadata:
+  name: auth-token-subnet-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "auth-token"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "subnet-group"
+spec:
+  cacheSubnetGroupName: "sessions"
+  cacheSubnetGroupDescription: "ElastiCache subnet group"
+  subnetIDs:
+    - "subnet-0123456789abcdef0"
+    - "subnet-0123456789abcdef1"
+  tags:
+    - key: "terraform-aws-modules"
+      value: "elasticache"
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: auth-token-log-slow-log
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "auth-token"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "log-group-slow-log"
+spec:
+  name: "/aws/elasticache/sessions"
+  retentionDays: 14
+  tags:
+    "terraform-aws-modules": "elasticache"
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: ReplicationGroup
+metadata:
+  name: auth-token-replication-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "auth-token"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "replication-group"
+spec:
+  replicationGroupID: "sessions"
+  description: "Replication group"
+  engine: "redis"
+  cacheNodeType: "cache.t4g.small"
+  port: 6379
+  atRestEncryptionEnabled: true
+  transitEncryptionEnabled: true
+  authToken:
+    name: "sessions-redis-auth"
+    key: "token"
+  multiAZEnabled: false
+  numNodeGroups: 1
+  replicasPerNodeGroup: 1
+  cacheSubnetGroupRef:
+    from:
+      name: auth-token-subnet-group
+  securityGroupRefs:
+    - from:
+        name: auth-token-sg
+  logDeliveryConfigurations:
+    - {"destinationDetails":{"cloudWatchLogsDetails":{"logGroup":"/aws/elasticache/sessions"}},"destinationType":"cloudwatch-logs","enabled":true,"logFormat":"json","logType":"slow-log"}
+  tags:
+    - key: "terraform-aws-modules"
+      value: "elasticache"
+---
+# Source: elasticache/templates/security-group.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: auth-token-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "auth-token"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "security-group"
+spec:
+  name: "sessions"
+  description: "Managed by Terraform"
+  vpcID: "vpc-0123456789abcdef0"
+  tags:
+    - key: "terraform-aws-modules"
+      value: "elasticache"

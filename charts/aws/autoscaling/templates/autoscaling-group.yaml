@@ -1,0 +1,226 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "Autoscaling group": aws_autoscaling_group.this (or .idc, the
+same group with Terraform ignoring desired_capacity),
+autoscaling/AutoScalingGroup, with the module's lifecycle hooks
+(lifecycleHookSpecificationList) and traffic source attachments
+(aws_autoscaling_traffic_source_attachment.this, trafficSources) inline,
+both set when ACK creates the group. The launch template is named (ACK's
+AutoScalingGroup has no ID field and no reference); ACK retries until it
+exists. Its version is launch_template_version, else $Latest for the
+chart's own template (the module takes its latest_version) and the
+template's default for an existing one. The group's tags never propagate
+at launch in ACK; launch-template.yaml carries them to the instances.
+*/ -}}
+{{- include "ack.names" (list $ (list "autoScalingGroup" "launchTemplate" "iamRole" "instanceProfile")) -}}
+{{- $v := .Values -}}
+{{- if and $v.create $v.putin_khuylo }}
+{{- $region := $v.region | default "" }}
+{{- $name := include "autoscaling.groupName" $ }}
+{{- if kindIs "invalid" $v.min_size }}
+{{- fail "autoscaling: min_size is required: the group's minimum size" }}
+{{- end }}
+{{- if kindIs "invalid" $v.max_size }}
+{{- fail "autoscaling: max_size is required: the group's maximum size" }}
+{{- end }}
+{{- if and $v.ignore_desired_capacity_changes (not (kindIs "invalid" $v.desired_capacity)) }}
+{{- fail "autoscaling: ignore_desired_capacity_changes is not supported with desired_capacity: ACK's AutoScalingGroup keeps writing desiredCapacity and has no field to set it once and leave it to scaling (docs/aws.md); leave desired_capacity unset and the group starts at min_size" }}
+{{- end }}
+{{- $lt := include "autoscaling.launchTemplateName" $ }}
+{{- if not $lt }}
+{{- fail "autoscaling: create_launch_template: false needs launch_template_name, the existing launch template's name (ACK's AutoScalingGroup names its template; launch_template_id is not supported)" }}
+{{- end }}
+{{- $ltSpec := dict "launchTemplateName" $lt }}
+{{- if $v.launch_template_version }}
+{{- $_ := set $ltSpec "version" (toString $v.launch_template_version) }}
+{{- else if $v.create_launch_template }}
+{{- $_ := set $ltSpec "version" "$Latest" }}
+{{- end }}
+{{- $tags := include "autoscaling.groupTags" $ | fromJson }}
+---
+apiVersion: autoscaling.services.k8s.aws/v1alpha1
+kind: AutoScalingGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "autoscaling-group")) "id" "autoscaling-group" "region" $region) | nindent 2 }}
+spec:
+  name: {{ $name | quote }}
+  minSize: {{ int64 $v.min_size }}
+  maxSize: {{ int64 $v.max_size }}
+{{- if not (kindIs "invalid" $v.desired_capacity) }}
+  desiredCapacity: {{ int64 $v.desired_capacity }}
+{{- end }}
+{{- with $v.desired_capacity_type }}
+  desiredCapacityType: {{ . | quote }}
+{{- end }}
+{{- with $v.availability_zones }}
+  availabilityZones:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $v.vpc_zone_identifier }}
+  vpcZoneIdentifier: {{ join "," . | quote }}
+{{- end }}
+{{- with $v.availability_zone_distribution }}
+  availabilityZoneDistribution:
+{{- toYaml (include "autoscaling.convert" (list .) | fromJson).v | nindent 4 }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.capacity_rebalance) }}
+  capacityRebalance: {{ $v.capacity_rebalance }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.default_cooldown) }}
+  defaultCooldown: {{ int64 $v.default_cooldown }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.default_instance_warmup) }}
+  defaultInstanceWarmup: {{ int64 $v.default_instance_warmup }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.health_check_grace_period) }}
+  healthCheckGracePeriod: {{ int64 $v.health_check_grace_period }}
+{{- end }}
+{{- with $v.health_check_type }}
+  healthCheckType: {{ . | quote }}
+{{- end }}
+{{- with $v.initial_lifecycle_hooks }}
+  lifecycleHookSpecificationList:
+{{- range . }}
+    - lifecycleHookName: {{ .name | quote }}
+      lifecycleTransition: {{ .lifecycle_transition | quote }}
+{{- with .default_result }}
+      defaultResult: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .heartbeat_timeout) }}
+      heartbeatTimeout: {{ int64 .heartbeat_timeout }}
+{{- end }}
+{{- with .notification_metadata }}
+      notificationMetadata: {{ . | quote }}
+{{- end }}
+{{- with .notification_target_arn }}
+      notificationTargetARN: {{ . | quote }}
+{{- end }}
+{{- with .role_arn }}
+      roleARN: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with $v.instance_lifecycle_policy }}
+  instanceLifecyclePolicy:
+{{- toYaml (include "autoscaling.convert" (list .) | fromJson).v | nindent 4 }}
+{{- end }}
+{{- with $v.instance_maintenance_policy }}
+  instanceMaintenancePolicy:
+{{- toYaml (include "autoscaling.convert" (list .) | fromJson).v | nindent 4 }}
+{{- end }}
+{{- if $v.use_mixed_instances_policy }}
+{{- $m := $v.mixed_instances_policy | default dict }}
+{{- $mip := dict "launchTemplate" (dict "launchTemplateSpecification" $ltSpec) }}
+{{- with $m.instances_distribution }}
+{{- $_ := set $mip "instancesDistribution" (include "autoscaling.convert" (list .) | fromJson).v }}
+{{- end }}
+{{- with ($m.launch_template | default dict).override }}
+{{- $ovs := list }}
+{{- range $o := . }}
+{{- $ov := (include "autoscaling.convert" (list (omit $o "launch_template_specification")) | fromJson).v }}
+{{- with $o.launch_template_specification }}
+{{- $s := dict }}
+{{- with .launch_template_name }}{{ $_ := set $s "launchTemplateName" . }}{{ end }}
+{{- with .version }}{{ $_ := set $s "version" (toString .) }}{{ end }}
+{{- $_ := set $ov "launchTemplateSpecification" $s }}
+{{- end }}
+{{- $ovs = append $ovs $ov }}
+{{- end }}
+{{- $_ := set $mip.launchTemplate "overrides" $ovs }}
+{{- end }}
+  mixedInstancesPolicy:
+{{- toYaml $mip | nindent 4 }}
+{{- else }}
+  launchTemplate:
+{{- toYaml $ltSpec | nindent 4 }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.max_instance_lifetime) }}
+  maxInstanceLifetime: {{ int64 $v.max_instance_lifetime }}
+{{- end }}
+  newInstancesProtectedFromScaleIn: {{ $v.protect_from_scale_in }}
+{{- with $v.placement_group }}
+  placementGroup: {{ . | quote }}
+{{- end }}
+{{- with $v.service_linked_role_arn }}
+  serviceLinkedRoleARN: {{ . | quote }}
+{{- end }}
+{{- with $v.termination_policies }}
+  terminationPolicies:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $v.traffic_source_attachments }}
+  trafficSources:
+{{- range $k := keys . | sortAlpha }}
+{{- $t := index $v.traffic_source_attachments $k }}
+    - identifier: {{ $t.traffic_source_identifier | quote }}
+      type: {{ $t.traffic_source_type | default "elbv2" | quote }}
+{{- end }}
+{{- end }}
+{{- with $tags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- /* aws_autoscaling_schedule.this: autoscaling.aws.hfl.dev/ScheduledAction, one per key. */}}
+{{- range $k := keys ($v.schedules | default dict) | sortAlpha }}
+{{- $s := index $v.schedules $k | default dict }}
+{{- include "ack.alpha" (list $ "schedules" $v.schedules "ScheduledAction (ack-extensions)") }}
+---
+apiVersion: autoscaling.aws.hfl.dev/v1alpha1
+kind: ScheduledAction
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "schedule" $k)) "id" (printf "schedule-%s" $k) "region" $region) | nindent 2 }}
+spec:
+  autoScalingGroupName: {{ $name | quote }}
+  scheduledActionName: {{ $k | quote }}
+{{- range $f := list "desired_capacity" "max_size" "min_size" }}
+{{- if not (kindIs "invalid" (index $s $f)) }}
+  {{ camelcase $f | untitle }}: {{ int64 (index $s $f) }}
+{{- end }}
+{{- end }}
+{{- range $f := list "end_time" "recurrence" "start_time" "time_zone" }}
+{{- with (index $s $f) }}
+  {{ camelcase $f | untitle }}: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- /* aws_autoscaling_policy.this: autoscaling.aws.hfl.dev/ScalingPolicy, one per key, named coalesce(name, key). */}}
+{{- range $k := keys ($v.scaling_policies | default dict) | sortAlpha }}
+{{- $p := index $v.scaling_policies $k | default dict }}
+{{- include "ack.alpha" (list $ "scaling_policies" $v.scaling_policies "ScalingPolicy (ack-extensions)") }}
+{{- $spec := (include "autoscaling.convert" (list (omit $p "name" "predictive_scaling_configuration")) | fromJson).v }}
+{{- with $p.predictive_scaling_configuration }}
+{{- $pc := (include "autoscaling.convert" (list (omit . "metric_specification")) | fromJson).v }}
+{{- with .metric_specification }}
+{{- $_ := set $pc "metricSpecifications" (list (include "autoscaling.convert" (list .) | fromJson).v) }}
+{{- end }}
+{{- $_ := set $spec "predictiveScalingConfiguration" $pc }}
+{{- end }}
+---
+apiVersion: autoscaling.aws.hfl.dev/v1alpha1
+kind: ScalingPolicy
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "policy" $k)) "id" (printf "scaling-policy-%s" $k) "region" $region) | nindent 2 }}
+spec:
+  autoScalingGroupName: {{ $name | quote }}
+  policyName: {{ $p.name | default $k | quote }}
+{{- with $spec }}
+{{- toYaml . | nindent 2 }}
+{{- end }}
+{{- end }}
+{{- /* warm_pool: autoscaling.cloudcontrol.aws.hfl.dev/WarmPool (ACK's AutoScalingGroup has no warm pool). */}}
+{{- with $v.warm_pool }}
+{{- include "ack.alpha" (list $ "warm_pool" $v.warm_pool "WarmPool (ack-extensions, Cloud Control)") }}
+---
+apiVersion: autoscaling.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: WarmPool
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "warm-pool")) "id" "warm-pool" "region" $region) | nindent 2 }}
+spec:
+  autoScalingGroupName: {{ $name | quote }}
+{{- with (include "autoscaling.convert" (list .) | fromJson).v }}
+{{- toYaml . | nindent 2 }}
+{{- end }}
+{{- end }}
+{{- end }}

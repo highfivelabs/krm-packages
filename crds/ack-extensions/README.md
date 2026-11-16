@@ -22,3 +22,6 @@ only with `allow_alpha: true` (`docs/design.md`, "Alpha kinds";
 | `ecr.cloudcontrol.aws.hfl.dev_registrypolicies.yaml` | `RegistryPolicy` (`ecr.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `2cdca6ca` (2026-11-15) |
 | `ecr.cloudcontrol.aws.hfl.dev_registryscanningconfigurations.yaml` | `RegistryScanningConfiguration` (`ecr.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `2cdca6ca` (2026-11-15) |
 | `ecr.aws.hfl.dev_replicationconfigurations.yaml` | `ReplicationConfiguration` (`ecr.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `2cdca6ca` (2026-11-15) |
+| `autoscaling.aws.hfl.dev_scalingpolicies.yaml` | `ScalingPolicy` (`autoscaling.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `2cdca6ca` (2026-11-16) |
+| `autoscaling.aws.hfl.dev_scheduledactions.yaml` | `ScheduledAction` (`autoscaling.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `2cdca6ca` (2026-11-16) |
+| `autoscaling.cloudcontrol.aws.hfl.dev_warmpools.yaml` | `WarmPool` (`autoscaling.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `2cdca6ca` (2026-11-16) |

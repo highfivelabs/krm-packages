@@ -29,10 +29,12 @@ refused:
   partial: true
 - variable: auth_token
   kind: by-design
-  reason: "a password is never a value: ACK's ReplicationGroup takes its auth token from a Kubernetes Secret (spec.authToken), which the chart does not make yet; user_group_ids (RBAC) is carried"
+  reason: "auth_token is a reference to a Kubernetes Secret, {secretName, key}, rendered as ReplicationGroup's spec.authToken (ACK's SecretKeyReference; docs/secrets.md); the token itself, a string, is refused: it would be in the rendered manifest"
+  partial: true
 - variable: auth_token_update_strategy
   kind: gap
-  reason: "used only with auth_token, which is refused; ACK's ReplicationGroup has no field for it"
+  reason: "accepted unset or ROTATE; SET and DELETE are refused: ACK's ReplicationGroup (elasticache-controller v1.12.0) has no field for the strategy and sends a changed token without one, which ElastiCache treats as ROTATE"
+  partial: true
 - variable: cluster_mode
   kind: gap
   reason: "ACK's ReplicationGroup (elasticache-controller v1.12.0) has no clusterMode field; cluster_mode_enabled is carried"

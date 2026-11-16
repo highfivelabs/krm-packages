@@ -381,14 +381,30 @@
     },
     "auth_token": {
       "type": [
+        "object",
         "string",
         "null"
-      ]
+      ],
+      "description": "A reference to a Kubernetes Secret, {secretName, key}; a string is refused (docs/secrets.md)",
+      "properties": {
+        "secretName": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      }
     },
     "auth_token_update_strategy": {
       "type": [
         "string",
         "null"
+      ],
+      "enum": [
+        "SET",
+        "ROTATE",
+        "DELETE",
+        null
       ]
     },
     "at_rest_encryption_enabled": {

@@ -1,0 +1,117 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "Launch template": aws_launch_template.this, ec2/LaunchTemplate.
+The module's arguments become the template's data (ACK's
+RequestLaunchTemplateData), its description the version's description.
+The instance profile is named (the module passes the ARN of the one it
+makes, which is only in the InstanceProfile's status; a name is
+equivalent). Because ACK's AutoScalingGroup tags never propagate at launch
+(autoscaling-controller v1.6.0), the group's propagated tags are added to
+the template's instance tag specification. Refused (refusals.yaml): an
+EBS volume's initialization rate, a network interface's connection
+tracking and ENA Express settings, network performance options,
+secondary interfaces and update_default_version: true.
+*/ -}}
+{{- $v := .Values -}}
+{{- if and $v.create_launch_template $v.create $v.putin_khuylo }}
+{{- $region := $v.region | default "" }}
+{{- $data := dict }}
+{{- $ren := include "autoscaling.renames" . | fromJson }}
+{{- /* Plain arguments. */}}
+{{- range $k := list "disable_api_stop" "disable_api_termination" "ebs_optimized" "instance_initiated_shutdown_behavior" "instance_type" "key_name" "user_data" }}
+{{- $x := index $v $k }}
+{{- if not (kindIs "invalid" $x) }}{{ $_ := set $data (index $ren $k | default (camelcase $k | untitle)) $x }}{{ end }}
+{{- end }}
+{{- with $v.image_id }}{{ $_ := set $data "imageID" . }}{{ end }}
+{{- with $v.kernel_id }}{{ $_ := set $data "kernelID" . }}{{ end }}
+{{- with $v.ram_disk_id }}{{ $_ := set $data "ramDiskID" . }}{{ end }}
+{{- /* Nested blocks, converted as they are. */}}
+{{- range $k := list "capacity_reservation_specification" "cpu_options" "credit_specification" "enclave_options" "hibernation_options" "instance_market_options" "license_specifications" "maintenance_options" "metadata_options" "placement" "private_dns_name_options" }}
+{{- $x := index $v $k }}
+{{- if not (kindIs "invalid" $x) }}
+{{- $_ := set $data (index $ren $k | default (camelcase $k | untitle)) (include "autoscaling.convert" (list $x) | fromJson).v }}
+{{- end }}
+{{- end }}
+{{- with $v.instance_requirements }}
+{{- /* The module's template leaves network_bandwidth_gbps out (main.tf). */}}
+{{- $_ := set $data "instanceRequirements" (include "autoscaling.convert" (list (omit . "network_bandwidth_gbps")) | fromJson).v }}
+{{- end }}
+{{- with $v.block_device_mappings }}
+{{- $bdms := list }}
+{{- range $b := . }}
+{{- $e := $b.ebs }}
+{{- if $e }}{{ $e = omit $e "volume_initialization_rate" }}{{ end }}
+{{- $bdms = append $bdms (include "autoscaling.convert" (list (merge (dict "ebs" $e) (omit $b "ebs"))) | fromJson).v }}
+{{- end }}
+{{- $_ := set $data "blockDeviceMappings" $bdms }}
+{{- end }}
+{{- if $v.enable_monitoring }}{{ $_ := set $data "monitoring" (dict "enabled" true) }}{{ end }}
+{{- /* iam_instance_profile: local.iam_instance_profile_arn and _name. */}}
+{{- if $v.create_iam_instance_profile }}
+{{- $_ := set $data "iamInstanceProfile" (dict "name" (include "autoscaling.profileName" $)) }}
+{{- else if $v.iam_instance_profile_arn }}
+{{- $_ := set $data "iamInstanceProfile" (dict "arn" $v.iam_instance_profile_arn) }}
+{{- else if $v.iam_instance_profile_name }}
+{{- $_ := set $data "iamInstanceProfile" (dict "name" $v.iam_instance_profile_name) }}
+{{- end }}
+{{- /* network_interfaces, each with security_groups = compact(concat(its own, var.security_groups)). */}}
+{{- if not (kindIs "invalid" $v.network_interfaces) }}
+{{- $nis := list }}
+{{- range $n := $v.network_interfaces }}
+{{- $o := (include "autoscaling.convert" (list (omit $n "connection_tracking_specification" "ena_srd_specification" "security_groups" "ipv4_address_count" "ipv4_addresses" "ipv4_prefixes" "ipv6_addresses" "ipv6_prefixes")) | fromJson).v }}
+{{- if not (kindIs "invalid" $n.ipv4_address_count) }}{{ $_ := set $o "secondaryPrivateIPAddressCount" $n.ipv4_address_count }}{{ end }}
+{{- with $n.ipv4_addresses }}{{ $l := list }}{{ range . }}{{ $l = append $l (dict "privateIPAddress" .) }}{{ end }}{{ $_ := set $o "privateIPAddresses" $l }}{{ end }}
+{{- with $n.ipv4_prefixes }}{{ $l := list }}{{ range . }}{{ $l = append $l (dict "ipv4Prefix" .) }}{{ end }}{{ $_ := set $o "ipv4Prefixes" $l }}{{ end }}
+{{- with $n.ipv6_addresses }}{{ $l := list }}{{ range . }}{{ $l = append $l (dict "ipv6Address" .) }}{{ end }}{{ $_ := set $o "ipv6Addresses" $l }}{{ end }}
+{{- with $n.ipv6_prefixes }}{{ $l := list }}{{ range . }}{{ $l = append $l (dict "ipv6Prefix" .) }}{{ end }}{{ $_ := set $o "ipv6Prefixes" $l }}{{ end }}
+{{- with (concat ($n.security_groups | default list) ($v.security_groups | default list) | compact) }}{{ $_ := set $o "groups" . }}{{ end }}
+{{- $nis = append $nis $o }}
+{{- end }}
+{{- $_ := set $data "networkInterfaces" $nis }}
+{{- else if $v.security_groups }}
+{{- $_ := set $data "securityGroupIDs" $v.security_groups }}
+{{- end }}
+{{- /* tag_specifications: merge(var.tags, each one's tags); the group's propagated tags join the instance's. */}}
+{{- $groupTags := include "autoscaling.groupTags" $ | fromJson }}
+{{- $keep := $v.autoscaling_group_tags_not_propagate_at_launch | default list }}
+{{- $propagated := dict }}
+{{- range $k, $x := $groupTags }}{{ if not (has $k $keep) }}{{ $_ := set $propagated $k $x }}{{ end }}{{ end }}
+{{- $specs := list }}
+{{- $instanceDone := false }}
+{{- range $s := ($v.tag_specifications | default list) }}
+{{- $t := include "ack.tags" (list $ $v.tags $s.tags) | fromJson }}
+{{- if eq (toString $s.resource_type) "instance" }}
+{{- $t = include "ack.tags" (list $ $t $propagated) | fromJson }}
+{{- $instanceDone = true }}
+{{- end }}
+{{- $spec := dict "tags" (include "ack.tagList" (list $t) | fromYamlArray) }}
+{{- with $s.resource_type }}{{ $_ := set $spec "resourceType" . }}{{ end }}
+{{- $specs = append $specs $spec }}
+{{- end }}
+{{- if and (not $instanceDone) $propagated }}
+{{- $specs = append $specs (dict "resourceType" "instance" "tags" (include "ack.tagList" (list $propagated) | fromYamlArray)) }}
+{{- end }}
+{{- with $specs }}{{ $_ := set $data "tagSpecifications" . }}{{ end }}
+{{- $tags := include "ack.tags" (list $ $v.tags $v.launch_template_tags) | fromJson }}
+---
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: LaunchTemplate
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "launch-template")) "id" "launch-template" "region" $region) | nindent 2 }}
+spec:
+  name: {{ include "autoscaling.launchTemplateName" $ | quote }}
+{{- with $v.launch_template_description }}
+  versionDescription: {{ . | quote }}
+{{- end }}
+{{- with $v.default_version }}
+  defaultVersion: {{ int64 . }}
+{{- end }}
+  data:
+{{- toYaml $data | nindent 4 }}
+{{- with $tags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}

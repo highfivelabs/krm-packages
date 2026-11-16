@@ -1,4 +1,4 @@
-# expect: elasticache: auth_token is not supported
+# expect: elasticache: auth_token takes a reference to a Kubernetes Secret, {secretName, key}, never the secret's value
 replication_group_id: x
 node_type: cache.t4g.micro
 subnet_ids: [subnet-1]

@@ -1,0 +1,6 @@
+# expect: elasticache: auth_token is {secretName, key}
+replication_group_id: x
+node_type: cache.t4g.micro
+subnet_ids: [subnet-1]
+vpc_id: vpc-1
+auth_token: {name: redis-auth, key: token}

@@ -1,0 +1,26 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: v2
+name: autoscaling
+description: >-
+  An Amazon EC2 Auto Scaling group with its launch template, IAM role and
+  instance profile, lifecycle hooks, traffic sources and, as ack-extensions
+  kinds, its scaling policies, scheduled actions and warm pool, as AWS
+  Controllers for Kubernetes (ACK) objects. A port of terraform-aws-modules'
+  autoscaling module (its root).
+type: application
+version: 0.1.0
+# The module release this chart was ported from (UPSTREAM.md).
+appVersion: "terraform-aws-autoscaling-v9.3.2"
+kubeVersion: ">=1.27.0-0"
+keywords: [aws, ack, autoscaling, ec2, launch-template, terraform-aws-modules]
+home: https://github.com/highfivelabs/catalog
+sources:
+  - https://github.com/terraform-aws-modules/terraform-aws-autoscaling/tree/f90a581bcca0bab571022a021db155f2860e9b32
+annotations:
+  hfl.dev/source: terraform-aws-autoscaling
+  hfl.dev/source-version: v9.3.2
+  hfl.dev/source-commit: f90a581bcca0bab571022a021db155f2860e9b32
+  hfl.dev/ack-autoscaling-controller: "v1.6.0"
+  hfl.dev/ack-ec2-controller: "v1.23.1"
+  hfl.dev/ack-iam-controller: "v1.11.3"

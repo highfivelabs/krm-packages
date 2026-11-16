@@ -1,0 +1,7 @@
+# expect: elasticache: auth_token needs transit_encryption_enabled: true
+replication_group_id: x
+node_type: cache.t4g.micro
+subnet_ids: [subnet-1]
+vpc_id: vpc-1
+transit_encryption_enabled: false
+auth_token: {secretName: redis-auth, key: token}

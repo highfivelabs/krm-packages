@@ -1,7 +1,8 @@
 # Applied to the fake AWS by hack/mock-apply-aws.sh: a Redis OSS
 # replication group with one replica, its parameter group, its subnet group
 # in the two subnets tests/mock.needs.yaml makes and its security group in
-# that VPC (tests/mock.set.yaml), and the slow log's log group.
+# that VPC (tests/mock.set.yaml), the slow log's log group, and an AUTH
+# token from the Secret tests/mock.needs.yaml makes.
 replication_group_id: catalog-cache
 node_type: cache.t3.micro
 engine_version: "7.1"
@@ -14,4 +15,5 @@ subnet_ids: [subnet-set-by-mock-set-yaml-a, subnet-set-by-mock-set-yaml-b]
 vpc_id: vpc-set-by-mock-set-yaml
 security_group_rules:
   vpc: {cidr_ipv4: 10.70.0.0/16}
+auth_token: {secretName: catalog-cache-auth, key: token}
 tags: {catalog-test: "true"}

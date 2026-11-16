@@ -56,6 +56,7 @@ charts use are copied in `crds/ack-extensions`.
 | `ecr-controller` | `v1.11.1` | `72590cedeb2a4a92d086175762a97aa2ed2bc979` | Repository, PullThroughCacheRule |
 | `elbv2-controller` | `v1.10.0` | `03c52d6cd1110c5f51e76ac11914deea190d7d88` | LoadBalancer, Listener, Rule, TargetGroup |
 | `efs-controller` | `v1.8.0` | `1ebcaad2c889cf315a26b2f4925c1dc709655291` | FileSystem, MountTarget, AccessPoint |
+| `autoscaling-controller` | `v1.6.0` | `599c0339c8105c31e24a3d27a0df5ccc504559fa` | AutoScalingGroup |
 
 To move a controller: change its row, run `task test` (it re-fetches the
 CRDs and re-validates every AWS render), and re-read the gaps in

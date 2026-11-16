@@ -2723,102 +2723,102 @@ aws,eventbridge,sqs_target_arns,list(string),no,,no-chart
 aws,eventbridge,tags,map(string),no,,no-chart
 aws,eventbridge,targets,any,no,,no-chart
 aws,eventbridge,trusted_entities,list(string),no,,no-chart
-aws,autoscaling,autoscaling_group_tags,map(string),no,,no-chart
-aws,autoscaling,autoscaling_group_tags_not_propagate_at_launch,list(string),no,,no-chart
-aws,autoscaling,availability_zone_distribution,object({capacity_distribution_strategy}),no,,no-chart
-aws,autoscaling,availability_zones,list(string),no,,no-chart
-aws,autoscaling,block_device_mappings,"list(object({device_name, ebs, no_device, virtual_name}))",no,,no-chart
-aws,autoscaling,capacity_rebalance,bool,no,,no-chart
-aws,autoscaling,capacity_reservation_specification,"object({capacity_reservation_preference, capacity_reservation_target})",no,,no-chart
-aws,autoscaling,context,string,no,,no-chart
-aws,autoscaling,cpu_options,"object({amd_sev_snp, core_count, nested_virtualization, threads_per_core})",no,,no-chart
-aws,autoscaling,create,bool,no,,no-chart
-aws,autoscaling,create_iam_instance_profile,bool,no,,no-chart
-aws,autoscaling,create_launch_template,bool,no,,no-chart
-aws,autoscaling,credit_specification,object({cpu_credits}),no,,no-chart
-aws,autoscaling,default_cooldown,number,no,,no-chart
-aws,autoscaling,default_instance_warmup,number,no,,no-chart
-aws,autoscaling,default_version,string,no,,no-chart
-aws,autoscaling,desired_capacity,number,no,,no-chart
-aws,autoscaling,desired_capacity_type,string,no,,no-chart
-aws,autoscaling,disable_api_stop,bool,no,,no-chart
-aws,autoscaling,disable_api_termination,bool,no,,no-chart
-aws,autoscaling,ebs_optimized,bool,no,,no-chart
-aws,autoscaling,enable_monitoring,bool,no,,no-chart
-aws,autoscaling,enabled_metrics,list(string),no,,no-chart
-aws,autoscaling,enclave_options,object({enabled}),no,,no-chart
-aws,autoscaling,force_delete,bool,no,,no-chart
-aws,autoscaling,force_delete_warm_pool,bool,no,,no-chart
-aws,autoscaling,health_check_grace_period,number,no,,no-chart
-aws,autoscaling,health_check_type,string,no,,no-chart
-aws,autoscaling,hibernation_options,object({configured}),no,,no-chart
-aws,autoscaling,iam_instance_profile_arn,string,no,,no-chart
-aws,autoscaling,iam_instance_profile_name,string,no,,no-chart
-aws,autoscaling,iam_role_description,string,no,,no-chart
-aws,autoscaling,iam_role_name,string,no,,no-chart
-aws,autoscaling,iam_role_path,string,no,,no-chart
-aws,autoscaling,iam_role_permissions_boundary,string,no,,no-chart
-aws,autoscaling,iam_role_policies,map(string),no,,no-chart
-aws,autoscaling,iam_role_tags,map(string),no,,no-chart
-aws,autoscaling,iam_role_use_name_prefix,bool,no,,no-chart
-aws,autoscaling,ignore_desired_capacity_changes,bool,no,,no-chart
-aws,autoscaling,ignore_failed_scaling_activities,bool,no,,no-chart
-aws,autoscaling,image_id,string,no,,no-chart
-aws,autoscaling,initial_lifecycle_hooks,"list(object({default_result, heartbeat_timeout, lifecycle_transition, name, notification_metadata, notification_target_arn, +1}))",no,,no-chart
-aws,autoscaling,instance_initiated_shutdown_behavior,string,no,,no-chart
-aws,autoscaling,instance_lifecycle_policy,object({retention_triggers}),no,,no-chart
-aws,autoscaling,instance_maintenance_policy,"object({max_healthy_percentage, min_healthy_percentage})",no,,no-chart
-aws,autoscaling,instance_market_options,"object({market_type, spot_options})",no,,no-chart
-aws,autoscaling,instance_name,string,no,,no-chart
-aws,autoscaling,instance_refresh,"object({preferences, strategy, triggers})",no,,no-chart
-aws,autoscaling,instance_requirements,"object({accelerator_count, accelerator_manufacturers, accelerator_names, accelerator_total_memory_mib, accelerator_types, allowed_instance_types, +18})",no,,no-chart
-aws,autoscaling,instance_type,string,no,,no-chart
-aws,autoscaling,kernel_id,string,no,,no-chart
-aws,autoscaling,key_name,string,no,,no-chart
-aws,autoscaling,launch_template_description,string,no,,no-chart
-aws,autoscaling,launch_template_id,string,no,,no-chart
-aws,autoscaling,launch_template_name,string,no,,no-chart
-aws,autoscaling,launch_template_tags,map(string),no,,no-chart
-aws,autoscaling,launch_template_use_name_prefix,bool,no,,no-chart
-aws,autoscaling,launch_template_version,string,no,,no-chart
-aws,autoscaling,license_specifications,list(object({license_configuration_arn})),no,,no-chart
-aws,autoscaling,maintenance_options,object({auto_recovery}),no,,no-chart
-aws,autoscaling,max_instance_lifetime,number,no,,no-chart
-aws,autoscaling,max_size,number,no,,no-chart
-aws,autoscaling,metadata_options,"object({http_endpoint, http_protocol_ipv6, http_put_response_hop_limit, http_tokens, instance_metadata_tags})",no,,no-chart
-aws,autoscaling,metrics_granularity,string,no,,no-chart
-aws,autoscaling,min_elb_capacity,number,no,,no-chart
-aws,autoscaling,min_size,number,no,,no-chart
-aws,autoscaling,mixed_instances_policy,"object({instances_distribution, launch_template})",no,,no-chart
-aws,autoscaling,name,string,no,,no-chart
-aws,autoscaling,network_interfaces,"list(object({associate_carrier_ip_address, associate_public_ip_address, connection_tracking_specification, delete_on_termination, description, device_index, +16}))",no,,no-chart
-aws,autoscaling,network_performance_options,object({bandwidth_weighting}),no,,no-chart
-aws,autoscaling,placement,"object({affinity, availability_zone, group_id, group_name, host_id, host_resource_group_arn, +3})",no,,no-chart
-aws,autoscaling,placement_group,string,no,,no-chart
-aws,autoscaling,private_dns_name_options,"object({enable_resource_name_dns_a_record, enable_resource_name_dns_aaaa_record, hostname_type})",no,,no-chart
-aws,autoscaling,protect_from_scale_in,bool,no,,no-chart
-aws,autoscaling,putin_khuylo,bool,no,,no-chart
-aws,autoscaling,ram_disk_id,string,no,,no-chart
-aws,autoscaling,region,string,no,,no-chart
-aws,autoscaling,scaling_policies,"map(object({adjustment_type, cooldown, enabled, estimated_instance_warmup, metric_aggregation_type, min_adjustment_magnitude, +6}))",no,,no-chart
-aws,autoscaling,schedules,"map(object({desired_capacity, end_time, max_size, min_size, recurrence, start_time, +1}))",no,,no-chart
-aws,autoscaling,secondary_interfaces,"list(object({delete_on_termination, device_index, interface_type, network_card_index, private_ip_address_count, private_ip_addresses, +1}))",no,,no-chart
-aws,autoscaling,security_groups,list(string),no,,no-chart
-aws,autoscaling,service_linked_role_arn,string,no,,no-chart
-aws,autoscaling,suspended_processes,list(string),no,,no-chart
-aws,autoscaling,tag_specifications,"list(object({resource_type, tags}))",no,,no-chart
-aws,autoscaling,tags,map(string),no,,no-chart
-aws,autoscaling,termination_policies,list(string),no,,no-chart
-aws,autoscaling,timeouts,object({delete}),no,,no-chart
-aws,autoscaling,traffic_source_attachments,"map(object({traffic_source_identifier, traffic_source_type}))",no,,no-chart
-aws,autoscaling,update_default_version,bool,no,,no-chart
-aws,autoscaling,use_mixed_instances_policy,bool,no,,no-chart
-aws,autoscaling,use_name_prefix,bool,no,,no-chart
-aws,autoscaling,user_data,string,no,,no-chart
-aws,autoscaling,vpc_zone_identifier,list(string),no,,no-chart
-aws,autoscaling,wait_for_capacity_timeout,string,no,,no-chart
-aws,autoscaling,wait_for_elb_capacity,number,no,,no-chart
-aws,autoscaling,warm_pool,"object({instance_reuse_policy, max_group_prepared_capacity, min_size, pool_state})",no,,no-chart
+aws,autoscaling,autoscaling_group_tags,map(string),yes,,
+aws,autoscaling,autoscaling_group_tags_not_propagate_at_launch,list(string),partial,"accepted: ACK's AutoScalingGroup tags never propagate at launch, so the chart propagates the other tags through its launch template's instance tag specification (with create_launch_template: true)",gap
+aws,autoscaling,availability_zone_distribution,object({capacity_distribution_strategy}),yes,,
+aws,autoscaling,availability_zones,list(string),yes,,
+aws,autoscaling,block_device_mappings,"list(object({device_name, ebs, no_device, virtual_name}))",partial,"accepted, but each EBS volume's volume_initialization_rate is refused: ACK's LaunchTemplate (ec2-controller v1.23.1) has no volumeInitializationRate field",gap
+aws,autoscaling,capacity_rebalance,bool,yes,,
+aws,autoscaling,capacity_reservation_specification,"object({capacity_reservation_preference, capacity_reservation_target})",yes,,
+aws,autoscaling,context,string,no,ACK's AutoScalingGroup (autoscaling-controller v1.6.0) has no context field,gap
+aws,autoscaling,cpu_options,"object({amd_sev_snp, core_count, nested_virtualization, threads_per_core})",yes,,
+aws,autoscaling,create,bool,yes,,
+aws,autoscaling,create_iam_instance_profile,bool,yes,,
+aws,autoscaling,create_launch_template,bool,partial,"accepted; with false the group's tags do not reach its instances: ACK's AutoScalingGroup tags never propagate at launch (autoscaling-controller v1.6.0), so the chart carries the module's propagated tags on its own launch template's instance tag specification only",gap
+aws,autoscaling,credit_specification,object({cpu_credits}),yes,,
+aws,autoscaling,default_cooldown,number,yes,,
+aws,autoscaling,default_instance_warmup,number,yes,,
+aws,autoscaling,default_version,string,yes,,
+aws,autoscaling,desired_capacity,number,yes,,
+aws,autoscaling,desired_capacity_type,string,yes,,
+aws,autoscaling,disable_api_stop,bool,yes,,
+aws,autoscaling,disable_api_termination,bool,yes,,
+aws,autoscaling,ebs_optimized,bool,yes,,
+aws,autoscaling,enable_monitoring,bool,yes,,
+aws,autoscaling,enabled_metrics,list(string),no,"group metrics collection (EnableMetricsCollection) has no field: ACK's AutoScalingGroup reports enabledMetrics in its status only, and ack-extensions has no kind for it",gap
+aws,autoscaling,enclave_options,object({enabled}),yes,,
+aws,autoscaling,force_delete,bool,partial,"accepted: ACK's autoscaling-controller deletes every group with ForceDelete, so unset or false (Terraform: wait for the instances to terminate) is not carried; the group's instances are terminated with it either way",gap
+aws,autoscaling,force_delete_warm_pool,bool,no,ack-extensions' WarmPool (Cloud Control) has no force delete field,gap
+aws,autoscaling,health_check_grace_period,number,yes,,
+aws,autoscaling,health_check_type,string,yes,,
+aws,autoscaling,hibernation_options,object({configured}),yes,,
+aws,autoscaling,iam_instance_profile_arn,string,yes,,
+aws,autoscaling,iam_instance_profile_name,string,yes,,
+aws,autoscaling,iam_role_description,string,yes,,
+aws,autoscaling,iam_role_name,string,yes,,
+aws,autoscaling,iam_role_path,string,yes,,
+aws,autoscaling,iam_role_permissions_boundary,string,yes,,
+aws,autoscaling,iam_role_policies,map(string),yes,,
+aws,autoscaling,iam_role_tags,map(string),yes,,
+aws,autoscaling,iam_role_use_name_prefix,bool,partial,"accepted: true (the default) names the IAM role and instance profile as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' roles apart",gap
+aws,autoscaling,ignore_desired_capacity_changes,bool,partial,"accepted unset or false, and true without desired_capacity; true with desired_capacity is refused: ACK keeps writing desiredCapacity, with no field to set it once and leave it to scaling",gap
+aws,autoscaling,ignore_failed_scaling_activities,bool,no,"a Terraform wait: ACK does not wait for scaling activities, and Bundt reads the group's conditions",by-design
+aws,autoscaling,image_id,string,yes,,
+aws,autoscaling,initial_lifecycle_hooks,"list(object({default_result, heartbeat_timeout, lifecycle_transition, name, notification_metadata, notification_target_arn, +1}))",partial,"accepted as the group's lifecycleHookSpecificationList, set when ACK creates the group, as Terraform's initial_lifecycle_hook is; a change after creation is not applied",gap
+aws,autoscaling,instance_initiated_shutdown_behavior,string,yes,,
+aws,autoscaling,instance_lifecycle_policy,object({retention_triggers}),yes,,
+aws,autoscaling,instance_maintenance_policy,"object({max_healthy_percentage, min_healthy_percentage})",yes,,
+aws,autoscaling,instance_market_options,"object({market_type, spot_options})",yes,,
+aws,autoscaling,instance_name,string,yes,,
+aws,autoscaling,instance_refresh,"object({preferences, strategy, triggers})",no,"ACK's AutoScalingGroup has no instance refresh, and ack-extensions has no kind for StartInstanceRefresh",gap
+aws,autoscaling,instance_requirements,"object({accelerator_count, accelerator_manufacturers, accelerator_names, accelerator_total_memory_mib, accelerator_types, allowed_instance_types, +18})",yes,,
+aws,autoscaling,instance_type,string,yes,,
+aws,autoscaling,kernel_id,string,yes,,
+aws,autoscaling,key_name,string,yes,,
+aws,autoscaling,launch_template_description,string,yes,,
+aws,autoscaling,launch_template_id,string,no,ACK's AutoScalingGroup names its launch template (launchTemplate.launchTemplateName) and has no ID field; with create_launch_template: false set launch_template_name to the template's name,gap
+aws,autoscaling,launch_template_name,string,yes,,
+aws,autoscaling,launch_template_tags,map(string),yes,,
+aws,autoscaling,launch_template_use_name_prefix,bool,partial,"accepted: true (the default) names the launch template as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' templates apart",gap
+aws,autoscaling,launch_template_version,string,yes,,
+aws,autoscaling,license_specifications,list(object({license_configuration_arn})),yes,,
+aws,autoscaling,maintenance_options,object({auto_recovery}),yes,,
+aws,autoscaling,max_instance_lifetime,number,yes,,
+aws,autoscaling,max_size,number,yes,,
+aws,autoscaling,metadata_options,"object({http_endpoint, http_protocol_ipv6, http_put_response_hop_limit, http_tokens, instance_metadata_tags})",yes,,
+aws,autoscaling,metrics_granularity,string,no,"used only with enabled_metrics, which is refused",gap
+aws,autoscaling,min_elb_capacity,number,no,"a Terraform wait for healthy load balancer instances: ACK does not wait, and Bundt reads the group's conditions",by-design
+aws,autoscaling,min_size,number,yes,,
+aws,autoscaling,mixed_instances_policy,"object({instances_distribution, launch_template})",partial,"accepted, but an override's launch_template_specification.launch_template_id is refused: ACK's AutoScalingGroup names launch templates and has no ID field (set launch_template_name)",gap
+aws,autoscaling,name,string,yes,,
+aws,autoscaling,network_interfaces,"list(object({associate_carrier_ip_address, associate_public_ip_address, connection_tracking_specification, delete_on_termination, description, device_index, +16}))",partial,"accepted, but connection_tracking_specification and ena_srd_specification are refused: ACK's LaunchTemplate (ec2-controller v1.23.1) has no fields for them",gap
+aws,autoscaling,network_performance_options,object({bandwidth_weighting}),no,ACK's LaunchTemplate (ec2-controller v1.23.1) has no networkPerformanceOptions field,gap
+aws,autoscaling,placement,"object({affinity, availability_zone, group_id, group_name, host_id, host_resource_group_arn, +3})",yes,,
+aws,autoscaling,placement_group,string,yes,,
+aws,autoscaling,private_dns_name_options,"object({enable_resource_name_dns_a_record, enable_resource_name_dns_aaaa_record, hostname_type})",yes,,
+aws,autoscaling,protect_from_scale_in,bool,yes,,
+aws,autoscaling,putin_khuylo,bool,yes,,
+aws,autoscaling,ram_disk_id,string,yes,,
+aws,autoscaling,region,string,yes,,
+aws,autoscaling,scaling_policies,"map(object({adjustment_type, cooldown, enabled, estimated_instance_warmup, metric_aggregation_type, min_adjustment_magnitude, +6}))",partial,ScalingPolicy is an ack-extensions kind (outside ACK's releases: autoscaling-controller v1.6.0 has only AutoScalingGroup): needs allow_alpha: true,alpha
+aws,autoscaling,schedules,"map(object({desired_capacity, end_time, max_size, min_size, recurrence, start_time, +1}))",partial,ScheduledAction is an ack-extensions kind (outside ACK's releases: autoscaling-controller v1.6.0 has only AutoScalingGroup): needs allow_alpha: true,alpha
+aws,autoscaling,secondary_interfaces,"list(object({delete_on_termination, device_index, interface_type, network_card_index, private_ip_address_count, private_ip_addresses, +1}))",no,ACK's LaunchTemplate (ec2-controller v1.23.1) has no secondary interfaces field,gap
+aws,autoscaling,security_groups,list(string),yes,,
+aws,autoscaling,service_linked_role_arn,string,yes,,
+aws,autoscaling,suspended_processes,list(string),no,"ACK's AutoScalingGroup reports suspendedProcesses in its status only (SuspendProcesses has no field), and ack-extensions has no kind for it",gap
+aws,autoscaling,tag_specifications,"list(object({resource_type, tags}))",yes,,
+aws,autoscaling,tags,map(string),yes,,
+aws,autoscaling,termination_policies,list(string),yes,,
+aws,autoscaling,timeouts,object({delete}),no,"Terraform's delete timeout: ACK retries until the group is gone, and Bundt waits for it",by-design
+aws,autoscaling,traffic_source_attachments,"map(object({traffic_source_identifier, traffic_source_type}))",partial,"accepted as the group's trafficSources, which ACK sets when it creates the group: UpdateAutoScalingGroup has no traffic sources and ACK does not attach or detach them, so a change after creation is not applied",gap
+aws,autoscaling,update_default_version,bool,partial,"accepted unset or false; true is refused: ACK's LaunchTemplate makes a new version on a change and moves the default only to default_version, with no field to follow the latest",gap
+aws,autoscaling,use_mixed_instances_policy,bool,yes,,
+aws,autoscaling,use_name_prefix,bool,partial,"accepted: true (the default) names the group name as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' groups apart",gap
+aws,autoscaling,user_data,string,yes,,
+aws,autoscaling,vpc_zone_identifier,list(string),yes,,
+aws,autoscaling,wait_for_capacity_timeout,string,no,"a Terraform wait for capacity: ACK does not wait, and Bundt reads the group's conditions",by-design
+aws,autoscaling,wait_for_elb_capacity,number,no,"a Terraform wait for healthy load balancer instances: ACK does not wait, and Bundt reads the group's conditions",by-design
+aws,autoscaling,warm_pool,"object({instance_reuse_policy, max_group_prepared_capacity, min_size, pool_state})",partial,WarmPool is an ack-extensions Cloud Control kind (ACK's AutoScalingGroup has no warm pool field): needs allow_alpha: true,alpha
 aws,secrets-manager,block_public_policy,bool,yes,,
 aws,secrets-manager,create,bool,yes,,
 aws,secrets-manager,create_policy,bool,yes,,
@@ -3032,8 +3032,8 @@ aws,sns,tracing_config,string,yes,,
 aws,sns,use_name_prefix,bool,no,a topic name with Terraform's random suffix (name_prefix) would change between renders; set name (the namePrefix value keeps two Instances' topics apart),gap
 aws,elasticache,apply_immediately,bool,partial,"accepted unset or true; false is refused: ACK's elasticache-controller v1.12.0 applies every change immediately, with no field to wait for the maintenance window",gap
 aws,elasticache,at_rest_encryption_enabled,bool,yes,,
-aws,elasticache,auth_token,string,no,"a password is never a value: ACK's ReplicationGroup takes its auth token from a Kubernetes Secret (spec.authToken), which the chart does not make yet; user_group_ids (RBAC) is carried",by-design
-aws,elasticache,auth_token_update_strategy,string,no,"used only with auth_token, which is refused; ACK's ReplicationGroup has no field for it",gap
+aws,elasticache,auth_token,string,partial,"auth_token is a reference to a Kubernetes Secret, {secretName, key}, rendered as ReplicationGroup's spec.authToken (ACK's SecretKeyReference; docs/secrets.md); the token itself, a string, is refused: it would be in the rendered manifest",by-design
+aws,elasticache,auth_token_update_strategy,string,partial,"accepted unset or ROTATE; SET and DELETE are refused: ACK's ReplicationGroup (elasticache-controller v1.12.0) has no field for the strategy and sends a changed token without one, which ElastiCache treats as ROTATE",gap
 aws,elasticache,auto_minor_version_upgrade,bool,yes,,
 aws,elasticache,automatic_failover_enabled,bool,yes,,
 aws,elasticache,availability_zone,string,yes,,

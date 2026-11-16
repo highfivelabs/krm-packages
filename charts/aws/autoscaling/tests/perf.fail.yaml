@@ -1,0 +1,7 @@
+# expect: autoscaling: network_performance_options is not supported
+name: x
+min_size: 0
+max_size: 1
+vpc_zone_identifier: [subnet-1]
+image_id: ami-1
+network_performance_options: {bandwidth_weighting: vpc-1}

@@ -1,0 +1,371 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values mirror the Terraform variables of terraform-aws-modules' autoscaling
+# module (v9.3.2): same names, types and defaults, so a module block's
+# arguments become a values file one to one. values.schema.json carries the
+# types. A variable the chart cannot carry stays here and stops the render
+# when set (upstream.yaml lists them; README.md says why).
+
+# Names, labels and tags (docs/design.md, "Names, labels and tags"). Not
+# Terraform variables, except tags, which is the module's own.
+#
+# Names in full: {autoScalingGroup, launchTemplate, iamRole,
+# instanceProfile}. A name set here takes no namePrefix. Unset, the group
+# is named name, the launch template launch_template_name (else name), the
+# role iam_instance_profile_name (else iam_role_name) and the instance
+# profile iam_role_name, as the module names them.
+names: {}
+# An optional convenience: "<namePrefix>-" in front of every name the chart
+# gives (never one set under names). Empty (the default) changes nothing.
+namePrefix: ""
+# Kubernetes labels on every object. They stay in Kubernetes: ACK does not
+# copy labels to AWS (AWS tags are the module's tags variable).
+labels: {}
+# The scaling policies (ScalingPolicy), scheduled actions (ScheduledAction)
+# and warm pool (WarmPool, Cloud Control) are ack-extensions kinds, outside
+# ACK's releases: each needs allow_alpha: true (docs/design.md, "Alpha
+# kinds").
+allow_alpha: false
+# DELETE (default): deleting the component deletes the group, its launch
+# template and IAM role. ABANDON keeps them (services.k8s.aws/deletion-policy:
+# retain).
+deletion_policy: DELETE
+
+# The module's variables, in its order, with its defaults.
+
+# Determines whether to create autoscaling group or not
+create: true
+# Region where the resource(s) will be managed. Defaults to the Region set
+# in the provider configuration
+region: null
+# A map of tags to assign to resources
+tags: {}
+
+# Autoscaling group
+
+# A list of Availability Zones where instances in the Auto Scaling group can
+# be created. Used for launching into the default VPC subnet in each
+# Availability Zone when not using the `vpc_zone_identifier` attribute, or
+# for attaching a network interface when an existing network interface ID is
+# specified in a launch template. Conflicts with `vpc_zone_identifier`
+availability_zones: null
+# A map of configuration for capacity distribution across availability zones
+availability_zone_distribution: null
+# Indicates whether capacity rebalance is enabled
+capacity_rebalance: null
+# Reserved
+# Not supported (gap): ACK's AutoScalingGroup has no context field.
+context: null
+# The amount of time, in seconds, after a scaling activity completes before
+# another scaling activity can start
+default_cooldown: null
+# Amount of time, in seconds, until a newly launched instance can contribute
+# to the Amazon CloudWatch metrics. This delay lets an instance finish
+# initializing before Amazon EC2 Auto Scaling aggregates instance metrics,
+# resulting in more reliable usage data. Set this value equal to the amount
+# of time that it takes for resource consumption to become stable after an
+# instance reaches the InService state.
+default_instance_warmup: null
+# The number of Amazon EC2 instances that should be running in the
+# autoscaling group
+desired_capacity: null
+# The unit of measurement for the value specified for desired_capacity.
+# Supported for attribute-based instance type selection only. Valid values:
+# `units`, `vcpu`, `memory-mib`.
+desired_capacity_type: null
+# A list of metrics to collect. The allowed values are
+# `GroupDesiredCapacity`, `GroupInServiceCapacity`, `GroupPendingCapacity`,
+# `GroupMinSize`, `GroupMaxSize`, `GroupInServiceInstances`,
+# `GroupPendingInstances`, `GroupStandbyInstances`, `GroupStandbyCapacity`,
+# `GroupTerminatingCapacity`, `GroupTerminatingInstances`,
+# `GroupTotalCapacity`, `GroupTotalInstances`
+# Not supported (gap): no field for metrics collection on ACK's AutoScalingGroup.
+enabled_metrics: []
+# Allows deleting the Auto Scaling Group without waiting for all instances
+# in the pool to terminate. You can force an Auto Scaling Group to delete
+# even if it's in the process of scaling a resource. Normally, Terraform
+# drains all the instances before deleting the group. This bypasses that
+# behavior and potentially leaves resources dangling
+# Accepted in part (gap): ACK always deletes the group with ForceDelete.
+force_delete: null
+# Allows deleting the Auto Scaling Group without waiting for all instances
+# in the warm pool to terminate
+# Not supported (gap): ack-extensions' WarmPool has no force delete.
+force_delete_warm_pool: null
+# Time (in seconds) after instance comes into service before checking health
+health_check_grace_period: null
+# `EC2` or `ELB`. Controls how health checking is done
+health_check_type: null
+# Whether to ignore failed Auto Scaling scaling activities while waiting for
+# capacity. The default is false -- failed scaling activities cause errors
+# to be returned.
+# Not supported (by-design): a Terraform wait; Bundt reads the conditions.
+ignore_failed_scaling_activities: false
+# Determines whether the `desired_capacity` value is ignored after initial
+# apply. See README note for more details
+# Accepted in part (gap): true only without desired_capacity (ACK keeps
+# writing desiredCapacity).
+ignore_desired_capacity_changes: false
+# One or more Lifecycle Hooks to attach to the Auto Scaling Group before
+# instances are launched. The syntax is exactly the same as the separate
+# `aws_autoscaling_lifecycle_hook` resource, without the
+# `autoscaling_group_name` attribute. Please note that this will only work
+# when creating a new Auto Scaling Group. For all other use-cases, please
+# use `aws_autoscaling_lifecycle_hook` resource
+# Set when ACK creates the group (lifecycleHookSpecificationList).
+initial_lifecycle_hooks: null
+# If this block is configured, add a instance maintenance policy to the
+# specified Auto Scaling group
+instance_maintenance_policy: null
+# If this block is configured, adds an instance lifecycle policy to the
+# specified Auto Scaling Group
+instance_lifecycle_policy: null
+# If this block is configured, start an Instance Refresh when this Auto
+# Scaling Group is updated
+# Not supported (gap): no field or kind for instance refreshes.
+instance_refresh: null
+# ID of an existing launch template to be used (created outside of this
+# module)
+# Not supported (gap): ACK's AutoScalingGroup names its launch template;
+# with create_launch_template: false set launch_template_name instead.
+launch_template_id: null
+# Launch template version. Can be version number, `$Latest`, or `$Default`
+launch_template_version: null
+# The maximum amount of time, in seconds, that an instance can be in
+# service, values must be either equal to 0 or between 86400 and 31536000
+# seconds
+max_instance_lifetime: null
+# The maximum size of the autoscaling group
+max_size: null
+# The granularity to associate with the metrics to collect. The only valid
+# value is `1Minute`
+# Not supported (gap): used only with enabled_metrics.
+metrics_granularity: null
+# Setting this causes Terraform to wait for this number of instances to show
+# up healthy in the ELB only on creation. Updates will not wait on ELB
+# instance number changes
+# Not supported (by-design): a Terraform wait.
+min_elb_capacity: null
+# The minimum size of the autoscaling group
+min_size: null
+# Determines whether to use a mixed instances policy in the autoscaling
+# group or not
+use_mixed_instances_policy: false
+# Configuration block containing settings to define launch targets for Auto
+# Scaling groups
+# An override's launch_template_specification.launch_template_id is not
+# supported (gap): set launch_template_name.
+mixed_instances_policy: null
+# Name used across the resources created (required)
+name: ""
+# Determines whether to use `name` as is or create a unique name beginning
+# with the `name` as the prefix
+# Accepted in part (gap): true names the group name as given, with no
+# random suffix (the namePrefix value keeps two Instances apart).
+use_name_prefix: true
+# The name of the placement group into which you'll launch your instances,
+# if any
+placement_group: null
+# Allows setting instance protection. The autoscaling group will not select
+# instances with this setting for termination during scale in events.
+protect_from_scale_in: false
+# The ARN of the service-linked role that the ASG will use to call other AWS
+# services
+service_linked_role_arn: null
+# A list of processes to suspend for the Auto Scaling Group. The allowed
+# values are `Launch`, `Terminate`, `HealthCheck`, `ReplaceUnhealthy`,
+# `AZRebalance`, `AlarmNotification`, `ScheduledActions`,
+# `AddToLoadBalancer`, `InstanceRefresh`. Note that if you suspend either
+# the `Launch` or `Terminate` process types, it can prevent your Auto
+# Scaling Group from functioning properly
+# Not supported (gap): no field for suspended processes.
+suspended_processes: []
+# A map of additional tags to add to the autoscaling group
+autoscaling_group_tags: {}
+# A list of tag keys that should NOT be propagated to launched EC2 instances
+# ACK's group tags never propagate: the chart propagates the others through
+# its launch template's instance tag specification.
+autoscaling_group_tags_not_propagate_at_launch: []
+# Name that is propogated to launched EC2 instances via a tag - if not
+# provided, defaults to `var.name`
+instance_name: ""
+# A list of policies to decide how the instances in the Auto Scaling Group
+# should be terminated. The allowed values are `OldestInstance`,
+# `NewestInstance`, `OldestLaunchConfiguration`,
+# `ClosestToNextInstanceHour`, `OldestLaunchTemplate`, `AllocationStrategy`,
+# `Default`
+termination_policies: []
+# A list of subnet IDs to launch resources in. Subnets automatically
+# determine which availability zones the group will reside. Conflicts with
+# `availability_zones`
+vpc_zone_identifier: null
+# A maximum duration that Terraform should wait for ASG instances to be
+# healthy before timing out. (See also Waiting for Capacity below.) Setting
+# this to '0' causes Terraform to skip all Capacity Waiting behavior.
+# Not supported (by-design): a Terraform wait.
+wait_for_capacity_timeout: null
+# Setting this will cause Terraform to wait for exactly this number of
+# healthy instances in all attached load balancers on both create and update
+# operations. Takes precedence over `min_elb_capacity` behavior.
+# Not supported (by-design): a Terraform wait.
+wait_for_elb_capacity: null
+# If this block is configured, add a Warm Pool to the specified Auto Scaling
+# group
+# An ack-extensions kind (WarmPool, Cloud Control): needs allow_alpha: true.
+warm_pool: null
+# Timeout configurations for the autoscaling group
+# Not supported (by-design): ACK retries until the group is gone.
+timeouts: null
+
+# Launch template
+
+# Determines whether to create launch template or not
+# With false, the group's tags do not reach its instances (ACK's group tags
+# never propagate at launch), and launch_template_name names the template.
+create_launch_template: true
+# Specify volumes to attach to the instance besides the volumes specified by
+# the AMI
+# Each ebs.volume_initialization_rate is not supported (gap).
+block_device_mappings: null
+# Targeting for EC2 capacity reservations
+capacity_reservation_specification: null
+# The CPU options for the instance
+cpu_options: null
+# Customize the credit specification of the instance
+credit_specification: null
+# Default Version of the launch template
+default_version: null
+# Description of the launch template
+launch_template_description: null
+# If true, enables EC2 instance stop protection
+disable_api_stop: null
+# If true, enables EC2 instance termination protection
+disable_api_termination: null
+# If true, the launched EC2 instance will be EBS-optimized
+ebs_optimized: null
+# Enable Nitro Enclaves on launched instances
+enclave_options: null
+# The hibernation options for the instance
+hibernation_options: null
+# The AMI from which to launch the instance
+image_id: null
+# Shutdown behavior for the instance. Can be `stop` or `terminate`.
+# (Default: `stop`)
+instance_initiated_shutdown_behavior: null
+# The market (purchasing) option for the instance
+instance_market_options: null
+# The attribute requirements for the type of instance. If present then
+# `instance_type` cannot be present
+instance_requirements: null
+# The type of the instance. If present then `instance_requirements` cannot
+# be present
+instance_type: null
+# The kernel ID
+kernel_id: null
+# The key name that should be used for the instance
+key_name: null
+# A list of license specifications to associate with
+license_specifications: null
+# Name of launch template to be created
+# With create_launch_template: false, the name of the existing template.
+launch_template_name: ""
+# Determines whether to use `launch_template_name` as is or create a unique
+# name beginning with the `launch_template_name` as the prefix
+# Accepted in part (gap): true names the template as given, with no random
+# suffix.
+launch_template_use_name_prefix: true
+# The maintenance options for the instance
+maintenance_options: null
+# Customize the metadata options for the instance
+metadata_options:
+  http_endpoint: enabled
+  http_put_response_hop_limit: 1
+  http_tokens: required
+# Enables/disables detailed monitoring
+enable_monitoring: true
+# Customize network interfaces to be attached at instance boot time
+# connection_tracking_specification and ena_srd_specification are not
+# supported (gap): ACK's LaunchTemplate has no fields for them.
+network_interfaces: null
+# The network performance options for the launch template
+# Not supported (gap): no field on ACK's LaunchTemplate.
+network_performance_options: null
+# The placement of the instance
+placement: null
+# The options for the instance hostname. The default values are inherited
+# from the subnet
+private_dns_name_options: null
+# The ID of the ram disk
+ram_disk_id: null
+# Secondary interfaces to associate with instances launched from the
+# template
+# Not supported (gap): no field on ACK's LaunchTemplate.
+secondary_interfaces: null
+# The tags to apply to the resources during launch
+tag_specifications: null
+# Whether to update Default Version each update. Conflicts with
+# `default_version`
+# Accepted in part (gap): true is not supported; ACK moves the default
+# version only to default_version.
+update_default_version: null
+# The Base64-encoded user data to provide when launching the instance
+user_data: null
+# A list of security group IDs to associate
+security_groups: []
+# A map of additional tags to add to the launch template
+launch_template_tags: {}
+
+# Autoscaling group traffic source attachment
+
+# Map of traffic source attachment definitions to create
+# Set when ACK creates the group (trafficSources): a later change is not
+# applied.
+traffic_source_attachments: null
+
+# Autoscaling group schedule
+
+# Map of autoscaling group schedule to create
+# An ack-extensions kind (ScheduledAction): needs allow_alpha: true.
+schedules: null
+
+# Autoscaling policy
+
+# Map of target scaling policy schedule to create
+# An ack-extensions kind (ScalingPolicy): needs allow_alpha: true.
+scaling_policies: null
+
+# IAM Role / Instance Profile
+
+# Determines whether an IAM instance profile is created or to use an
+# existing IAM instance profile
+create_iam_instance_profile: false
+# Amazon Resource Name (ARN) of an existing IAM instance profile. Used when
+# `create_iam_instance_profile` = `false`
+iam_instance_profile_arn: null
+# The name of the IAM instance profile to be created
+# (`create_iam_instance_profile` = `true`) or existing
+# (`create_iam_instance_profile` = `false`)
+iam_instance_profile_name: null
+# Name to use on IAM role created
+iam_role_name: null
+# Determines whether the IAM role name (`iam_role_name`) is used as a prefix
+# Accepted in part (gap): true names the role and profile as given, with no
+# random suffix.
+iam_role_use_name_prefix: true
+# IAM role path
+iam_role_path: null
+# Description of the role
+iam_role_description: null
+# ARN of the policy that is used to set the permissions boundary for the IAM
+# role
+iam_role_permissions_boundary: null
+# IAM policies to attach to the IAM role
+iam_role_policies: {}
+# A map of additional tags to add to the IAM role created
+iam_role_tags: {}
+# Do you agree that Putin doesn't respect Ukrainian sovereignty and
+# territorial integrity? More info:
+# https://en.wikipedia.org/wiki/Putin_khuylo!
+# Kept from the module: false renders nothing, as create: false.
+putin_khuylo: true

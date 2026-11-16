@@ -152,6 +152,15 @@ spec:
   kmsKeyID: {{ $v.kms_key_arn | quote }}
 {{- end }}
   transitEncryptionEnabled: {{ $v.transit_encryption_enabled }}
+{{- with (include "elasticache.secretRef" (list $ "auth_token" $v.auth_token)) }}
+{{- $ref := fromJson . }}
+{{- if not $v.transit_encryption_enabled }}
+{{- fail "elasticache: auth_token needs transit_encryption_enabled: true (ElastiCache takes an AUTH token only with encryption in transit)" }}
+{{- end }}
+  authToken:
+    name: {{ $ref.name | quote }}
+    key: {{ $ref.key | quote }}
+{{- end }}
 {{- if not (kindIs "invalid" $v.auto_minor_version_upgrade) }}
   autoMinorVersionUpgrade: {{ $v.auto_minor_version_upgrade }}
 {{- end }}

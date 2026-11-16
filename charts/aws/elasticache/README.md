@@ -69,9 +69,21 @@ Refused (`upstream.yaml`):
   `global_replication_group_id`, `global_replication_group_id_suffix`: no
   `GlobalReplicationGroup` kind (ACK's elasticache-controller pull request
   #237), and no field on `ReplicationGroup` to join one.
-- `auth_token`, `auth_token_update_strategy`: a password is never a value;
-  ACK takes the token from a Kubernetes Secret, which the chart does not
-  make yet. `user_group_ids` (RBAC) is carried.
+- `auth_token` as a string: the token is never a value. Set it to a
+  reference to a Kubernetes Secret in the component's namespace,
+  `{secretName, key}` (`docs/secrets.md`), rendered as the replication
+  group's `authToken` (ACK's `SecretKeyReference`); it needs
+  `transit_encryption_enabled: true`. Rotation is limited by ACK
+  (elasticache-controller v1.12.0): it sees no change when the Secret's
+  value or the reference changes (AWS never returns the token, so ACK
+  keeps the desired reference as the live one), and it sends the Secret's
+  current value with every other change it makes to the replication group
+  (`ModifyReplicationGroup`, strategy unset, so ElastiCache rotates to it).
+  A new token reaches ElastiCache on the group's next change, not by
+  itself (`docs/aws.md`, gaps). `user_group_ids` (RBAC) is carried too.
+- `auth_token_update_strategy: SET` or `DELETE`: ACK's `ReplicationGroup`
+  has no field for it and sends a changed token without a strategy, which
+  ElastiCache treats as `ROTATE`; unset or `ROTATE` is accepted.
 - `apply_immediately: false`: ACK applies every change immediately.
 - `final_snapshot_identifier`, `transit_encryption_mode`, `cluster_mode`:
   no field on ACK's kinds; `cluster_mode_enabled` is carried.

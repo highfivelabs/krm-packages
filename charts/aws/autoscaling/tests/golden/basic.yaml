@@ -1,0 +1,65 @@
+---
+# Source: autoscaling/templates/autoscaling-group.yaml
+apiVersion: autoscaling.services.k8s.aws/v1alpha1
+kind: AutoScalingGroup
+metadata:
+  name: basic-autoscaling-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: autoscaling
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "autoscaling-group"
+spec:
+  name: "web"
+  minSize: 1
+  maxSize: 3
+  desiredCapacity: 2
+  vpcZoneIdentifier: "subnet-0123456789abcdef0,subnet-0123456789abcdef1"
+  healthCheckType: "EC2"
+  launchTemplate:
+    launchTemplateName: web
+    version: $Latest
+  newInstancesProtectedFromScaleIn: false
+  tags:
+    - key: "Name"
+      value: "web"
+    - key: "team"
+      value: "web"
+---
+# Source: autoscaling/templates/launch-template.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: LaunchTemplate
+metadata:
+  name: basic-launch-template
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: autoscaling
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "launch-template"
+spec:
+  name: "web"
+  data:
+    imageID: ami-0123456789abcdef0
+    instanceType: t3.micro
+    metadataOptions:
+      httpEndpoint: enabled
+      httpPutResponseHopLimit: 1
+      httpTokens: required
+    monitoring:
+      enabled: true
+    securityGroupIDs:
+    - sg-0123456789abcdef0
+    tagSpecifications:
+    - resourceType: instance
+      tags:
+      - key: Name
+        value: web
+      - key: team
+        value: web
+  tags:
+    - key: "team"
+      value: "web"

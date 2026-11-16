@@ -1,0 +1,16 @@
+# Every names key, labels and tags (docs/design.md, "Names, labels and tags").
+name: shop-web
+names:
+  autoScalingGroup: shop-dev-euw1-web
+  launchTemplate: shop-dev-euw1-web-lt
+  iamRole: shop-dev-euw1-web
+  instanceProfile: shop-dev-euw1-web-profile
+labels: {hfl.dev/team: shop}
+tags: {team: shop}
+min_size: 1
+max_size: 2
+vpc_zone_identifier: [subnet-0123456789abcdef0]
+image_id: ami-0123456789abcdef0
+instance_type: t3.micro
+create_iam_instance_profile: true
+iam_role_name: shop-web
