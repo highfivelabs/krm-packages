@@ -38,6 +38,7 @@ policies:
         effect: Allow
         actions:
           - application-autoscaling:DeleteScheduledAction
+          - application-autoscaling:DeregisterScalableTarget
           - application-autoscaling:DescribeScheduledActions
           - application-autoscaling:PutScheduledAction
           - application-autoscaling:RegisterScalableTarget
@@ -164,6 +165,9 @@ policies:
         actions:
           - ecs:CreateCluster
           - ecs:CreateService
+          - ecs:DeleteCluster
+          - ecs:DeleteService
+          - ecs:DeregisterTaskDefinition
           - ecs:RegisterTaskDefinition
         resources: ['*']
       - sid: ServiceElasticloadbalancing
@@ -198,30 +202,43 @@ policies:
           - iam:CreateServiceLinkedRole
           - iam:CreateUser
           - iam:CreateVirtualMFADevice
+          - iam:DeactivateMFADevice
           - iam:DeleteAccessKey
           - iam:DeleteAccountAlias
           - iam:DeleteAccountPasswordPolicy
+          - iam:DeleteGroup
           - iam:DeleteLoginProfile
+          - iam:DeletePolicy
+          - iam:DeletePolicyVersion
           - iam:DeleteRole
           - iam:DeleteSAMLProvider
           - iam:DeleteSSHPublicKey
+          - iam:DeleteUser
           - iam:DeleteVirtualMFADevice
+          - iam:DetachGroupPolicy
           - iam:DetachRolePolicy
+          - iam:DetachUserPolicy
           - iam:GetAccountPasswordPolicy
+          - iam:GetGroup
           - iam:GetLoginProfile
           - iam:GetSAMLProvider
           - iam:GetSSHPublicKey
           - iam:ListAccessKeys
           - iam:ListAccountAliases
+          - iam:ListAttachedGroupPolicies
           - iam:ListAttachedRolePolicies
+          - iam:ListAttachedUserPolicies
           - iam:ListGroups
           - iam:ListGroupsForUser
+          - iam:ListMFADevices
           - iam:ListPolicies
+          - iam:ListPolicyVersions
           - iam:ListRolePolicies
           - iam:ListRoleTags
           - iam:ListRoles
           - iam:ListSAMLProviderTags
           - iam:ListSAMLProviders
+          - iam:ListSSHPublicKeys
           - iam:ListUserTags
           - iam:ListUsers
           - iam:ListVirtualMFADevices
@@ -236,6 +253,9 @@ policies:
           - iam:UpdateSSHPublicKey
           - iam:UploadSSHPublicKey
         resources: ['*']
+  part-2:
+    description: ack-extensions live tests, part 2
+    statements:
       - sid: ServiceKms
         effect: Allow
         actions:
@@ -264,6 +284,7 @@ policies:
           - lambda:AddPermission
           - lambda:CreateAlias
           - lambda:CreateFunction
+          - lambda:DeleteFunction
           - lambda:GetPolicy
           - lambda:PublishVersion
           - lambda:RemovePermission
@@ -275,9 +296,6 @@ policies:
           - logs:DeleteLogGroup
           - logs:DescribeLogGroups
         resources: ['*']
-  part-2:
-    description: ack-extensions live tests, part 2
-    statements:
       - sid: ServiceRds
         effect: Allow
         actions:
@@ -470,6 +488,9 @@ policies:
         actions:
           - tag:GetResources
         resources: ['*']
+  part-3:
+    description: ack-extensions live tests, part 3
+    statements:
       - sid: ServiceWafv2
         effect: Allow
         actions:

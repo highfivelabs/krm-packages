@@ -95,7 +95,11 @@ objects `ACK.ResourceSynced`. A `Policy` is adopted by its ARN, not its
 name: each carries `services.k8s.aws/adoption-fields: {"arn": ...}` beside
 `adopt-or-create` (without it ACK called `CreatePolicy` and was refused
 `EntityAlreadyExists`). Applied a third time the same day, with the
-actions the tests' fixture clean-ups and Auto Scaling groups need.
+actions the tests' fixture clean-ups and Auto Scaling groups need, and
+a fourth with the IAM, ECS and Lambda clean-ups, which take a third
+policy, `part-3` (ack-extensions now splits the policies to 5,900
+characters: this chart renders a document longer than ack-extensions
+measures it).
 
 `tests/ack-extensions-live-tests.values.yaml` is the instance for
 ack-extensions' live tests: the role `ack-extensions-live-tests` in the AWS
@@ -117,7 +121,7 @@ Its `policies` are ack-extensions' generated
 `cloudcontrol/config/live/role-policies.yaml`, statement for statement:
 the Cloud Control kinds sampled on live runs (`liveKinds`), the sweeper,
 the tests' fixtures, and (since 2026-11-16, HFL-623) the ACK-kind suite's
-calls, which take a second policy, `part-2`. When those change there, the
+calls, which take more policies (`part-2`, `part-3`). When those change there, the
 statements are copied here and the instance is applied again through ACK
 the way it was adopted (`adoption-policy: adopt-or-create` on every object,
 and `adoption-fields` with the ARN on each existing `Policy`, so the role
