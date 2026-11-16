@@ -1,0 +1,239 @@
+---
+# Source: eventbridge/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: mock-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "role"
+spec:
+  name: "catalog-bus"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"events.amazonaws.com\"]}}],\"Version\":\"2012-10-17\"}"
+  policyRefs:
+    - from:
+        name: mock-policy-sqs
+  tags:
+    - key: "Name"
+      value: "catalog-bus"
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: eventbridge/templates/pipes.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: mock-pipe-role-forward
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "role-pipe-forward"
+spec:
+  name: "forward"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Condition\":{\"StringEquals\":{\"aws:SourceAccount\":[\"000000000000\"],\"aws:SourceArn\":[\"arn:aws:pipes:us-east-1:000000000000:pipe/forward-pipe\"]}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"pipes.amazonaws.com\"]}}],\"Version\":\"2012-10-17\"}"
+  policyRefs:
+    - from:
+        name: mock-pipe-policy-forward
+  tags:
+    - key: "Name"
+      value: "forward"
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: eventbridge/templates/bus.yaml
+apiVersion: eventbridge.services.k8s.aws/v1alpha1
+kind: Archive
+metadata:
+  name: mock-archive-all
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "archive-all"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "all"
+  eventSourceRef:
+    from:
+      name: mock-bus
+  retentionDays: 1
+---
+# Source: eventbridge/templates/bus.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: Delivery
+metadata:
+  name: mock-log-delivery-cloudwatch-logs-4c459821
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-delivery-cloudwatch_logs"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  deliverySourceRef:
+    from:
+      name: mock-log-source
+  deliveryDestinationRef:
+    from:
+      name: mock-log-destination-cloudwatch-logs-e3285d14
+  tags:
+    "catalog-test": "true"
+---
+# Source: eventbridge/templates/bus.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: DeliveryDestination
+metadata:
+  name: mock-log-destination-cloudwatch-logs-e3285d14
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-destination-cloudwatch_logs"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "catalog-bus-cloudwatch_logs"
+  deliveryDestinationConfiguration:
+    destinationResourceARN: "set-by-mock-set-yaml"
+  tags:
+    "catalog-test": "true"
+---
+# Source: eventbridge/templates/bus.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: DeliverySource
+metadata:
+  name: mock-log-source
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-source"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "catalog-bus"
+  logType: ERROR_LOGS
+  resourceARN: "arn:aws:events:us-east-1:000000000000:event-bus/catalog-bus"
+  tags:
+    "catalog-test": "true"
+---
+# Source: eventbridge/templates/bus.yaml
+apiVersion: eventbridge.services.k8s.aws/v1alpha1
+kind: EventBus
+metadata:
+  name: mock-bus
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "bus"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "catalog-bus"
+  policy: "{\"Statement\":[{\"Action\":\"events:PutEvents\",\"Condition\":{\"StringEquals\":{\"aws:PrincipalOrgID\":\"o-catalogtest\"}},\"Effect\":\"Allow\",\"Principal\":\"*\",\"Resource\":\"arn:aws:events:us-east-1:000000000000:event-bus/catalog-bus\",\"Sid\":\"AnyoneInTheOrg\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: eventbridge/templates/pipes.yaml
+apiVersion: pipes.services.k8s.aws/v1alpha1
+kind: Pipe
+metadata:
+  name: mock-pipe-forward
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "pipe-forward"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "forward-pipe"
+  roleRef:
+    from:
+      name: mock-pipe-role-forward
+  source: "set-by-mock-set-yaml"
+  target: "set-by-mock-set-yaml"
+  tags:
+    "catalog-test": "true"
+---
+# Source: eventbridge/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: mock-policy-sqs
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy-sqs"
+spec:
+  name: "catalog-bus-sqs"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"sqs:SendMessage*\",\"kms:Decrypt\",\"kms:GenerateDataKey\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"SQSAccess\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "Name"
+      value: "catalog-bus-sqs"
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: eventbridge/templates/pipes.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: mock-pipe-policy-forward
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy-pipe-forward"
+spec:
+  name: "forward-forward"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"events:InvokeApiDestination\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"ForwardApiDestination\"},{\"Action\":[\"execute-api:Invoke\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"ForwardApiGateway\"},{\"Action\":[\"batch:SubmitJob\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"ForwardBatch\"},{\"Action\":[\"dynamodb:DescribeStream\",\"dynamodb:GetRecords\",\"dynamodb:GetShardIterator\",\"dynamodb:ListStreams\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"ForwardDynamodb\"},{\"Action\":[\"ecs:RunTask\",\"ecs:TagResource\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"ForwardEcs\"},{\"Action\":[\"iam:PassRole\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"ForwardEcsIamPassrole\"},{\"Action\":[\"events:PutEvents\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"ForwardEventbridge\"},{\"Action\":[\"firehose:PutRecord\",\"firehose:PutRecordBatch\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"ForwardFirehose\"},{\"Action\":[\"inspector:CreateAssessmentTemplate\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"ForwardInspector\"},{\"Action\":[\"kinesis:DescribeStream\",\"kinesis:DescribeStreamSummary\",\"kinesis:GetRecords\",\"kinesis:GetShardIterator\",\"kinesis:ListShards\",\"kinesis:ListStreams\",\"kinesis:SubscribeToShard\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"ForwardKinesisSource\"},{\"Action\":[\"kinesis:PutRecord\",\"kinesis:PutRecords\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"ForwardKinesisTarget\"},{\"Action\":[\"lambda:InvokeFunction\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"ForwardLambda\"},{\"Action\":[\"logs:DescribeLogGroups\",\"logs:DescribeLogStreams\",\"logs:CreateLogStream\",\"logs:PutLogEvents\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml:*\"],\"Sid\":\"ForwardLogs\"},{\"Action\":[\"mq:DescribeBroker\",\"secretsmanager:GetSecretValue\",\"ec2:CreateNetworkInterface\",\"ec2:DeleteNetworkInterface\",\"ec2:DescribeNetworkInterfaces\",\"ec2:DescribeSecurityGroups\",\"ec2:DescribeSubnets\",\"ec2:DescribeVpcs\",\"logs:CreateLogGroup\",\"logs:CreateLogStream\",\"logs:PutLogEvents\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"ForwardMq\"},{\"Action\":[\"kafka:DescribeClusterV2\",\"kafka:GetBootstrapBrokers\",\"ec2:CreateNetworkInterface\",\"ec2:DeleteNetworkInterface\",\"ec2:DescribeNetworkInterfaces\",\"ec2:DescribeSecurityGroups\",\"ec2:DescribeSubnets\",\"ec2:DescribeVpcs\",\"logs:CreateLogGroup\",\"logs:CreateLogStream\",\"logs:PutLogEvents\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"ForwardMsk\"},{\"Action\":[\"redshift-data:ExecuteStatement\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"ForwardRedshift\"},{\"Action\":[\"sagemaker:CreatePipeline\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"ForwardSagemaker\"},{\"Action\":[\"sns:Publish\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"ForwardSns\"},{\"Action\":[\"sqs:ReceiveMessage\",\"sqs:DeleteMessage\",\"sqs:GetQueueAttributes\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"ForwardSqsSource\"},{\"Action\":[\"sqs:SendMessage\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"ForwardSqsTarget\"},{\"Action\":[\"states:StartExecution\",\"states:StartSyncExecution\"],\"Effect\":\"Allow\",\"Resource\":[\"set-by-mock-set-yaml\"],\"Sid\":\"ForwardStepFunctions\"}],\"Version\":\"2012-10-17\"}"
+---
+# Source: eventbridge/templates/rules.yaml
+apiVersion: eventbridge.services.k8s.aws/v1alpha1
+kind: Rule
+metadata:
+  name: mock-rule-orders
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "rule-orders"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "orders-rule"
+  eventBusRef:
+    from:
+      name: mock-bus
+  eventPattern: "{\"source\":[\"catalog.orders\"]}"
+  targets:
+    - id: "set-by-mock-set-yaml"
+      arn: "set-by-mock-set-yaml"
+  tags:
+    - key: "Name"
+      value: "orders-rule"
+    - key: "catalog-test"
+      value: "true"

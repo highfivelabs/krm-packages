@@ -1,0 +1,14 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+The module variables this chart keeps in its values but cannot carry
+(upstream.yaml, "refused"): each stops the render, naming the gap, when it
+is set to anything but its Terraform default. Renders nothing. The ones
+refused in part are checked where they render.
+*/ -}}
+{{- include "ack.unsupported" (list $ "bus_description" .Values.bus_description "ACK's EventBus (eventbridge-controller v1.9.2) has no description field") }}
+{{- include "ack.unsupported" (list $ "dead_letter_config" .Values.dead_letter_config "ACK's EventBus (eventbridge-controller v1.9.2) has no deadLetterConfig field") }}
+{{- include "ack.unsupported" (list $ "kms_key_identifier" .Values.kms_key_identifier "ACK's EventBus (eventbridge-controller v1.9.2) has no kmsKeyIdentifier field") }}
+{{- include "ack.unsupported" (list $ "log_config" .Values.log_config "ACK's EventBus (eventbridge-controller v1.9.2) has no logConfig field") }}
+{{- include "ack.unsupported" (list $ "schedule_group_timeouts" .Values.schedule_group_timeouts "Terraform's create and delete timeouts: the ack-extensions controller retries until the schedule group is synced, and Bundt waits for it") }}

@@ -50,7 +50,7 @@ charts use are copied in `crds/ack-extensions`.
 | `ssm-controller` | `v1.8.0` | `d07ea0193aef939118ac220a60ff3d3f9d496f46` | Parameter |
 | `dynamodb-controller` | `v1.14.2` | `2fcea71a4f8d6049c9e03d729561a26735245346` | Table |
 | `sfn-controller` | `v1.9.1` | `8de3cc822d99a9fd8682789a21dd65acb0ecc3de` | StateMachine |
-| `cloudwatchlogs-controller` | `v1.10.0` | `01e3ea012e97a2bb079e8cd4c9c5036bb33ef217` | LogGroup |
+| `cloudwatchlogs-controller` | `v1.10.0` | `01e3ea012e97a2bb079e8cd4c9c5036bb33ef217` | LogGroup, DeliverySource, DeliveryDestination, Delivery |
 | `eks-controller` | `v1.26.0` | `2549d1be1a9f1841aaf3a4303a0d5696ea941473` | PodIdentityAssociation, Cluster, Nodegroup, FargateProfile, AccessEntry, Addon, IdentityProviderConfig |
 | `secretsmanager-controller` | `v1.8.2` | `dc099cdc08aa51b1914962010afaecbe018395f9` | Secret |
 | `ecr-controller` | `v1.11.1` | `72590cedeb2a4a92d086175762a97aa2ed2bc979` | Repository, PullThroughCacheRule |
@@ -58,6 +58,8 @@ charts use are copied in `crds/ack-extensions`.
 | `efs-controller` | `v1.8.0` | `1ebcaad2c889cf315a26b2f4925c1dc709655291` | FileSystem, MountTarget, AccessPoint |
 | `autoscaling-controller` | `v1.6.0` | `599c0339c8105c31e24a3d27a0df5ccc504559fa` | AutoScalingGroup |
 | `applicationautoscaling-controller` | `v1.9.0` | `009baef3a28e7d8a49a61c520eb6c537c674d52b` | ScalableTarget, ScalingPolicy |
+| `eventbridge-controller` | `v1.9.2` | `fd084a0bb4d9025f294516d6319b88293be1de8d` | EventBus, Rule, Archive |
+| `pipes-controller` | `v1.8.0` | `08b598079c257477d9e332353a78a01290454852` | Pipe |
 
 To move a controller: change its row, run `task test` (it re-fetches the
 CRDs and re-validates every AWS render), and re-read the gaps in

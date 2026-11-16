@@ -25,3 +25,8 @@ only with `allow_alpha: true` (`docs/design.md`, "Alpha kinds";
 | `autoscaling.aws.hfl.dev_scalingpolicies.yaml` | `ScalingPolicy` (`autoscaling.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `2cdca6ca` (2026-11-16) |
 | `autoscaling.aws.hfl.dev_scheduledactions.yaml` | `ScheduledAction` (`autoscaling.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `2cdca6ca` (2026-11-16) |
 | `autoscaling.cloudcontrol.aws.hfl.dev_warmpools.yaml` | `WarmPool` (`autoscaling.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `2cdca6ca` (2026-11-16) |
+| `eventbridge.aws.hfl.dev_connections.yaml` | `Connection` (`eventbridge.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `2cdca6ca` (2026-11-16) |
+| `eventbridge.aws.hfl.dev_apidestinations.yaml` | `APIDestination` (`eventbridge.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `2cdca6ca` (2026-11-16) |
+| `scheduler.aws.hfl.dev_schedulegroups.yaml` | `ScheduleGroup` (`scheduler.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `2cdca6ca` (2026-11-16) |
+| `scheduler.aws.hfl.dev_schedules.yaml` | `Schedule` (`scheduler.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `2cdca6ca` (2026-11-16) |
+| `eventschemas.cloudcontrol.aws.hfl.dev_discoverers.yaml` | `Discoverer` (`eventschemas.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `2cdca6ca` (2026-11-16) |

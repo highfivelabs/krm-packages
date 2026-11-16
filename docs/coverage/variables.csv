@@ -2640,89 +2640,89 @@ aws,dynamodb-table,ttl_attribute_name,string,yes,,
 aws,dynamodb-table,ttl_enabled,bool,yes,,
 aws,dynamodb-table,warm_throughput,any,no,ACK's Table (dynamodb-controller v1.14.2) has no warm throughput field,gap
 aws,dynamodb-table,write_capacity,number,yes,,
-aws,eventbridge,api_destinations,map(any),no,,no-chart
-aws,eventbridge,append_connection_postfix,bool,no,,no-chart
-aws,eventbridge,append_destination_postfix,bool,no,,no-chart
-aws,eventbridge,append_pipe_postfix,bool,no,,no-chart
-aws,eventbridge,append_rule_postfix,bool,no,,no-chart
-aws,eventbridge,append_schedule_group_postfix,bool,no,,no-chart
-aws,eventbridge,append_schedule_postfix,bool,no,,no-chart
-aws,eventbridge,archives,map(any),no,,no-chart
-aws,eventbridge,attach_api_destination_policy,bool,no,,no-chart
-aws,eventbridge,attach_cloudwatch_policy,bool,no,,no-chart
-aws,eventbridge,attach_ecs_policy,bool,no,,no-chart
-aws,eventbridge,attach_kinesis_firehose_policy,bool,no,,no-chart
-aws,eventbridge,attach_kinesis_policy,bool,no,,no-chart
-aws,eventbridge,attach_lambda_policy,bool,no,,no-chart
-aws,eventbridge,attach_policies,bool,no,,no-chart
-aws,eventbridge,attach_policy,bool,no,,no-chart
-aws,eventbridge,attach_policy_json,bool,no,,no-chart
-aws,eventbridge,attach_policy_jsons,bool,no,,no-chart
-aws,eventbridge,attach_policy_statements,bool,no,,no-chart
-aws,eventbridge,attach_sfn_policy,bool,no,,no-chart
-aws,eventbridge,attach_sns_policy,bool,no,,no-chart
-aws,eventbridge,attach_sqs_policy,bool,no,,no-chart
-aws,eventbridge,attach_tracing_policy,bool,no,,no-chart
-aws,eventbridge,bus_description,string,no,,no-chart
-aws,eventbridge,bus_name,string,no,,no-chart
-aws,eventbridge,cloudwatch_target_arns,list(string),no,,no-chart
-aws,eventbridge,connections,any,no,,no-chart
-aws,eventbridge,create,bool,no,,no-chart
-aws,eventbridge,create_api_destinations,bool,no,,no-chart
-aws,eventbridge,create_archives,bool,no,,no-chart
-aws,eventbridge,create_bus,bool,no,,no-chart
-aws,eventbridge,create_connections,bool,no,,no-chart
-aws,eventbridge,create_log_delivery,bool,no,,no-chart
-aws,eventbridge,create_log_delivery_source,bool,no,,no-chart
-aws,eventbridge,create_permissions,bool,no,,no-chart
-aws,eventbridge,create_pipe_role_only,bool,no,,no-chart
-aws,eventbridge,create_pipes,bool,no,,no-chart
-aws,eventbridge,create_role,bool,no,,no-chart
-aws,eventbridge,create_rules,bool,no,,no-chart
-aws,eventbridge,create_schedule_groups,bool,no,,no-chart
-aws,eventbridge,create_schedules,bool,no,,no-chart
-aws,eventbridge,create_schemas_discoverer,bool,no,,no-chart
-aws,eventbridge,create_targets,bool,no,,no-chart
-aws,eventbridge,dead_letter_config,any,no,,no-chart
-aws,eventbridge,ecs_pass_role_resources,list(string),no,,no-chart
-aws,eventbridge,ecs_target_arns,list(string),no,,no-chart
-aws,eventbridge,event_source_name,string,no,,no-chart
-aws,eventbridge,kinesis_firehose_target_arns,list(string),no,,no-chart
-aws,eventbridge,kinesis_target_arns,list(string),no,,no-chart
-aws,eventbridge,kms_key_identifier,string,no,,no-chart
-aws,eventbridge,lambda_target_arns,list(string),no,,no-chart
-aws,eventbridge,log_config,"object({include_detail, level})",no,,no-chart
-aws,eventbridge,log_delivery,"map(object({destination_arn, enabled, field_delimiter, name, output_format, record_fields, +2}))",no,,no-chart
-aws,eventbridge,log_delivery_source_name,string,no,,no-chart
-aws,eventbridge,number_of_policies,number,no,,no-chart
-aws,eventbridge,number_of_policy_jsons,number,no,,no-chart
-aws,eventbridge,permissions,map(any),no,,no-chart
-aws,eventbridge,pipes,any,no,,no-chart
-aws,eventbridge,policies,list(string),no,,no-chart
-aws,eventbridge,policy,string,no,,no-chart
-aws,eventbridge,policy_json,string,no,,no-chart
-aws,eventbridge,policy_jsons,list(string),no,,no-chart
-aws,eventbridge,policy_path,string,no,,no-chart
-aws,eventbridge,policy_statements,any,no,,no-chart
-aws,eventbridge,region,string,no,,no-chart
-aws,eventbridge,role_description,string,no,,no-chart
-aws,eventbridge,role_force_detach_policies,bool,no,,no-chart
-aws,eventbridge,role_name,string,no,,no-chart
-aws,eventbridge,role_path,string,no,,no-chart
-aws,eventbridge,role_permissions_boundary,string,no,,no-chart
-aws,eventbridge,role_tags,map(string),no,,no-chart
-aws,eventbridge,rules,map(any),no,,no-chart
-aws,eventbridge,schedule_group_timeouts,map(string),no,,no-chart
-aws,eventbridge,schedule_groups,any,no,,no-chart
-aws,eventbridge,schedules,map(any),no,,no-chart
-aws,eventbridge,schemas_discoverer_description,string,no,,no-chart
-aws,eventbridge,sfn_target_arns,list(string),no,,no-chart
-aws,eventbridge,sns_kms_arns,list(string),no,,no-chart
-aws,eventbridge,sns_target_arns,list(string),no,,no-chart
-aws,eventbridge,sqs_target_arns,list(string),no,,no-chart
-aws,eventbridge,tags,map(string),no,,no-chart
-aws,eventbridge,targets,any,no,,no-chart
-aws,eventbridge,trusted_entities,list(string),no,,no-chart
+aws,eventbridge,api_destinations,map(any),yes,,
+aws,eventbridge,append_connection_postfix,bool,yes,,
+aws,eventbridge,append_destination_postfix,bool,yes,,
+aws,eventbridge,append_pipe_postfix,bool,yes,,
+aws,eventbridge,append_rule_postfix,bool,yes,,
+aws,eventbridge,append_schedule_group_postfix,bool,yes,,
+aws,eventbridge,append_schedule_postfix,bool,yes,,
+aws,eventbridge,archives,map(any),partial,"accepted, but an archive's kms_key_identifier is refused: ACK's Archive (eventbridge-controller v1.9.2) has no field for it",gap
+aws,eventbridge,attach_api_destination_policy,bool,yes,,
+aws,eventbridge,attach_cloudwatch_policy,bool,yes,,
+aws,eventbridge,attach_ecs_policy,bool,yes,,
+aws,eventbridge,attach_kinesis_firehose_policy,bool,yes,,
+aws,eventbridge,attach_kinesis_policy,bool,yes,,
+aws,eventbridge,attach_lambda_policy,bool,yes,,
+aws,eventbridge,attach_policies,bool,yes,,
+aws,eventbridge,attach_policy,bool,yes,,
+aws,eventbridge,attach_policy_json,bool,yes,,
+aws,eventbridge,attach_policy_jsons,bool,yes,,
+aws,eventbridge,attach_policy_statements,bool,yes,,
+aws,eventbridge,attach_sfn_policy,bool,yes,,
+aws,eventbridge,attach_sns_policy,bool,yes,,
+aws,eventbridge,attach_sqs_policy,bool,yes,,
+aws,eventbridge,attach_tracing_policy,bool,partial,"accepted: the role gets AWS's managed AWSXrayWriteOnlyAccess policy by ARN; Terraform copies its document into a policy of its own (so its exclusive aws_iam_policy_attachment cannot detach it from other roles), which a render cannot do, since it cannot read the managed policy",gap
+aws,eventbridge,bus_description,string,no,ACK's EventBus (eventbridge-controller v1.9.2) has no description field,gap
+aws,eventbridge,bus_name,string,yes,,
+aws,eventbridge,cloudwatch_target_arns,list(string),yes,,
+aws,eventbridge,connections,any,partial,"accepted, but a connection's secret values (auth_parameters' api_key.value, basic.password, oauth.client_parameters.client_secret) are references to Kubernetes Secrets, {secretName, key} (docs/secrets.md): a string is refused; and kms_key_identifier is refused (ack-extensions' Connection has no field for it)",gap
+aws,eventbridge,create,bool,yes,,
+aws,eventbridge,create_api_destinations,bool,partial,APIDestination is an ack-extensions kind (outside ACK's releases): needs allow_alpha: true,alpha
+aws,eventbridge,create_archives,bool,yes,,
+aws,eventbridge,create_bus,bool,yes,,
+aws,eventbridge,create_connections,bool,partial,Connection is an ack-extensions kind (outside ACK's releases): needs allow_alpha: true,alpha
+aws,eventbridge,create_log_delivery,bool,yes,,
+aws,eventbridge,create_log_delivery_source,bool,yes,,
+aws,eventbridge,create_permissions,bool,yes,,
+aws,eventbridge,create_pipe_role_only,bool,yes,,
+aws,eventbridge,create_pipes,bool,yes,,
+aws,eventbridge,create_role,bool,yes,,
+aws,eventbridge,create_rules,bool,yes,,
+aws,eventbridge,create_schedule_groups,bool,yes,,
+aws,eventbridge,create_schedules,bool,yes,,
+aws,eventbridge,create_schemas_discoverer,bool,partial,Discoverer is an ack-extensions Cloud Control kind (outside ACK's releases): needs allow_alpha: true,alpha
+aws,eventbridge,create_targets,bool,yes,,
+aws,eventbridge,dead_letter_config,any,no,ACK's EventBus (eventbridge-controller v1.9.2) has no deadLetterConfig field,gap
+aws,eventbridge,ecs_pass_role_resources,list(string),yes,,
+aws,eventbridge,ecs_target_arns,list(string),yes,,
+aws,eventbridge,event_source_name,string,yes,,
+aws,eventbridge,kinesis_firehose_target_arns,list(string),yes,,
+aws,eventbridge,kinesis_target_arns,list(string),yes,,
+aws,eventbridge,kms_key_identifier,string,no,ACK's EventBus (eventbridge-controller v1.9.2) has no kmsKeyIdentifier field,gap
+aws,eventbridge,lambda_target_arns,list(string),yes,,
+aws,eventbridge,log_config,"object({include_detail, level})",no,"ACK's EventBus (eventbridge-controller v1.9.2) has no logConfig field; without it the log delivery source takes ERROR_LOGS, as the module does when log_config is null",gap
+aws,eventbridge,log_delivery,"map(object({destination_arn, enabled, field_delimiter, name, output_format, record_fields, +2}))",yes,,
+aws,eventbridge,log_delivery_source_name,string,yes,,
+aws,eventbridge,number_of_policies,number,yes,,
+aws,eventbridge,number_of_policy_jsons,number,yes,,
+aws,eventbridge,permissions,map(any),partial,"accepted on the bus the chart makes, as statements of its resource policy (ACK's EventBus.policy; Terraform calls PutPermission). On a bus the chart does not make (create_bus: false), or with an event_bus_name naming another bus, refused: neither ACK nor ack-extensions has a Permission kind. The chart owns the whole policy: a statement added outside the component is removed",gap
+aws,eventbridge,pipes,any,partial,"accepted, but a pipe's kms_key_identifier and log_configuration are refused (ACK's Pipe, pipes-controller v1.8.0, has neither field), and so is an enrichment naming an API destination this chart makes (ACK's Pipe takes no reference, and the ARN ends in an ID AWS gives); role_name_prefix names the pipe's role as given, without Terraform's random suffix",gap
+aws,eventbridge,policies,list(string),yes,,
+aws,eventbridge,policy,string,yes,,
+aws,eventbridge,policy_json,string,yes,,
+aws,eventbridge,policy_jsons,list(string),yes,,
+aws,eventbridge,policy_path,string,yes,,
+aws,eventbridge,policy_statements,any,yes,,
+aws,eventbridge,region,string,yes,,
+aws,eventbridge,role_description,string,yes,,
+aws,eventbridge,role_force_detach_policies,bool,partial,"accepted true (the default) only: ACK detaches the role's managed policies before it deletes the role, always",gap
+aws,eventbridge,role_name,string,yes,,
+aws,eventbridge,role_path,string,yes,,
+aws,eventbridge,role_permissions_boundary,string,yes,,
+aws,eventbridge,role_tags,map(string),yes,,
+aws,eventbridge,rules,map(any),partial,"accepted, but a rule's name_prefix (Terraform's random suffix would change between renders) and force_destroy (ACK's Rule, eventbridge-controller v1.9.2, has no ForceDelete) are refused",gap
+aws,eventbridge,schedule_group_timeouts,map(string),no,"Terraform's create and delete timeouts: the ack-extensions controller retries until the schedule group is synced, and Bundt waits for it",by-design
+aws,eventbridge,schedule_groups,any,partial,ScheduleGroup is an ack-extensions kind (outside ACK's releases): needs allow_alpha: true; a group's name_prefix is refused (Terraform's random suffix would change between renders),alpha
+aws,eventbridge,schedules,map(any),partial,Schedule is an ack-extensions kind (outside ACK's releases): needs allow_alpha: true; a schedule's name_prefix is refused (Terraform's random suffix would change between renders),alpha
+aws,eventbridge,schemas_discoverer_description,string,yes,,
+aws,eventbridge,sfn_target_arns,list(string),yes,,
+aws,eventbridge,sns_kms_arns,list(string),yes,,
+aws,eventbridge,sns_target_arns,list(string),yes,,
+aws,eventbridge,sqs_target_arns,list(string),yes,,
+aws,eventbridge,tags,map(string),yes,,
+aws,eventbridge,targets,any,partial,"accepted, but a target's destination (an API destination this chart makes: its ARN ends in an ID AWS gives, and ACK's Rule targets take no reference), appsync_target (ACK's Rule targets have no AppSyncParameters, eventbridge-controller v1.9.2) and force_destroy are refused; target_id defaults to the target's name (Terraform: a random ID)",gap
+aws,eventbridge,trusted_entities,list(string),yes,,
 aws,autoscaling,autoscaling_group_tags,map(string),yes,,
 aws,autoscaling,autoscaling_group_tags_not_propagate_at_launch,list(string),partial,"accepted: ACK's AutoScalingGroup tags never propagate at launch, so the chart propagates the other tags through its launch template's instance tag specification (with create_launch_template: true)",gap
 aws,autoscaling,availability_zone_distribution,object({capacity_distribution_strategy}),yes,,

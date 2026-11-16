@@ -1,0 +1,231 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, the rules (aws_cloudwatch_event_rule, eventbridge/Rule) with their
+targets (aws_cloudwatch_event_target) inline, as ACK's Rule takes them
+(Rule.targets): the rule owns its whole list of targets.
+*/ -}}
+{{- $v := .Values -}}
+{{- if and $v.create $v.create_rules }}
+{{- $rel := .Release.Name }}
+{{- $n := include "eb.names" . | fromJson }}
+{{- range $key := keys ($v.rules | default dict) | sortAlpha }}
+{{- $r := index $v.rules $key }}
+{{- if $r.name_prefix }}
+{{- fail (printf "eventbridge: rules.%s.name_prefix is not supported: Terraform's random suffix would change the name between renders (docs/aws.md)" $key) }}
+{{- end }}
+{{- if not (kindIs "invalid" $r.force_destroy) }}
+{{- fail (printf "eventbridge: rules.%s.force_destroy is not supported: ACK's Rule (eventbridge-controller v1.9.2) has no ForceDelete (docs/aws.md)" $key) }}
+{{- end }}
+{{- $name := include "ack.cloudName" (list $ "rule" (include "eb.key" (list $key "-rule" $v.append_rule_postfix)) 64) }}
+{{- $state := "" }}
+{{- if hasKey $r "enabled" }}
+{{- $state = ternary "ENABLED" "DISABLED" (eq (toString $r.enabled) "true") }}
+{{- else if hasKey $r "state" }}
+{{- if has (toString $r.state) (list "true" "false") }}
+{{- $state = ternary "ENABLED" "DISABLED" (eq (toString $r.state) "true") }}
+{{- else if not (kindIs "invalid" $r.state) }}
+{{- $state = upper (toString $r.state) }}
+{{- end }}
+{{- end }}
+---
+apiVersion: eventbridge.services.k8s.aws/v1alpha1
+kind: Rule
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "rule" $key)) "id" (printf "rule-%s" $key) "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ $name | quote }}
+{{- if $v.create_bus }}
+  eventBusRef:
+    from:
+      name: {{ include "ack.name" (list $rel "bus") }}
+{{- else }}
+  eventBusName: {{ $v.bus_name | quote }}
+{{- end }}
+{{- with $r.description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with $r.event_pattern }}
+  eventPattern: {{ . | quote }}
+{{- end }}
+{{- with $r.schedule_expression }}
+  scheduleExpression: {{ . | quote }}
+{{- end }}
+{{- if eq (toString $r.role_arn) "true" }}
+{{- if not (and $v.create_role) }}
+{{- fail (printf "eventbridge: rules.%s.role_arn: true needs the module's IAM role, and create_role is false" $key) }}
+{{- end }}
+  roleRef:
+    from:
+      name: {{ include "ack.name" (list $rel "role") }}
+{{- end }}
+{{- with $state }}
+  state: {{ . | quote }}
+{{- end }}
+{{- /* aws_cloudwatch_event_target */}}
+{{- $targets := list }}
+{{- if $v.create_targets }}{{ $targets = get ($v.targets | default dict) $key | default list }}{{ end }}
+{{- if $targets }}
+  targets:
+{{- range $i, $t := $targets }}
+{{- $tn := $t.name | default "" }}
+{{- if $t.destination }}
+{{- fail (printf "eventbridge: targets.%s[%d].destination is not supported: an API destination's ARN ends in an ID AWS gives, it exists only in the APIDestination's status, and ACK's Rule targets take no reference (docs/aws.md); give its ARN as arn" $key $i) }}
+{{- end }}
+{{- if $t.appsync_target }}
+{{- fail (printf "eventbridge: targets.%s[%d].appsync_target is not supported: ACK's Rule targets (eventbridge-controller v1.9.2) have no AppSyncParameters (docs/aws.md)" $key $i) }}
+{{- end }}
+{{- if not (kindIs "invalid" $t.force_destroy) }}
+{{- fail (printf "eventbridge: targets.%s[%d].force_destroy is not supported: ACK's Rule (eventbridge-controller v1.9.2) has no ForceDelete (docs/aws.md)" $key $i) }}
+{{- end }}
+{{- if not $t.arn }}
+{{- fail (printf "eventbridge: targets.%s[%d].arn is required" $key $i) }}
+{{- end }}
+{{- $id := $t.target_id | default $tn }}
+{{- if not $id }}
+{{- fail (printf "eventbridge: targets.%s[%d] needs target_id or name: Terraform gives a target a random ID, which would change between renders" $key $i) }}
+{{- end }}
+    - id: {{ $id | quote }}
+      arn: {{ $t.arn | quote }}
+{{- if kindIs "string" $t.attach_role_arn }}
+{{- if $t.attach_role_arn }}
+      roleARN: {{ $t.attach_role_arn | quote }}
+{{- end }}
+{{- else if eq (toString $t.attach_role_arn) "true" }}
+      roleARN: {{ include "eb.roleArn" (list $ (printf "targets.%s[%d].attach_role_arn: true (Rule targets take the role's ARN, not a reference)" $key $i)) | quote }}
+{{- end }}
+{{- with $t.input }}
+      input: {{ . | quote }}
+{{- end }}
+{{- with $t.input_path }}
+      inputPath: {{ . | quote }}
+{{- end }}
+{{- with $t.run_command_targets }}
+      runCommandParameters:
+        runCommandTargets:
+{{- range . }}
+          - key: {{ .key | quote }}
+            values: {{ toJson .values }}
+{{- end }}
+{{- end }}
+{{- with $t.ecs_target }}
+      ecsParameters:
+        taskDefinitionARN: {{ .task_definition_arn | quote }}
+{{- with .group }}
+        group: {{ . | quote }}
+{{- end }}
+{{- with .launch_type }}
+        launchType: {{ . | quote }}
+{{- end }}
+{{- with .platform_version }}
+        platformVersion: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .task_count) }}
+        taskCount: {{ int64 .task_count }}
+{{- end }}
+{{- if not (kindIs "invalid" .enable_ecs_managed_tags) }}
+        enableECSManagedTags: {{ .enable_ecs_managed_tags }}
+{{- end }}
+{{- if not (kindIs "invalid" .enable_execute_command) }}
+        enableExecuteCommand: {{ .enable_execute_command }}
+{{- end }}
+{{- with .propagate_tags }}
+        propagateTags: {{ . | quote }}
+{{- end }}
+{{- with .tags }}
+        tags:
+{{- include "ack.tagList" (list (include "ack.tags" (list $ .) | fromJson)) | nindent 10 }}
+{{- end }}
+{{- with .network_configuration }}
+        networkConfiguration:
+{{- include "eb.ecsNetwork" . | nindent 10 }}
+{{- end }}
+{{- with .capacity_provider_strategy }}
+        capacityProviderStrategy:
+{{- range . }}
+          - capacityProvider: {{ .capacity_provider | quote }}
+{{- if not (kindIs "invalid" .weight) }}
+            weight: {{ int64 .weight }}
+{{- end }}
+{{- if not (kindIs "invalid" .base) }}
+            base: {{ int64 .base }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with .ordered_placement_strategy }}
+        placementStrategy:
+{{- range . }}
+          - type_: {{ .type | quote }}
+{{- with .field }}
+            field: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with .placement_constraint }}
+        placementConstraints:
+{{- range . }}
+          - type_: {{ .type | quote }}
+{{- with .expression }}
+            expression: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with $t.batch_target }}
+      batchParameters:
+        jobDefinition: {{ .job_definition | quote }}
+        jobName: {{ .job_name | quote }}
+{{- if not (kindIs "invalid" .array_size) }}
+        arrayProperties:
+          size: {{ int64 .array_size }}
+{{- end }}
+{{- if not (kindIs "invalid" .job_attempts) }}
+        retryStrategy:
+          attempts: {{ int64 .job_attempts }}
+{{- end }}
+{{- end }}
+{{- with $t.partition_key_path }}
+      kinesisParameters:
+        partitionKeyPath: {{ . | quote }}
+{{- end }}
+{{- with $t.message_group_id }}
+      sqsParameters:
+        messageGroupID: {{ . | quote }}
+{{- end }}
+{{- with $t.http_target }}
+      httpParameters:
+{{- with .path_parameter_values }}
+        pathParameterValues: {{ toJson . }}
+{{- end }}
+{{- with .query_string_parameters }}
+        queryStringParameters: {{ toJson . }}
+{{- end }}
+{{- with .header_parameters }}
+        headerParameters: {{ toJson . }}
+{{- end }}
+{{- end }}
+{{- with $t.input_transformer }}
+      inputTransformer:
+{{- with .input_paths }}
+        inputPathsMap: {{ toJson . }}
+{{- end }}
+        inputTemplate: {{ trimSuffix "\n" (.input_template | toString) | quote }}
+{{- end }}
+{{- with $t.dead_letter_arn }}
+      deadLetterConfig:
+        arn: {{ . | quote }}
+{{- end }}
+{{- with $t.retry_policy }}
+      retryPolicy:
+        maximumEventAgeInSeconds: {{ int64 .maximum_event_age_in_seconds }}
+        maximumRetryAttempts: {{ int64 .maximum_retry_attempts }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags (dict "Name" $name)) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}

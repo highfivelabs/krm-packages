@@ -1,0 +1,5 @@
+# expect: names: Additional property rule is not allowed
+account_id: "111122223333"
+region: us-east-1
+bus_name: b
+names: {rule: x}

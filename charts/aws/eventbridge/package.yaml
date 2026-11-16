@@ -1,0 +1,93 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (docs/design.md, "Outputs"): the module's
+# outputs, from the live EventBus (resources.bus), Role (resources.role),
+# rules (rule-<key>), archives (archive-<key>), connections
+# (connection-<key>), API destinations (api-destination-<key>), schedule
+# groups (schedulegroup-<key>), schedules (schedule-<key>), pipes
+# (pipe-<key>), pipe roles (role-pipe-<key>) and log delivery source
+# (log-source), and the component's values (inputs). The module gives ""
+# or {} for what it did not make; so do these. The whole-resource outputs
+# (eventbridge_bus, _rules, ...) are the objects' specs. Not provided:
+# eventbridge_schedule_group_states (ack-extensions' ScheduleGroup status
+# has no state).
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: aws-eventbridge
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [ack]
+  outputs:
+    eventbridge_bus_name: >-
+      'bus' in resources ? resources.bus.spec.name : inputs.bus_name
+    eventbridge_bus_arn: >-
+      'bus' in resources ? resources.bus.status.ackResourceMetadata.arn : ''
+    eventbridge_archive_arns: >-
+      resources.filter(k, k.startsWith('archive-')).transformMapEntry(i, k, {resources[k].spec.name: resources[k].status.ackResourceMetadata.arn})
+    eventbridge_permission_ids: >-
+      'bus' in resources && inputs.create_permissions && inputs.permissions != null
+      ? inputs.permissions.transformMapEntry(k, v, {k: resources.bus.spec.name + '/' + k.split(' ').filter(s, s != '')[1]}) : {}
+    eventbridge_connection_ids: >-
+      resources.filter(k, k.startsWith('connection-')).transformMapEntry(i, k, {k.substring(11): resources[k].spec.name})
+    eventbridge_connection_arns: >-
+      resources.filter(k, k.startsWith('connection-')).transformMapEntry(i, k, {k.substring(11): resources[k].status.ackResourceMetadata.arn})
+    eventbridge_api_destination_arns: >-
+      resources.filter(k, k.startsWith('api-destination-')).transformMapEntry(i, k, {k.substring(16): resources[k].status.ackResourceMetadata.arn})
+    eventbridge_rule_ids: >-
+      resources.filter(k, k.startsWith('rule-')).transformMapEntry(i, k, {k.substring(5):
+      dyn(('bus' in resources ? resources.bus.spec.name : inputs.bus_name) == 'default' ? resources[k].spec.name
+      : ('bus' in resources ? resources.bus.spec.name : inputs.bus_name) + '/' + resources[k].spec.name)})
+    eventbridge_rule_arns: >-
+      resources.filter(k, k.startsWith('rule-')).transformMapEntry(i, k, {k.substring(5): resources[k].status.ackResourceMetadata.arn})
+    eventbridge_schedule_group_ids: >-
+      resources.filter(k, k.startsWith('schedulegroup-')).transformMapEntry(i, k, {k.substring(14): resources[k].spec.name})
+    eventbridge_schedule_group_arns: >-
+      resources.filter(k, k.startsWith('schedulegroup-')).transformMapEntry(i, k, {k.substring(14): resources[k].status.ackResourceMetadata.arn})
+    eventbridge_schedule_ids: >-
+      resources.filter(k, k.startsWith('schedule-')).transformMapEntry(i, k, {k.substring(9): resources[k].status.ackResourceMetadata.arn.split(':schedule/')[1]})
+    eventbridge_schedule_arns: >-
+      resources.filter(k, k.startsWith('schedule-')).transformMapEntry(i, k, {k.substring(9): resources[k].status.ackResourceMetadata.arn})
+    eventbridge_role_arn: >-
+      'role' in resources ? resources.role.status.ackResourceMetadata.arn : ''
+    eventbridge_role_name: >-
+      'role' in resources ? resources.role.spec.name : ''
+    eventbridge_pipe_ids: >-
+      resources.filter(k, k.startsWith('pipe-')).transformMapEntry(i, k, {k.substring(5): resources[k].spec.name})
+    eventbridge_pipe_arns: >-
+      resources.filter(k, k.startsWith('pipe-')).transformMapEntry(i, k, {k.substring(5): resources[k].status.ackResourceMetadata.arn})
+    eventbridge_pipe_role_arns: >-
+      resources.filter(k, k.startsWith('role-pipe-')).transformMapEntry(i, k, {k.substring(10): resources[k].status.ackResourceMetadata.arn})
+    eventbridge_pipe_role_names: >-
+      resources.filter(k, k.startsWith('role-pipe-')).transformMapEntry(i, k, {k.substring(10): resources[k].spec.name})
+    eventbridge_bus: >-
+      'bus' in resources ? [resources.bus.spec] : []
+    eventbridge_archives: >-
+      resources.filter(k, k.startsWith('archive-')).transformMapEntry(i, k, {k.substring(8): resources[k].spec})
+    eventbridge_permissions: >-
+      'bus' in resources && inputs.create_permissions && inputs.permissions != null ? inputs.permissions : {}
+    eventbridge_connections: >-
+      resources.filter(k, k.startsWith('connection-')).transformMapEntry(i, k, {k.substring(11): resources[k].spec})
+    eventbridge_api_destinations: >-
+      resources.filter(k, k.startsWith('api-destination-')).transformMapEntry(i, k, {k.substring(16): resources[k].spec})
+    eventbridge_targets: >-
+      resources.filter(k, k.startsWith('rule-') && has(resources[k].spec.targets))
+      .map(k, resources[k].spec.targets).flatten().transformMapEntry(i, t, {t.id: t})
+    eventbridge_rules: >-
+      resources.filter(k, k.startsWith('rule-')).transformMapEntry(i, k, {k.substring(5): resources[k].spec})
+    eventbridge_schedule_groups: >-
+      resources.filter(k, k.startsWith('schedulegroup-')).transformMapEntry(i, k, {k.substring(14): resources[k].spec})
+    eventbridge_schedules: >-
+      resources.filter(k, k.startsWith('schedule-')).transformMapEntry(i, k, {k.substring(9): resources[k].spec})
+    eventbridge_pipes: >-
+      resources.filter(k, k.startsWith('pipe-')).transformMapEntry(i, k, {k.substring(5): resources[k].spec})
+    eventbridge_log_delivery_source_arn: >-
+      'log-source' in resources ? resources['log-source'].status.ackResourceMetadata.arn : ''
+    eventbridge_log_delivery_source_name: >-
+      'log-source' in resources ? resources['log-source'].spec.name : ''
+    eventbridge_pipes_iam_roles: >-
+      resources.filter(k, k.startsWith('role-pipe-')).transformMapEntry(i, k, {k.substring(10): resources[k].spec})
+    eventbridge_iam_roles: >-
+      'role' in resources ? [resources.role.spec] : []

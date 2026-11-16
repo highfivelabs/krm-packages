@@ -1,0 +1,97 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Where this chart came from: the Terraform module it ports and the release
+# it was ported from. Machine-readable; `task upstream-check` keeps it equal
+# to upstream/modules.yaml and Chart.yaml. To take a newer release, see
+# UPSTREAM.md ("Moving the pins").
+module: aws/eventbridge
+repo: https://github.com/terraform-aws-modules/terraform-aws-eventbridge
+path: .
+version: v4.3.3
+commit: e29707a5057ec9b0f6ea87686e9a5b48b4addd11
+license: Apache-2.0
+copyright: Sven Lito
+module_url: https://github.com/terraform-aws-modules/terraform-aws-eventbridge/tree/v4.3.3
+registry_url: https://registry.terraform.io/modules/terraform-aws-modules/eventbridge/aws
+synced: 2026-11-16
+# Module variables the chart keeps in values.yaml (so tfvars convert one to
+# one) but refuses when set (to anything but the module's default), or
+# accepts only in part. Read by `task coverage`; `task coverage-verify`
+# renders the chart to check that each one is refused. kind: gap (no ACK or
+# ack-extensions kind or field), alpha (only an ack-extensions kind, behind
+# allow_alpha) or by-design (Bundt replaces it). partial: the variable is
+# accepted, the reason says what is not carried.
+refused:
+- variable: archives
+  kind: gap
+  reason: "accepted, but an archive's kms_key_identifier is refused: ACK's Archive (eventbridge-controller v1.9.2) has no field for it"
+  partial: true
+- variable: attach_tracing_policy
+  kind: gap
+  reason: "accepted: the role gets AWS's managed AWSXrayWriteOnlyAccess policy by ARN; Terraform copies its document into a policy of its own (so its exclusive aws_iam_policy_attachment cannot detach it from other roles), which a render cannot do, since it cannot read the managed policy"
+  partial: true
+- variable: bus_description
+  kind: gap
+  reason: "ACK's EventBus (eventbridge-controller v1.9.2) has no description field"
+- variable: connections
+  kind: gap
+  reason: "accepted, but a connection's secret values (auth_parameters' api_key.value, basic.password, oauth.client_parameters.client_secret) are references to Kubernetes Secrets, {secretName, key} (docs/secrets.md): a string is refused; and kms_key_identifier is refused (ack-extensions' Connection has no field for it)"
+  partial: true
+- variable: create_api_destinations
+  kind: alpha
+  reason: "APIDestination is an ack-extensions kind (outside ACK's releases): needs allow_alpha: true"
+  partial: true
+  needs_allow_alpha: true
+- variable: create_connections
+  kind: alpha
+  reason: "Connection is an ack-extensions kind (outside ACK's releases): needs allow_alpha: true"
+  partial: true
+  needs_allow_alpha: true
+- variable: create_schemas_discoverer
+  kind: alpha
+  reason: "Discoverer is an ack-extensions Cloud Control kind (outside ACK's releases): needs allow_alpha: true"
+  partial: true
+  needs_allow_alpha: true
+- variable: dead_letter_config
+  kind: gap
+  reason: "ACK's EventBus (eventbridge-controller v1.9.2) has no deadLetterConfig field"
+- variable: kms_key_identifier
+  kind: gap
+  reason: "ACK's EventBus (eventbridge-controller v1.9.2) has no kmsKeyIdentifier field"
+- variable: log_config
+  kind: gap
+  reason: "ACK's EventBus (eventbridge-controller v1.9.2) has no logConfig field; without it the log delivery source takes ERROR_LOGS, as the module does when log_config is null"
+- variable: permissions
+  kind: gap
+  reason: "accepted on the bus the chart makes, as statements of its resource policy (ACK's EventBus.policy; Terraform calls PutPermission). On a bus the chart does not make (create_bus: false), or with an event_bus_name naming another bus, refused: neither ACK nor ack-extensions has a Permission kind. The chart owns the whole policy: a statement added outside the component is removed"
+  partial: true
+- variable: pipes
+  kind: gap
+  reason: "accepted, but a pipe's kms_key_identifier and log_configuration are refused (ACK's Pipe, pipes-controller v1.8.0, has neither field), and so is an enrichment naming an API destination this chart makes (ACK's Pipe takes no reference, and the ARN ends in an ID AWS gives); role_name_prefix names the pipe's role as given, without Terraform's random suffix"
+  partial: true
+- variable: role_force_detach_policies
+  kind: gap
+  reason: "accepted true (the default) only: ACK detaches the role's managed policies before it deletes the role, always"
+  partial: true
+- variable: rules
+  kind: gap
+  reason: "accepted, but a rule's name_prefix (Terraform's random suffix would change between renders) and force_destroy (ACK's Rule, eventbridge-controller v1.9.2, has no ForceDelete) are refused"
+  partial: true
+- variable: schedule_group_timeouts
+  kind: by-design
+  reason: "Terraform's create and delete timeouts: the ack-extensions controller retries until the schedule group is synced, and Bundt waits for it"
+- variable: schedule_groups
+  kind: alpha
+  reason: "ScheduleGroup is an ack-extensions kind (outside ACK's releases): needs allow_alpha: true; a group's name_prefix is refused (Terraform's random suffix would change between renders)"
+  partial: true
+  needs_allow_alpha: true
+- variable: schedules
+  kind: alpha
+  reason: "Schedule is an ack-extensions kind (outside ACK's releases): needs allow_alpha: true; a schedule's name_prefix is refused (Terraform's random suffix would change between renders)"
+  partial: true
+  needs_allow_alpha: true
+- variable: targets
+  kind: gap
+  reason: "accepted, but a target's destination (an API destination this chart makes: its ARN ends in an ID AWS gives, and ACK's Rule targets take no reference), appsync_target (ACK's Rule targets have no AppSyncParameters, eventbridge-controller v1.9.2) and force_destroy are refused; target_id defaults to the target's name (Terraform: a random ID)"
+  partial: true

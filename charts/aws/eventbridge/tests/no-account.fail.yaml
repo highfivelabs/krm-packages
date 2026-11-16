@@ -1,0 +1,3 @@
+# expect: eventbridge: account_id is required for the log delivery source
+region: us-east-1
+bus_name: b

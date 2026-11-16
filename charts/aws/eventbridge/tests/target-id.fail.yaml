@@ -1,0 +1,6 @@
+# expect: eventbridge: targets.r[0] needs target_id or name
+account_id: "111122223333"
+region: us-east-1
+bus_name: b
+rules: {r: {event_pattern: '{}'}}
+targets: {r: [{arn: x}]}

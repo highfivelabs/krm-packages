@@ -1,0 +1,42 @@
+---
+# Source: eventbridge/templates/bus.yaml
+apiVersion: eventbridge.services.k8s.aws/v1alpha1
+kind: Archive
+metadata:
+  name: existing-archive-default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "archive-default"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "default"
+  eventSourceARN: "arn:aws:events:us-east-1:111122223333:event-bus/default"
+  retentionDays: 1
+---
+# Source: eventbridge/templates/rules.yaml
+apiVersion: eventbridge.services.k8s.aws/v1alpha1
+kind: Rule
+metadata:
+  name: existing-rule-logs
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "rule-logs"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "logs-rule"
+  eventBusName: "default"
+  eventPattern: "{\"source\":[\"aws.ec2\"]}"
+  targets:
+    - id: "to-logs"
+      arn: "arn:aws:logs:us-east-1:111122223333:log-group:/ec2-events"
+  tags:
+    - key: "Name"
+      value: "logs-rule"

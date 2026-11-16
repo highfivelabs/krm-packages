@@ -1,0 +1,32 @@
+# Applied to the fake AWS by hack/mock-apply-aws.sh: a bus with a rule
+# sending to an SQS queue, an archive, a permission, a log delivery to a
+# log group, the module's role with the SQS policy, and a pipe from one
+# queue to another with its role. The queues and the log group are in
+# tests/mock.needs.yaml; their ARNs and the fake's account (account_id,
+# which the bus's ARN in its policy and log delivery source names) come
+# from tests/mock.set.yaml.
+account_id: "000000000000"
+region: us-east-1
+bus_name: catalog-bus
+create_archives: true
+archives:
+  all: {retention_days: 1}
+permissions:
+  "* AnyoneInTheOrg": {condition_org: o-catalogtest}
+attach_sqs_policy: true
+sqs_target_arns: [set-by-mock-set-yaml]
+log_delivery:
+  cloudwatch_logs:
+    destination_arn: set-by-mock-set-yaml
+rules:
+  orders:
+    event_pattern: '{"source":["catalog.orders"]}'
+targets:
+  orders:
+    - name: set-by-mock-set-yaml
+      arn: set-by-mock-set-yaml
+pipes:
+  forward:
+    source: set-by-mock-set-yaml
+    target: set-by-mock-set-yaml
+tags: {catalog-test: "true"}

@@ -1,0 +1,9 @@
+# Every names key, labels and tags (docs/design.md, "Names, labels and tags").
+account_id: "111122223333"
+region: us-east-1
+bus_name: ignored
+names: {bus: shop-dev-use1-bus, role: shop-dev-use1-events}
+labels: {hfl.dev/team: shop}
+tags: {team: shop}
+rules:
+  orders: {event_pattern: '{"source":["shop"]}'}

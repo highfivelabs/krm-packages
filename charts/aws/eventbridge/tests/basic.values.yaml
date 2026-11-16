@@ -1,0 +1,20 @@
+# The module's README, "Usage": a bus with a rule sending orders to an SQS
+# queue, the SQS policy on the module's role. account_id and region: the
+# bus's log delivery source (made by default) names the bus's ARN.
+account_id: "111122223333"
+region: us-east-1
+bus_name: my-bus
+attach_sqs_policy: true
+sqs_target_arns: ["arn:aws:sqs:us-east-1:111122223333:orders"]
+rules:
+  orders:
+    description: Capture all order data
+    event_pattern: '{"source":["myapp.orders"]}'
+    enabled: true
+targets:
+  orders:
+    - name: send-orders-to-sqs
+      arn: arn:aws:sqs:us-east-1:111122223333:orders
+      dead_letter_arn: arn:aws:sqs:us-east-1:111122223333:orders-dlq
+      target_id: send-orders-to-sqs
+tags: {Name: my-bus}

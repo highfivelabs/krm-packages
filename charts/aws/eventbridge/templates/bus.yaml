@@ -1,0 +1,216 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, the bus and what hangs off it: the bus (aws_cloudwatch_event_bus,
+eventbridge/EventBus) with the permissions as statements of its policy
+(aws_cloudwatch_event_permission, EventBus.policy), its log delivery
+(aws_cloudwatch_log_delivery_source, _destination and aws_cloudwatch_log_delivery:
+cloudwatchlogs/DeliverySource, DeliveryDestination, Delivery), the schemas
+discoverer (aws_schemas_discoverer, ack-extensions' Cloud Control
+Discoverer) and the archives (aws_cloudwatch_event_archive,
+eventbridge/Archive).
+*/ -}}
+{{- include "ack.names" (list $ (list "bus" "role")) -}}
+{{- $v := .Values -}}
+{{- if $v.create }}
+{{- $rel := .Release.Name }}
+{{- $region := $v.region }}
+{{- $n := include "eb.names" . | fromJson }}
+{{- $busObj := include "ack.name" (list $rel "bus") }}
+{{- $createBus := $v.create_bus }}
+
+{{- /* aws_cloudwatch_event_permission: on the chart's own bus only */}}
+{{- $stmts := list }}
+{{- if $v.create_permissions }}
+{{- range $key := keys ($v.permissions | default dict) | sortAlpha }}
+{{- $p := index $v.permissions $key }}
+{{- $parts := compact (splitList " " $key) }}
+{{- if ne (len $parts) 2 }}
+{{- fail (printf "eventbridge: permissions key %q must be \"<principal> <statement_id>\", as the module splits it" $key) }}
+{{- end }}
+{{- if not $createBus }}
+{{- fail (printf "eventbridge: permissions (%q) on a bus the chart does not make (create_bus: false) is not supported: neither ACK nor ack-extensions has a Permission kind, and ACK's EventBus.policy belongs to the bus's own object (docs/aws.md)" $key) }}
+{{- end }}
+{{- if and (hasKey $p "event_bus_name") (ne (toString $p.event_bus_name) $v.bus_name) (ne (toString $p.event_bus_name) $n.bus) }}
+{{- fail (printf "eventbridge: permissions.%q.event_bus_name names another bus, which is not supported: there is no Permission kind, only the policy of the bus this chart makes (docs/aws.md)" $key) }}
+{{- end }}
+{{- $principal := index $parts 0 }}
+{{- $st := dict "Sid" (index $parts 1) "Effect" "Allow" "Action" ($p.action | default "events:PutEvents") "Resource" (include "eb.busArn" (list $ (printf "permissions.%q (the bus policy's Resource is the bus's ARN)" $key))) }}
+{{- if eq $principal "*" }}
+{{- $_ := set $st "Principal" "*" }}
+{{- else }}
+{{- $_ := set $st "Principal" (dict "AWS" (printf "arn:%s:iam::%s:root" $v.partition $principal)) }}
+{{- end }}
+{{- with $p.condition_org }}
+{{- $_ := set $st "Condition" (dict "StringEquals" (dict "aws:PrincipalOrgID" .)) }}
+{{- end }}
+{{- $stmts = append $stmts $st }}
+{{- end }}
+{{- end }}
+
+{{- if $createBus }}
+---
+apiVersion: eventbridge.services.k8s.aws/v1alpha1
+kind: EventBus
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $busObj "id" "bus" "region" $region) | nindent 2 }}
+spec:
+  name: {{ $n.bus | quote }}
+{{- with $v.event_source_name }}
+  eventSourceName: {{ . | quote }}
+{{- end }}
+{{- if $stmts }}
+  policy: {{ toJson (dict "Version" "2012-10-17" "Statement" $stmts) | quote }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* aws_cloudwatch_log_delivery_source, _destination, aws_cloudwatch_log_delivery */}}
+{{- if $v.create_log_delivery }}
+{{- $tags := include "ack.tags" (list $ $v.tags) | fromJson }}
+{{- $sourceObj := include "ack.name" (list $rel "log-source") }}
+{{- if $v.create_log_delivery_source }}
+---
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: DeliverySource
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $sourceObj "id" "log-source" "region" $region) | nindent 2 }}
+spec:
+  name: {{ include "ack.cloudName" (list $ "log delivery source" ($v.log_delivery_source_name | default $v.bus_name) 60) | quote }}
+  {{- /* main.tf: <LEVEL>_LOGS from log_config, which ACK's EventBus cannot carry (refused): ERROR_LOGS */}}
+  logType: ERROR_LOGS
+  resourceARN: {{ include "eb.busArn" (list $ "the log delivery source (its resource is the bus's ARN; DeliverySource takes no reference)") | quote }}
+{{- if $tags }}
+  tags:
+{{- range $k := keys $tags | sortAlpha }}
+    {{ $k | quote }}: {{ index $tags $k | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- range $key := keys ($v.log_delivery | default dict) | sortAlpha }}
+{{- $d := index $v.log_delivery $key }}
+{{- if ne (toString (get $d "enabled")) "false" }}
+{{- if not $d.destination_arn }}
+{{- fail (printf "eventbridge: log_delivery.%s.destination_arn is required" $key) }}
+{{- end }}
+{{- $destObj := include "ack.name" (list $rel "log-destination" $key) }}
+---
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: DeliveryDestination
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $destObj "id" (printf "log-destination-%s" $key) "region" $region) | nindent 2 }}
+spec:
+  name: {{ include "ack.cloudName" (list $ "log delivery destination" ($d.name | default (printf "%s-%s" $v.bus_name $key)) 60) | quote }}
+{{- with $d.output_format }}
+  outputFormat: {{ . | quote }}
+{{- end }}
+  deliveryDestinationConfiguration:
+    destinationResourceARN: {{ $d.destination_arn | quote }}
+{{- if $tags }}
+  tags:
+{{- range $k := keys $tags | sortAlpha }}
+    {{ $k | quote }}: {{ index $tags $k | quote }}
+{{- end }}
+{{- end }}
+---
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: Delivery
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "log-delivery" $key)) "id" (printf "log-delivery-%s" $key) "region" $region) | nindent 2 }}
+spec:
+{{- if $v.create_log_delivery_source }}
+  deliverySourceRef:
+    from:
+      name: {{ $sourceObj }}
+{{- else }}
+{{- if not $d.source_name }}
+{{- fail (printf "eventbridge: log_delivery.%s.source_name is required with create_log_delivery_source: false" $key) }}
+{{- end }}
+  deliverySourceName: {{ $d.source_name | quote }}
+{{- end }}
+  deliveryDestinationRef:
+    from:
+      name: {{ $destObj }}
+{{- with $d.field_delimiter }}
+  fieldDelimiter: {{ . | quote }}
+{{- end }}
+{{- with $d.record_fields }}
+  recordFields: {{ toJson . }}
+{{- end }}
+{{- with $d.s3_delivery_configuration }}
+  s3DeliveryConfiguration:
+{{- if not (kindIs "invalid" .enable_hive_compatible_path) }}
+    enableHiveCompatiblePath: {{ .enable_hive_compatible_path }}
+{{- end }}
+{{- with .suffix_path }}
+    suffixPath: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- if $tags }}
+  tags:
+{{- range $k := keys $tags | sortAlpha }}
+    {{ $k | quote }}: {{ index $tags $k | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- /* aws_schemas_discoverer */}}
+{{- if $v.create_schemas_discoverer }}
+{{- include "ack.alpha" (list $ "create_schemas_discoverer" true "Discoverer (ack-extensions, Cloud Control)") }}
+---
+apiVersion: eventschemas.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: Discoverer
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "schemas-discoverer")) "id" "schemas-discoverer" "region" $region) | nindent 2 }}
+spec:
+  sourceArn: {{ include "eb.busArn" (list $ "the schemas discoverer (its source is the bus's ARN; Discoverer takes no reference)") | quote }}
+{{- with $v.schemas_discoverer_description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* aws_cloudwatch_event_archive */}}
+{{- if $v.create_archives }}
+{{- range $key := keys ($v.archives | default dict) | sortAlpha }}
+{{- $a := index $v.archives $key }}
+{{- if $a.kms_key_identifier }}
+{{- fail (printf "eventbridge: archives.%s.kms_key_identifier is not supported: ACK's Archive (eventbridge-controller v1.9.2) has no field for it (docs/aws.md)" $key) }}
+{{- end }}
+---
+apiVersion: eventbridge.services.k8s.aws/v1alpha1
+kind: Archive
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "archive" $key)) "id" (printf "archive-%s" $key) "region" $region) | nindent 2 }}
+spec:
+  name: {{ include "ack.cloudName" (list $ "archive" ($a.name | default $key) 48) | quote }}
+{{- if $a.event_source_arn }}
+  eventSourceARN: {{ $a.event_source_arn | quote }}
+{{- else if $createBus }}
+  eventSourceRef:
+    from:
+      name: {{ $busObj }}
+{{- else }}
+  eventSourceARN: {{ include "eb.busArn" (list $ (printf "archives.%s (its source is the existing bus's ARN)" $key)) | quote }}
+{{- end }}
+{{- with $a.description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with $a.event_pattern }}
+  eventPattern: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $a.retention_days) }}
+  retentionDays: {{ int64 $a.retention_days }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

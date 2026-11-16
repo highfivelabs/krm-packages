@@ -1,0 +1,31 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Derived from terraform-aws-modules' eventbridge module (Apache-2.0,
+# Copyright 2021 Sven Lito), modified: ported from Terraform to ACK objects
+# (docs/aws.md, "Porting notes").
+apiVersion: v2
+name: eventbridge
+description: >-
+  An EventBridge bus with its rules and targets, archives, permissions, log
+  delivery, IAM roles and pipes (and, as alpha kinds, connections, API
+  destinations, schedule groups, schedules and a schemas discoverer), as AWS
+  Controllers for Kubernetes (ACK) objects. A port of terraform-aws-modules'
+  eventbridge module.
+type: application
+version: 0.1.0
+# The module release this chart was ported from (UPSTREAM.md).
+appVersion: "terraform-aws-eventbridge-v4.3.3"
+kubeVersion: ">=1.27.0-0"
+keywords: [aws, ack, eventbridge, pipes, scheduler, terraform-aws-modules]
+home: https://github.com/highfivelabs/catalog
+sources:
+  - https://github.com/terraform-aws-modules/terraform-aws-eventbridge/tree/e29707a5057ec9b0f6ea87686e9a5b48b4addd11
+annotations:
+  hfl.dev/source: terraform-aws-eventbridge
+  hfl.dev/source-version: v4.3.3
+  hfl.dev/source-commit: e29707a5057ec9b0f6ea87686e9a5b48b4addd11
+  hfl.dev/ack-eventbridge-controller: "v1.9.2"
+  hfl.dev/ack-pipes-controller: "v1.8.0"
+  hfl.dev/ack-iam-controller: "v1.11.3"
+  hfl.dev/ack-cloudwatchlogs-controller: "v1.10.0"

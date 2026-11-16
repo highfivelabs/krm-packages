@@ -1648,7 +1648,7 @@ modules:
     copyright: Sven Lito
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/eventbridge/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-eventbridge/tree/v4.3.3
-    chart: null
+    chart: charts/aws/eventbridge
   - id: aws/cloudwatch
     cloud: aws
     module: cloudwatch
