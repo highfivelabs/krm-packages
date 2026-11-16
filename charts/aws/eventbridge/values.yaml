@@ -1,0 +1,381 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values mirror the Terraform variables of terraform-aws-modules' eventbridge
+# module (v4.3.3): same names, types and defaults, so a module block's
+# arguments become a values file one to one. values.schema.json carries the
+# types. A variable the chart cannot carry stays here and stops the render
+# when set (upstream.yaml lists them; README.md says why).
+
+# Names, labels and tags (docs/design.md, "Names, labels and tags"). Not
+# Terraform variables, except tags, which is the module's own.
+#
+# Names in full, any of {bus, role}. A name set here takes no namePrefix.
+# Unset, the bus is bus_name and the role role_name (or bus_name). The
+# rules, archives, connections, API destinations, schedule groups,
+# schedules, pipes, their roles and the log delivery objects are named from
+# their map keys as the module names them, with the namePrefix.
+names: {}
+# An optional convenience: "<namePrefix>-" in front of every name the chart
+# gives (never one set under names, and never an existing bus's name, with
+# create_bus: false). Empty (the default) changes nothing.
+namePrefix: ""
+# Kubernetes labels on every object. They stay in Kubernetes: ACK does not
+# copy labels to AWS (AWS tags are the module's tags variable).
+labels: {}
+# The ack-extensions kinds (Connection, APIDestination, ScheduleGroup,
+# Schedule, and the Cloud Control Discoverer) render only with
+# allow_alpha: true (docs/design.md, "Alpha kinds").
+allow_alpha: false
+# DELETE (default): deleting the component deletes the bus and everything
+# else it made. ABANDON keeps them (services.k8s.aws/deletion-policy:
+# retain).
+deletion_policy: DELETE
+# The AWS account and partition, which the module reads from the provider.
+# A chart cannot read them, so Bundt fills account_id from the Environment.
+# Needed wherever the chart writes an ARN ACK takes no reference for: the
+# bus's ARN in its policy (permissions), its log delivery source and schemas
+# discoverer, an existing bus's ARN for an archive; the role's ARN for a
+# target's attach_role_arn: true and a schedule's target; a pipe role's
+# trust (aws:SourceAccount, aws:SourceArn); the API destination policy; and
+# the ARNs of the chart's own policies attached beside policy or policies
+# (ACK's Role takes policy ARNs or references, not both).
+account_id: null
+partition: aws
+
+# The module's variables, in variables.tf's order, with its defaults.
+
+# Controls whether resources should be created
+create: true
+
+# Controls whether IAM roles should be created
+create_role: true
+
+# Controls whether an IAM role should be created for the pipes only
+create_pipe_role_only: false
+
+# Controls whether to append '-rule' to the name of the rule
+append_rule_postfix: true
+
+# Controls whether to append '-connection' to the name of the connection
+append_connection_postfix: true
+
+# Controls whether to append '-destination' to the name of the destination
+append_destination_postfix: true
+
+# Controls whether to append '-group' to the name of the schedule group
+append_schedule_group_postfix: true
+
+# Controls whether to append '-schedule' to the name of the schedule
+append_schedule_postfix: true
+
+# Controls whether to append '-pipe' to the name of the pipe
+append_pipe_postfix: true
+
+# Controls whether EventBridge Bus resource should be created
+create_bus: true
+
+# Controls whether EventBridge Rule resources should be created
+create_rules: true
+
+# Controls whether EventBridge Target resources should be created
+create_targets: true
+
+# Controls whether EventBridge Permission resources should be created
+create_permissions: true
+
+# Controls whether EventBridge Archive resources should be created
+create_archives: false
+
+# Controls whether EventBridge Connection resources should be created
+# Needs allow_alpha (alpha): Connection is an ack-extensions kind (outside
+# ACK's releases): needs allow_alpha: true.
+create_connections: false
+
+# Controls whether EventBridge Destination resources should be created
+# Needs allow_alpha (alpha): APIDestination is an ack-extensions kind
+# (outside ACK's releases): needs allow_alpha: true.
+create_api_destinations: false
+
+# Controls whether default schemas discoverer should be created
+# Needs allow_alpha (alpha): Discoverer is an ack-extensions Cloud Control
+# kind (outside ACK's releases): needs allow_alpha: true.
+create_schemas_discoverer: false
+
+# Controls whether EventBridge Schedule Group resources should be created
+create_schedule_groups: true
+
+# Controls whether EventBridge Schedule resources should be created
+create_schedules: true
+
+# Controls whether EventBridge Pipes resources should be created
+create_pipes: true
+
+# Controls whether EventBridge log delivery source resource should be
+# created
+create_log_delivery_source: true
+
+# Controls whether EventBridge log delivery resources should be created
+create_log_delivery: true
+
+# Region where the resource(s) will be managed. Defaults to the region set
+# in the provider configuration
+region: null
+
+# A unique name for your EventBridge Bus
+bus_name: "default"
+
+# Event bus description
+# Not supported (gap): ACK's EventBus (eventbridge-controller v1.9.2) has no
+# description field.
+bus_description: null
+
+# The configuration block for the EventBridge bus log config settings
+# Not supported (gap): ACK's EventBus (eventbridge-controller v1.9.2) has no
+# logConfig field; without it the log delivery source takes ERROR_LOGS, as
+# the module does when log_config is null.
+log_config: null
+
+# Map of the configuration block for the EventBridge bus log delivery
+# settings (key is the type of log delivery: cloudwatch_logs, s3, firehose)
+log_delivery: {}
+
+# Name of log delivery source
+log_delivery_source_name: null
+
+# The partner event source that the new event bus will be matched with. Must
+# match name.
+event_source_name: null
+
+# The identifier of the AWS KMS customer managed key for EventBridge to use,
+# if you choose to use a customer managed key to encrypt events on this
+# event bus. The identifier can be the key Amazon Resource Name (ARN),
+# KeyId, key alias, or key alias ARN.
+# Not supported (gap): ACK's EventBus (eventbridge-controller v1.9.2) has no
+# kmsKeyIdentifier field.
+kms_key_identifier: null
+
+# Configuration details of the Amazon SQS queue for EventBridge to use as a
+# dead-letter queue (DLQ)
+# Not supported (gap): ACK's EventBus (eventbridge-controller v1.9.2) has no
+# deadLetterConfig field.
+dead_letter_config: {}
+
+# Default schemas discoverer description
+schemas_discoverer_description: "Auto schemas discoverer event"
+
+# A map of objects with EventBridge Rule definitions.
+# In part: accepted, but a rule's name_prefix (Terraform's random suffix
+# would change between renders) and force_destroy (ACK's Rule,
+# eventbridge-controller v1.9.2, has no ForceDelete) are refused.
+rules: {}
+
+# A map of objects with EventBridge Target definitions.
+# In part: accepted, but a target's destination (an API destination this
+# chart makes: its ARN ends in an ID AWS gives, and ACK's Rule targets take
+# no reference), appsync_target (ACK's Rule targets have no
+# AppSyncParameters, eventbridge-controller v1.9.2) and force_destroy are
+# refused; target_id defaults to the target's name (Terraform: a random ID).
+targets: {}
+
+# A map of objects with the EventBridge Archive definitions.
+# In part: accepted, but an archive's kms_key_identifier is refused: ACK's
+# Archive (eventbridge-controller v1.9.2) has no field for it.
+archives: {}
+
+# A map of objects with EventBridge Permission definitions.
+# In part: accepted on the bus the chart makes, as statements of its
+# resource policy (ACK's EventBus.policy; Terraform calls PutPermission). On
+# a bus the chart does not make (create_bus: false), or with an
+# event_bus_name naming another bus, refused: neither ACK nor ack-extensions
+# has a Permission kind. The chart owns the whole policy: a statement added
+# outside the component is removed.
+permissions: {}
+
+# A map of objects with EventBridge Connection definitions.
+# In part: accepted, but a connection's secret values (auth_parameters'
+# api_key.value, basic.password, oauth.client_parameters.client_secret) are
+# references to Kubernetes Secrets, {secretName, key} (docs/secrets.md): a
+# string is refused; and kms_key_identifier is refused (ack-extensions'
+# Connection has no field for it).
+connections: {}
+
+# A map of objects with EventBridge Destination definitions.
+api_destinations: {}
+
+# A map of objects with EventBridge Schedule Group definitions.
+# Needs allow_alpha (alpha): ScheduleGroup is an ack-extensions kind
+# (outside ACK's releases): needs allow_alpha: true; a group's name_prefix
+# is refused (Terraform's random suffix would change between renders).
+schedule_groups: {}
+
+# A map of objects with EventBridge Schedule definitions.
+# Needs allow_alpha (alpha): Schedule is an ack-extensions kind (outside
+# ACK's releases): needs allow_alpha: true; a schedule's name_prefix is
+# refused (Terraform's random suffix would change between renders).
+schedules: {}
+
+# A map of objects with EventBridge Pipe definitions.
+# In part: accepted, but a pipe's kms_key_identifier and log_configuration
+# are refused (ACK's Pipe, pipes-controller v1.8.0, has neither field), and
+# so is an enrichment naming an API destination this chart makes (ACK's Pipe
+# takes no reference, and the ARN ends in an ID AWS gives); role_name_prefix
+# names the pipe's role as given, without Terraform's random suffix.
+pipes: {}
+
+# A map of tags to assign to resources.
+tags: {}
+
+# A map of objects with EventBridge Schedule Group create and delete
+# timeouts.
+# Not supported (by-design): Terraform's create and delete timeouts: the
+# ack-extensions controller retries until the schedule group is synced, and
+# Bundt waits for it.
+schedule_group_timeouts: {}
+
+# Name of IAM role to use for EventBridge
+role_name: null
+
+# Description of IAM role to use for EventBridge
+role_description: null
+
+# Path of IAM role to use for EventBridge
+role_path: null
+
+# Path of IAM policy to use for EventBridge
+policy_path: null
+
+# Specifies to force detaching any policies the IAM role has before
+# destroying it.
+# In part: accepted true (the default) only: ACK detaches the role's managed
+# policies before it deletes the role, always.
+role_force_detach_policies: true
+
+# The ARN of the policy that is used to set the permissions boundary for the
+# IAM role used by EventBridge
+role_permissions_boundary: null
+
+# A map of tags to assign to IAM role
+role_tags: {}
+
+# List of approved roles to be passed
+ecs_pass_role_resources: []
+
+# Controls whether the Kinesis policy should be added to IAM role for
+# EventBridge Target
+attach_kinesis_policy: false
+
+# Controls whether the Kinesis Firehose policy should be added to IAM role
+# for EventBridge Target
+attach_kinesis_firehose_policy: false
+
+# Controls whether the SQS policy should be added to IAM role for
+# EventBridge Target
+attach_sqs_policy: false
+
+# Controls whether the SNS policy should be added to IAM role for
+# EventBridge Target
+attach_sns_policy: false
+
+# Controls whether the ECS policy should be added to IAM role for
+# EventBridge Target
+attach_ecs_policy: false
+
+# Controls whether the Lambda Function policy should be added to IAM role
+# for EventBridge Target
+attach_lambda_policy: false
+
+# Controls whether the StepFunction policy should be added to IAM role for
+# EventBridge Target
+attach_sfn_policy: false
+
+# Controls whether the Cloudwatch policy should be added to IAM role for
+# EventBridge Target
+attach_cloudwatch_policy: false
+
+# Controls whether the API Destination policy should be added to IAM role
+# for EventBridge Target
+attach_api_destination_policy: false
+
+# Controls whether X-Ray tracing policy should be added to IAM role for
+# EventBridge
+# In part: accepted: the role gets AWS's managed AWSXrayWriteOnlyAccess
+# policy by ARN; Terraform copies its document into a policy of its own (so
+# its exclusive aws_iam_policy_attachment cannot detach it from other
+# roles), which a render cannot do, since it cannot read the managed policy.
+attach_tracing_policy: false
+
+# The Amazon Resource Name (ARN) of the Kinesis Streams you want to use as
+# EventBridge targets
+kinesis_target_arns: []
+
+# The Amazon Resource Name (ARN) of the Kinesis Firehose Delivery Streams
+# you want to use as EventBridge targets
+kinesis_firehose_target_arns: []
+
+# The Amazon Resource Name (ARN) of the AWS SQS Queues you want to use as
+# EventBridge targets
+sqs_target_arns: []
+
+# The Amazon Resource Name (ARN) of the AWS SNS's you want to use as
+# EventBridge targets
+sns_target_arns: []
+
+# The Amazon Resource Name (ARN) of the AWS KMS's configured for AWS SNS you
+# want Decrypt/GenerateDataKey for
+sns_kms_arns: ["*"]
+
+# The Amazon Resource Name (ARN) of the AWS ECS Tasks you want to use as
+# EventBridge targets
+ecs_target_arns: []
+
+# The Amazon Resource Name (ARN) of the Lambda Functions you want to use as
+# EventBridge targets
+lambda_target_arns: []
+
+# The Amazon Resource Name (ARN) of the StepFunctions you want to use as
+# EventBridge targets
+sfn_target_arns: []
+
+# The Amazon Resource Name (ARN) of the Cloudwatch Log Streams you want to
+# use as EventBridge targets
+cloudwatch_target_arns: []
+
+# Controls whether policy_json should be added to IAM role
+attach_policy_json: false
+
+# Controls whether policy_jsons should be added to IAM role
+attach_policy_jsons: false
+
+# Controls whether policy should be added to IAM role
+attach_policy: false
+
+# Controls whether list of policies should be added to IAM role
+attach_policies: false
+
+# Number of policies JSON to attach to IAM role
+number_of_policy_jsons: 0
+
+# Number of policies to attach to IAM role
+number_of_policies: 0
+
+# Controls whether policy_statements should be added to IAM role
+attach_policy_statements: false
+
+# Additional trusted entities for assuming roles (trust relationship)
+trusted_entities: []
+
+# An additional policy document as JSON to attach to IAM role
+policy_json: null
+
+# List of additional policy documents as JSON to attach to IAM role
+policy_jsons: []
+
+# An additional policy document ARN to attach to IAM role
+policy: null
+
+# List of policy statements ARN to attach to IAM role
+policies: []
+
+# Map of dynamic policy statements to attach to IAM role
+policy_statements: {}

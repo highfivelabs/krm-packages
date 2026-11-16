@@ -1,0 +1,5 @@
+# expect: namePrefix: Does not match pattern
+account_id: "111122223333"
+region: us-east-1
+bus_name: b
+namePrefix: Shop

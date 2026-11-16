@@ -1,0 +1,5 @@
+# expect: eventbridge: create_connections needs the alpha kind Connection (ack-extensions)
+account_id: "111122223333"
+region: us-east-1
+bus_name: b
+create_connections: true

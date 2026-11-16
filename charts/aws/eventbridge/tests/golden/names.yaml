@@ -1,0 +1,89 @@
+---
+# Source: eventbridge/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: names-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "role"
+spec:
+  name: "shop-dev-use1-events"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"events.amazonaws.com\"]}}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "Name"
+      value: "shop-dev-use1-events"
+    - key: "team"
+      value: "shop"
+---
+# Source: eventbridge/templates/bus.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: DeliverySource
+metadata:
+  name: names-log-source
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "log-source"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "ignored"
+  logType: ERROR_LOGS
+  resourceARN: "arn:aws:events:us-east-1:111122223333:event-bus/shop-dev-use1-bus"
+  tags:
+    "team": "shop"
+---
+# Source: eventbridge/templates/bus.yaml
+apiVersion: eventbridge.services.k8s.aws/v1alpha1
+kind: EventBus
+metadata:
+  name: names-bus
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "bus"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "shop-dev-use1-bus"
+  tags:
+    - key: "team"
+      value: "shop"
+---
+# Source: eventbridge/templates/rules.yaml
+apiVersion: eventbridge.services.k8s.aws/v1alpha1
+kind: Rule
+metadata:
+  name: names-rule-orders
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "rule-orders"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "orders-rule"
+  eventBusRef:
+    from:
+      name: names-bus
+  eventPattern: "{\"source\":[\"shop\"]}"
+  tags:
+    - key: "Name"
+      value: "orders-rule"
+    - key: "team"
+      value: "shop"

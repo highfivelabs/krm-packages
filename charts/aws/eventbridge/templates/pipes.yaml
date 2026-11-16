@@ -1,0 +1,392 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf and iam_pipes.tf, the pipes (aws_pipes_pipe, pipes/Pipe), each with
+its role (aws_iam_role.eventbridge_pipe, iam/Role), trusting
+pipes.amazonaws.com from this account's pipe, and the policy for its
+source, enrichment and target services (aws_iam_policy.service, iam/Policy
+in the role's policyRefs), built from iam_pipes.tf's service integrations.
+*/ -}}
+{{- $v := .Values -}}
+{{- if and $v.create $v.create_pipes }}
+{{- $rel := .Release.Name }}
+{{- $createRoles := or $v.create_role $v.create_pipe_role_only }}
+{{- /* iam_pipes.tf, local.aws_service_policies */}}
+{{- $svc := dict
+  "sqs_source" (list "sqs:ReceiveMessage" "sqs:DeleteMessage" "sqs:GetQueueAttributes")
+  "sqs_target" (list "sqs:SendMessage")
+  "sqs_dlq" (list "sqs:SendMessage")
+  "dynamodb" (list "dynamodb:DescribeStream" "dynamodb:GetRecords" "dynamodb:GetShardIterator" "dynamodb:ListStreams")
+  "kinesis_source" (list "kinesis:DescribeStream" "kinesis:DescribeStreamSummary" "kinesis:GetRecords" "kinesis:GetShardIterator" "kinesis:ListShards" "kinesis:ListStreams" "kinesis:SubscribeToShard")
+  "kinesis_target" (list "kinesis:PutRecord" "kinesis:PutRecords")
+  "mq" (list "mq:DescribeBroker" "secretsmanager:GetSecretValue" "ec2:CreateNetworkInterface" "ec2:DeleteNetworkInterface" "ec2:DescribeNetworkInterfaces" "ec2:DescribeSecurityGroups" "ec2:DescribeSubnets" "ec2:DescribeVpcs" "logs:CreateLogGroup" "logs:CreateLogStream" "logs:PutLogEvents")
+  "msk" (list "kafka:DescribeClusterV2" "kafka:GetBootstrapBrokers" "ec2:CreateNetworkInterface" "ec2:DeleteNetworkInterface" "ec2:DescribeNetworkInterfaces" "ec2:DescribeSecurityGroups" "ec2:DescribeSubnets" "ec2:DescribeVpcs" "logs:CreateLogGroup" "logs:CreateLogStream" "logs:PutLogEvents")
+  "lambda" (list "lambda:InvokeFunction")
+  "step_functions" (list "states:StartExecution" "states:StartSyncExecution")
+  "api_gateway" (list "execute-api:Invoke")
+  "api_destination" (list "events:InvokeApiDestination")
+  "batch" (list "batch:SubmitJob")
+  "logs" (list "logs:DescribeLogGroups" "logs:DescribeLogStreams" "logs:CreateLogStream" "logs:PutLogEvents")
+  "ecs" (list "ecs:RunTask" "ecs:TagResource")
+  "ecs_iam_passrole" (list "iam:PassRole")
+  "eventbridge" (list "events:PutEvents")
+  "firehose" (list "firehose:PutRecord" "firehose:PutRecordBatch")
+  "inspector" (list "inspector:CreateAssessmentTemplate")
+  "redshift" (list "redshift-data:ExecuteStatement")
+  "sagemaker" (list "sagemaker:CreatePipeline")
+  "sns" (list "sns:Publish")
+}}
+{{- range $key := keys ($v.pipes | default dict) | sortAlpha }}
+{{- $p := index $v.pipes $key }}
+{{- range $f := list "kms_key_identifier" "log_configuration" }}
+{{- if not (empty (get $p $f)) }}
+{{- fail (printf "eventbridge: pipes.%s.%s is not supported: ACK's Pipe (pipes-controller v1.8.0) has no field for it (docs/aws.md)" $key $f) }}
+{{- end }}
+{{- end }}
+{{- if and $p.enrichment (hasKey ($v.api_destinations | default dict) (toString $p.enrichment)) }}
+{{- fail (printf "eventbridge: pipes.%s.enrichment names an API destination this chart makes, which is not supported: its ARN ends in an ID AWS gives, and ACK's Pipe takes no reference (docs/aws.md); give the destination's ARN" $key) }}
+{{- end }}
+{{- if not (and $p.source $p.target) }}
+{{- fail (printf "eventbridge: pipes.%s needs source and target (ARNs)" $key) }}
+{{- end }}
+{{- $name := include "ack.cloudName" (list $ "pipe" (include "eb.key" (list $key "-pipe" $v.append_pipe_postfix)) 64) }}
+{{- $roleObj := include "ack.name" (list $rel "pipe-role" $key) }}
+{{- $makeRole := and $createRoles (ne (toString (get $p "create_role")) "false") }}
+{{- if $makeRole }}
+{{- $roleName := include "ack.cloudName" (list $ "IAM role" ($p.role_name_prefix | default $key) 64) }}
+{{- $why := printf "pipes.%s's role (its trust names this account's pipe: aws:SourceAccount, aws:SourceArn)" $key }}
+{{- include "eb.need" (list $ "account_id" $why) }}
+{{- include "eb.need" (list $ "region" $why) }}
+{{- /* local.role_for_pipes' service_integrations: [values], services, resource prefix, matching values */}}
+{{- $enr := toString ($p.enrichment | default "") }}
+{{- $sp := $p.source_parameters | default dict }}
+{{- $dlq := list }}
+{{- with (get (get $sp "dynamodb_stream_parameters" | default dict) "dead_letter_config") }}{{ $dlq = append $dlq .arn }}{{ end }}
+{{- with (get (get $sp "kinesis_stream_parameters" | default dict) "dead_letter_config") }}{{ $dlq = append $dlq .arn }}{{ end }}
+{{- $ints := dict
+  "dynamodb" (list (list $p.source) (list "dynamodb") "")
+  "mq" (list (list $p.source) (list "mq") "")
+  "msk" (list (list $p.source) (list "kafka") "")
+  "sqs_source" (list (list $p.source) (list "sqs") "")
+  "kinesis_source" (list (list $p.source) (list "kinesis") "")
+  "lambda" (list (list $p.target $enr) (list "lambda") "")
+  "step_functions" (list (list $p.target $enr) (list "states") "")
+  "api_gateway" (list (list $p.target) (list "execute-api") "")
+  "api_destination" (list (list $p.target) (list "events") "api-destination/")
+  "sqs_target" (list (list $p.target) (list "sqs") "")
+  "kinesis_target" (list (list $p.target) (list "kinesis") "")
+  "batch" (list (list $p.target) (list "batch") "")
+  "logs" (list (list (printf "%s:*" $p.target)) (list "logs") "")
+  "ecs" (list (list (regexReplaceAll ":\\d+$" (toString $p.target) ":*")) (list "ecs") "")
+  "ecs_iam_passrole" (list (list $p.target) (list "ecs") "")
+  "eventbridge" (list (list $p.target) (list "events") "event-bus/")
+  "firehose" (list (list $p.target) (list "firehose") "")
+  "inspector" (list (list $p.target) (list "inspector") "")
+  "redshift" (list (list $p.target) (list "redshift") "")
+  "sagemaker" (list (list $p.target) (list "sagemaker") "")
+  "sns" (list (list $p.target) (list "sns") "")
+  "sqs_dlq" (list $dlq (list "sqs") "")
+}}
+{{- $stmts := list }}
+{{- range $ik := keys $ints | sortAlpha }}
+{{- $i := index $ints $ik }}
+{{- $res := list }}
+{{- range $arn := index $i 0 }}
+{{- $a := toString $arn }}
+{{- if $a }}
+{{- $parts := splitList ":" $a }}
+{{- $svcOk := or (eq $a "*") (lt (len $parts) 3) (has (index $parts 2 | default "") (index $i 1)) }}
+{{- $preOk := or (not (index $i 2)) (lt (len $parts) 6) (hasPrefix (index $i 2) (index $parts 5 | default "")) }}
+{{- if and $svcOk $preOk }}{{ $res = append $res $a }}{{ end }}
+{{- end }}
+{{- end }}
+{{- if $res }}
+{{- $sid := regexReplaceAll "[^0-9A-Za-z]" (replace " " "" (title (regexReplaceAll "[_-]" (printf "%s%s" $key (title $ik)) " "))) "" }}
+{{- $stmts = append $stmts (dict "Sid" $sid "Effect" "Allow" "Action" (index $svc $ik) "Resource" $res) }}
+{{- end }}
+{{- end }}
+{{- $attach := and (ne (toString (get $p "attach_policies_for_integrations")) "false") $stmts }}
+{{- if $attach }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "pipe-policy" $key)) "id" (printf "policy-pipe-%s" $key)) | nindent 2 }}
+spec:
+  name: {{ printf "%s-%s" $roleName $key | quote }}
+{{- with $p.role_path }}
+  path: {{ . | quote }}
+{{- end }}
+  policyDocument: {{ toJson (dict "Version" "2012-10-17" "Statement" $stmts) | quote }}
+{{- end }}
+{{- $trust := dict "Version" "2012-10-17" "Statement" (list (dict "Effect" "Allow" "Action" (list "sts:AssumeRole") "Principal" (dict "Service" (list "pipes.amazonaws.com")) "Condition" (dict "StringEquals" (dict "aws:SourceAccount" (list $v.account_id) "aws:SourceArn" (list (printf "arn:%s:pipes:%s:%s:pipe/%s" $v.partition $v.region $v.account_id $name)))))) }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $roleObj "id" (printf "role-pipe-%s" $key)) | nindent 2 }}
+spec:
+  name: {{ $roleName | quote }}
+{{- with $p.role_description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with $p.role_path }}
+  path: {{ . | quote }}
+{{- end }}
+{{- with $p.role_permissions_boundary }}
+  permissionsBoundary: {{ . | quote }}
+{{- end }}
+  assumeRolePolicyDocument: {{ toJson $trust | quote }}
+{{- if $attach }}
+  policyRefs:
+    - from:
+        name: {{ include "ack.name" (list $rel "pipe-policy" $key) }}
+{{- end }}
+{{- with include "ack.tags" (list $ (dict "Name" ($p.role_name_prefix | default $key)) ($p.role_tags | default dict) $v.tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+---
+apiVersion: pipes.services.k8s.aws/v1alpha1
+kind: Pipe
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "pipe" $key)) "id" (printf "pipe-%s" $key) "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ $name | quote }}
+{{- if $p.role_arn }}
+  roleARN: {{ $p.role_arn | quote }}
+{{- else if $makeRole }}
+  roleRef:
+    from:
+      name: {{ $roleObj }}
+{{- else }}
+{{- fail (printf "eventbridge: pipes.%s needs role_arn: the chart makes no role for it (create_role and create_pipe_role_only are false, or the pipe's create_role is)" $key) }}
+{{- end }}
+  source: {{ $p.source | quote }}
+  target: {{ $p.target | quote }}
+{{- with $p.description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with $p.desired_state }}
+  desiredState: {{ . | quote }}
+{{- end }}
+{{- with $p.source_parameters }}
+  sourceParameters:
+{{- with .filter_criteria }}
+    filterCriteria:
+      filters:
+{{- range (kindIs "map" . | ternary (values .) .) }}
+        - pattern: {{ .pattern | quote }}
+{{- end }}
+{{- end }}
+{{- with .sqs_queue_parameters }}
+    sqsQueueParameters:
+{{- include "eb.batching" . | nindent 6 }}
+{{- end }}
+{{- with .dynamodb_stream_parameters }}
+    dynamoDBStreamParameters:
+{{- include "eb.stream" . | nindent 6 }}
+{{- end }}
+{{- with .kinesis_stream_parameters }}
+    kinesisStreamParameters:
+{{- include "eb.stream" . | nindent 6 }}
+{{- with .starting_position_timestamp }}
+      startingPositionTimestamp: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with .managed_streaming_kafka_parameters }}
+    managedStreamingKafkaParameters:
+{{- include "eb.batching" . | nindent 6 }}
+{{- with .consumer_group_id }}
+      consumerGroupID: {{ . | quote }}
+{{- end }}
+{{- with .starting_position }}
+      startingPosition: {{ . | quote }}
+{{- end }}
+{{- with .topic_name }}
+      topicName: {{ . | quote }}
+{{- end }}
+{{- with .credentials }}
+      credentials:
+{{- with .client_certificate_tls_auth }}
+        clientCertificateTLSAuth: {{ . | quote }}
+{{- end }}
+{{- with .sasl_scram_512_auth }}
+        saslSCRAM512Auth: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with .rabbitmq_broker_parameters }}
+    rabbitMQBrokerParameters:
+{{- include "eb.batching" . | nindent 6 }}
+      queueName: {{ .queue_name | quote }}
+{{- with .virtual_host }}
+      virtualHost: {{ . | quote }}
+{{- end }}
+      credentials:
+        basicAuth: {{ .basic_auth | quote }}
+{{- end }}
+{{- with .self_managed_kafka_parameters }}
+    selfManagedKafkaParameters:
+{{- include "eb.batching" . | nindent 6 }}
+{{- with .additional_bootstrap_servers }}
+      additionalBootstrapServers: {{ toJson . }}
+{{- end }}
+{{- with .consumer_group_id }}
+      consumerGroupID: {{ . | quote }}
+{{- end }}
+{{- with .server_root_ca_certificate }}
+      serverRootCaCertificate: {{ . | quote }}
+{{- end }}
+{{- with .starting_position }}
+      startingPosition: {{ . | quote }}
+{{- end }}
+{{- with .topic_name }}
+      topicName: {{ . | quote }}
+{{- end }}
+{{- with .credentials }}
+      credentials:
+{{- with .basic_auth }}
+        basicAuth: {{ . | quote }}
+{{- end }}
+{{- with .client_certificate_tls_auth }}
+        clientCertificateTLSAuth: {{ . | quote }}
+{{- end }}
+{{- with .sasl_scram_256_auth }}
+        saslSCRAM256Auth: {{ . | quote }}
+{{- end }}
+{{- with .sasl_scram_512_auth }}
+        saslSCRAM512Auth: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with .vpc }}
+      vpc:
+{{- with .security_groups }}
+        securityGroup: {{ toJson . }}
+{{- end }}
+{{- /* main.tf reads the subnets from vpc.vpc (sic); vpc.subnets is taken too */}}
+{{- with (.subnets | default .vpc) }}
+        subnets: {{ toJson . }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with $p.target_parameters }}
+  targetParameters:
+{{- with .input_template }}
+    inputTemplate: {{ . | quote }}
+{{- end }}
+{{- with .sqs_queue_parameters }}
+    sqsQueueParameters:
+{{- with .message_deduplication_id }}
+      messageDeduplicationID: {{ . | quote }}
+{{- end }}
+{{- with .message_group_id }}
+      messageGroupID: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with .kinesis_stream_parameters }}
+    kinesisStreamParameters:
+      partitionKey: {{ .partition_key | quote }}
+{{- end }}
+{{- with .cloudwatch_logs_parameters }}
+    cloudWatchLogsParameters:
+{{- with .log_stream_name }}
+      logStreamName: {{ . | quote }}
+{{- end }}
+{{- with .timestamp }}
+      timestamp: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with .lambda_function_parameters }}
+    lambdaFunctionParameters:
+      invocationType: {{ .invocation_type | quote }}
+{{- end }}
+{{- with .step_function_state_machine_parameters }}
+    stepFunctionStateMachineParameters:
+      invocationType: {{ .invocation_type | quote }}
+{{- end }}
+{{- with .eventbridge_event_bus_parameters }}
+    eventBridgeEventBusParameters:
+{{- with .detail_type }}
+      detailType: {{ . | quote }}
+{{- end }}
+{{- with .endpoint_id }}
+      endpointID: {{ . | quote }}
+{{- end }}
+{{- with .resources }}
+      resources: {{ toJson . }}
+{{- end }}
+{{- with .source }}
+      source: {{ . | quote }}
+{{- end }}
+{{- with .time }}
+      time: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with .http_parameters }}
+    httpParameters:
+{{- include "eb.http" . | nindent 6 }}
+{{- end }}
+{{- with .ecs_task_parameters }}
+    ecsTaskParameters:
+{{- if not (kindIs "invalid" .enable_ecs_managed_tags) }}
+      enableECSManagedTags: {{ .enable_ecs_managed_tags }}
+{{- end }}
+{{- if not (kindIs "invalid" .enable_execute_command) }}
+      enableExecuteCommand: {{ .enable_execute_command }}
+{{- end }}
+{{- with .launch_type }}
+      launchType: {{ . | quote }}
+{{- end }}
+{{- with .platform_version }}
+      platformVersion: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .task_count) }}
+      taskCount: {{ int64 .task_count }}
+{{- end }}
+{{- with .task_definition_arn }}
+      taskDefinitionARN: {{ . | quote }}
+{{- end }}
+      networkConfiguration:
+        awsVPCConfiguration:
+          assignPublicIP: {{ .assign_public_ip | default "DISABLED" | quote }}
+          securityGroups: {{ toJson (.security_groups | default list) }}
+          subnets: {{ toJson (.subnets | default list) }}
+      overrides:
+        containerOverrides:
+          - name: {{ .container_name | quote }}
+            command: {{ toJson (.command | default list) }}
+{{- with .environment }}
+            environment:
+{{- range . }}
+              - name: {{ .name | default "" | quote }}
+                value: {{ .value | default "" | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with $p.enrichment }}
+  enrichment: {{ . | quote }}
+{{- end }}
+{{- with $p.enrichment_parameters }}
+  enrichmentParameters:
+{{- with .input_template }}
+    inputTemplate: {{ . | quote }}
+{{- end }}
+{{- with .http_parameters }}
+    httpParameters:
+{{- include "eb.http" . | nindent 6 }}
+{{- end }}
+{{- end }}
+{{- $tags := include "ack.tags" (list $ $v.tags ($p.tags | default dict)) | fromJson }}
+{{- if $tags }}
+  tags:
+{{- range $k := keys $tags | sortAlpha }}
+    {{ $k | quote }}: {{ index $tags $k | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

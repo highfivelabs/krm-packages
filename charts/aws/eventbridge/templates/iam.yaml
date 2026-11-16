@@ -1,0 +1,176 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+iam.tf: the module's role for EventBridge (aws_iam_role.eventbridge,
+iam/Role), trusting events.amazonaws.com, the trusted entities and, with
+schedules, scheduler.amazonaws.com; and the policies the module makes and
+attaches (aws_iam_policy with aws_iam_policy_attachment, iam/Policy in the
+role's policyRefs): one per target service (kinesis, kinesis_firehose,
+sqs, sns, ecs, lambda, sfn, api_destination, cloudwatch), the policy_json
+and policy_jsons documents and the policy_statements. The policy ARNs it is
+given (policy, policies; aws_iam_role_policy_attachment) and AWS's
+AWSXrayWriteOnlyAccess (attach_tracing_policy) are the role's policies.
+*/ -}}
+{{- $v := .Values -}}
+{{- if and $v.create $v.create_role }}
+{{- $n := include "eb.names" . | fromJson }}
+{{- $role := $n.role }}
+{{- if not $role }}
+{{- fail "eventbridge: role_name or bus_name (or names.role) is required: the IAM role's name" }}
+{{- end }}
+{{- if ne (toString $v.role_force_detach_policies) "true" }}
+{{- fail "eventbridge: role_force_detach_policies false is not supported: ACK detaches the role's managed policies before it deletes the role, always (docs/aws.md); only its default, true, is accepted" }}
+{{- end }}
+{{- $policies := list }}
+{{- $simple := list
+  (list "attach_kinesis_policy" "kinesis" "KinesisAccess" (list "kinesis:PutRecord") $v.kinesis_target_arns)
+  (list "attach_kinesis_firehose_policy" "kinesis-firehose" "KinesisFirehoseAccess" (list "firehose:PutRecord") $v.kinesis_firehose_target_arns)
+  (list "attach_sqs_policy" "sqs" "SQSAccess" (list "sqs:SendMessage*" "kms:Decrypt" "kms:GenerateDataKey") $v.sqs_target_arns)
+}}
+{{- range $s := $simple }}
+{{- if index $v (index $s 0) }}
+{{- $policies = append $policies (dict "id" (index $s 1) "name" (printf "%s-%s" $role (index $s 1)) "stmts" (list (dict "Sid" (index $s 2) "Effect" "Allow" "Action" (index $s 3) "Resource" (index $s 4)))) }}
+{{- end }}
+{{- end }}
+{{- if $v.attach_sns_policy }}
+{{- $st := list (dict "Sid" "SNSAccess" "Effect" "Allow" "Action" (list "sns:Publish") "Resource" $v.sns_target_arns) }}
+{{- if $v.sns_kms_arns }}
+{{- $st = append $st (dict "Sid" "SNSKMSAccess" "Effect" "Allow" "Action" (list "kms:Decrypt" "kms:GenerateDataKey") "Resource" $v.sns_kms_arns) }}
+{{- end }}
+{{- $policies = append $policies (dict "id" "sns" "name" (printf "%s-sns" $role) "stmts" $st) }}
+{{- end }}
+{{- if $v.attach_ecs_policy }}
+{{- $res := list }}
+{{- range $v.ecs_target_arns }}{{ $res = append $res (regexReplaceAll ":\\d+$" . ":*") }}{{ end }}
+{{- $st := list (dict "Sid" "ECSAccess" "Effect" "Allow" "Action" (list "ecs:RunTask" "ecs:TagResource") "Resource" $res) (dict "Sid" "PassRole" "Effect" "Allow" "Action" (list "iam:PassRole") "Resource" ($v.ecs_pass_role_resources | default (list "*"))) }}
+{{- $policies = append $policies (dict "id" "ecs" "name" (printf "%s-ecs" $role) "stmts" $st) }}
+{{- end }}
+{{- $simple2 := list
+  (list "attach_lambda_policy" "lambda" "LambdaAccess" (list "lambda:InvokeFunction") $v.lambda_target_arns)
+  (list "attach_sfn_policy" "sfn" "StepFunctionAccess" (list "states:StartExecution") $v.sfn_target_arns)
+}}
+{{- range $s := $simple2 }}
+{{- if index $v (index $s 0) }}
+{{- $policies = append $policies (dict "id" (index $s 1) "name" (printf "%s-%s" $role (index $s 1)) "stmts" (list (dict "Sid" (index $s 2) "Effect" "Allow" "Action" (index $s 3) "Resource" (index $s 4)))) }}
+{{- end }}
+{{- end }}
+{{- if $v.attach_api_destination_policy }}
+{{- /* The destinations' ARNs end in an ID AWS gives: the chart names each
+destination and lets the ID be any (api-destination/<name>/*). */}}
+{{- $res := list }}
+{{- if $v.create_api_destinations }}
+{{- range $k := keys ($v.api_destinations | default dict) | sortAlpha }}
+{{- include "eb.need" (list $ "account_id" "attach_api_destination_policy (the policy names the API destinations' ARNs)") }}
+{{- include "eb.need" (list $ "region" "attach_api_destination_policy (the policy names the API destinations' ARNs)") }}
+{{- $res = append $res (printf "arn:%s:events:%s:%s:api-destination/%s/*" $v.partition $v.region $v.account_id (include "ack.cloudName" (list $ "API destination" (include "eb.key" (list $k "-destination" $v.append_destination_postfix)) 64))) }}
+{{- end }}
+{{- end }}
+{{- if not $res }}
+{{- fail "eventbridge: attach_api_destination_policy needs the API destinations this chart makes (create_api_destinations and api_destinations): the policy's resources are their ARNs, and IAM refuses a statement without resources" }}
+{{- end }}
+{{- $policies = append $policies (dict "id" "api-destination" "name" (printf "%s-api-destination" $role) "stmts" (list (dict "Sid" "APIDestinationAccess" "Effect" "Allow" "Action" (list "events:InvokeApiDestination") "Resource" $res))) }}
+{{- end }}
+{{- if $v.attach_cloudwatch_policy }}
+{{- $policies = append $policies (dict "id" "cloudwatch" "name" (printf "%s-cloudwatch" $role) "stmts" (list (dict "Sid" "CloudwatchAccess" "Effect" "Allow" "Action" (list "logs:DescribeLogGroups" "logs:DescribeLogStreams" "logs:PutLogEvents") "Resource" $v.cloudwatch_target_arns))) }}
+{{- end }}
+{{- if $v.attach_policy_json }}
+{{- if not $v.policy_json }}
+{{- fail "eventbridge: attach_policy_json needs policy_json" }}
+{{- end }}
+{{- /* iam.tf names this one after the role and puts it at role_path */}}
+{{- $policies = append $policies (dict "id" "json" "name" $role "doc" $v.policy_json "path" $v.role_path) }}
+{{- end }}
+{{- if $v.attach_policy_jsons }}
+{{- range $i := until (int $v.number_of_policy_jsons) }}
+{{- if ge $i (len $v.policy_jsons) }}
+{{- fail (printf "eventbridge: number_of_policy_jsons is %d, and policy_jsons has %d (Terraform: index out of range)" (int $v.number_of_policy_jsons) (len $v.policy_jsons)) }}
+{{- end }}
+{{- $policies = append $policies (dict "id" (printf "jsons-%d" $i) "name" (printf "%s-%d" $role $i) "doc" (index $v.policy_jsons $i)) }}
+{{- end }}
+{{- end }}
+{{- if $v.attach_policy_statements }}
+{{- $stmts := list }}
+{{- range $k := keys ($v.policy_statements | default dict) | sortAlpha }}
+{{- $s := index $v.policy_statements $k }}
+{{- $stmts = append $stmts (include "eb.statement" (merge (dict "sid" (get $s "sid" | default (regexReplaceAll "[^0-9A-Za-z]" $k ""))) (omit $s "sid")) | fromJson) }}
+{{- end }}
+{{- $policies = append $policies (dict "id" "inline" "name" (printf "%s-inline" $role) "stmts" $stmts) }}
+{{- end }}
+{{- $arns := list }}
+{{- if $v.attach_tracing_policy }}{{ $arns = append $arns (printf "arn:%s:iam::aws:policy/AWSXrayWriteOnlyAccess" $v.partition) }}{{ end }}
+{{- if and $v.attach_policy $v.policy }}{{ $arns = append $arns $v.policy }}{{ end }}
+{{- if $v.attach_policies }}
+{{- range $i := until (int $v.number_of_policies) }}
+{{- if ge $i (len $v.policies) }}
+{{- fail (printf "eventbridge: number_of_policies is %d, and policies has %d (Terraform: index out of range)" (int $v.number_of_policies) (len $v.policies)) }}
+{{- end }}
+{{- $arns = append $arns (index $v.policies $i) }}
+{{- end }}
+{{- end }}
+{{- range $p := $policies }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "policy" $p.id)) "id" (printf "policy-%s" $p.id)) | nindent 2 }}
+spec:
+  name: {{ $p.name | quote }}
+{{- with (hasKey $p "path" | ternary $p.path $v.policy_path) }}
+  path: {{ . | quote }}
+{{- end }}
+  policyDocument: {{ ($p.doc | default (toJson (dict "Version" "2012-10-17" "Statement" $p.stmts))) | quote }}
+{{- with include "ack.tags" (list $ (dict "Name" $p.name) $v.tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- $principals := list "events.amazonaws.com" }}
+{{- range $e := $v.trusted_entities }}{{ if not (has $e $principals) }}{{ $principals = append $principals $e }}{{ end }}{{ end }}
+{{- if and $v.create_schedules $v.schedules (not (has "scheduler.amazonaws.com" $principals)) }}{{ $principals = append $principals "scheduler.amazonaws.com" }}{{ end }}
+{{- $trust := dict "Version" "2012-10-17" "Statement" (list (dict "Effect" "Allow" "Action" (list "sts:AssumeRole") "Principal" (dict "Service" $principals))) }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "role")) "id" "role") | nindent 2 }}
+spec:
+  name: {{ $role | quote }}
+{{- with $v.role_description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with $v.role_path }}
+  path: {{ . | quote }}
+{{- end }}
+{{- with $v.role_permissions_boundary }}
+  permissionsBoundary: {{ . | quote }}
+{{- end }}
+  assumeRolePolicyDocument: {{ toJson $trust | quote }}
+{{- if and $policies $arns }}
+{{- /* ACK takes a role's policies as ARNs or as references, not both: with
+ARNs given, the ARNs of the policies made here are built, as IAM names them. */}}
+{{- include "eb.need" (list $ "account_id" "attaching the policies this component makes beside policy, policies or the tracing policy (ACK's Role takes ARNs or references, not both)") }}
+  policies:
+{{- range $p := $policies }}
+    - {{ printf "arn:%s:iam::%s:policy%s%s" $v.partition $v.account_id ((hasKey $p "path" | ternary $p.path $v.policy_path) | default "/") $p.name | quote }}
+{{- end }}
+{{- range $arns }}
+    - {{ . | quote }}
+{{- end }}
+{{- else if $policies }}
+  policyRefs:
+{{- range $p := $policies }}
+    - from:
+        name: {{ include "ack.name" (list $.Release.Name "policy" $p.id) }}
+{{- end }}
+{{- else if $arns }}
+  policies:
+{{- range $arns }}
+    - {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with include "ack.tags" (list $ (dict "Name" $role) $v.tags $v.role_tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}

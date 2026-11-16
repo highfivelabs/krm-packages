@@ -1,0 +1,25 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The namePrefix convention (docs/design.md, "Names, labels and tags"): the
+# bus's, rules', archives', connections', API destinations', schedule
+# groups', schedules', pipes' and log delivery objects' names (unique in
+# their account and Region) and the roles' and policies' (unique in the
+# account) carry the namePrefix. An existing bus (create_bus: false) keeps
+# its own name.
+exempt:
+  Delivery: "a log delivery has no name: AWS names it by its source and destination"
+  Discoverer: "a schemas discoverer has no name: AWS gives it an ID"
+nameFields:
+  EventBus: name
+  Rule: name
+  Archive: name
+  Role: name
+  Policy: name
+  Pipe: name
+  DeliverySource: name
+  DeliveryDestination: name
+  Connection: name
+  APIDestination: name
+  ScheduleGroup: name
+  Schedule: name

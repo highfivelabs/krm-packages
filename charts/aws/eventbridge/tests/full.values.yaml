@@ -1,0 +1,212 @@
+# Most of the module's features at once: the alpha kinds (connections, API
+# destinations, schedule groups, schedules, the schemas discoverer), a bus
+# with permissions, archives and log delivery, rules with every target shape
+# ACK carries, pipes with their roles, and every policy the role can take.
+allow_alpha: true
+account_id: "111122223333"
+region: eu-west-1
+bus_name: orders
+event_source_name: null
+create_archives: true
+create_connections: true
+create_api_destinations: true
+create_schemas_discoverer: true
+attach_kinesis_policy: true
+kinesis_target_arns: ["arn:aws:kinesis:eu-west-1:111122223333:stream/orders"]
+attach_kinesis_firehose_policy: true
+kinesis_firehose_target_arns: ["arn:aws:firehose:eu-west-1:111122223333:deliverystream/orders"]
+attach_sqs_policy: true
+sqs_target_arns: ["arn:aws:sqs:eu-west-1:111122223333:orders"]
+attach_sns_policy: true
+sns_target_arns: ["arn:aws:sns:eu-west-1:111122223333:orders"]
+attach_ecs_policy: true
+ecs_target_arns: ["arn:aws:ecs:eu-west-1:111122223333:task-definition/orders:7"]
+attach_lambda_policy: true
+lambda_target_arns: ["arn:aws:lambda:eu-west-1:111122223333:function:orders"]
+attach_sfn_policy: true
+sfn_target_arns: ["arn:aws:states:eu-west-1:111122223333:stateMachine:orders"]
+attach_cloudwatch_policy: true
+cloudwatch_target_arns: ["arn:aws:logs:eu-west-1:111122223333:log-group:/orders:*"]
+attach_api_destination_policy: true
+attach_tracing_policy: true
+attach_policy_json: true
+policy_json: '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["xray:GetSamplingStatisticSummaries"],"Resource":["*"]}]}'
+attach_policy_jsons: true
+number_of_policy_jsons: 1
+policy_jsons: ['{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["xray:GetSamplingRules"],"Resource":["*"]}]}']
+attach_policy: true
+policy: arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+attach_policy_statements: true
+policy_statements:
+  dynamodb:
+    effect: Allow
+    actions: ["dynamodb:BatchWriteItem"]
+    resources: ["arn:aws:dynamodb:eu-west-1:111122223333:table/orders"]
+trusted_entities: ["states.amazonaws.com"]
+role_path: /eventbridge/
+role_tags: {team: orders}
+permissions:
+  "222233334444 OrdersAccount": {}
+  "* OrgAccess":
+    action: events:PutEvents
+    condition_org: o-abc123
+archives:
+  all:
+    description: Everything on the bus
+    retention_days: 7
+  launched:
+    name: launched-orders
+    event_pattern: '{"source":["myapp.orders"],"detail-type":["Launched"]}'
+log_delivery:
+  cloudwatch_logs:
+    destination_arn: arn:aws:logs:eu-west-1:111122223333:log-group:/aws/vendedlogs/events/orders
+  s3:
+    destination_arn: arn:aws:s3:::orders-logs
+    output_format: json
+    s3_delivery_configuration: {enable_hive_compatible_path: true, suffix_path: "{yyyy}/{MM}"}
+  firehose:
+    enabled: false
+    destination_arn: arn:aws:firehose:eu-west-1:111122223333:deliverystream/off
+rules:
+  orders:
+    description: Capture all order data
+    event_pattern: '{"source":["myapp.orders"]}'
+    enabled: true
+  emails:
+    description: Send emails
+    event_pattern: '{"source":["myapp.emails"]}'
+    state: disabled
+    role_arn: true
+  crons:
+    description: Every hour
+    schedule_expression: rate(1 hour)
+    state: true
+targets:
+  orders:
+    - name: send-orders-to-sqs
+      arn: arn:aws:sqs:eu-west-1:111122223333:orders.fifo
+      message_group_id: orders
+      dead_letter_arn: arn:aws:sqs:eu-west-1:111122223333:orders-dlq
+      retry_policy: {maximum_event_age_in_seconds: 300, maximum_retry_attempts: 5}
+    - name: send-orders-to-kinesis
+      arn: arn:aws:kinesis:eu-west-1:111122223333:stream/orders
+      partition_key_path: $.detail.id
+      attach_role_arn: true
+    - name: log-orders
+      arn: arn:aws:logs:eu-west-1:111122223333:log-group:/orders
+      input_transformer:
+        input_paths: {order: $.detail}
+        input_template: |
+          "<order>"
+  emails:
+    - name: run-ecs
+      arn: arn:aws:ecs:eu-west-1:111122223333:cluster/orders
+      attach_role_arn: arn:aws:iam::111122223333:role/ecs-events
+      ecs_target:
+        task_definition_arn: arn:aws:ecs:eu-west-1:111122223333:task-definition/orders:7
+        launch_type: FARGATE
+        task_count: 1
+        tags: {team: orders}
+        network_configuration: {subnets: [subnet-1], security_groups: [sg-1], assign_public_ip: false}
+        placement_constraint: [{type: memberOf, expression: "attribute:ecs.availability-zone in [eu-west-1a]"}]
+    - name: run-batch
+      arn: arn:aws:batch:eu-west-1:111122223333:job-queue/orders
+      batch_target: {job_definition: orders, job_name: orders, array_size: 2, job_attempts: 3}
+  crons:
+    - name: call-api
+      target_id: call-api
+      arn: arn:aws:events:eu-west-1:111122223333:api-destination/external/0123
+      http_target: {path_parameter_values: [a], header_parameters: {X-Team: orders}}
+      run_command_targets: [{key: tag:Name, values: [web]}]
+connections:
+  smee:
+    authorization_type: API_KEY
+    auth_parameters:
+      api_key: {key: x-signature, value: {secretName: smee, key: api-key}}
+  basic:
+    description: Basic auth
+    authorization_type: BASIC
+    auth_parameters:
+      basic: {username: user, password: {secretName: basic-auth, key: password}}
+      invocation_http_parameters:
+        header: [{key: X-Team, value: orders, is_value_secret: false}]
+  oauth:
+    authorization_type: OAUTH_CLIENT_CREDENTIALS
+    auth_parameters:
+      oauth:
+        authorization_endpoint: https://oauth.example.com/token
+        http_method: POST
+        client_parameters: {client_id: orders, client_secret: {secretName: oauth, key: client-secret}}
+        oauth_http_parameters:
+          body: [{key: grant_type, value: client_credentials}]
+api_destinations:
+  smee:
+    description: Smee
+    invocation_endpoint: https://smee.io/hgoubgoibwekt331
+    http_method: POST
+    invocation_rate_limit_per_second: 20
+  github:
+    invocation_endpoint: https://api.github.com/repos/example/dispatches
+    http_method: POST
+    connection_name: oauth
+schedule_groups:
+  prod:
+    tags: {env: prod}
+  dev:
+    name: dev-group
+schedules:
+  lambda_cron:
+    description: Hourly
+    group_name: prod
+    schedule_expression: rate(1 hour)
+    timezone: Europe/London
+    use_flexible_time_window: true
+    maximum_window_in_minutes: 15
+    arn: arn:aws:lambda:eu-west-1:111122223333:function:orders
+    input: '{"job":"cron"}'
+    retry_policy: {maximum_event_age_in_seconds: 300, maximum_retry_attempts: 2}
+  ecs_daily:
+    state: false
+    group_name: elsewhere
+    schedule_expression: cron(0 9 * * ? *)
+    arn: arn:aws:ecs:eu-west-1:111122223333:cluster/orders
+    role_arn: arn:aws:iam::111122223333:role/scheduler-ecs
+    ecs_parameters:
+      task_definition_arn: arn:aws:ecs:eu-west-1:111122223333:task-definition/orders:7
+      launch_type: FARGATE
+      tags: {team: orders}
+      network_configuration: {subnets: [subnet-1], assign_public_ip: true}
+pipes:
+  sqs_to_sqs:
+    source: arn:aws:sqs:eu-west-1:111122223333:in
+    target: arn:aws:sqs:eu-west-1:111122223333:out
+    description: Filter and forward
+    source_parameters:
+      filter_criteria:
+        one: {pattern: '{"body":{"type":["order"]}}'}
+      sqs_queue_parameters: {batch_size: 10, maximum_batching_window_in_seconds: 5}
+    target_parameters:
+      sqs_queue_parameters: {message_group_id: orders}
+    tags: {pipe: sqs}
+  stream_to_lambda:
+    source: arn:aws:dynamodb:eu-west-1:111122223333:table/orders/stream/2026-01-01T00:00:00.000
+    target: arn:aws:lambda:eu-west-1:111122223333:function:orders
+    enrichment: arn:aws:states:eu-west-1:111122223333:stateMachine:enrich
+    role_name_prefix: stream-pipe
+    source_parameters:
+      dynamodb_stream_parameters:
+        starting_position: LATEST
+        batch_size: 5
+        dead_letter_config: {arn: arn:aws:sqs:eu-west-1:111122223333:dlq}
+    target_parameters:
+      lambda_function_parameters: {invocation_type: FIRE_AND_FORGET}
+  given_role:
+    source: arn:aws:kinesis:eu-west-1:111122223333:stream/in
+    target: arn:aws:events:eu-west-1:111122223333:event-bus/other
+    role_arn: arn:aws:iam::111122223333:role/given
+    create_role: false
+    source_parameters:
+      kinesis_stream_parameters: {starting_position: TRIM_HORIZON}
+    target_parameters:
+      eventbridge_event_bus_parameters: {detail_type: Forwarded, source: orders.pipe}
+tags: {team: orders}

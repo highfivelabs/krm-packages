@@ -1,0 +1,6 @@
+# expect: eventbridge: targets.r[0].appsync_target is not supported
+account_id: "111122223333"
+region: us-east-1
+bus_name: b
+rules: {r: {event_pattern: '{}'}}
+targets: {r: [{name: t, arn: x, appsync_target: {graphql_operation: q}}]}

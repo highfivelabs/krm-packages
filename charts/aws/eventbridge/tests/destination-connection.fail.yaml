@@ -1,0 +1,7 @@
+# expect: eventbridge: api_destinations.d needs a connection this chart makes
+account_id: "111122223333"
+region: us-east-1
+bus_name: b
+allow_alpha: true
+create_api_destinations: true
+api_destinations: {d: {invocation_endpoint: https://x, http_method: POST}}

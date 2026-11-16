@@ -1,0 +1,14 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values hack/mock-apply-aws.sh reads from tests/mock.needs.yaml's objects
+# once they are Ready, or from the fake's account: <value>: <resource>/<name>
+# <jsonpath>, or <value>: account <format>. A list given with --set-string
+# replaces the list, so the target's name is read too.
+account_id: account %s
+sqs_target_arns[0]: queues.sqs.services.k8s.aws/eb-out {.status.ackResourceMetadata.arn}
+targets.orders[0].name: queues.sqs.services.k8s.aws/eb-out {.spec.queueName}
+targets.orders[0].arn: queues.sqs.services.k8s.aws/eb-out {.status.ackResourceMetadata.arn}
+pipes.forward.source: queues.sqs.services.k8s.aws/eb-in {.status.ackResourceMetadata.arn}
+pipes.forward.target: queues.sqs.services.k8s.aws/eb-out {.status.ackResourceMetadata.arn}
+log_delivery.cloudwatch_logs.destination_arn: account arn:aws:logs:us-east-1:%s:log-group:/aws/vendedlogs/events/catalog-bus

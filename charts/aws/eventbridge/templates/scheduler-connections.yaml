@@ -1,0 +1,284 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, the kinds ACK lacks, from ack-extensions (behind allow_alpha):
+connections (aws_cloudwatch_event_connection, eventbridge.aws.hfl.dev
+Connection), API destinations (aws_cloudwatch_event_api_destination,
+APIDestination, referencing their connection), schedule groups
+(aws_scheduler_schedule_group, scheduler.aws.hfl.dev ScheduleGroup) and
+schedules (aws_scheduler_schedule, Schedule).
+*/ -}}
+{{- $v := .Values -}}
+{{- if $v.create }}
+{{- $rel := .Release.Name }}
+{{- $region := $v.region }}
+
+{{- /* aws_cloudwatch_event_connection */}}
+{{- if $v.create_connections }}
+{{- include "ack.alpha" (list $ "create_connections" true "Connection (ack-extensions)") }}
+{{- range $key := keys ($v.connections | default dict) | sortAlpha }}
+{{- $c := index $v.connections $key }}
+{{- if $c.kms_key_identifier }}
+{{- fail (printf "eventbridge: connections.%s.kms_key_identifier is not supported: ack-extensions' Connection has no field for it (docs/aws.md)" $key) }}
+{{- end }}
+{{- $ap := $c.auth_parameters | default dict }}
+---
+apiVersion: eventbridge.aws.hfl.dev/v1alpha1
+kind: Connection
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "connection" $key)) "id" (printf "connection-%s" $key) "region" $region) | nindent 2 }}
+spec:
+  name: {{ include "ack.cloudName" (list $ "connection" (include "eb.key" (list $key "-connection" $v.append_connection_postfix)) 64) | quote }}
+{{- with $c.description }}
+  description: {{ . | quote }}
+{{- end }}
+  authorizationType: {{ $c.authorization_type | quote }}
+  authParameters:
+{{- with $ap.api_key }}
+    apiKeyAuthParameters:
+      apiKeyName: {{ .key | quote }}
+      apiKeyValue:
+{{- include "eb.secretRef" (list $ (printf "connections.%s.auth_parameters.api_key.value" $key) .value) | nindent 8 }}
+{{- end }}
+{{- with $ap.basic }}
+    basicAuthParameters:
+      username: {{ .username | quote }}
+      password:
+{{- include "eb.secretRef" (list $ (printf "connections.%s.auth_parameters.basic.password" $key) .password) | nindent 8 }}
+{{- end }}
+{{- with $ap.oauth }}
+    oAuthParameters:
+      authorizationEndpoint: {{ .authorization_endpoint | quote }}
+      httpMethod: {{ .http_method | quote }}
+      clientParameters:
+        clientID: {{ .client_parameters.client_id | quote }}
+        clientSecret:
+{{- include "eb.secretRef" (list $ (printf "connections.%s.auth_parameters.oauth.client_parameters.client_secret" $key) .client_parameters.client_secret) | nindent 10 }}
+{{- with .oauth_http_parameters }}
+      oAuthHTTPParameters:
+{{- include "eb.connParams" . | nindent 8 }}
+{{- end }}
+{{- end }}
+{{- with $ap.invocation_http_parameters }}
+    invocationHTTPParameters:
+{{- include "eb.connParams" . | nindent 6 }}
+{{- end }}
+{{- with $c.invocation_connectivity_parameters }}
+  invocationConnectivityParameters:
+    resourceParameters:
+      resourceConfigurationARN: {{ .resource_configuration_arn | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- /* aws_cloudwatch_event_api_destination */}}
+{{- if $v.create_api_destinations }}
+{{- include "ack.alpha" (list $ "create_api_destinations" true "APIDestination (ack-extensions)") }}
+{{- range $key := keys ($v.api_destinations | default dict) | sortAlpha }}
+{{- $d := index $v.api_destinations $key }}
+{{- $conn := "" }}
+{{- if $v.create_connections }}
+{{- if hasKey ($v.connections | default dict) (toString ($d.connection_name | default "")) }}{{ $conn = $d.connection_name }}
+{{- else if hasKey ($v.connections | default dict) $key }}{{ $conn = $key }}{{ end }}
+{{- end }}
+{{- if not $conn }}
+{{- fail (printf "eventbridge: api_destinations.%s needs a connection this chart makes: connection_name (or the destination's own key) must be a key of connections, with create_connections: true, as in the module" $key) }}
+{{- end }}
+---
+apiVersion: eventbridge.aws.hfl.dev/v1alpha1
+kind: APIDestination
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "api-destination" $key)) "id" (printf "api-destination-%s" $key) "region" $region) | nindent 2 }}
+spec:
+  name: {{ include "ack.cloudName" (list $ "API destination" (include "eb.key" (list $key "-destination" $v.append_destination_postfix)) 64) | quote }}
+{{- with $d.description }}
+  description: {{ . | quote }}
+{{- end }}
+  invocationEndpoint: {{ $d.invocation_endpoint | quote }}
+  httpMethod: {{ $d.http_method | quote }}
+{{- if not (kindIs "invalid" $d.invocation_rate_limit_per_second) }}
+  invocationRateLimitPerSecond: {{ int64 $d.invocation_rate_limit_per_second }}
+{{- end }}
+  connectionRef:
+    from:
+      name: {{ include "ack.name" (list $rel "connection" $conn) }}
+{{- end }}
+{{- end }}
+
+{{- /* aws_scheduler_schedule_group: named by name or its key (main.tf reads
+"name", not the postfixed "Name", so append_schedule_group_postfix changes
+nothing), tagged with its own tags only */}}
+{{- if and $v.create_schedule_groups $v.schedule_groups }}
+{{- include "ack.alpha" (list $ "schedule_groups" true "ScheduleGroup (ack-extensions)") }}
+{{- range $key := keys $v.schedule_groups | sortAlpha }}
+{{- $g := index $v.schedule_groups $key | default dict }}
+{{- if $g.name_prefix }}
+{{- fail (printf "eventbridge: schedule_groups.%s.name_prefix is not supported: Terraform's random suffix would change the name between renders (docs/aws.md)" $key) }}
+{{- end }}
+---
+apiVersion: scheduler.aws.hfl.dev/v1alpha1
+kind: ScheduleGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "schedule-group" $key)) "id" (printf "schedulegroup-%s" $key) "region" $region) | nindent 2 }}
+spec:
+  name: {{ include "ack.cloudName" (list $ "schedule group" ($g.name | default $key) 64) | quote }}
+{{- with include "ack.tags" (list $ ($g.tags | default dict)) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- /* aws_scheduler_schedule */}}
+{{- if and $v.create_schedules $v.schedules }}
+{{- include "ack.alpha" (list $ "schedules" true "Schedule (ack-extensions)") }}
+{{- range $key := keys $v.schedules | sortAlpha }}
+{{- $s := index $v.schedules $key }}
+{{- if $s.name_prefix }}
+{{- fail (printf "eventbridge: schedules.%s.name_prefix is not supported: Terraform's random suffix would change the name between renders (docs/aws.md)" $key) }}
+{{- end }}
+{{- if not (and $s.schedule_expression $s.arn) }}
+{{- fail (printf "eventbridge: schedules.%s needs schedule_expression and arn (the target)" $key) }}
+{{- end }}
+---
+apiVersion: scheduler.aws.hfl.dev/v1alpha1
+kind: Schedule
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "schedule" $key)) "id" (printf "schedule-%s" $key) "region" $region) | nindent 2 }}
+spec:
+  name: {{ include "ack.cloudName" (list $ "schedule" (include "eb.key" (list $key "-schedule" $v.append_schedule_postfix)) 64) | quote }}
+{{- with $s.description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with $s.group_name }}
+{{- if and $v.create_schedule_groups (hasKey ($v.schedule_groups | default dict) .) }}
+  groupRef:
+    from:
+      name: {{ include "ack.name" (list $rel "schedule-group" .) }}
+{{- else }}
+  groupName: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with $s.start_date }}
+  startDate: {{ . | quote }}
+{{- end }}
+{{- with $s.end_date }}
+  endDate: {{ . | quote }}
+{{- end }}
+{{- with $s.kms_key_arn }}
+  kmsKeyARN: {{ . | quote }}
+{{- end }}
+  scheduleExpression: {{ $s.schedule_expression | quote }}
+{{- with $s.timezone }}
+  scheduleExpressionTimezone: {{ . | quote }}
+{{- end }}
+  state: {{ ternary "DISABLED" "ENABLED" (eq (toString (get $s "state")) "false") | quote }}
+  flexibleTimeWindow:
+    mode: {{ ternary "FLEXIBLE" "OFF" (eq (toString (get $s "use_flexible_time_window")) "true") | quote }}
+{{- if not (kindIs "invalid" $s.maximum_window_in_minutes) }}
+    maximumWindowInMinutes: {{ int64 $s.maximum_window_in_minutes }}
+{{- end }}
+  target:
+    arn: {{ $s.arn | quote }}
+{{- if $s.role_arn }}
+    roleARN: {{ $s.role_arn | quote }}
+{{- else }}
+    roleARN: {{ include "eb.roleArn" (list $ (printf "schedules.%s (a schedule's target takes the role's ARN, not a reference)" $key)) | quote }}
+{{- end }}
+{{- with $s.input }}
+    input: {{ . | quote }}
+{{- end }}
+{{- with $s.dead_letter_arn }}
+    deadLetterConfig:
+      arn: {{ . | quote }}
+{{- end }}
+{{- with $s.ecs_parameters }}
+    ecsParameters:
+      taskDefinitionARN: {{ .task_definition_arn | quote }}
+{{- if not (kindIs "invalid" .enable_ecs_managed_tags) }}
+      enableECSManagedTags: {{ .enable_ecs_managed_tags }}
+{{- end }}
+{{- if not (kindIs "invalid" .enable_execute_command) }}
+      enableExecuteCommand: {{ .enable_execute_command }}
+{{- end }}
+{{- with .group }}
+      group: {{ . | quote }}
+{{- end }}
+{{- with .launch_type }}
+      launchType: {{ . | quote }}
+{{- end }}
+{{- with .platform_version }}
+      platformVersion: {{ . | quote }}
+{{- end }}
+{{- with .propagate_tags }}
+      propagateTags: {{ . | quote }}
+{{- end }}
+{{- with .reference_id }}
+      referenceID: {{ . | quote }}
+{{- end }}
+{{- with .tags }}
+      tags:
+        - {{ toJson . }}
+{{- end }}
+{{- if not (kindIs "invalid" .task_count) }}
+      taskCount: {{ int64 .task_count }}
+{{- end }}
+{{- with .capacity_provider_strategy }}
+      capacityProviderStrategy:
+        - capacityProvider: {{ .capacity_provider | quote }}
+{{- if not (kindIs "invalid" .base) }}
+          base: {{ int64 .base }}
+{{- end }}
+{{- if not (kindIs "invalid" .weight) }}
+          weight: {{ int64 .weight }}
+{{- end }}
+{{- end }}
+{{- with .network_configuration }}
+      networkConfiguration:
+{{- include "eb.ecsNetwork" . | nindent 8 }}
+{{- end }}
+{{- with .placement_constraints }}
+      placementConstraints:
+        - type_: {{ .type | quote }}
+{{- with .expression }}
+          expression: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with .placement_strategy }}
+      placementStrategy:
+        - type_: {{ .type | quote }}
+{{- with .field }}
+          field: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with $s.eventbridge_parameters }}
+    eventBridgeParameters:
+      detailType: {{ .detail_type | quote }}
+      source: {{ .source | quote }}
+{{- end }}
+{{- with $s.partition_key }}
+    kinesisParameters:
+      partitionKey: {{ . | quote }}
+{{- end }}
+{{- with $s.sagemaker_pipeline_parameters }}
+{{- with .pipeline_parameter }}
+    sageMakerPipelineParameters:
+      pipelineParameterList:
+        - name: {{ .name | quote }}
+          value: {{ .value | quote }}
+{{- end }}
+{{- end }}
+{{- with $s.message_group_id }}
+    sqsParameters:
+      messageGroupID: {{ . | quote }}
+{{- end }}
+{{- with $s.retry_policy }}
+    retryPolicy:
+      maximumEventAgeInSeconds: {{ int64 .maximum_event_age_in_seconds }}
+      maximumRetryAttempts: {{ int64 .maximum_retry_attempts }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

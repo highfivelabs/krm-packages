@@ -1,0 +1,33 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# What tests/mock.values.yaml needs and the chart does not make: two SQS
+# queues, the rule's target and the pipe's source, and a log group for the
+# log delivery (hack/mock-apply-aws.sh applies them first, deletes them
+# last).
+apiVersion: sqs.services.k8s.aws/v1alpha1
+kind: Queue
+metadata:
+  name: eb-in
+  annotations:
+    services.k8s.aws/region: us-east-1
+spec:
+  queueName: catalog-eb-in
+---
+apiVersion: sqs.services.k8s.aws/v1alpha1
+kind: Queue
+metadata:
+  name: eb-out
+  annotations:
+    services.k8s.aws/region: us-east-1
+spec:
+  queueName: catalog-eb-out
+---
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: eb-logs
+  annotations:
+    services.k8s.aws/region: us-east-1
+spec:
+  name: /aws/vendedlogs/events/catalog-bus

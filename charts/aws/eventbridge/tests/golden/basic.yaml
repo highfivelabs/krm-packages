@@ -1,0 +1,110 @@
+---
+# Source: eventbridge/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: basic-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "role"
+spec:
+  name: "my-bus"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"events.amazonaws.com\"]}}],\"Version\":\"2012-10-17\"}"
+  policyRefs:
+    - from:
+        name: basic-policy-sqs
+  tags:
+    - key: "Name"
+      value: "my-bus"
+---
+# Source: eventbridge/templates/bus.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: DeliverySource
+metadata:
+  name: basic-log-source
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-source"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "my-bus"
+  logType: ERROR_LOGS
+  resourceARN: "arn:aws:events:us-east-1:111122223333:event-bus/my-bus"
+  tags:
+    "Name": "my-bus"
+---
+# Source: eventbridge/templates/bus.yaml
+apiVersion: eventbridge.services.k8s.aws/v1alpha1
+kind: EventBus
+metadata:
+  name: basic-bus
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "bus"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "my-bus"
+  tags:
+    - key: "Name"
+      value: "my-bus"
+---
+# Source: eventbridge/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: basic-policy-sqs
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy-sqs"
+spec:
+  name: "my-bus-sqs"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"sqs:SendMessage*\",\"kms:Decrypt\",\"kms:GenerateDataKey\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:sqs:us-east-1:111122223333:orders\"],\"Sid\":\"SQSAccess\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "Name"
+      value: "my-bus"
+---
+# Source: eventbridge/templates/rules.yaml
+apiVersion: eventbridge.services.k8s.aws/v1alpha1
+kind: Rule
+metadata:
+  name: basic-rule-orders
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "rule-orders"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "orders-rule"
+  eventBusRef:
+    from:
+      name: basic-bus
+  description: "Capture all order data"
+  eventPattern: "{\"source\":[\"myapp.orders\"]}"
+  state: "ENABLED"
+  targets:
+    - id: "send-orders-to-sqs"
+      arn: "arn:aws:sqs:us-east-1:111122223333:orders"
+      deadLetterConfig:
+        arn: "arn:aws:sqs:us-east-1:111122223333:orders-dlq"
+  tags:
+    - key: "Name"
+      value: "orders-rule"

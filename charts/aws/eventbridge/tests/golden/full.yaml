@@ -1,0 +1,1031 @@
+---
+# Source: eventbridge/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: full-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "role"
+spec:
+  name: "orders"
+  path: "/eventbridge/"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"events.amazonaws.com\",\"states.amazonaws.com\",\"scheduler.amazonaws.com\"]}}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - "arn:aws:iam::111122223333:policy/orders-kinesis"
+    - "arn:aws:iam::111122223333:policy/orders-kinesis-firehose"
+    - "arn:aws:iam::111122223333:policy/orders-sqs"
+    - "arn:aws:iam::111122223333:policy/orders-sns"
+    - "arn:aws:iam::111122223333:policy/orders-ecs"
+    - "arn:aws:iam::111122223333:policy/orders-lambda"
+    - "arn:aws:iam::111122223333:policy/orders-sfn"
+    - "arn:aws:iam::111122223333:policy/orders-api-destination"
+    - "arn:aws:iam::111122223333:policy/orders-cloudwatch"
+    - "arn:aws:iam::111122223333:policy/eventbridge/orders"
+    - "arn:aws:iam::111122223333:policy/orders-0"
+    - "arn:aws:iam::111122223333:policy/orders-inline"
+    - "arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess"
+    - "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
+  tags:
+    - key: "Name"
+      value: "orders"
+    - key: "team"
+      value: "orders"
+---
+# Source: eventbridge/templates/pipes.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: full-pipe-role-sqs-to-sqs-4cec2529
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "role-pipe-sqs_to_sqs"
+spec:
+  name: "sqs_to_sqs"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Condition\":{\"StringEquals\":{\"aws:SourceAccount\":[\"111122223333\"],\"aws:SourceArn\":[\"arn:aws:pipes:eu-west-1:111122223333:pipe/sqs-to-sqs-pipe\"]}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"pipes.amazonaws.com\"]}}],\"Version\":\"2012-10-17\"}"
+  policyRefs:
+    - from:
+        name: full-pipe-policy-sqs-to-sqs-65129b39
+  tags:
+    - key: "Name"
+      value: "sqs_to_sqs"
+    - key: "team"
+      value: "orders"
+---
+# Source: eventbridge/templates/pipes.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: full-pipe-role-stream-to-lambda-76fec149
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "role-pipe-stream_to_lambda"
+spec:
+  name: "stream-pipe"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Condition\":{\"StringEquals\":{\"aws:SourceAccount\":[\"111122223333\"],\"aws:SourceArn\":[\"arn:aws:pipes:eu-west-1:111122223333:pipe/stream-to-lambda-pipe\"]}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"pipes.amazonaws.com\"]}}],\"Version\":\"2012-10-17\"}"
+  policyRefs:
+    - from:
+        name: full-pipe-policy-stream-to-lambda-dac395d7
+  tags:
+    - key: "Name"
+      value: "stream-pipe"
+    - key: "team"
+      value: "orders"
+---
+# Source: eventbridge/templates/scheduler-connections.yaml
+apiVersion: eventbridge.aws.hfl.dev/v1alpha1
+kind: APIDestination
+metadata:
+  name: full-api-destination-github
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "api-destination-github"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "github-destination"
+  invocationEndpoint: "https://api.github.com/repos/example/dispatches"
+  httpMethod: "POST"
+  connectionRef:
+    from:
+      name: full-connection-oauth
+---
+# Source: eventbridge/templates/scheduler-connections.yaml
+apiVersion: eventbridge.aws.hfl.dev/v1alpha1
+kind: APIDestination
+metadata:
+  name: full-api-destination-smee
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "api-destination-smee"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "smee-destination"
+  description: "Smee"
+  invocationEndpoint: "https://smee.io/hgoubgoibwekt331"
+  httpMethod: "POST"
+  invocationRateLimitPerSecond: 20
+  connectionRef:
+    from:
+      name: full-connection-smee
+---
+# Source: eventbridge/templates/bus.yaml
+apiVersion: eventbridge.services.k8s.aws/v1alpha1
+kind: Archive
+metadata:
+  name: full-archive-all
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "archive-all"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "all"
+  eventSourceRef:
+    from:
+      name: full-bus
+  description: "Everything on the bus"
+  retentionDays: 7
+---
+# Source: eventbridge/templates/bus.yaml
+apiVersion: eventbridge.services.k8s.aws/v1alpha1
+kind: Archive
+metadata:
+  name: full-archive-launched
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "archive-launched"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "launched-orders"
+  eventSourceRef:
+    from:
+      name: full-bus
+  eventPattern: "{\"source\":[\"myapp.orders\"],\"detail-type\":[\"Launched\"]}"
+---
+# Source: eventbridge/templates/scheduler-connections.yaml
+apiVersion: eventbridge.aws.hfl.dev/v1alpha1
+kind: Connection
+metadata:
+  name: full-connection-basic
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "connection-basic"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "basic-connection"
+  description: "Basic auth"
+  authorizationType: "BASIC"
+  authParameters:
+    basicAuthParameters:
+      username: "user"
+      password:
+        name: "basic-auth"
+        key: "password"
+    invocationHTTPParameters:
+      
+      headerParameters:
+        - key: "X-Team"
+          value: "orders"
+          isValueSecret: false
+---
+# Source: eventbridge/templates/scheduler-connections.yaml
+apiVersion: eventbridge.aws.hfl.dev/v1alpha1
+kind: Connection
+metadata:
+  name: full-connection-oauth
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "connection-oauth"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "oauth-connection"
+  authorizationType: "OAUTH_CLIENT_CREDENTIALS"
+  authParameters:
+    oAuthParameters:
+      authorizationEndpoint: "https://oauth.example.com/token"
+      httpMethod: "POST"
+      clientParameters:
+        clientID: "orders"
+        clientSecret:
+          name: "oauth"
+          key: "client-secret"
+      oAuthHTTPParameters:
+        
+        bodyParameters:
+          - key: "grant_type"
+            value: "client_credentials"
+---
+# Source: eventbridge/templates/scheduler-connections.yaml
+apiVersion: eventbridge.aws.hfl.dev/v1alpha1
+kind: Connection
+metadata:
+  name: full-connection-smee
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "connection-smee"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "smee-connection"
+  authorizationType: "API_KEY"
+  authParameters:
+    apiKeyAuthParameters:
+      apiKeyName: "x-signature"
+      apiKeyValue:
+        name: "smee"
+        key: "api-key"
+---
+# Source: eventbridge/templates/bus.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: Delivery
+metadata:
+  name: full-log-delivery-cloudwatch-logs-33e08c0c
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-delivery-cloudwatch_logs"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  deliverySourceRef:
+    from:
+      name: full-log-source
+  deliveryDestinationRef:
+    from:
+      name: full-log-destination-cloudwatch-logs-96202688
+  tags:
+    "team": "orders"
+---
+# Source: eventbridge/templates/bus.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: Delivery
+metadata:
+  name: full-log-delivery-s3
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-delivery-s3"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  deliverySourceRef:
+    from:
+      name: full-log-source
+  deliveryDestinationRef:
+    from:
+      name: full-log-destination-s3
+  s3DeliveryConfiguration:
+    enableHiveCompatiblePath: true
+    suffixPath: "{yyyy}/{MM}"
+  tags:
+    "team": "orders"
+---
+# Source: eventbridge/templates/bus.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: DeliveryDestination
+metadata:
+  name: full-log-destination-cloudwatch-logs-96202688
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-destination-cloudwatch_logs"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "orders-cloudwatch_logs"
+  deliveryDestinationConfiguration:
+    destinationResourceARN: "arn:aws:logs:eu-west-1:111122223333:log-group:/aws/vendedlogs/events/orders"
+  tags:
+    "team": "orders"
+---
+# Source: eventbridge/templates/bus.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: DeliveryDestination
+metadata:
+  name: full-log-destination-s3
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-destination-s3"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "orders-s3"
+  outputFormat: "json"
+  deliveryDestinationConfiguration:
+    destinationResourceARN: "arn:aws:s3:::orders-logs"
+  tags:
+    "team": "orders"
+---
+# Source: eventbridge/templates/bus.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: DeliverySource
+metadata:
+  name: full-log-source
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-source"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "orders"
+  logType: ERROR_LOGS
+  resourceARN: "arn:aws:events:eu-west-1:111122223333:event-bus/orders"
+  tags:
+    "team": "orders"
+---
+# Source: eventbridge/templates/bus.yaml
+apiVersion: eventschemas.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: Discoverer
+metadata:
+  name: full-schemas-discoverer
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "schemas-discoverer"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  sourceArn: "arn:aws:events:eu-west-1:111122223333:event-bus/orders"
+  description: "Auto schemas discoverer event"
+  tags:
+    - key: "team"
+      value: "orders"
+---
+# Source: eventbridge/templates/bus.yaml
+apiVersion: eventbridge.services.k8s.aws/v1alpha1
+kind: EventBus
+metadata:
+  name: full-bus
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "bus"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "orders"
+  policy: "{\"Statement\":[{\"Action\":\"events:PutEvents\",\"Condition\":{\"StringEquals\":{\"aws:PrincipalOrgID\":\"o-abc123\"}},\"Effect\":\"Allow\",\"Principal\":\"*\",\"Resource\":\"arn:aws:events:eu-west-1:111122223333:event-bus/orders\",\"Sid\":\"OrgAccess\"},{\"Action\":\"events:PutEvents\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::222233334444:root\"},\"Resource\":\"arn:aws:events:eu-west-1:111122223333:event-bus/orders\",\"Sid\":\"OrdersAccount\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "team"
+      value: "orders"
+---
+# Source: eventbridge/templates/pipes.yaml
+apiVersion: pipes.services.k8s.aws/v1alpha1
+kind: Pipe
+metadata:
+  name: full-pipe-given-role-bbde7e86
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "pipe-given_role"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "given-role-pipe"
+  roleARN: "arn:aws:iam::111122223333:role/given"
+  source: "arn:aws:kinesis:eu-west-1:111122223333:stream/in"
+  target: "arn:aws:events:eu-west-1:111122223333:event-bus/other"
+  sourceParameters:
+    kinesisStreamParameters:
+      
+      startingPosition: "TRIM_HORIZON"
+  targetParameters:
+    eventBridgeEventBusParameters:
+      detailType: "Forwarded"
+      source: "orders.pipe"
+  tags:
+    "team": "orders"
+---
+# Source: eventbridge/templates/pipes.yaml
+apiVersion: pipes.services.k8s.aws/v1alpha1
+kind: Pipe
+metadata:
+  name: full-pipe-sqs-to-sqs-7c8ab5c5
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "pipe-sqs_to_sqs"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "sqs-to-sqs-pipe"
+  roleRef:
+    from:
+      name: full-pipe-role-sqs-to-sqs-4cec2529
+  source: "arn:aws:sqs:eu-west-1:111122223333:in"
+  target: "arn:aws:sqs:eu-west-1:111122223333:out"
+  description: "Filter and forward"
+  sourceParameters:
+    filterCriteria:
+      filters:
+        - pattern: "{\"body\":{\"type\":[\"order\"]}}"
+    sqsQueueParameters:
+      
+      batchSize: 10
+      maximumBatchingWindowInSeconds: 5
+  targetParameters:
+    sqsQueueParameters:
+      messageGroupID: "orders"
+  tags:
+    "pipe": "sqs"
+    "team": "orders"
+---
+# Source: eventbridge/templates/pipes.yaml
+apiVersion: pipes.services.k8s.aws/v1alpha1
+kind: Pipe
+metadata:
+  name: full-pipe-stream-to-lambda-ba6343dd
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "pipe-stream_to_lambda"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "stream-to-lambda-pipe"
+  roleRef:
+    from:
+      name: full-pipe-role-stream-to-lambda-76fec149
+  source: "arn:aws:dynamodb:eu-west-1:111122223333:table/orders/stream/2026-01-01T00:00:00.000"
+  target: "arn:aws:lambda:eu-west-1:111122223333:function:orders"
+  sourceParameters:
+    dynamoDBStreamParameters:
+      
+      batchSize: 5
+      startingPosition: "LATEST"
+      deadLetterConfig:
+        arn: "arn:aws:sqs:eu-west-1:111122223333:dlq"
+  targetParameters:
+    lambdaFunctionParameters:
+      invocationType: "FIRE_AND_FORGET"
+  enrichment: "arn:aws:states:eu-west-1:111122223333:stateMachine:enrich"
+  tags:
+    "team": "orders"
+---
+# Source: eventbridge/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: full-policy-kinesis
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy-kinesis"
+spec:
+  name: "orders-kinesis"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"kinesis:PutRecord\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:kinesis:eu-west-1:111122223333:stream/orders\"],\"Sid\":\"KinesisAccess\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "Name"
+      value: "orders-kinesis"
+    - key: "team"
+      value: "orders"
+---
+# Source: eventbridge/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: full-policy-kinesis-firehose
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy-kinesis-firehose"
+spec:
+  name: "orders-kinesis-firehose"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"firehose:PutRecord\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:firehose:eu-west-1:111122223333:deliverystream/orders\"],\"Sid\":\"KinesisFirehoseAccess\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "Name"
+      value: "orders-kinesis-firehose"
+    - key: "team"
+      value: "orders"
+---
+# Source: eventbridge/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: full-policy-sqs
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy-sqs"
+spec:
+  name: "orders-sqs"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"sqs:SendMessage*\",\"kms:Decrypt\",\"kms:GenerateDataKey\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:sqs:eu-west-1:111122223333:orders\"],\"Sid\":\"SQSAccess\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "Name"
+      value: "orders-sqs"
+    - key: "team"
+      value: "orders"
+---
+# Source: eventbridge/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: full-policy-sns
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy-sns"
+spec:
+  name: "orders-sns"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"sns:Publish\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:sns:eu-west-1:111122223333:orders\"],\"Sid\":\"SNSAccess\"},{\"Action\":[\"kms:Decrypt\",\"kms:GenerateDataKey\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"SNSKMSAccess\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "Name"
+      value: "orders-sns"
+    - key: "team"
+      value: "orders"
+---
+# Source: eventbridge/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: full-policy-ecs
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy-ecs"
+spec:
+  name: "orders-ecs"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"ecs:RunTask\",\"ecs:TagResource\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:ecs:eu-west-1:111122223333:task-definition/orders:*\"],\"Sid\":\"ECSAccess\"},{\"Action\":[\"iam:PassRole\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"PassRole\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "Name"
+      value: "orders-ecs"
+    - key: "team"
+      value: "orders"
+---
+# Source: eventbridge/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: full-policy-lambda
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy-lambda"
+spec:
+  name: "orders-lambda"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"lambda:InvokeFunction\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:lambda:eu-west-1:111122223333:function:orders\"],\"Sid\":\"LambdaAccess\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "Name"
+      value: "orders-lambda"
+    - key: "team"
+      value: "orders"
+---
+# Source: eventbridge/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: full-policy-sfn
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy-sfn"
+spec:
+  name: "orders-sfn"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"states:StartExecution\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:states:eu-west-1:111122223333:stateMachine:orders\"],\"Sid\":\"StepFunctionAccess\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "Name"
+      value: "orders-sfn"
+    - key: "team"
+      value: "orders"
+---
+# Source: eventbridge/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: full-policy-api-destination
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy-api-destination"
+spec:
+  name: "orders-api-destination"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"events:InvokeApiDestination\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:events:eu-west-1:111122223333:api-destination/github-destination/*\",\"arn:aws:events:eu-west-1:111122223333:api-destination/smee-destination/*\"],\"Sid\":\"APIDestinationAccess\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "Name"
+      value: "orders-api-destination"
+    - key: "team"
+      value: "orders"
+---
+# Source: eventbridge/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: full-policy-cloudwatch
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy-cloudwatch"
+spec:
+  name: "orders-cloudwatch"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"logs:DescribeLogGroups\",\"logs:DescribeLogStreams\",\"logs:PutLogEvents\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:logs:eu-west-1:111122223333:log-group:/orders:*\"],\"Sid\":\"CloudwatchAccess\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "Name"
+      value: "orders-cloudwatch"
+    - key: "team"
+      value: "orders"
+---
+# Source: eventbridge/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: full-policy-json
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy-json"
+spec:
+  name: "orders"
+  path: "/eventbridge/"
+  policyDocument: "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"xray:GetSamplingStatisticSummaries\"],\"Resource\":[\"*\"]}]}"
+  tags:
+    - key: "Name"
+      value: "orders"
+    - key: "team"
+      value: "orders"
+---
+# Source: eventbridge/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: full-policy-jsons-0
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy-jsons-0"
+spec:
+  name: "orders-0"
+  policyDocument: "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"xray:GetSamplingRules\"],\"Resource\":[\"*\"]}]}"
+  tags:
+    - key: "Name"
+      value: "orders-0"
+    - key: "team"
+      value: "orders"
+---
+# Source: eventbridge/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: full-policy-inline
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy-inline"
+spec:
+  name: "orders-inline"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"dynamodb:BatchWriteItem\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:dynamodb:eu-west-1:111122223333:table/orders\"],\"Sid\":\"dynamodb\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "Name"
+      value: "orders-inline"
+    - key: "team"
+      value: "orders"
+---
+# Source: eventbridge/templates/pipes.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: full-pipe-policy-sqs-to-sqs-65129b39
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy-pipe-sqs_to_sqs"
+spec:
+  name: "sqs_to_sqs-sqs_to_sqs"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"sqs:ReceiveMessage\",\"sqs:DeleteMessage\",\"sqs:GetQueueAttributes\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:sqs:eu-west-1:111122223333:in\"],\"Sid\":\"SqsToSqsSqsSource\"},{\"Action\":[\"sqs:SendMessage\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:sqs:eu-west-1:111122223333:out\"],\"Sid\":\"SqsToSqsSqsTarget\"}],\"Version\":\"2012-10-17\"}"
+---
+# Source: eventbridge/templates/pipes.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: full-pipe-policy-stream-to-lambda-dac395d7
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy-pipe-stream_to_lambda"
+spec:
+  name: "stream-pipe-stream_to_lambda"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"dynamodb:DescribeStream\",\"dynamodb:GetRecords\",\"dynamodb:GetShardIterator\",\"dynamodb:ListStreams\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:dynamodb:eu-west-1:111122223333:table/orders/stream/2026-01-01T00:00:00.000\"],\"Sid\":\"StreamToLambdaDynamodb\"},{\"Action\":[\"lambda:InvokeFunction\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:lambda:eu-west-1:111122223333:function:orders\"],\"Sid\":\"StreamToLambdaLambda\"},{\"Action\":[\"sqs:SendMessage\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:sqs:eu-west-1:111122223333:dlq\"],\"Sid\":\"StreamToLambdaSqsDlq\"},{\"Action\":[\"states:StartExecution\",\"states:StartSyncExecution\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:states:eu-west-1:111122223333:stateMachine:enrich\"],\"Sid\":\"StreamToLambdaStepFunctions\"}],\"Version\":\"2012-10-17\"}"
+---
+# Source: eventbridge/templates/rules.yaml
+apiVersion: eventbridge.services.k8s.aws/v1alpha1
+kind: Rule
+metadata:
+  name: full-rule-crons
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "rule-crons"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "crons-rule"
+  eventBusRef:
+    from:
+      name: full-bus
+  description: "Every hour"
+  scheduleExpression: "rate(1 hour)"
+  state: "ENABLED"
+  targets:
+    - id: "call-api"
+      arn: "arn:aws:events:eu-west-1:111122223333:api-destination/external/0123"
+      runCommandParameters:
+        runCommandTargets:
+          - key: "tag:Name"
+            values: ["web"]
+      httpParameters:
+        pathParameterValues: ["a"]
+        headerParameters: {"X-Team":"orders"}
+  tags:
+    - key: "Name"
+      value: "crons-rule"
+    - key: "team"
+      value: "orders"
+---
+# Source: eventbridge/templates/rules.yaml
+apiVersion: eventbridge.services.k8s.aws/v1alpha1
+kind: Rule
+metadata:
+  name: full-rule-emails
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "rule-emails"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "emails-rule"
+  eventBusRef:
+    from:
+      name: full-bus
+  description: "Send emails"
+  eventPattern: "{\"source\":[\"myapp.emails\"]}"
+  roleRef:
+    from:
+      name: full-role
+  state: "DISABLED"
+  targets:
+    - id: "run-ecs"
+      arn: "arn:aws:ecs:eu-west-1:111122223333:cluster/orders"
+      roleARN: "arn:aws:iam::111122223333:role/ecs-events"
+      ecsParameters:
+        taskDefinitionARN: "arn:aws:ecs:eu-west-1:111122223333:task-definition/orders:7"
+        launchType: "FARGATE"
+        taskCount: 1
+        tags:
+          - key: "team"
+            value: "orders"
+        networkConfiguration:
+          awsVPCConfiguration:
+            subnets: ["subnet-1"]
+            securityGroups: ["sg-1"]
+            assignPublicIP: "DISABLED"
+        placementConstraints:
+          - type_: "memberOf"
+            expression: "attribute:ecs.availability-zone in [eu-west-1a]"
+    - id: "run-batch"
+      arn: "arn:aws:batch:eu-west-1:111122223333:job-queue/orders"
+      batchParameters:
+        jobDefinition: "orders"
+        jobName: "orders"
+        arrayProperties:
+          size: 2
+        retryStrategy:
+          attempts: 3
+  tags:
+    - key: "Name"
+      value: "emails-rule"
+    - key: "team"
+      value: "orders"
+---
+# Source: eventbridge/templates/rules.yaml
+apiVersion: eventbridge.services.k8s.aws/v1alpha1
+kind: Rule
+metadata:
+  name: full-rule-orders
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "rule-orders"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "orders-rule"
+  eventBusRef:
+    from:
+      name: full-bus
+  description: "Capture all order data"
+  eventPattern: "{\"source\":[\"myapp.orders\"]}"
+  state: "ENABLED"
+  targets:
+    - id: "send-orders-to-sqs"
+      arn: "arn:aws:sqs:eu-west-1:111122223333:orders.fifo"
+      sqsParameters:
+        messageGroupID: "orders"
+      deadLetterConfig:
+        arn: "arn:aws:sqs:eu-west-1:111122223333:orders-dlq"
+      retryPolicy:
+        maximumEventAgeInSeconds: 300
+        maximumRetryAttempts: 5
+    - id: "send-orders-to-kinesis"
+      arn: "arn:aws:kinesis:eu-west-1:111122223333:stream/orders"
+      roleARN: "arn:aws:iam::111122223333:role/eventbridge/orders"
+      kinesisParameters:
+        partitionKeyPath: "$.detail.id"
+    - id: "log-orders"
+      arn: "arn:aws:logs:eu-west-1:111122223333:log-group:/orders"
+      inputTransformer:
+        inputPathsMap: {"order":"$.detail"}
+        inputTemplate: "\"<order>\""
+  tags:
+    - key: "Name"
+      value: "orders-rule"
+    - key: "team"
+      value: "orders"
+---
+# Source: eventbridge/templates/scheduler-connections.yaml
+apiVersion: scheduler.aws.hfl.dev/v1alpha1
+kind: Schedule
+metadata:
+  name: full-schedule-ecs-daily-749aeb16
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "schedule-ecs_daily"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "ecs-daily-schedule"
+  groupName: "elsewhere"
+  scheduleExpression: "cron(0 9 * * ? *)"
+  state: "DISABLED"
+  flexibleTimeWindow:
+    mode: "OFF"
+  target:
+    arn: "arn:aws:ecs:eu-west-1:111122223333:cluster/orders"
+    roleARN: "arn:aws:iam::111122223333:role/scheduler-ecs"
+    ecsParameters:
+      taskDefinitionARN: "arn:aws:ecs:eu-west-1:111122223333:task-definition/orders:7"
+      launchType: "FARGATE"
+      tags:
+        - {"team":"orders"}
+      networkConfiguration:
+        awsVPCConfiguration:
+          subnets: ["subnet-1"]
+          assignPublicIP: "ENABLED"
+---
+# Source: eventbridge/templates/scheduler-connections.yaml
+apiVersion: scheduler.aws.hfl.dev/v1alpha1
+kind: Schedule
+metadata:
+  name: full-schedule-lambda-cron-07768dc0
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "schedule-lambda_cron"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "lambda-cron-schedule"
+  description: "Hourly"
+  groupRef:
+    from:
+      name: full-schedule-group-prod
+  scheduleExpression: "rate(1 hour)"
+  scheduleExpressionTimezone: "Europe/London"
+  state: "ENABLED"
+  flexibleTimeWindow:
+    mode: "FLEXIBLE"
+    maximumWindowInMinutes: 15
+  target:
+    arn: "arn:aws:lambda:eu-west-1:111122223333:function:orders"
+    roleARN: "arn:aws:iam::111122223333:role/eventbridge/orders"
+    input: "{\"job\":\"cron\"}"
+    retryPolicy:
+      maximumEventAgeInSeconds: 300
+      maximumRetryAttempts: 2
+---
+# Source: eventbridge/templates/scheduler-connections.yaml
+apiVersion: scheduler.aws.hfl.dev/v1alpha1
+kind: ScheduleGroup
+metadata:
+  name: full-schedule-group-dev
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "schedulegroup-dev"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "dev-group"
+---
+# Source: eventbridge/templates/scheduler-connections.yaml
+apiVersion: scheduler.aws.hfl.dev/v1alpha1
+kind: ScheduleGroup
+metadata:
+  name: full-schedule-group-prod
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: eventbridge
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "schedulegroup-prod"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "prod"
+  tags:
+    - key: "env"
+      value: "prod"

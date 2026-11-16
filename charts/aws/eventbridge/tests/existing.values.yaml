@@ -1,0 +1,18 @@
+# Rules and an archive on the account's default bus (create_bus: false): no
+# bus, no role (create_role: false), no log delivery source; the archive
+# names the default bus's ARN, which needs account_id and region.
+account_id: "111122223333"
+region: us-east-1
+create_bus: false
+create_role: false
+create_log_delivery: false
+create_archives: true
+archives:
+  default: {retention_days: 1}
+rules:
+  logs:
+    event_pattern: '{"source":["aws.ec2"]}'
+targets:
+  logs:
+    - name: to-logs
+      arn: arn:aws:logs:us-east-1:111122223333:log-group:/ec2-events
