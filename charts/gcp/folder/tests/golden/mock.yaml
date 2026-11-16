@@ -173,3 +173,20 @@ spec:
   includeChildren: true
   interceptChildren: true
   disabled: false
+---
+# Source: folder/templates/service-agents.yaml
+apiVersion: serviceusage.gcp.hfl.dev/v1beta1
+kind: ServiceIdentity
+metadata:
+  name: mock-agent-osconfig
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: folder
+    app.kubernetes.io/version: "0.4.0"
+  annotations:
+    hfl.dev/id: "service-identity:osconfig.googleapis.com"
+spec:
+  resourceID: "osconfig.googleapis.com"
+  folderRef:
+    name: mock

@@ -113,14 +113,14 @@ kinds for `google_logging_folder_settings`,
   policies before the folder (or Config Connector should skip the lookup
   on delete). The fake-cloud case leaves org policies out for this reason;
   they are render-tested only.
-- **A `ServiceIdentity` on a `Folder` object cannot be deleted once the
-  `Folder` object is gone** (config-connector-extensions `81c3f9b5`, run
-  `off-catalog-1116014618-16654`): its delete resolves `folderRef.name`
-  ("Update call failed: referenced Folder catalog-folder/mock not found"),
-  though Google Cloud has no call to delete a service identity. On an
-  existing folder (`folder_create: false`) the reference is external and
-  does not hit it. The fake-cloud case leaves service agents out; they are
-  render-tested only.
+- **Fixed: a `ServiceIdentity` on a `Folder` object could not be deleted
+  once the `Folder` object was gone** (config-connector-extensions
+  `81c3f9b5`, run `off-catalog-1116014618-16654`): its delete resolved
+  `folderRef.name` ("Update call failed: referenced Folder
+  catalog-folder/mock not found"), though Google Cloud has no call to
+  delete a service identity. config-connector-extensions #141 (in
+  `a65d1edb`, the pin since then) resolves nothing on delete, and the
+  service agent is back in `tests/mock.values.yaml` (Tests, below).
 
 ## Upstream
 

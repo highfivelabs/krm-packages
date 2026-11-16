@@ -74,7 +74,8 @@ validate Config Connector's own kinds against its CRDs.
 | `serviceusage.gcp.hfl.dev_serviceidentities.yaml` | `ServiceIdentity` (`serviceusage.gcp.hfl.dev/v1beta1`: a folder's or an organization's service identity) | `config/crds/` at `81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15, the pin) |
 
 `Taskfile.yml`'s `CCE_COMMIT`, which the fake-cloud and live runs use, is
-`40da91d3fbfc7253c03669b32fbd8e5013de023f` (2026-11-16), at or after every
+`a65d1edb3783427c59932d27d5c415a82930d90b` (2026-11-16; #141 after `40da91d3`
+changed no CRD), at or after every
 copy above, so the fake cloud serves each of these kinds (each file is the
 same at the pin). config-connector-extensions #131 and #132 moved
 `ComputeRegionNetworkEndpoint`, `ComputeRegionNetworkFirewallPolicy`,
