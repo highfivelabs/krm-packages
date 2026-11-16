@@ -1,0 +1,30 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+The module variables this chart keeps in its values but cannot carry
+(upstream.yaml, "refused"): each stops the render, naming the gap, when it
+is set to anything but its Terraform default. Renders nothing. The
+variables accepted in part are checked where they are rendered.
+*/ -}}
+{{- include "ack.unsupported" (list $ "allow_major_version_upgrade" .Values.allow_major_version_upgrade "ACK's DBCluster (rds-controller v1.14.2) has no field for it (AllowMajorVersionUpgrade)") }}
+{{- include "ack.unsupported" (list $ "cloudwatch_log_group_class" .Values.cloudwatch_log_group_class "ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no field for the log group class") }}
+{{- include "ack.unsupported" (list $ "cluster_activity_stream" .Values.cluster_activity_stream "no kind or field starts a database activity stream (StartActivityStream): ACK's DBCluster (rds-controller v1.14.2) only reports one in its status, and ack-extensions has no kind for it") }}
+{{- include "ack.unsupported" (list $ "cluster_db_instance_parameter_group_name" .Values.cluster_db_instance_parameter_group_name "ACK's DBCluster (rds-controller v1.14.2) has no field for it (DBInstanceParameterGroupName, sent with a major version upgrade)") }}
+{{- include "ack.unsupported" (list $ "cluster_members" .Values.cluster_members "ACK's DBCluster (rds-controller v1.14.2) has no field for it: RDS reports the members (status.dbClusterMembers), and each instance joins by its own dbClusterIdentifier") }}
+{{- include "ack.unsupported" (list $ "cluster_scalability_type" .Values.cluster_scalability_type "ACK's DBCluster (rds-controller v1.14.2) has no field for it (ClusterScalabilityType), so an Aurora Limitless cluster cannot be made") }}
+{{- include "ack.unsupported" (list $ "cluster_timeouts" .Values.cluster_timeouts "Terraform's create, update and delete timeouts: ACK retries until the cluster is synced, and Bundt waits for it") }}
+{{- include "ack.unsupported" (list $ "cluster_use_name_prefix" .Values.cluster_use_name_prefix "an identifier with Terraform's random suffix would change between renders") }}
+{{- include "ack.unsupported" (list $ "enable_local_write_forwarding" .Values.enable_local_write_forwarding "ACK's DBCluster (rds-controller v1.14.2) has no field for it (EnableLocalWriteForwarding)") }}
+{{- include "ack.unsupported" (list $ "engine_lifecycle_support" .Values.engine_lifecycle_support "ACK's DBCluster (rds-controller v1.14.2) has no field for it (EngineLifecycleSupport)") }}
+{{- include "ack.unsupported" (list $ "iam_role_use_name_prefix" .Values.iam_role_use_name_prefix "a name with Terraform's random suffix (name_prefix) would change between renders") }}
+{{- include "ack.unsupported" (list $ "instance_timeouts" .Values.instance_timeouts "Terraform's create, update and delete timeouts: ACK retries until each instance is synced, and Bundt waits for it") }}
+{{- include "ack.unsupported" (list $ "instances_use_identifier_prefix" .Values.instances_use_identifier_prefix "an identifier with Terraform's random suffix would change between renders") }}
+{{- include "ack.unsupported" (list $ "manage_master_user_password_rotation" .Values.manage_master_user_password_rotation "rotation of the managed master user secret (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no rotation (secretsmanager-controller PR #69) and ack-extensions has none at the catalog's ACKX_COMMIT") }}
+{{- include "ack.unsupported" (list $ "master_password_wo_version" .Values.master_password_wo_version "ACK sends the Secret's value when the reference (masterUserPassword) changes and has no version to bump: point master_password_wo at a new Secret or key to set a new password") }}
+{{- include "ack.unsupported" (list $ "master_user_password_rotate_immediately" .Values.master_user_password_rotate_immediately "rotation of the managed master user secret (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no rotation (secretsmanager-controller PR #69) and ack-extensions has none at the catalog's ACKX_COMMIT") }}
+{{- include "ack.unsupported" (list $ "master_user_password_rotation_automatically_after_days" .Values.master_user_password_rotation_automatically_after_days "rotation of the managed master user secret (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no rotation (secretsmanager-controller PR #69) and ack-extensions has none at the catalog's ACKX_COMMIT") }}
+{{- include "ack.unsupported" (list $ "master_user_password_rotation_duration" .Values.master_user_password_rotation_duration "rotation of the managed master user secret (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no rotation (secretsmanager-controller PR #69) and ack-extensions has none at the catalog's ACKX_COMMIT") }}
+{{- include "ack.unsupported" (list $ "master_user_password_rotation_schedule_expression" .Values.master_user_password_rotation_schedule_expression "rotation of the managed master user secret (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no rotation (secretsmanager-controller PR #69) and ack-extensions has none at the catalog's ACKX_COMMIT") }}
+{{- include "ack.unsupported" (list $ "s3_import" .Values.s3_import "ACK's DBCluster (rds-controller v1.14.2) has no restore from S3 (RestoreDBClusterFromS3)") }}
+{{- include "ack.unsupported" (list $ "shard_group" .Values.shard_group "a DB shard group needs an Aurora Limitless cluster (cluster_scalability_type: limitless), which ACK's DBCluster (rds-controller v1.14.2) cannot make; ack-extensions' Cloud Control DBShardGroup (rds.cloudcontrol.aws.hfl.dev) exists but has no such cluster to join") }}

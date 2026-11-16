@@ -1,0 +1,17 @@
+# The module's multi-az example: a Multi-AZ DB cluster (allocated_storage
+# set, so the cluster takes the instance class), no Aurora instances; the
+# point-in-time restore of another cluster, and a cluster parameter group
+# named as given.
+name: example-multi-az
+engine: postgres
+engine_version: "17.4"
+cluster_instance_class: db.c6gd.large
+allocated_storage: 256
+storage_type: io1
+iops: 2500
+master_username: root
+vpc_id: vpc-0123456789abcdef0
+db_subnet_group_name: example
+cluster_parameter_group_name: existing-postgres17
+restore_to_point_in_time: {source_cluster_identifier: example-source, use_latest_restorable_time: true, restore_type: copy-on-write}
+skip_final_snapshot: true

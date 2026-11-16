@@ -1,0 +1,182 @@
+---
+# Source: rds-aurora/templates/monitoring.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: names-monitoring-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "enhanced-monitoring-role"
+spec:
+  name: "shop-dev-euw1-db-monitoring"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"monitoring.rds.amazonaws.com\"]}}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+  tags:
+    - key: "team"
+      value: "shop"
+---
+# Source: rds-aurora/templates/cluster.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBCluster
+metadata:
+  name: names-cluster
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "cluster"
+    rds.services.k8s.aws/final-db-snapshot-identifier: "shop-dev-euw1-db-final"
+    rds.services.k8s.aws/skip-final-snapshot: "false"
+spec:
+  dbClusterIdentifier: "shop-dev-euw1-db"
+  engine: "aurora-postgresql"
+  engineMode: "provisioned"
+  copyTagsToSnapshot: true
+  dbClusterParameterGroupRef:
+    from:
+      name: names-cluster-parameter-group
+  dbSubnetGroupRef:
+    from:
+      name: names-subnet-group
+  manageMasterUserPassword: true
+  monitoringInterval: 60
+  monitoringRoleRef:
+    from:
+      name: names-monitoring-role
+  port: 5432
+  storageEncrypted: true
+  vpcSecurityGroupRefs:
+    - from:
+        name: names-sg
+  tags:
+    - key: "team"
+      value: "shop"
+---
+# Source: rds-aurora/templates/cluster.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBClusterParameterGroup
+metadata:
+  name: names-cluster-parameter-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "db-cluster-parameter-group"
+spec:
+  name: "shop-dev-euw1-db-cluster"
+  description: "aurora-postgresql16 for Aurora cluster ignored"
+  family: "aurora-postgresql16"
+  tags:
+    - key: "team"
+      value: "shop"
+---
+# Source: rds-aurora/templates/instances.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBInstance
+metadata:
+  name: names-instance-one
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "instance-one"
+spec:
+  dbInstanceIdentifier: "shop-dev-euw1-db-one"
+  dbClusterIdentifierRef:
+    from:
+      name: names-cluster
+  dbInstanceClass: "db.t4g.medium"
+  engine: "aurora-postgresql"
+  copyTagsToSnapshot: true
+  dbParameterGroupRef:
+    from:
+      name: names-db-parameter-group
+  monitoringInterval: 60
+  monitoringRoleRef:
+    from:
+      name: names-monitoring-role
+  tags:
+    - key: "team"
+      value: "shop"
+---
+# Source: rds-aurora/templates/cluster.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBParameterGroup
+metadata:
+  name: names-db-parameter-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "db-parameter-group"
+spec:
+  name: "shop-dev-euw1-db-instance"
+  description: "aurora-postgresql16 for Aurora cluster ignored"
+  family: "aurora-postgresql16"
+  tags:
+    - key: "team"
+      value: "shop"
+---
+# Source: rds-aurora/templates/cluster.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBSubnetGroup
+metadata:
+  name: names-subnet-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "db-subnet-group"
+spec:
+  name: "shop-dev-euw1-db"
+  description: "For Aurora cluster ignored"
+  subnetIDs:
+    - "subnet-12345678"
+    - "subnet-87654321"
+  tags:
+    - key: "team"
+      value: "shop"
+---
+# Source: rds-aurora/templates/security-group.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: names-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "security-group"
+spec:
+  name: "shop-dev-euw1-db"
+  description: "Control traffic to/from RDS Aurora ignored"
+  vpcID: "vpc-12345678"
+  tags:
+    - key: "Name"
+      value: "ignored"
+    - key: "team"
+      value: "shop"

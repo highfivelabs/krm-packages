@@ -1,0 +1,57 @@
+---
+# Source: rds-aurora/templates/cluster.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBCluster
+metadata:
+  name: multi-az-cluster
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "multi-az"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster"
+    rds.services.k8s.aws/skip-final-snapshot: "true"
+spec:
+  dbClusterIdentifier: "example-multi-az"
+  engine: "postgres"
+  engineMode: "provisioned"
+  engineVersion: "17.4"
+  allocatedStorage: 256
+  dbClusterInstanceClass: "db.c6gd.large"
+  copyTagsToSnapshot: true
+  dbClusterParameterGroupName: "existing-postgres17"
+  dbSubnetGroupName: "example"
+  iops: 2500
+  manageMasterUserPassword: true
+  masterUsername: "root"
+  monitoringInterval: 0
+  port: 5432
+  sourceDBClusterIdentifier: "example-source"
+  restoreType: "copy-on-write"
+  useLatestRestorableTime: true
+  storageEncrypted: true
+  storageType: "io1"
+  vpcSecurityGroupRefs:
+    - from:
+        name: multi-az-sg
+---
+# Source: rds-aurora/templates/security-group.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: multi-az-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "multi-az"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "security-group"
+spec:
+  name: "example-multi-az"
+  description: "Control traffic to/from RDS Aurora example-multi-az"
+  vpcID: "vpc-0123456789abcdef0"
+  tags:
+    - key: "Name"
+      value: "example-multi-az"

@@ -1,0 +1,20 @@
+# The module's README, "Usage": an Aurora PostgreSQL cluster of two
+# instances in an existing subnet group, with its security group and the
+# postgresql log exported (cluster_monitoring_interval for the README's
+# monitoring_interval, which the module no longer has).
+name: test-aurora-db-postgres96
+engine: aurora-postgresql
+engine_version: "17.5"
+cluster_instance_class: db.r8g.large
+instances:
+  one: {}
+  two: {instance_class: db.r8g.2xlarge}
+vpc_id: vpc-12345678
+db_subnet_group_name: db-subnet-group
+security_group_ingress_rules:
+  ex1_ingress: {referenced_security_group_id: sg-12345678}
+storage_encrypted: true
+apply_immediately: true
+cluster_monitoring_interval: 10
+enabled_cloudwatch_logs_exports: [postgresql]
+tags: {Environment: dev, Terraform: "true"}

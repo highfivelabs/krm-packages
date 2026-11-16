@@ -1,0 +1,5 @@
+# expect: rds-aurora: role_associations needs the alpha kind DBRoleAssociation (ack-extensions)
+name: x
+engine: aurora-postgresql
+vpc_id: vpc-12345678
+role_associations: {s3Import: {role_arn: "arn:aws:iam::111122223333:role/x"}}

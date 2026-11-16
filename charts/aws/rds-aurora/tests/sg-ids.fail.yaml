@@ -1,0 +1,5 @@
+# expect: rds-aurora: vpc_security_group_ids with create_security_group: true is not supported
+name: x
+engine: aurora-postgresql
+vpc_id: vpc-12345678
+vpc_security_group_ids: [sg-12345678]

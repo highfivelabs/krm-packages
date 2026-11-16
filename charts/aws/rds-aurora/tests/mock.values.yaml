@@ -1,0 +1,27 @@
+# Applied to the fake AWS by hack/mock-apply-aws.sh: Aurora PostgreSQL with
+# its own subnet group in the two subnets tests/mock.needs.yaml makes
+# (subnets, tests/mock.set.yaml), a cluster parameter group without
+# parameters (a parameter makes ACK read the engine's defaults), its
+# security group in that VPC (vpc_id) with one ingress rule, a managed
+# master password, one instance, a reader endpoint, read replica
+# autoscaling and the postgresql log group; no final snapshot.
+name: catalog-aurora
+region: us-east-1
+engine: aurora-postgresql
+engine_version: "16.4"
+cluster_instance_class: db.t4g.medium
+instances: {one: {}}
+endpoints: {readers: {identifier: catalog-aurora-readers, type: READER}}
+master_username: catalog
+database_name: catalog
+create_db_subnet_group: true
+subnets: [subnet-set-by-mock-set-yaml-a, subnet-set-by-mock-set-yaml-b]
+vpc_id: vpc-set-by-mock-set-yaml
+security_group_ingress_rules: {vpc: {cidr_ipv4: 10.60.0.0/16}}
+cluster_parameter_group: {family: aurora-postgresql16}
+autoscaling_enabled: true
+autoscaling_max_capacity: 2
+create_cloudwatch_log_group: true
+enabled_cloudwatch_logs_exports: [postgresql]
+skip_final_snapshot: true
+tags: {catalog-test: "true"}

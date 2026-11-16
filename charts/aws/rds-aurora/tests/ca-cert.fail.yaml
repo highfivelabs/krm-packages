@@ -1,0 +1,5 @@
+# expect: rds-aurora: cluster_ca_cert_identifier without instances is not supported
+name: x
+engine: aurora-postgresql
+vpc_id: vpc-12345678
+cluster_ca_cert_identifier: rds-ca-rsa2048-g1

@@ -1,0 +1,3 @@
+# expect: rds-aurora: vpc_id is required with create_security_group: true
+name: x
+engine: aurora-postgresql

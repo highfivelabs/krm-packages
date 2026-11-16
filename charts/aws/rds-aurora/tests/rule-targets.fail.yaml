@@ -1,0 +1,5 @@
+# expect: rds-aurora: security_group_ingress_rules.a must set exactly one of
+name: x
+engine: aurora-postgresql
+vpc_id: vpc-12345678
+security_group_ingress_rules: {a: {cidr_ipv4: 10.0.0.0/8, cidr_ipv6: '::/0'}}

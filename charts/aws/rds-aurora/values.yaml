@@ -1,0 +1,468 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values mirror the Terraform variables of terraform-aws-modules' rds-aurora
+# module (v10.4.2): same names, types and defaults, so a module block's
+# arguments become a values file one to one. values.schema.json carries the
+# types. A variable the chart cannot carry stays here and stops the render
+# when set (upstream.yaml lists them; README.md says why).
+
+# Names, labels and tags (docs/design.md, "Names, labels and tags"). Not
+# Terraform variables, except tags, which is the module's own.
+#
+# Names in full, any of {cluster, dbSubnetGroup, clusterParameterGroup,
+# dbParameterGroup, securityGroup, monitoringRole}. A name set here takes no
+# namePrefix. Unset, each is named as the module names it (name, or the
+# group's own name variable; <name>-monitor for the role). Instances are
+# named <cluster identifier>-<key> unless an instance sets identifier.
+names: {}
+# An optional convenience: "<namePrefix>-" in front of every name the chart
+# gives (never one set under names). Empty (the default) changes nothing.
+namePrefix: ""
+# Kubernetes labels on every object. They stay in Kubernetes: ACK does not
+# copy labels to AWS (AWS tags are the module's tags variable).
+labels: {}
+# The ack-extensions DBRoleAssociation (role_associations) renders only with
+# allow_alpha: true (docs/design.md, "Alpha kinds").
+allow_alpha: false
+# DELETE (default): deleting the component deletes the cluster (with a final
+# snapshot unless skip_final_snapshot) and everything else it made. ABANDON
+# keeps them (services.k8s.aws/deletion-policy: retain).
+deletion_policy: DELETE
+
+# The module's variables, in alphabetical order, with its defaults.
+
+# The amount of storage in gibibytes (GiB) to allocate to each DB instance in
+# the Multi-AZ DB cluster. (This setting is required to create a Multi-AZ DB
+# cluster)
+allocated_storage: null
+# Enable to allow major engine version upgrades when changing engine versions.
+# Defaults to `false`
+# Not supported (gap): ACK's DBCluster (rds-controller v1.14.2) has no field
+# for it (AllowMajorVersionUpgrade).
+allow_major_version_upgrade: false
+# Specifies whether any cluster modifications are applied immediately, or
+# during the next maintenance window. Default is `false`
+# In part: accepted unset or true: ACK applies a cluster's and its instances'
+# changes immediately; false (wait for the maintenance window) is refused,
+# here and on an instance.
+apply_immediately: null
+# Whether to apply minor engine upgrades automatically to the DB cluster
+# during the maintenance window. Defaults to `true`
+auto_minor_version_upgrade: null
+# Determines whether autoscaling of the cluster read replicas is enabled
+autoscaling_enabled: false
+# Maximum number of read replicas permitted when autoscaling is enabled
+autoscaling_max_capacity: 2
+# Minimum number of read replicas permitted when autoscaling is enabled
+autoscaling_min_capacity: 0
+# Autoscaling policy name
+autoscaling_policy_name: "target-metric"
+# Cooldown in seconds before allowing further scaling operations after a scale
+# in
+autoscaling_scale_in_cooldown: 300
+# Cooldown in seconds before allowing further scaling operations after a scale
+# out
+autoscaling_scale_out_cooldown: 300
+# Average number of connections threshold which will initiate autoscaling.
+# Default value is 70% of db.r4/r5/r6g.large's default max_connections
+autoscaling_target_connections: 700
+# CPU threshold which will initiate autoscaling
+autoscaling_target_cpu: 70
+# List of EC2 Availability Zones for the DB cluster storage where DB cluster
+# instances can be created. RDS automatically assigns 3 AZs if less than 3 AZs
+# are configured, which will show as a difference requiring resource
+# recreation next Terraform apply
+availability_zones: null
+# The target backtrack window, in seconds. Only available for `aurora` engine
+# currently. To disable backtracking, set this value to 0. Must be between 0
+# and 259200 (72 hours)
+backtrack_window: null
+# The days to retain backups for
+backup_retention_period: null
+# Specified the log class of the log group. Possible values are: STANDARD or
+# INFREQUENT_ACCESS
+# Not supported (gap): ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has
+# no field for the log group class.
+cloudwatch_log_group_class: null
+# The ARN of the KMS Key to use when encrypting log data
+cloudwatch_log_group_kms_key_id: null
+# The number of days to retain CloudWatch logs for the DB instance
+cloudwatch_log_group_retention_in_days: 7
+# Set to true if you do not wish the log group (and any logs it may contain)
+# to be deleted at destroy time, and instead just remove the log group from
+# the Terraform state
+cloudwatch_log_group_skip_destroy: null
+# Additional tags for the CloudWatch log group(s)
+cloudwatch_log_group_tags: {}
+# Map of arguments for the created DB cluster activity stream
+# Not supported (gap): no kind or field starts a database activity stream
+# (StartActivityStream): ACK's DBCluster (rds-controller v1.14.2) only reports
+# one in its status, and ack-extensions has no kind for it.
+cluster_activity_stream: null
+# The CA certificate identifier to use for the DB cluster's server
+# certificate. Currently only supported for multi-az DB clusters
+# In part: accepted, and carried to each instance
+# (DBInstance.caCertificateIdentifier) as the module does; ACK's DBCluster
+# (rds-controller v1.14.2) has no field for it, so it is refused when the
+# chart renders no instance (a Multi-AZ DB cluster).
+cluster_ca_cert_identifier: null
+# Instance parameter group to associate with all instances of the DB cluster.
+# The `cluster_db_instance_parameter_group_name` is only valid in combination
+# with `allow_major_version_upgrade`
+# Not supported (gap): ACK's DBCluster (rds-controller v1.14.2) has no field
+# for it (DBInstanceParameterGroupName, sent with a major version upgrade).
+cluster_db_instance_parameter_group_name: null
+# The compute and memory capacity of each DB instance in the Multi-AZ DB
+# cluster (not all DB instance classes are available in all AWS Regions, or
+# for all database engines)
+cluster_instance_class: null
+# List of RDS Instances that are a part of this cluster
+# Not supported (gap): ACK's DBCluster (rds-controller v1.14.2) has no field
+# for it: RDS reports the members (status.dbClusterMembers), and each instance
+# joins by its own dbClusterIdentifier.
+cluster_members: null
+# Interval, in seconds, between points when Enhanced Monitoring metrics are
+# collected for the DB cluster. To turn off collecting Enhanced Monitoring
+# metrics, specify 0. Valid Values: 0, 1, 5, 10, 15, 30, 60
+cluster_monitoring_interval: 0
+# Map of nested arguments for the created DB cluster parameter group
+# In part: accepted, except use_name_prefix: true (the default) names the
+# group as given, without Terraform's random suffix, and each parameter's
+# apply_method: ACK's DBClusterParameterGroup takes names and values
+# (parameterOverrides) and picks immediate or pending-reboot from each
+# parameter's metadata.
+cluster_parameter_group: null
+# The name of an existing DB cluster parameter group. Required when
+# `cluster_parameter_group` is not provided (`null`)
+cluster_parameter_group_name: null
+# Enables Performance Insights for the RDS Cluster
+cluster_performance_insights_enabled: null
+# Specifies the KMS Key ID to encrypt Performance Insights data. If not
+# specified, the default RDS KMS key will be used (aws/rds)
+cluster_performance_insights_kms_key_id: null
+# Specifies the amount of time to retain performance insights data for.
+# Defaults to 7 days if Performance Insights are enabled. Valid values are 7,
+# month * 31 (where month is a number of months from 1-23), and 731
+cluster_performance_insights_retention_period: null
+# Specifies the scalability mode of the Aurora DB cluster. When set to
+# limitless, the cluster operates as an Aurora Limitless Database. When set to
+# standard (the default), the cluster uses normal DB instance creation. Valid
+# values: limitless, standard
+# Not supported (gap): ACK's DBCluster (rds-controller v1.14.2) has no field
+# for it (ClusterScalabilityType), so an Aurora Limitless cluster cannot be
+# made.
+cluster_scalability_type: null
+# A map of tags to add to only the cluster. Used for AWS Instance Scheduler
+# tagging
+cluster_tags: {}
+# Create, update, and delete timeout configurations for the cluster
+# Not supported (by-design): Terraform's create, update and delete timeouts:
+# ACK retries until the cluster is synced, and Bundt waits for it.
+cluster_timeouts: null
+# Whether to use `name` as a prefix for the cluster
+# Not supported (gap): an identifier with Terraform's random suffix would
+# change between renders.
+cluster_use_name_prefix: false
+# Copy all Cluster `tags` to snapshots
+copy_tags_to_snapshot: true
+# Whether cluster should be created (affects nearly all resources)
+create: true
+# Determines whether a CloudWatch log group is created for each
+# `enabled_cloudwatch_logs_exports`
+create_cloudwatch_log_group: false
+# Determines whether to create the database subnet group or use existing
+create_db_subnet_group: false
+# Determines whether to create the IAM role for RDS enhanced monitoring
+create_monitoring_role: true
+# Determines whether to create security group for RDS cluster
+create_security_group: true
+# The mode of Database Insights to enable for the DB cluster. Valid values:
+# standard, advanced
+database_insights_mode: null
+# Name for an automatically created database on cluster creation
+database_name: null
+# Map of nested arguments for the created DB parameter group
+# In part: accepted, except use_name_prefix: true (the default) names the
+# group as given, without Terraform's random suffix, and each parameter's
+# apply_method: ACK's DBParameterGroup takes names and values
+# (parameterOverrides) and picks immediate or pending-reboot from each
+# parameter's metadata.
+db_parameter_group: null
+# The name of the subnet group name (existing or created)
+db_subnet_group_name: ""
+# Specifies whether to remove automated backups immediately after the DB
+# cluster is deleted
+delete_automated_backups: null
+# If the DB instance should have deletion protection enabled. The database
+# can't be deleted when this value is set to `true`. The default is `false`
+deletion_protection: null
+# The ID of the Directory Service Active Directory domain to create the
+# instance in
+domain: null
+# (Required if domain is provided) The name of the IAM role to be used when
+# making API calls to the Directory Service
+domain_iam_role_name: null
+# Whether cluster should forward writes to an associated global cluster.
+# Applied to secondary clusters to enable them to forward writes to an
+# `aws_rds_global_cluster`'s primary cluster
+enable_global_write_forwarding: null
+# Enable HTTP endpoint (data API). Only valid when engine_mode is set to
+# `serverless`
+enable_http_endpoint: null
+# Whether read replicas can forward write operations to the writer DB instance
+# in the DB cluster. By default, write operations aren't allowed on reader DB
+# instances
+# Not supported (gap): ACK's DBCluster (rds-controller v1.14.2) has no field
+# for it (EnableLocalWriteForwarding).
+enable_local_write_forwarding: null
+# Set of log types to export to cloudwatch. If omitted, no logs will be
+# exported. The following log types are supported: `audit`, `error`,
+# `general`, `slowquery`, `postgresql`
+enabled_cloudwatch_logs_exports: []
+# Map of additional cluster endpoints and their attributes to be created
+endpoints: {}
+# The name of the database engine to be used for this DB cluster. Defaults to
+# `aurora`. Valid Values: `aurora`, `aurora-mysql`, `aurora-postgresql`
+# In part: accepted when set; unset is refused: ACK's DBCluster requires
+# engine, where Terraform's provider takes aurora.
+engine: null
+# The life cycle type for this DB instance. This setting is valid for cluster
+# types Aurora DB clusters and Multi-AZ DB clusters. Valid values are
+# `open-source-rds-extended-support`,
+# `open-source-rds-extended-support-disabled`. Default value is
+# `open-source-rds-extended-support`
+# Not supported (gap): ACK's DBCluster (rds-controller v1.14.2) has no field
+# for it (EngineLifecycleSupport).
+engine_lifecycle_support: null
+# The database engine mode. Valid values: `global`, `multimaster`,
+# `parallelquery`, `provisioned`, `serverless`. Defaults to: `provisioned`
+engine_mode: "provisioned"
+# The database engine version. Updating this argument results in an outage
+engine_version: null
+# The name of your final DB snapshot when this DB cluster is deleted. If
+# omitted, no final snapshot will be made
+final_snapshot_identifier: null
+# The global cluster identifier specified on `aws_rds_global_cluster`
+global_cluster_identifier: null
+# Specifies whether or not mappings of AWS Identity and Access Management
+# (IAM) accounts to database accounts is enabled
+iam_database_authentication_enabled: null
+# Description of the monitoring role
+iam_role_description: null
+# Maximum session duration (in seconds) that you want to set for the
+# monitoring role
+iam_role_max_session_duration: null
+# Friendly name of the monitoring role
+iam_role_name: null
+# Path for the monitoring role
+iam_role_path: null
+# The ARN of the policy that is used to set the permissions boundary for the
+# monitoring role
+iam_role_permissions_boundary: null
+# Determines whether to use `iam_role_name` as is or create a unique name
+# beginning with the `iam_role_name` as the prefix
+# Not supported (gap): a name with Terraform's random suffix (name_prefix)
+# would change between renders.
+iam_role_use_name_prefix: false
+# Create, update, and delete timeout configurations for the cluster
+# instance(s)
+# Not supported (by-design): Terraform's create, update and delete timeouts:
+# ACK retries until each instance is synced, and Bundt waits for it.
+instance_timeouts: null
+# Map of cluster instances and any specific/overriding attributes to be
+# created
+# In part: accepted, except an instance's identifier_prefix (an identifier
+# with Terraform's random suffix would change between renders) and
+# apply_immediately: false (ACK applies changes immediately).
+instances: {}
+# Determines whether cluster instance identifiers are used as prefixes
+# Not supported (gap): an identifier with Terraform's random suffix would
+# change between renders.
+instances_use_identifier_prefix: false
+# The amount of Provisioned IOPS (input/output operations per second) to be
+# initially allocated for each DB instance in the Multi-AZ DB cluster
+iops: null
+# Determines whether cluster is primary cluster with writer instance (set to
+# `false` for global cluster and replica clusters)
+is_primary_cluster: true
+# The ARN for the KMS encryption key. When specifying `kms_key_id`,
+# `storage_encrypted` needs to be set to `true`
+kms_key_id: null
+# Set to true to allow RDS to manage the master user password in Secrets
+# Manager. Cannot be set if `master_password_wo` is provided
+manage_master_user_password: true
+# Whether to manage the master user password rotation. By default, false on
+# creation, rotation is managed by RDS. There is not currently a way to
+# disable this on initial creation even when set to false. Setting this value
+# to false after previously having been set to true will disable automatic
+# rotation
+# Not supported (gap): rotation of the managed master user secret
+# (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no
+# rotation (secretsmanager-controller PR #69) and ack-extensions has none at
+# the catalog's ACKX_COMMIT.
+manage_master_user_password_rotation: false
+# Write-Only required unless `manage_master_user_password` is set to `true`, a
+# `snapshot_identifier`, `replication_source_identifier`, or unless a
+# `global_cluster_identifier` is provided when the cluster is the "secondary"
+# cluster of a global database) Password for the master DB user
+# In part: a reference to a Kubernetes Secret, {secretName, key}, rendered as
+# DBCluster's spec.masterUserPassword (ACK's SecretKeyReference;
+# docs/secrets.md), used when manage_master_user_password is false, as the
+# module uses it; the password itself, a string, is refused: it would be in
+# the rendered manifest.
+master_password_wo: null
+# Used together with `master_password_wo` to trigger an update. Increment this
+# value when an update to the `master_password_wo` is required
+# Not supported (gap): ACK sends the Secret's value when the reference
+# (masterUserPassword) changes and has no version to bump: point
+# master_password_wo at a new Secret or key to set a new password.
+master_password_wo_version: null
+# Specifies whether to rotate the secret immediately or wait until the next
+# scheduled rotation window
+# Not supported (gap): rotation of the managed master user secret
+# (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no
+# rotation (secretsmanager-controller PR #69) and ack-extensions has none at
+# the catalog's ACKX_COMMIT.
+master_user_password_rotate_immediately: null
+# Specifies the number of days between automatic scheduled rotations of the
+# secret. Either `master_user_password_rotation_automatically_after_days` or
+# `master_user_password_rotation_schedule_expression` must be specified
+# Not supported (gap): rotation of the managed master user secret
+# (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no
+# rotation (secretsmanager-controller PR #69) and ack-extensions has none at
+# the catalog's ACKX_COMMIT.
+master_user_password_rotation_automatically_after_days: null
+# The length of the rotation window in hours. For example, 3h for a three hour
+# window
+# Not supported (gap): rotation of the managed master user secret
+# (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no
+# rotation (secretsmanager-controller PR #69) and ack-extensions has none at
+# the catalog's ACKX_COMMIT.
+master_user_password_rotation_duration: null
+# A cron() or rate() expression that defines the schedule for rotating your
+# secret. Either `master_user_password_rotation_automatically_after_days` or
+# `master_user_password_rotation_schedule_expression` must be specified
+# Not supported (gap): rotation of the managed master user secret
+# (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no
+# rotation (secretsmanager-controller PR #69) and ack-extensions has none at
+# the catalog's ACKX_COMMIT.
+master_user_password_rotation_schedule_expression: null
+# The Amazon Web Services KMS key identifier is the key ARN, key ID, alias
+# ARN, or alias name for the KMS key
+master_user_secret_kms_key_id: null
+# Username for the master DB user. Required unless `snapshot_identifier` or
+# `replication_source_identifier` is provided or unless a
+# `global_cluster_identifier` is provided when the cluster is the secondary
+# cluster of a global database
+master_username: null
+# IAM role used by RDS to send enhanced monitoring metrics to CloudWatch
+monitoring_role_arn: ""
+# Name used across resources created
+name: ""
+# The type of network stack to use (IPV4 or DUAL)
+network_type: null
+# The port on which the DB accepts connections
+port: null
+# The metric type to scale on. Valid values are
+# `RDSReaderAverageCPUUtilization` and `RDSReaderAverageDatabaseConnections`
+predefined_metric_type: "RDSReaderAverageCPUUtilization"
+# Daily time range during which automated backups are created if automated
+# backups are enabled using the BackupRetentionPeriod parameter.Time in UTC.
+# Default: A 30-minute window selected at random from an 8-hour block of time
+# per region, e.g. `04:00-09:00`
+preferred_backup_window: null
+# Weekly time range during which system maintenance can occur, in (UTC) e.g.,
+# `wed:04:00-wed:04:30`
+preferred_maintenance_window: null
+# Do you agree that Putin doesn't respect Ukrainian sovereignty and
+# territorial integrity? More info:
+# https://en.wikipedia.org/wiki/Putin_khuylo!
+putin_khuylo: true
+# Region where the resource(s) will be managed. Defaults to the Region set in
+# the provider configuration
+region: null
+# ARN of a source DB cluster or DB instance if this DB cluster is to be
+# created as a Read Replica
+replication_source_identifier: null
+# Map of nested attributes for cloning Aurora cluster
+# In part: accepted (DBCluster's sourceDBClusterIdentifier, restoreToTime,
+# restoreType and useLatestRestorableTime, which make ACK call
+# RestoreDBClusterToPointInTime), except source_cluster_resource_id: ACK's
+# DBCluster has no field for it.
+restore_to_point_in_time: null
+# Map of IAM roles and supported feature names to associate with the cluster
+# In part: DBRoleAssociation is an ack-extensions kind (outside ACK's
+# releases): needs allow_alpha: true.
+role_associations: {}
+# Configuration map used to restore from a Percona Xtrabackup in S3 (only
+# MySQL is supported)
+# Not supported (gap): ACK's DBCluster (rds-controller v1.14.2) has no restore
+# from S3 (RestoreDBClusterFromS3).
+s3_import: null
+# Map of nested attributes with scaling properties. Only valid when
+# `engine_mode` is set to `serverless`
+scaling_configuration: null
+# The description of the security group. If value is set to empty string it
+# will contain cluster name in the description
+security_group_description: null
+# Map of security group egress rules to add to the security group created
+# In part: accepted, but each rule's name, tags and region are not carried:
+# ACK keeps a group's rules inline in SecurityGroup, which has no per-rule
+# tags; a region other than the chart's is refused.
+security_group_egress_rules: {}
+# Map of security group ingress rules to add to the security group created
+# In part: accepted, but each rule's name, tags and region are not carried:
+# ACK keeps a group's rules inline in SecurityGroup, which has no per-rule
+# tags; a region other than the chart's is refused.
+security_group_ingress_rules: {}
+# The security group name. Default value is (`var.name`)
+security_group_name: ""
+# Additional tags for the security group
+security_group_tags: {}
+# Determines whether the security group name (`var.name`) is used as a prefix
+# In part: accepted: true (the default) names the group security_group_name
+# (or name) as given, without Terraform's random suffix, since a render must
+# not change between plans; the namePrefix value keeps two Instances' groups
+# apart.
+security_group_use_name_prefix: true
+# Map of nested attributes with serverless v2 scaling properties. Only valid
+# when `engine_mode` is set to `provisioned`
+serverlessv2_scaling_configuration: null
+# Arguments for the DB shard group to be created
+# Not supported (gap): a DB shard group needs an Aurora Limitless cluster
+# (cluster_scalability_type: limitless), which ACK's DBCluster (rds-controller
+# v1.14.2) cannot make; ack-extensions' Cloud Control DBShardGroup
+# (rds.cloudcontrol.aws.hfl.dev) exists but has no such cluster to join.
+shard_group: null
+# Determines whether a final snapshot is created before the cluster is
+# deleted. If true is specified, no snapshot is created
+skip_final_snapshot: false
+# Specifies whether or not to create this cluster from a snapshot. You can use
+# either the name or ARN when specifying a DB cluster snapshot, or the ARN
+# when specifying a DB snapshot
+snapshot_identifier: null
+# The source region for an encrypted replica DB cluster
+source_region: null
+# Specifies whether the DB cluster is encrypted. The default is `true`
+storage_encrypted: true
+# Determines the storage type for the DB cluster. Optional for Single-AZ,
+# required for Multi-AZ DB clusters. Valid values for Single-AZ: `aurora`,
+# `""` (default, both refer to Aurora Standard), `aurora-iopt1` (Aurora I/O
+# Optimized). Valid values for Multi-AZ: `io1` (default)
+storage_type: null
+# List of subnet IDs used by database subnet group created
+subnets: []
+# A map of tags to add to all resources
+tags: {}
+# ID of the VPC where to create security group
+# In part: accepted when set; unset with create_security_group: true
+# (Terraform's default VPC) is refused: ACK's SecurityGroup needs its VPC's
+# ID.
+vpc_id: ""
+# List of VPC security groups to associate to the cluster in addition to the
+# security group created
+# In part: accepted with create_security_group: false; with the chart's own
+# group it is refused, since ACK's DBCluster cannot take group references and
+# IDs together (vpcSecurityGroupRefs, vpcSecurityGroupIDs).
+vpc_security_group_ids: []

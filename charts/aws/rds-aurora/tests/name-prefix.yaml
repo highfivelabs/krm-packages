@@ -1,0 +1,23 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The namePrefix convention (docs/design.md, "Names, labels and tags"): the
+# cluster's, instances' and endpoints' identifiers and the subnet,
+# parameter and security groups' names (unique in their account and
+# Region) and the monitoring role's (unique in its account) carry the
+# namePrefix. Instances are named after the cluster and log groups after
+# it, so they carry it too.
+exempt:
+  DBRoleAssociation: "a role association is named by its cluster, role and feature"
+  ScalableTarget: "a scalable target is named by its cluster (resourceID cluster:<identifier>), which carries the namePrefix"
+  ScalingPolicy: "a scaling policy's name is unique only within its scalable target"
+nameFields:
+  DBCluster: dbClusterIdentifier
+  DBInstance: dbInstanceIdentifier
+  DBClusterEndpoint: dbClusterEndpointIdentifier
+  DBSubnetGroup: name
+  DBClusterParameterGroup: name
+  DBParameterGroup: name
+  SecurityGroup: name
+  Role: name
+  LogGroup: name

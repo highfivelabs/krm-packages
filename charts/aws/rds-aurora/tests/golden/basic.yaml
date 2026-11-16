@@ -1,0 +1,152 @@
+---
+# Source: rds-aurora/templates/monitoring.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: basic-monitoring-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "enhanced-monitoring-role"
+spec:
+  name: "test-aurora-db-postgres96-monitor"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"monitoring.rds.amazonaws.com\"]}}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+  tags:
+    - key: "Environment"
+      value: "dev"
+    - key: "Terraform"
+      value: "true"
+---
+# Source: rds-aurora/templates/cluster.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBCluster
+metadata:
+  name: basic-cluster
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster"
+    rds.services.k8s.aws/final-db-snapshot-identifier: "test-aurora-db-postgres96-final"
+    rds.services.k8s.aws/skip-final-snapshot: "false"
+spec:
+  dbClusterIdentifier: "test-aurora-db-postgres96"
+  engine: "aurora-postgresql"
+  engineMode: "provisioned"
+  engineVersion: "17.5"
+  copyTagsToSnapshot: true
+  dbSubnetGroupName: "db-subnet-group"
+  enableCloudwatchLogsExports:
+    - "postgresql"
+  manageMasterUserPassword: true
+  monitoringInterval: 10
+  monitoringRoleRef:
+    from:
+      name: basic-monitoring-role
+  port: 5432
+  storageEncrypted: true
+  vpcSecurityGroupRefs:
+    - from:
+        name: basic-sg
+  tags:
+    - key: "Environment"
+      value: "dev"
+    - key: "Terraform"
+      value: "true"
+---
+# Source: rds-aurora/templates/instances.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBInstance
+metadata:
+  name: basic-instance-one
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "instance-one"
+spec:
+  dbInstanceIdentifier: "test-aurora-db-postgres96-one"
+  dbClusterIdentifierRef:
+    from:
+      name: basic-cluster
+  dbInstanceClass: "db.r8g.large"
+  engine: "aurora-postgresql"
+  copyTagsToSnapshot: true
+  monitoringInterval: 10
+  monitoringRoleRef:
+    from:
+      name: basic-monitoring-role
+  tags:
+    - key: "Environment"
+      value: "dev"
+    - key: "Terraform"
+      value: "true"
+---
+# Source: rds-aurora/templates/instances.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBInstance
+metadata:
+  name: basic-instance-two
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "instance-two"
+spec:
+  dbInstanceIdentifier: "test-aurora-db-postgres96-two"
+  dbClusterIdentifierRef:
+    from:
+      name: basic-cluster
+  dbInstanceClass: "db.r8g.2xlarge"
+  engine: "aurora-postgresql"
+  copyTagsToSnapshot: true
+  monitoringInterval: 10
+  monitoringRoleRef:
+    from:
+      name: basic-monitoring-role
+  tags:
+    - key: "Environment"
+      value: "dev"
+    - key: "Terraform"
+      value: "true"
+---
+# Source: rds-aurora/templates/security-group.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: basic-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "security-group"
+spec:
+  name: "test-aurora-db-postgres96"
+  description: "Control traffic to/from RDS Aurora test-aurora-db-postgres96"
+  vpcID: "vpc-12345678"
+  ingressRules:
+    - ipProtocol: "tcp"
+      fromPort: 5432
+      toPort: 5432
+      userIDGroupPairs:
+        - {"groupID":"sg-12345678"}
+  tags:
+    - key: "Environment"
+      value: "dev"
+    - key: "Name"
+      value: "test-aurora-db-postgres96"
+    - key: "Terraform"
+      value: "true"

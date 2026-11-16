@@ -1,0 +1,34 @@
+---
+# Source: rds-aurora/templates/cluster.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBCluster
+metadata:
+  name: serverless-cluster
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "serverless"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster"
+    rds.services.k8s.aws/skip-final-snapshot: "true"
+spec:
+  dbClusterIdentifier: "example-serverless"
+  engine: "aurora-postgresql"
+  engineMode: "serverless"
+  copyTagsToSnapshot: true
+  dbSubnetGroupName: "example"
+  enableHTTPEndpoint: true
+  manageMasterUserPassword: true
+  masterUsername: "root"
+  monitoringInterval: 0
+  port: 5432
+  scalingConfiguration:
+    autoPause: true
+    maxCapacity: 16
+    minCapacity: 2
+    secondsUntilAutoPause: 300
+    timeoutAction: "ForceApplyCapacityChange"
+  storageEncrypted: true
+  vpcSecurityGroupIDs:
+    - "sg-0123456789abcdef0"

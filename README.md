@@ -130,14 +130,14 @@ How much of the Terraform modules people use today the catalog carries, counted 
 
 ![All tracked modules](docs/coverage/total.svg)
 
-**177 modules tracked**: 15 ported, 130 partial, 27 blocked, 5 not started. Green is ported, amber partial (some variables refused with a message that names the gap), dark grey blocked (a resource type of the module has no stable kind: none, or only an alpha one), light grey not started.
+**177 modules tracked**: 15 ported, 131 partial, 26 blocked, 5 not started. Green is ported, amber partial (some variables refused with a message that names the gap), dark grey blocked (a resource type of the module has no stable kind: none, or only an alpha one), light grey not started.
 
 | Source | Modules | Bar | Variables covered |
 | --- | ---: | --- | ---: |
 | Google Cloud: Cloud Foundation Fabric and terraform-google-modules | 98 | ![gcp](docs/coverage/gcp.svg) | 1220 of 1478 (82.5%) |
-| AWS: terraform-aws-modules | 42 | ![aws](docs/coverage/aws.svg) | 891 of 2348 (37.9%) |
+| AWS: terraform-aws-modules | 42 | ![aws](docs/coverage/aws.svg) | 984 of 2348 (41.9%) |
 | Azure: Azure Verified Modules | 37 | ![azure](docs/coverage/azure.svg) | 1066 of 1170 (91.1%) |
-| **All** | **177** | | **3177 of 4996 (63.6%)** |
+| **All** | **177** | | **3270 of 4996 (65.5%)** |
 
 ### Google Cloud: Cloud Foundation Fabric and terraform-google-modules
 
@@ -258,7 +258,7 @@ How much of the Terraform modules people use today the catalog carries, counted 
 
 ### AWS: terraform-aws-modules
 
-0 ported, 23 partial, 17 blocked, 2 not started.
+0 ported, 24 partial, 16 blocked, 2 not started.
 
 **Ported and partial**
 
@@ -270,6 +270,7 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | [`kms`](https://github.com/terraform-aws-modules/terraform-aws-kms/tree/v4.2.2) ([chart](charts/aws/kms)) | ![kms](docs/coverage/bars/aws-kms.svg) 30 of 41 | 4 of 9 | 3 of 6 | partial |
 | [`security-group`](https://github.com/terraform-aws-modules/terraform-aws-security-group/tree/v6.0.0) ([chart](charts/aws/security-group)) | ![security-group](docs/coverage/bars/aws-security-group.svg) 11 of 14 | 5 of 5 | 4 of 5 | partial |
 | [`rds`](https://github.com/terraform-aws-modules/terraform-aws-rds/tree/v7.2.2) ([chart](charts/aws/rds)) | ![rds](docs/coverage/bars/aws-rds.svg) 89 of 111 | 27 of 34 | 7 of 10 | partial |
+| [`rds-aurora`](https://github.com/terraform-aws-modules/terraform-aws-rds-aurora/tree/v10.4.2) ([chart](charts/aws/rds-aurora)) | ![rds-aurora](docs/coverage/bars/aws-rds-aurora.svg) 93 of 114 | 25 of 33 | 17 of 21 | partial |
 | [`acm`](https://github.com/terraform-aws-modules/terraform-aws-acm/tree/v6.3.1) ([chart](charts/aws/acm)) | ![acm](docs/coverage/bars/aws-acm.svg) 23 of 24 | 7 of 7 | 2 of 3 | partial |
 | [`ec2-instance`](https://github.com/terraform-aws-modules/terraform-aws-ec2-instance/tree/v6.4.1) ([chart](charts/aws/ec2-instance)) | ![ec2-instance](docs/coverage/bars/aws-ec2-instance.svg) 56 of 83 | 20 of 30 | 8 of 12 | partial |
 | [`sqs`](https://github.com/terraform-aws-modules/terraform-aws-sqs/tree/v5.2.2) ([chart](charts/aws/sqs)) | ![sqs](docs/coverage/bars/aws-sqs.svg) 22 of 42 | 5 of 10 | 4 of 4 | partial |
@@ -288,12 +289,11 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | [`iam-role`](https://github.com/terraform-aws-modules/terraform-aws-iam/tree/v6.8.2/modules/iam-role) ([chart](charts/aws/iam-role)) | ![iam-role](docs/coverage/bars/aws-iam-role.svg) 31 of 31 | 7 of 7 | 4 of 4 | partial |
 | [`iam-policy`](https://github.com/terraform-aws-modules/terraform-aws-iam/tree/v6.8.2/modules/iam-policy) ([chart](charts/aws/iam-policy)) | ![iam-policy](docs/coverage/bars/aws-iam-policy.svg) 6 of 7 | 4 of 4 | 1 of 1 | partial |
 
-**Blocked: a resource type has no stable kind (first 10 of 17, by rank)**
+**Blocked: a resource type has no stable kind (first 10 of 16, by rank)**
 
 | Module | Variables covered | Outputs | Resource types with a stable kind | Status |
 | --- | --- | ---: | ---: | --- |
 | [`iam`](https://github.com/terraform-aws-modules/terraform-aws-iam/tree/v6.8.2) | ![iam](docs/coverage/bars/aws-iam.svg) 0 of 0 | 0 of 0 | 11 of 17 | blocked |
-| [`rds-aurora`](https://github.com/terraform-aws-modules/terraform-aws-rds-aurora/tree/v10.4.2) | ![rds-aurora](docs/coverage/bars/aws-rds-aurora.svg) 0 of 114 | 0 of 33 | 17 of 21 | blocked |
 | [`ecs`](https://github.com/terraform-aws-modules/terraform-aws-ecs/tree/v7.6.1) | ![ecs](docs/coverage/bars/aws-ecs.svg) 0 of 60 | 0 of 20 | 15 of 18 | blocked |
 | [`eventbridge`](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/tree/v4.3.3) | ![eventbridge](docs/coverage/bars/aws-eventbridge.svg) 0 of 83 | 0 of 34 | 13 of 18 | blocked |
 | [`cloudwatch`](https://github.com/terraform-aws-modules/terraform-aws-cloudwatch/tree/v6.0.0) | ![cloudwatch](docs/coverage/bars/aws-cloudwatch.svg) 0 of 0 | 0 of 0 | 5 of 11 | blocked |
@@ -302,6 +302,7 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | [`vpn-gateway`](https://github.com/terraform-aws-modules/terraform-aws-vpn-gateway/tree/v4.0.0) | ![vpn-gateway](docs/coverage/bars/aws-vpn-gateway.svg) 0 of 56 | 0 of 11 | 0 of 5 | blocked |
 | [`rds-proxy`](https://github.com/terraform-aws-modules/terraform-aws-rds-proxy/tree/v4.4.1) | ![rds-proxy](docs/coverage/bars/aws-rds-proxy.svg) 0 of 44 | 0 of 19 | 5 of 7 | blocked |
 | [`transit-gateway`](https://github.com/terraform-aws-modules/terraform-aws-transit-gateway/tree/v3.3.1) | ![transit-gateway](docs/coverage/bars/aws-transit-gateway.svg) 0 of 29 | 0 of 17 | 4 of 12 | blocked |
+| [`apigateway-v2`](https://github.com/terraform-aws-modules/terraform-aws-apigateway-v2/tree/v6.1.1) | ![apigateway-v2](docs/coverage/bars/aws-apigateway-v2.svg) 0 of 43 | 0 of 22 | 11 of 13 | blocked |
 
 **Not started**
 
