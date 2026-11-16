@@ -84,35 +84,41 @@ policies it made, sorted).
 
 ## The ack-extensions live-test role
 
+**Status: the ack-extensions-live-tests instance is deployed and adopted
+(2026-11-16).** ACK's iam-controller adopted the role the CloudFormation
+stack had made, in place (same name and RoleId; ack-extensions
+`docs/live-runs.md`, AWSROLE-ADOPT), and the stack let go of it; the role
+is this instance's now.
+
 `tests/ack-extensions-live-tests.values.yaml` is the instance for
 ack-extensions' live tests: the role `ack-extensions-live-tests` in the AWS
 test account, which the offload VMs' Google service account assumes for
-`task test-live` (ack-extensions `docs/live-runs.md`). It carries the same
-role, trust and permissions as ack-extensions' generated CloudFormation
-template `cloudcontrol/config/live/sandbox-account.yaml` at `7d67acc`
-(2026-11-15): compared statement for statement on 2026-11-15 (trust policy,
-name, description, session limit, tag and the one managed policy's document
-and description all equal). It differs in two ways:
+`task test-live` (ack-extensions `docs/live-runs.md`). When it was adopted
+it carried the same role, trust and permissions as ack-extensions'
+CloudFormation template at `7d67acc` (2026-11-15), compared statement for
+statement (trust policy, name, description, session limit, tag and the one
+managed policy's document and description all equal), with two
+differences:
 
 - the managed policy is named `ack-extensions-live-tests-part-1`, where
   CloudFormation generated a name;
 - the template's monthly budget alarm (`AWS::Budgets::Budget`) is not
   here: no ACK controller or ack-extensions kind serves AWS Budgets yet,
-  a gap for ack-extensions.
+  a gap for ack-extensions. The alarm stays in that stack.
+
+Its `policies` are ack-extensions' generated
+`cloudcontrol/config/live/role-policies.yaml`, statement for statement:
+the Cloud Control kinds sampled on live runs (`liveKinds`), the sweeper,
+the tests' fixtures, and (since 2026-11-16, HFL-623) the ACK-kind suite's
+calls, which take a second policy, `part-2`. When those change there, the
+statements are copied here and the instance is applied again through ACK
+the way it was adopted (`adoption-policy: adopt-or-create`, so the role and
+its policies are adopted again; `deletion_policy: ABANDON`; ACK's resource
+tags off). A check that the two files agree is not built yet.
 
 The unique ID in the file is a placeholder (`000000000000000000000`): this
 repository is public, and identifiers come from the environment. Set the
-real one where the instance is deployed, as the template took it as a
-parameter. The policy statements follow ack-extensions' `liveKinds`; when
-those change, the template is regenerated there and this file must follow
-(the statements were generated from the template; a check that the two
-agree is not built yet).
-
-Not deployed. The role made by the CloudFormation stack in the test account
-works today and stays until this instance is proven. Deploying it there
-means adopting the existing role (ACK's adoption) or replacing the stack's
-role, the builder's call. The CloudFormation template stays in
-ack-extensions until then.
+real one where the instance is deployed.
 
 ## Tests
 
