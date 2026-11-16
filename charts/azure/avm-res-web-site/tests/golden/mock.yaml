@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: avm-res-web-site
-    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/version: "0.6.0"
   annotations:
     hfl.dev/id: "certificate:upload"
 spec:
@@ -30,7 +30,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: avm-res-web-site
-    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/version: "0.6.0"
   annotations:
     hfl.dev/id: "certificate:www"
 spec:
@@ -45,7 +45,7 @@ spec:
   keyVaultSecretName: "www-catalog-example"
 ---
 # Source: avm-res-web-site/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: mock-site-lock
@@ -53,7 +53,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: avm-res-web-site
-    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/version: "0.6.0"
   annotations:
     hfl.dev/id: "lock"
 spec:
@@ -65,7 +65,7 @@ spec:
   level: CanNotDelete
 ---
 # Source: avm-res-web-site/templates/slots.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: mock-site-slot-staging-lock
@@ -73,7 +73,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: avm-res-web-site
-    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/version: "0.6.0"
   annotations:
     hfl.dev/id: "slot:staging/lock"
 spec:
@@ -85,7 +85,7 @@ spec:
   level: CanNotDelete
 ---
 # Source: avm-res-web-site/templates/slots.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: mock-site-slot-staging-pe-pe-lock
@@ -93,7 +93,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: avm-res-web-site
-    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/version: "0.6.0"
   annotations:
     hfl.dev/id: "slot:staging/private_endpoint:pe/lock"
 spec:
@@ -113,7 +113,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: avm-res-web-site
-    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/version: "0.6.0"
   annotations:
     hfl.dev/id: "slot:staging/private_endpoint:pe"
 spec:
@@ -143,7 +143,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: avm-res-web-site
-    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/version: "0.6.0"
   annotations:
     hfl.dev/id: "slot:staging/private_endpoint:pe/dns_zone_group"
 spec:
@@ -164,7 +164,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: avm-res-web-site
-    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/version: "0.6.0"
   annotations:
     hfl.dev/id: "site"
 spec:
@@ -191,9 +191,6 @@ spec:
     armId: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/catalog-rg/providers/Microsoft.Web/serverfarms/catalog-asp
   siteConfig:
     alwaysOn: false
-    appSettings:
-    - name: CATALOG
-      value: mock
     azureStorageAccounts:
       content:
         accessKey:
@@ -230,7 +227,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: avm-res-web-site
-    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/version: "0.6.0"
   annotations:
     hfl.dev/id: "ftp_publishing_credential_policy"
 spec:
@@ -247,13 +244,65 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: avm-res-web-site
-    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/version: "0.6.0"
   annotations:
     hfl.dev/id: "scm_publishing_credential_policy"
 spec:
   owner:
     name: mock-site
   allow: false
+---
+# Source: avm-res-web-site/templates/main.yaml
+apiVersion: web.azure.hfl.dev/v20260715
+kind: SitesConfigAppSettings
+metadata:
+  name: mock-appsettings
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: avm-res-web-site
+    app.kubernetes.io/version: "0.6.0"
+  annotations:
+    hfl.dev/id: "config_appsettings"
+spec:
+  owner:
+    name: mock-site
+  settings:
+    - name: APPLICATIONINSIGHTS_CONNECTION_STRING
+      valueFromSecret:
+        key: value
+        name: catalog-web-insights
+    - name: CATALOG
+      value: mock
+---
+# Source: avm-res-web-site/templates/slots.yaml
+apiVersion: web.azure.hfl.dev/v20260715
+kind: SitesConfigAppSettings
+metadata:
+  name: mock-site-slot-staging-appsettings
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: avm-res-web-site
+    app.kubernetes.io/version: "0.6.0"
+  annotations:
+    hfl.dev/id: "slot:staging/config_appsettings"
+spec:
+  owner:
+    group: web.azure.hfl.dev
+    kind: SitesSlot
+    name: mock-site-slot-staging
+  settings:
+    - name: API_KEY
+      valueFromSecret:
+        key: value
+        name: catalog-web-db
+    - name: APPLICATIONINSIGHTS_CONNECTION_STRING
+      valueFromSecret:
+        key: value
+        name: catalog-web-insights
+    - name: CATALOG
+      value: mock-staging
 ---
 # Source: avm-res-web-site/templates/config.yaml
 apiVersion: web.azure.hfl.dev/v20260715
@@ -264,7 +313,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: avm-res-web-site
-    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/version: "0.6.0"
   annotations:
     hfl.dev/id: "config_authsettingsv2"
 spec:
@@ -287,6 +336,28 @@ spec:
     enabled: true
     runtimeVersion: ~1
 ---
+# Source: avm-res-web-site/templates/main.yaml
+apiVersion: web.azure.hfl.dev/v20260715
+kind: SitesConfigConnectionStrings
+metadata:
+  name: mock-connectionstrings
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: avm-res-web-site
+    app.kubernetes.io/version: "0.6.0"
+  annotations:
+    hfl.dev/id: "config_connectionstrings"
+spec:
+  owner:
+    name: mock-site
+  connectionStrings:
+    - name: db
+      type: SQLAzure
+      valueFromSecret:
+        key: value
+        name: catalog-web-db
+---
 # Source: avm-res-web-site/templates/config.yaml
 apiVersion: web.azure.hfl.dev/v20260715
 kind: SitesConfigLogs
@@ -296,7 +367,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: avm-res-web-site
-    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/version: "0.6.0"
   annotations:
     hfl.dev/id: "config_logs:app"
 spec:
@@ -329,7 +400,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: avm-res-web-site
-    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/version: "0.6.0"
   annotations:
     hfl.dev/id: "config_slotconfignames"
 spec:
@@ -347,7 +418,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: avm-res-web-site
-    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/version: "0.6.0"
   annotations:
     hfl.dev/id: "hostname_binding:www"
 spec:
@@ -364,7 +435,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: avm-res-web-site
-    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/version: "0.6.0"
   annotations:
     hfl.dev/id: "slot:staging"
 spec:
@@ -391,9 +462,6 @@ spec:
     armId: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/catalog-rg/providers/Microsoft.Web/serverfarms/catalog-asp
   siteConfig:
     alwaysOn: false
-    appSettings:
-    - name: CATALOG
-      value: mock-staging
     ftpsState: FtpsOnly
     http20Enabled: false
     ipSecurityRestrictionsDefaultAction: Allow

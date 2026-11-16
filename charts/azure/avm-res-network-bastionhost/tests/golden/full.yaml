@@ -74,7 +74,7 @@ spec:
     armId: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example/providers/Microsoft.OperationalInsights/workspaces/law"
 ---
 # Source: avm-res-network-bastionhost/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-bastion-lock
@@ -96,7 +96,7 @@ spec:
   notes: "Cannot delete the resource or its child resources."
 ---
 # Source: avm-res-network-bastionhost/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-pip-lock

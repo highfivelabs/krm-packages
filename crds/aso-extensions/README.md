@@ -7,7 +7,7 @@ against its CRDs (`hack/aso.sh`).
 
 | File | Kind | Copied from |
 | --- | --- | --- |
-| `authorization.azure.hfl.dev_managementlocks.yaml` | `ManagementLock` (`authorization.azure.hfl.dev/v1`): the Azure Verified Modules' `lock` | `config/crds/` at `5539c29cd63dbc353513e874a9d775fd209229dd` (2026-11-12) |
+| `authorization.azure.hfl.dev_managementlocks.yaml` | `ManagementLock` (`authorization.azure.hfl.dev/v20200501`, generated since aso-extensions #96; the hand-written `v1` is gone): the Azure Verified Modules' `lock` | `config/crds/` at `ae2743c1cf2dd1d9266538e3956b10e9095b8079` (2026-11-16) |
 | `network.azure.hfl.dev_privatednszonessoarecords.yaml` | `PrivateDnsZonesSOARecord` (`network.azure.hfl.dev/v20240601`): the private DNS zone module's `soa_record` | `config/crds/` at `e3b4177ba6a2ef5c52747a9886c158e9cd8c7134` (2026-11-12) |
 | `containerservice.azure.hfl.dev_managedclustersmanagednamespaces.yaml` | `ManagedClustersManagedNamespace` (`containerservice.azure.hfl.dev/v20260501`): the AKS module's `namespace` | `config/crds/` at `e3b4177ba6a2ef5c52747a9886c158e9cd8c7134` (2026-11-12) |
 | `insights.azure.hfl.dev_privatelinkscopesscopedresources.yaml` | `PrivateLinkScopesScopedResource` (`insights.azure.hfl.dev/v20210901`): the workspace module's scoped resources and `avm-res-insights-component`'s `monitor_private_link_scope` | `config/crds/` at `dcefae06573c4d1f995eefac747ea970498ee847` (2026-11-12) |
@@ -32,6 +32,8 @@ against its CRDs (`hack/aso.sh`).
 | `web.azure.hfl.dev_siteshostnamebindings.yaml` | `SitesHostNameBinding` (`web.azure.hfl.dev/v20260715`): `avm-res-web-site`'s `custom_domains` | `config/crds/` at `b9beb5baec80cb1723f00bbe88fc0d0d8348bc3c` (2026-11-13) |
 | `web.azure.hfl.dev_sitesslotshostnamebindings.yaml` | `SitesSlotsHostNameBinding` (`web.azure.hfl.dev/v20260715`): a slot's `custom_domains` (`avm-res-web-site`) | `config/crds/` at `b9beb5baec80cb1723f00bbe88fc0d0d8348bc3c` (2026-11-13) |
 | `web.azure.hfl.dev_certificates.yaml` | `Certificate` (`web.azure.hfl.dev/v20260715`): `avm-res-web-site`'s `certificates` | `config/crds/` at `b9beb5baec80cb1723f00bbe88fc0d0d8348bc3c` (2026-11-13) |
+| `web.azure.hfl.dev_sitesconfigappsettings.yaml` | `SitesConfigAppSettings` (`web.azure.hfl.dev/v20260715`): `avm-res-web-site`'s secret app settings (Application Insights, the storage key, a slot's sensitive settings, Logic Apps) | `config/crds/` at `e9f424a50d0f922d5be979ca6f4b289405fada4a` (2026-11-15) |
+| `web.azure.hfl.dev_sitesconfigconnectionstrings.yaml` | `SitesConfigConnectionStrings` (`web.azure.hfl.dev/v20260715`): `avm-res-web-site`'s `connection_strings` (site and slot) | `config/crds/` at `e9f424a50d0f922d5be979ca6f4b289405fada4a` (2026-11-15) |
 | `app.azure.hfl.dev_managedenvironmentscertificates.yaml` | `ManagedEnvironmentsCertificate` (`app.azure.hfl.dev/v20250101`): the Container Apps environment module's `certificates` | `config/crds/` at `b9beb5baec80cb1723f00bbe88fc0d0d8348bc3c` (2026-11-13) |
 | `app.azure.hfl.dev_managedenvironmentsdaprcomponents.yaml` | `ManagedEnvironmentsDaprComponent` (`app.azure.hfl.dev/v20250101`): the Container Apps environment module's `dapr_components` | `config/crds/` at `b9beb5baec80cb1723f00bbe88fc0d0d8348bc3c` (2026-11-13) |
 | `app.azure.hfl.dev_managedenvironmentsstorages.yaml` | `ManagedEnvironmentsStorage` (`app.azure.hfl.dev/v20260101`): the Container Apps environment module's `storages` | `config/crds/` at `3d9ba27ec1ed6eb2109130539fcd074028ba200d` (2026-11-13) |

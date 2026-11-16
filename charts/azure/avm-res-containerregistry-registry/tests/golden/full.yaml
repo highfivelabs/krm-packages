@@ -27,7 +27,7 @@ spec:
     armId: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-ops/providers/Microsoft.OperationalInsights/workspaces/law"
 ---
 # Source: avm-res-containerregistry-registry/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-acr-pe-hub-lock
@@ -48,7 +48,7 @@ spec:
   notes: "Cannot delete the resource or its child resources."
 ---
 # Source: avm-res-containerregistry-registry/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-acr-pe-spoke-lock
@@ -69,7 +69,7 @@ spec:
   notes: "Cannot delete or modify the resource or its child resources."
 ---
 # Source: avm-res-containerregistry-registry/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-acr-lock

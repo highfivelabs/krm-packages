@@ -23,7 +23,7 @@ spec:
     team: shop
 ---
 # Source: avm-res-network-firewallpolicy/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: names-fwp-lock

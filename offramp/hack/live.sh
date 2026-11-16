@@ -9,7 +9,13 @@
 #
 #   offload run --sa "$GCP_CCE_LIVE_SA" --hours 2 -- \
 #     env PROJECT="$GCP_PROJECT" GCP_PROJECT="$GCP_PROJECT" OFFLOAD_BUCKET="$OFFLOAD_BUCKET" \
-#     offramp/hack/live.sh shared-vpc
+#     CCE_TARBALL=gs://.../cce-<commit>.tar.gz offramp/hack/live.sh shared-vpc
+#
+# CCE_TARBALL is config-connector-extensions at the catalog's pin
+# (Taskfile.yml CCE_COMMIT; task cce-snapshot uploads it): its CRDs and
+# manager (hack/cce-manager.sh) run beside Config Connector's, for the
+# *.gcp.hfl.dev kinds the charts render (the folders chart's authoritative
+# bindings are its IAMBinding).
 #
 # Shapes: shared-vpc, folders, platform-project, gke. For folders and
 # platform-project set PARENT (folders/<n>, the live-tests folder) and
@@ -38,13 +44,14 @@
 #  2. scan.sh; `offramp names`; `config-connector export` of each name.
 #  3. `offramp state` (from the state) and `offramp krm` (from the scan);
 #     `offramp compare` of the two.
-#  4. kind, Config Connector's CRDs, the objects applied with server-side
+#  4. kind, Config Connector's CRDs and config-connector-extensions', the objects applied with server-side
 #     apply as the field manager `bundt` (as Bundt's outpost applies).
 #  5. `config-connector preview`: Config Connector's reconcilers run
 #     against Google Cloud with every write intercepted; each object must
 #     be HEALTHY with no GCP_WRITE. This is the check a plan can make
 #     before anything is applied.
-#  6. Config Connector's manager starts (window T0): every object Ready
+#  6. Config Connector's manager and config-connector-extensions' start
+#     (window T0): every object Ready
 #     with reason UpToDate; the manager's log has no create or update.
 #  7. `kubectl diff --server-side --field-manager=bundt`: what Bundt's live
 #     check (plans.md R46 R47) would see; must be empty.
@@ -104,6 +111,10 @@ if ! command -v terraform >/dev/null || [[ "$(terraform version -json | jq -r .t
   chmod +x /usr/local/bin/terraform
 fi
 KT="${ROOT}/.cache/offramp-kcc-${KCC_REF}"
+CCE_DIR="${ROOT}/.cache/offramp-cce"
+: "${CCE_TARBALL:?set CCE_TARBALL, config-connector-extensions at the pin of the catalog (task cce-snapshot)}"
+# shellcheck source=hack/cce-manager.sh
+source "${ROOT}/hack/cce-manager.sh"
 OFFRAMP="${ROOT}/bin/offramp"
 # Config Connector's manager and CLI, and the converter: built only once
 # the Terraform has applied, so a shape that is refused stops early.
@@ -127,6 +138,13 @@ kcc_tools() {
   fi
   (cd "${OFF}" && go build -o "${ROOT}/bin/offramp" ./cmd/offramp)
   OFFRAMP="${ROOT}/bin/offramp"
+  # config-connector-extensions at the pin, as hack/live-apply.sh unpacks it.
+  rm -rf "${CCE_DIR}" && mkdir -p "${CCE_DIR}"
+  gcloud storage cat "${CCE_TARBALL}" | tar -xz -C "${CCE_DIR}"
+  git -C "${CCE_DIR}" init -q && git -C "${CCE_DIR}" add -A &&
+    git -C "${CCE_DIR}" -c user.email=live@example.com -c user.name=live commit -qm "cce from ${CCE_TARBALL}"
+  (cd "${CCE_DIR}" && hack/upstream.sh >/dev/null)
+  cce_build_manager
 }
 
 # ---- cleanup -------------------------------------------------------------
@@ -135,6 +153,7 @@ cleanup() {
   set +o errexit
   log "cleanup"
   systemctl stop offramp-kcc >/dev/null 2>&1
+  [[ -n "${CCE_MANAGER_PID:-}" ]] && kill "${CCE_MANAGER_PID}" 2>/dev/null
   kind delete cluster --name offramp >/dev/null 2>&1
   if [[ -f "${OUT}/tf/terraform.tfstate" ]]; then
     for i in 1 2 3; do
@@ -293,6 +312,8 @@ kind create cluster --name offramp --kubeconfig "${KCFG}" --wait 120s >"${OUT}/k
     for f in "${KT}"/config/crds/resources/*."${g}".cnrm.cloud.google.com.yaml; do printf -- '---\n'; cat "$f"; done
   done; } | kubectl apply --server-side --force-conflicts -f - >"${OUT}/crds.log" 2>&1
 kubectl wait --for=condition=Established crd --all --timeout=180s >/dev/null
+cce_install_crds >>"${OUT}/crds.log" 2>&1
+row "CRDs" "$(kubectl get crd -o name | grep -c 'cnrm.cloud.google.com') Config Connector, $(kubectl get crd -o name | grep -c 'gcp.hfl.dev') config-connector-extensions" "crds.log"
 kubectl create namespace offramp
 kubectl annotate namespace offramp "cnrm.cloud.google.com/project-id=${PROJECT}"
 # What Bundt delivers: the graduated calls' chart renders, the frozen
@@ -329,6 +350,10 @@ for _ in $(seq 1 90); do
   sleep 2
 done
 [[ "${started}" == yes ]] || { row "Config Connector manager" "did not start" "$(tail -5 "${OUT}/manager.log" | tr '\n|' '  ' | cut -c1-300)"; exit 1; }
+# config-connector-extensions' manager, for the *.gcp.hfl.dev kinds
+# (IAMBinding); it acts as the VM's service account too.
+cce_start_manager "${OUT}/cce-manager.log" >/dev/null 2>&1 ||
+  { row "config-connector-extensions manager" "did not start" "$(tail -5 "${OUT}/cce-manager.log" | tr '\n|' '  ' | cut -c1-300)"; exit 1; }
 deadline=$(( $(date +%s) + 900 ))
 mapfile -t objs < <(kubectl get -n offramp -f "${APPLY}" -o json | jq -r '.items[] | "\(.kind | ascii_downcase).\(.apiVersion | split("/") | .[1]).\(.apiVersion | split("/") | .[0])/\(.metadata.name)"')
 for o in "${objs[@]}"; do
@@ -347,6 +372,8 @@ row "events" "$(cat "${OUT}/event-reasons.txt")" "events.json"
 creates=$(grep -ciE 'creating underlying resource|creating resource|create call|Created resource' "${OUT}/manager.log" || true)
 updates=$(grep -ciE 'updating underlying resource|updating resource|update call|patching|Updated resource' "${OUT}/manager.log" || true)
 row "manager log: create, update lines" "${creates}, ${updates}" "manager.log"
+cce_writes=$(grep -ciE 'setIamPolicy|creating|updating|patching' "${OUT}/cce-manager.log" || true)
+row "config-connector-extensions manager log: write lines" "${cce_writes}" "cce-manager.log"
 
 # ---- 7. Bundt's live check ---------------------------------------------------------------
 log "7. kubectl diff as bundt"
@@ -370,6 +397,7 @@ T2="$(date -u +%FT%TZ)"
 "${G[@]}" compute networks list --filter="name~^${RUN}" --format='value(name)' >"${OUT}/kept-networks.txt" 2>/dev/null || true
 row "deleted the objects (abandon): networks still there" "$(wc -l <"${OUT}/kept-networks.txt" | tr -d ' ')" "kept-networks.txt"
 systemctl stop offramp-kcc || true
+kill "${CCE_MANAGER_PID}" 2>/dev/null || true
 echo "T0=${T0} T1=${T1} T2=${T2} RUNNER=${RUNNER} RUN=${RUN}" >"${OUT}/windows.txt"
 
 # ---- 10. audit logs ----------------------------------------------------------------------------

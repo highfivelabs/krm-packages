@@ -221,7 +221,7 @@ spec:
     armId: "/providers/Microsoft.Management/managementGroups/corp"
 ---
 # Source: avm-ptn-alz-sub-vending/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-rg-identity-lock
@@ -242,7 +242,7 @@ spec:
   level: CanNotDelete
 ---
 # Source: avm-ptn-alz-sub-vending/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-rg-watcher-lock

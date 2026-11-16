@@ -1239,19 +1239,24 @@ no offload VM of this work left).
 Answered on 2026-11-09 (see "Decisions"): the Package
 names (`gcp-<module>`), selective outputs and the `resources` and `inputs`
 binding, alpha kinds opt-in per chart, the factory generator in principle,
-the name `IAMRoleBinding` (since renamed `IAMBinding`), and the live account. Not answered (no
-ruling yet, so they stay recommendations); none blocks
-the pilot:
+the name `IAMRoleBinding` (since renamed `IAMBinding`), and the live account. All four
+below are answered now (each says when and where); none is open:
 
-1. **kro.** Recommended: Helm as the default engine, kro only by the test
-   in "kro or Helm", and the runtime-value gaps closed as reference fields
-   in config-connector-extensions instead.
-2. **Where org-level Packages run.** Recommended: a capability
-   (`hfl.dev/gcp-scope`) that only the platform team's Environment
-   provides.
+1. **kro.** Answered (K6, 2026-11-10, the builder: "confirmed"; the
+   2026-11-10 Open decisions page): Helm as the default engine, kro only
+   by the test in "kro or Helm", and the runtime-value gaps closed as
+   reference fields in config-connector-extensions instead.
+2. **Where org-level Packages run.** Answered (K4, 2026-11-10, the
+   builder: "confirmed"; the 2026-11-10 Open decisions page): a
+   capability (`hfl.dev/gcp-scope`) that only the platform team's
+   Environment provides ("Organization, folders and Config Connector's
+   scope").
 3. **The factory generator** (after the builder has seen "Factories,
-   worked"). Built on 2026-11-15 (RECPF) on these recommendations, which
-   are still not confirmed one by one:
+   worked"). Answered: the four shape questions below were confirmed
+   (K3q, 2026-11-10, the builder: "confirmed on all of these though i want
+   to undertsand the factory generator better. factory files are a bit of
+   an edge case though we shoudl have solid ways to handle them"), and the
+   generator was built on 2026-11-15 (RECPF, decision 4 in "Decisions"):
    - one Instance per project, of an inline Stack, as the unit.
      Recommended yes: a project is what a team asks for, reviews and
      deletes.
