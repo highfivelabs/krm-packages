@@ -81,3 +81,28 @@ spec:
       enabled: true
   workloadIdentityConfig:
     workloadPool: "mock-project.svc.id.goog"
+---
+# Source: gke-cluster-standard/templates/cluster.yaml
+apiVersion: container.gcp.hfl.dev/v1beta1
+kind: ContainerClusterFields
+metadata:
+  name: mock-fields
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: gke-cluster-standard
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster-fields"
+spec:
+  resourceRef:
+    name: mock
+  addonsConfig:
+    statefulHaConfig:
+      enabled: true
+  anonymousAuthenticationConfig:
+    mode: LIMITED
+  rbacBindingConfig:
+    enableInsecureBindingSystemUnauthenticated: false
+  secretManagerConfig:
+    enabled: true

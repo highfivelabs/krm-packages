@@ -5,8 +5,10 @@ Ported from cloud-foundation-fabric modules/gke-nodepool/main.tf (v60.0.0),
 Copyright 2022 Google LLC, Apache-2.0.
 
 google_container_node_pool.nodepool: one ContainerNodePool on the cluster
-cluster_id (or cluster_name) in location. What nodeConfig and networkConfig
-cannot say is refused (README.md, "Values").
+cluster_id (or cluster_name) in location. The kubelet settings
+ContainerNodePool's kubeletConfig lacks go in a ContainerNodePoolFields
+(fields.yaml). What else nodeConfig and networkConfig cannot say is
+refused (README.md, "Values").
 */ -}}
 {{- $v := .Values }}
 {{- $nc := $v.node_config }}
@@ -15,11 +17,6 @@ cannot say is refused (README.md, "Values").
 {{- include "kcc.unsupported" (list $ "node_config.boot_disk.provisioned_iops" $bd.provisioned_iops "nodeConfig has no bootDisk (provisioned IOPS)") }}
 {{- include "kcc.unsupported" (list $ "node_config.boot_disk.provisioned_throughput" $bd.provisioned_throughput "nodeConfig has no bootDisk (provisioned throughput)") }}
 {{- include "kcc.unsupported" (list $ "node_config.flex_start" $nc.flex_start "nodeConfig has no flexStart") }}
-{{- $kc := $nc.kubelet_config | default dict }}
-{{- include "kcc.unsupported" (list $ "node_config.kubelet_config.insecure_kubelet_readonly_port_enabled" $kc.insecure_kubelet_readonly_port_enabled "nodeConfig's kubeletConfig has no insecureKubeletReadonlyPortEnabled") }}
-{{- include "kcc.unsupported" (list $ "node_config.kubelet_config.container_log_max_size" $kc.container_log_max_size "nodeConfig's kubeletConfig has no containerLogMaxSize") }}
-{{- include "kcc.unsupported" (list $ "node_config.kubelet_config.container_log_max_files" $kc.container_log_max_files "nodeConfig's kubeletConfig has no containerLogMaxFiles") }}
-{{- include "kcc.unsupported" (list $ "node_config.kubelet_config.allowed_unsafe_sysctls" $kc.allowed_unsafe_sysctls "nodeConfig's kubeletConfig has no allowedUnsafeSysctls") }}
 {{- $net := $v.network_config }}
 {{- if $net }}
 {{- include "kcc.unsupported" (list $ "network_config.total_egress_bandwidth_tier" $net.total_egress_bandwidth_tier "ContainerNodePool's networkConfig has no networkPerformanceConfig") }}

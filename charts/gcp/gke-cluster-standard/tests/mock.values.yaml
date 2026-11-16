@@ -9,3 +9,10 @@ vpc_config:
   subnetwork: projects/mock-project/regions/us-central1/subnetworks/catalog-mock-gks-sn
 access_config: {private_nodes: false}
 deletion_protection: false
+# Fields ContainerCluster lacks, set by config-connector-extensions'
+# ContainerClusterFields (mockgcp takes the desired* updates, patch 0053).
+enable_addons: {stateful_ha: true}
+enable_features:
+  secret_manager_config: true
+  anonymous_authentication: LIMITED
+  rbac_binding_config: {enable_insecure_binding_system_unauthenticated: false}

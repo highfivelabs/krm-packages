@@ -7,6 +7,8 @@ validate Config Connector's own kinds against its CRDs.
 
 | File | Kind | Copied from |
 | --- | --- | --- |
+| `container.gcp.hfl.dev_containerclusterfields.yaml` | `ContainerClusterFields` (`container.gcp.hfl.dev/v1beta1`; fields of a cluster `ContainerCluster` lacks: `gke-cluster-standard`, `gke-cluster-autopilot`) | `config/crds/` at `89b423fe320fdd926b00a34567d9d44775128f8f` (2026-11-16, the pin) |
+| `container.gcp.hfl.dev_containernodepoolfields.yaml` | `ContainerNodePoolFields` (`container.gcp.hfl.dev/v1beta1`; kubelet fields of a node pool `ContainerNodePool` lacks: `gke-nodepool`) | `config/crds/` at `89b423fe320fdd926b00a34567d9d44775128f8f` (2026-11-16, the pin) |
 | `iam.gcp.hfl.dev_iambindings.yaml` | `IAMBinding` (`iam.gcp.hfl.dev/v1beta1`; `membersFrom[].logSinkRef`) | `config/crds/` at `40da91d3fbfc7253c03669b32fbd8e5013de023f` (2026-11-16, the pin) |
 | `compute.gcp.hfl.dev_computenetworkattachments.yaml` | `ComputeNetworkAttachment` (`compute.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `89806ec7a1ea127fd435ca264d2883b9c233de2c` (2026-11-12) |
 | `compute.gcp.hfl.dev_computerouterroutepolicies.yaml` | `ComputeRouterRoutePolicy` (`compute.gcp.hfl.dev/v1beta1`) | `config/crds/` at `81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15, the pin) |

@@ -1,11 +1,12 @@
 # gke-nodepool
 
 A GKE node pool on an existing cluster, and optionally its node service
-account, as Config Connector objects. A port of Cloud Foundation Fabric's
+account, as Config Connector objects (and a config-connector-extensions
+`ContainerNodePoolFields` for the kubelet fields Config Connector lacks). A port of Cloud Foundation Fabric's
 [`modules/gke-nodepool`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/f706bc3b6166787df01402f73a96f1de57097477/modules/gke-nodepool)
 at v60.0.0 (`f706bc3b`), Apache-2.0, Copyright Google LLC. Bundt Package
 `gcp-gke-nodepool` (`package.yaml`). Checked against Config Connector
-v1.160.0. It pairs with a cluster made by `gke-cluster` (or any other):
+v1.160.0 and config-connector-extensions at `89b423fe`. It pairs with a cluster made by `gke-cluster` (or any other):
 `cluster_name` (or `cluster_id`) names it.
 
 ## Example
@@ -41,13 +42,30 @@ The module's variables, with the same names, types and defaults.
 | `service_account` | `create: true`: an `IAMServiceAccount` (ID from `email`'s local part, else `tf-gke-<name>`) the nodes run as; `email` alone: that account; neither: the Compute Engine default. `oauth_scopes` default to fabric's five |
 | `deletion_policy` | not a fabric variable; `ABANDON` keeps the node pool and account |
 
+Set beside the node pool: `node_config.kubelet_config.insecure_kubelet_readonly_port_enabled`,
+`.container_log_max_size`, `.container_log_max_files` and
+`.allowed_unsafe_sysctls` have no field in `ContainerNodePool`'s
+`kubeletConfig`; when any is set the chart renders a
+`ContainerNodePoolFields` (config-connector-extensions,
+`container.gcp.hfl.dev/v1beta1`) naming the node pool by its full name
+(`resourceRef.external`: Config Connector's reference cannot resolve a
+node pool whose `clusterRef` is the cluster's bare name, as this chart's is), which sets only
+those kubelet fields and leaves Config Connector's. Removing it unsets
+them (GKE's defaults apply again).
+
+**Known limit**: GKE takes a node pool's `kubeletConfig` whole. When one of
+Config Connector's own kubelet fields changes (`cpu_manager_policy`,
+`cpu_cfs_quota`, `pod_pids_limit`, ...), Terraform sends the whole
+`kubeletConfig` from its schema, which lacks these four, and resets them;
+the `ContainerNodePoolFields` sets them again on its next reconcile, so
+for that window the node pool runs with GKE's defaults for them.
+
 Refused when set:
 
 | Variable | Why |
 | --- | --- |
 | `node_config.boot_disk.provisioned_iops`, `.provisioned_throughput` | `nodeConfig` has no `bootDisk` |
 | `node_config.flex_start` | `nodeConfig` has no `flexStart` |
-| `node_config.kubelet_config.insecure_kubelet_readonly_port_enabled`, `.container_log_max_size`, `.container_log_max_files`, `.allowed_unsafe_sysctls` | `kubeletConfig` has no such fields |
 | `network_config.total_egress_bandwidth_tier` | `networkConfig` has no `networkPerformanceConfig` |
 
 ## Outputs

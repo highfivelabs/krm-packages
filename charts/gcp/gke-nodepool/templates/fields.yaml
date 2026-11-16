@@ -1,0 +1,40 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/gke-nodepool/main.tf (v60.0.0),
+Copyright 2022 Google LLC, Apache-2.0.
+
+google_container_node_pool.nodepool's node_config.kubelet_config fields
+Config Connector's ContainerNodePool has no field for
+(insecure_kubelet_readonly_port_enabled, container_log_max_size,
+container_log_max_files, allowed_unsafe_sysctls): a ContainerNodePoolFields
+(config-connector-extensions, container.gcp.hfl.dev/v1beta1) on the node
+pool, when any is set. Known limit: GKE takes kubeletConfig whole, so when
+Config Connector changes one of its own kubelet fields, Terraform's update
+can reset these until the ContainerNodePoolFields reconciles again
+(README.md).
+*/ -}}
+{{- $v := .Values }}
+{{- $kc := $v.node_config.kubelet_config | default dict }}
+{{- $k := dict }}
+{{- if not (kindIs "invalid" $kc.insecure_kubelet_readonly_port_enabled) }}{{ $_ := set $k "insecureKubeletReadonlyPortEnabled" (eq (upper (toString $kc.insecure_kubelet_readonly_port_enabled)) "TRUE") }}{{ end }}
+{{- with $kc.container_log_max_size }}{{ $_ := set $k "containerLogMaxSize" . }}{{ end }}
+{{- if not (kindIs "invalid" $kc.container_log_max_files) }}{{ $_ := set $k "containerLogMaxFiles" ($kc.container_log_max_files | int64) }}{{ end }}
+{{- with $kc.allowed_unsafe_sysctls }}{{ $_ := set $k "allowedUnsafeSysctls" . }}{{ end }}
+{{- with $k }}
+---
+apiVersion: container.gcp.hfl.dev/v1beta1
+kind: ContainerNodePoolFields
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "fields")) "id" "nodepool-fields" "abandon" (include "kcc.abandon" $)) | nindent 2 }}
+spec:
+  resourceRef:
+    {{- /* By its full name, not the ContainerNodePool's: the node pool's
+    clusterRef is the cluster's bare name (nodepool.yaml), from which
+    Config Connector's ContainerNodePoolRef cannot resolve the pool, so a
+    reference by name never becomes ready (fake-cloud run, 2026-11-16). */}}
+    external: {{ printf "projects/%s/locations/%s/clusters/%s/nodePools/%s" $v.project_id $v.location ($v.cluster_id | default $v.cluster_name | splitList "/" | last) (include "nodepool.name" $) | quote }}
+  config:
+    kubeletConfig:
+      {{- toYaml . | nindent 6 }}
+{{- end }}

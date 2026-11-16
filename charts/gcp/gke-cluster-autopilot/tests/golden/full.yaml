@@ -142,6 +142,32 @@ spec:
   verticalPodAutoscaling:
     enabled: true
 ---
+# Source: gke-cluster-autopilot/templates/cluster.yaml
+apiVersion: container.gcp.hfl.dev/v1beta1
+kind: ContainerClusterFields
+metadata:
+  name: full-fields
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: gke-cluster-autopilot
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster-fields"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  resourceRef:
+    name: full
+  anonymousAuthenticationConfig:
+    mode: ENABLED
+  nodePoolAutoConfig:
+    nodeKubeletConfig:
+      insecureKubeletReadonlyPortEnabled: false
+  rbacBindingConfig:
+    enableInsecureBindingSystemAuthenticated: true
+  secretManagerConfig:
+    enabled: true
+---
 # Source: gke-cluster-autopilot/templates/backup.yaml
 apiVersion: gkebackup.gcp.hfl.dev/v1beta1
 kind: GKEBackupBackupChannel

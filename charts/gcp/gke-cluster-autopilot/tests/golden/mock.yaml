@@ -61,3 +61,23 @@ spec:
       enabled: true
   releaseChannel:
     channel: "REGULAR"
+---
+# Source: gke-cluster-autopilot/templates/cluster.yaml
+apiVersion: container.gcp.hfl.dev/v1beta1
+kind: ContainerClusterFields
+metadata:
+  name: mock-fields
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: gke-cluster-autopilot
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster-fields"
+spec:
+  resourceRef:
+    name: mock
+  anonymousAuthenticationConfig:
+    mode: LIMITED
+  secretManagerConfig:
+    enabled: true

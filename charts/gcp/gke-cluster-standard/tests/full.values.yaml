@@ -36,7 +36,7 @@ cluster_autoscaling:
   cpu_limits: {max: 48}
   mem_limits: {max: 182}
   accelerator_resources: [{resource_type: nvidia-l4, max: 2}]
-node_pool_auto_config: {network_tags: [gke-nap], resource_manager_tags: {tagKeys/1: tagValues/2}}
+node_pool_auto_config: {network_tags: [gke-nap], resource_manager_tags: {tagKeys/1: tagValues/2}, kubelet_readonly_port_enabled: false}
 node_config:
   service_account: nodes@my-project.iam.gserviceaccount.com
   boot_disk_kms_key: projects/kms/locations/europe-west1/keyRings/k/cryptoKeys/gke
@@ -51,7 +51,11 @@ enable_addons:
   istio: {enable_tls: true}
   network_policy: true
   kalm: true
+  stateful_ha: true
 enable_features:
+  anonymous_authentication: LIMITED
+  rbac_binding_config: {enable_insecure_binding_system_unauthenticated: false, enable_insecure_binding_system_authenticated: false}
+  secret_manager_config: true
   binary_authorization: true
   beta_apis: [authentication.k8s.io/v1beta1/selfsubjectreviews]
   database_encryption: {state: ENCRYPTED, key_name: projects/kms/locations/europe-west1/keyRings/k/cryptoKeys/etcd}
