@@ -128,7 +128,7 @@ spec:
     env: prod
 ---
 # Source: avm-res-compute-virtualmachine/templates/disks.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-disk-data-lock
@@ -148,7 +148,7 @@ spec:
   level: CanNotDelete
 ---
 # Source: avm-res-compute-virtualmachine/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-vm-lock
@@ -167,7 +167,7 @@ spec:
   notes: "Cannot delete the resource or its child resources."
 ---
 # Source: avm-res-compute-virtualmachine/templates/network.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-pip-a-v4-lock
@@ -187,7 +187,7 @@ spec:
   level: CanNotDelete
 ---
 # Source: avm-res-compute-virtualmachine/templates/network.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-nic-a-lock

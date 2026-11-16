@@ -86,7 +86,7 @@ spec:
     tier: Standard_v2
 ---
 # Source: avm-res-network-applicationgateway/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: entra-appgw-lock

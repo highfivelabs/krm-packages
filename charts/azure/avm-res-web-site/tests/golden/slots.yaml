@@ -1,6 +1,6 @@
 ---
 # Source: avm-res-web-site/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: slots-site-lock
@@ -20,7 +20,7 @@ spec:
   level: CanNotDelete
 ---
 # Source: avm-res-web-site/templates/slots.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: slots-site-slot-canary-lock
@@ -40,7 +40,7 @@ spec:
   level: ReadOnly
 ---
 # Source: avm-res-web-site/templates/slots.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: slots-site-slot-canary-pe-hub-lock
@@ -60,7 +60,7 @@ spec:
   level: ReadOnly
 ---
 # Source: avm-res-web-site/templates/slots.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: slots-site-slot-canary-pe-spoke-lock
@@ -80,7 +80,7 @@ spec:
   level: CanNotDelete
 ---
 # Source: avm-res-web-site/templates/slots.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: slots-site-slot-staging-lock

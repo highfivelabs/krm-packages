@@ -1,6 +1,6 @@
 ---
 # Source: avm-res-storage-storageaccount/templates/services.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: services-storage-pe-blob-lock
@@ -21,7 +21,7 @@ spec:
   notes: "Cannot delete the resource or its child resources."
 ---
 # Source: avm-res-storage-storageaccount/templates/services.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: services-storage-pe-dfs-lock

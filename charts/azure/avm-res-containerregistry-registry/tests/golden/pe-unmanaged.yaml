@@ -1,6 +1,6 @@
 ---
 # Source: avm-res-containerregistry-registry/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: pe-unmanaged-acr-lock

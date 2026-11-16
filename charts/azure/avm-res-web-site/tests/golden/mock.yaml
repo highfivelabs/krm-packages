@@ -45,7 +45,7 @@ spec:
   keyVaultSecretName: "www-catalog-example"
 ---
 # Source: avm-res-web-site/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: mock-site-lock
@@ -65,7 +65,7 @@ spec:
   level: CanNotDelete
 ---
 # Source: avm-res-web-site/templates/slots.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: mock-site-slot-staging-lock
@@ -85,7 +85,7 @@ spec:
   level: CanNotDelete
 ---
 # Source: avm-res-web-site/templates/slots.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: mock-site-slot-staging-pe-pe-lock

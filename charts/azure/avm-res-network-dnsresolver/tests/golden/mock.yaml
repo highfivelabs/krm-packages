@@ -139,7 +139,7 @@ spec:
     catalog: mock
 ---
 # Source: avm-res-network-dnsresolver/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: mock-frs-a-corp-lock
@@ -160,7 +160,7 @@ spec:
   notes: "Cannot delete the resource or its child resources."
 ---
 # Source: avm-res-network-dnsresolver/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: mock-dnsr-lock

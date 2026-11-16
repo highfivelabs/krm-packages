@@ -21,7 +21,7 @@ spec:
     team: shop
 ---
 # Source: avm-res-network-ddosprotectionplan/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: names-ddos-lock

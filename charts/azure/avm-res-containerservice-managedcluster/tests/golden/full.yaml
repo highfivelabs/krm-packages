@@ -747,7 +747,7 @@ spec:
     team: a
 ---
 # Source: avm-res-containerservice-managedcluster/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-aks-lock

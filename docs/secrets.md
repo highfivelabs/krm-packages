@@ -11,9 +11,10 @@ generates one. The catalog holds no secret values, test ones included.
 (Yes. Also: yes to taking the registry CMK identity's client ID from a
 ConfigMap (identityFromConfig) as a Package input; no for now to holding
 passwords Azure returns once (registry tokens, storage local-user SSH).)"
-So: aso-extensions adds a `Microsoft.Web/sites/config` `appsettings` /
-`connectionstrings` kind whose values can be Secret references (the web
-app's secret settings follow once it is released); the registry's
+So: aso-extensions adds `SitesConfigAppSettings` and
+`SitesConfigConnectionStrings`, whose values can be Secret references
+(aso-extensions #95; `avm-res-web-site` 0.6.0 maps the web app's secret
+settings onto them); the registry's
 `customer_managed_key` takes its identity's client ID from a ConfigMap
 (`avm-res-containerregistry-registry` 0.3.0); a registry token's
 `passwords` and a storage local user's SSH password stay refused.

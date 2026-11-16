@@ -21,7 +21,7 @@ spec:
   subject: "repo:highfivelabs/catalog:ref:refs/heads/main"
 ---
 # Source: avm-res-managedidentity-userassignedidentity/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: mock-id-lock

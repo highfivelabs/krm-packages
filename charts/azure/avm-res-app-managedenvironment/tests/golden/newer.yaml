@@ -107,7 +107,7 @@ spec:
   version: "v1"
 ---
 # Source: avm-res-app-managedenvironment/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: newer-cae-lock

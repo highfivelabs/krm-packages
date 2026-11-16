@@ -65,7 +65,7 @@ spec:
       pollingInterval: 30
 ---
 # Source: avm-res-app-containerapp/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: kind-app-lock
