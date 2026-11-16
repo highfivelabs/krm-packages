@@ -204,7 +204,10 @@ organization the test identity may change (nothing can create one).
   kind: an existing component's Config Connector sinks are deleted and
   made again under the same names unless they are abandoned first
   (`cnrm.cloud.google.com/deletion-policy: abandon`) and acquired by the
-  new ones.
+  new ones. Abandon the old `IAMPolicyMember` sink-writer grants too:
+  each binds the same member and role as the `IAMMember` that replaces
+  it, so pruning it unabandoned removes that grant until the `IAMMember`
+  next reconciles (its resync), and the sink's writes fail meanwhile.
 - **0.4.0** (2026-11-15): `asset_feeds` render config-connector-extensions'
   `AssetFeed` (`asset.gcp.hfl.dev/v1beta1`, its #134);
   `cloud_armor_policy` its `ComputeOrganizationSecurityPolicyAssociation`

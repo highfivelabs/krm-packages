@@ -182,7 +182,10 @@ folder, `docs/design.md`, "The test provisioner").
   kind: an existing component's Config Connector sinks are deleted and
   made again under the same names unless they are abandoned first
   (`cnrm.cloud.google.com/deletion-policy: abandon`) and acquired by the
-  new ones.
+  new ones. Abandon the old `IAMPolicyMember` sink-writer grants too:
+  each binds the same member and role as the `IAMMember` that replaces
+  it, so pruning it unabandoned removes that grant until the `IAMMember`
+  next reconciles (its resync), and the sink's writes fail meanwhile.
 - **0.3.0** (2026-11-15): `asset_feeds` as config-connector-extensions'
   `AssetFeed` (`asset.gcp.hfl.dev/v1beta1`); `service_agents_config` as
   its `ServiceIdentity` (`serviceusage.gcp.hfl.dev/v1beta1`), one per
