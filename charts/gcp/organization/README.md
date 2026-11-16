@@ -56,7 +56,7 @@ The module's variables, with the same names, types and defaults.
 | `tag_bindings` | a `TagsTagBinding` per entry, of the tag value on the organization |
 | `logging_data_access` | an `IAMAuditConfig` per service with its log types and exempted members |
 | `logging_exclusions` | a `LoggingLogExclusion` per entry, described `<name> (Terraform-managed).` |
-| `logging_sinks` | a `LoggingLogSink` per entry on the organization (type `logging` by default, `include_children`, default true, filter, exclusions, `disabled`, BigQuery partitioned tables), and, with `iam` (the default), an `IAMPolicyMember` granting its writer identity write access to the destination, as fabric grants it. Refused: `intercept_children` (`LoggingLogSink` has no `interceptChildren`; fabric allows it only for a `project` sink), type `project` (a sink's destination is never a project), and `iam` on a `bigquery` sink (dataset IAM is the alpha `BigQueryDatasetAccess`: set `iam: false`) |
+| `logging_sinks` | a `LoggingLogSink` per entry on the organization, config-connector-extensions' kind (`logging.gcp.hfl.dev/v1beta1`; Config Connector's has no `interceptChildren` and no project destination) (type `logging` by default, `include_children`, default true, `intercept_children` with type `project`, filter, exclusions, `disabled`, BigQuery partitioned tables; type `project` sends to a project, its ID or `projects/<id>`), and, with `iam` (the default), a config-connector-extensions `IAMMember` granting its writer identity (`memberFrom.logSinkRef`) fabric's role on the destination: `roles/storage.objectCreator` on a bucket, `roles/pubsub.publisher` on a topic, `roles/bigquery.dataEditor` on a dataset, `roles/logging.bucketWriter` on a log bucket's project (with fabric's condition on the bucket), `roles/logging.logWriter` on a destination project. `intercept_children` without type `project` and `include_children` stops the render with fabric's message |
 | `pam_entitlements` | a `PrivilegedAccessManagerEntitlement` per entry on the organization, as the `folder` chart's |
 | `access_policy`, `access_levels` | a basic `AccessContextManagerAccessLevel` per entry in the access policy `access_policy` (its number), named by its key (with a `namePrefix`, `<namePrefix>_<key>`, hyphens as underscores), titled by its title or key, with its combining function and conditions: device policy, IP subnetworks, members (users and service accounts, fabric's check), `negate`, regions, required access levels (another level's resource name, or `$access_levels:<key>` for one of this chart's); fabric's checks of the combining function, encryption statuses and management levels. A condition's `vpc_subnets` is refused (`AccessContextManagerAccessLevel` has no `vpcNetworkSources`) |
 | `asset_feeds` | an `AssetFeed` of config-connector-extensions (`asset.gcp.hfl.dev/v1beta1`, as the `project` and `folder` charts) per entry on the organization, its ID the key, to the Pub/Sub topic `projects/<project>/topics/<topic>`, with its content type (fabric's check), asset types and names and condition. `billing_project` is not carried ("Differences from the module") |
@@ -114,7 +114,7 @@ chart renders on it.
 ## Config Connector gaps
 
 Found porting this module, for config-connector-extensions:
-`LoggingLogSink` has no `interceptChildren`; `TagsTagKey` has no
+`TagsTagKey` has no
 `allowedValuesRegex`; `AccessContextManagerAccessLevel` has no
 `vpcNetworkSources`; `IAMWorkforcePool` has no `accessRestrictions`;
 `IAMWorkforcePoolProvider` has no `detailedAuditLogging`, `scimUsage` or
@@ -173,7 +173,7 @@ evaluated (`custom_constraint_ids`, `custom_role_id`,
 The run before it (`off-catalog-1113165419-19612`) found that an IAM
 `resourceRef` to the organization needs its `apiVersion`, now set. Not
 applied: contacts (mockgcp's essential contacts take only a project
-parent), sinks, PAM, the firewall policy association and tag bindings,
+parent), PAM, the firewall policy association and tag bindings,
 render-tested only.
 
 On 2026-11-15 (0.4.0, run `off-catalog-1116014618-16654`, config-connector-extensions
@@ -181,11 +181,33 @@ On 2026-11-15 (0.4.0, run `off-catalog-1116014618-16654`, config-connector-exten
 Ready and deleted, `service_agents` evaluated. The Cloud Armor association
 needs a policy the case does not make, and is render-tested only.
 
+On 2026-11-16 (0.5.0, run `off-catalog-1116031417-15757`, config-connector-extensions
+`40da91d3`) with an intercepting sink of type `project` to the mock
+project added: the `LoggingLogSink` (`logging.gcp.hfl.dev`) and the
+`IAMMember` granting its writer identity `roles/logging.logWriter` on the
+project (`memberFrom.logSinkRef`) Ready and deleted, with all 11 objects of
+the case. mockgcp makes up a writer identity for every sink and does not
+model the interception itself (config-connector-extensions'
+`docs/fake-cloud.md`).
+
 Not applied live: live runs are pending KEYLIVE, and a live run needs an
 organization the test identity may change (nothing can create one).
 
 ## Changes
 
+- **0.5.0** (2026-11-16): `logging_sinks` as config-connector-extensions'
+  `LoggingLogSink` (`logging.gcp.hfl.dev/v1beta1`), taking
+  `intercept_children` and type `project`; the writer identity's grant
+  as its `IAMMember` (`memberFrom.logSinkRef`), with fabric's role per
+  type, a `bigquery` sink's included (config-connector-extensions
+  40da91d3, its #137 and #139). The sinks are new objects of another
+  kind: an existing component's Config Connector sinks are deleted and
+  made again under the same names unless they are abandoned first
+  (`cnrm.cloud.google.com/deletion-policy: abandon`) and acquired by the
+  new ones. Abandon the old `IAMPolicyMember` sink-writer grants too:
+  each binds the same member and role as the `IAMMember` that replaces
+  it, so pruning it unabandoned removes that grant until the `IAMMember`
+  next reconciles (its resync), and the sink's writes fail meanwhile.
 - **0.4.0** (2026-11-15): `asset_feeds` render config-connector-extensions'
   `AssetFeed` (`asset.gcp.hfl.dev/v1beta1`, its #134);
   `cloud_armor_policy` its `ComputeOrganizationSecurityPolicyAssociation`

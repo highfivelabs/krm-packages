@@ -15,6 +15,15 @@ iam:
   roles/viewer: ["group:viewers@example.com"]
 iam_bindings_additive:
   browser: {role: roles/browser, member: "user:one@example.com"}
+# An intercepting sink to the mock project (config-connector-extensions'
+# LoggingLogSink), its writer identity granted logging.logWriter there by
+# an IAMMember (memberFrom.logSinkRef).
+logging_sinks:
+  audit:
+    destination: mock-project
+    type: project
+    intercept_children: true
+    filter: logName:cloudaudit.googleapis.com
 logging_exclusions:
   no-gce: resource.type=gce_instance
 iam_deny_policies:

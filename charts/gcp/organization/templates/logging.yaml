@@ -9,17 +9,21 @@ logging_data_access, with a log config per type set.
 google_logging_organization_exclusion.logging_exclusion: one LoggingLogExclusion
 per entry of logging_exclusions, described "<name> (Terraform-managed).".
 google_logging_organization_sink.sink: one LoggingLogSink per entry of
-logging_sinks, named by its key, with fabric's defaults (type logging,
-described "<name> (Terraform-managed).", include_children true); a sink of type
-project is refused (LoggingLogSink's destination is a dataset, log
-bucket, topic or bucket, never a project), and so is intercept_children
-(LoggingLogSink has none).
-google_storage_bucket_iam_member, google_pubsub_topic_iam_member and
-google_project_iam_member .*_sinks_binding: with iam (the default), one
-IAMPolicyMember granting the sink's writer identity (memberFrom.logSinkRef)
-write access to its destination, as fabric grants it; a bigquery sink's
-grant needs dataset IAM, which is alpha (BigQueryDatasetAccess), so a
-bigquery sink needs iam: false.
+logging_sinks, named by its key, config-connector-extensions' kind
+(logging.gcp.hfl.dev/v1beta1; docs/design.md decision 16), which has
+interceptChildren and a project destination (destination.projectRef), with
+fabric's defaults (type logging, described "<name> (Terraform-managed).",
+include_children true) and fabric's check that intercept_children needs
+type project and include_children.
+google_storage_bucket_iam_member, google_pubsub_topic_iam_member,
+google_bigquery_dataset_iam_member and google_project_iam_member
+.*_sinks_binding: with iam (the default), one config-connector-extensions
+IAMMember granting the sink's writer identity (memberFrom.logSinkRef; Config
+Connector's IAMPolicyMember resolves only its own LoggingLogSink) fabric's
+role on the destination: storage.objectCreator on a bucket,
+pubsub.publisher on a topic, bigquery.dataEditor on a dataset,
+logging.bucketWriter on a log bucket's project (with fabric's condition on
+the bucket) and logging.logWriter on a destination project.
 */ -}}
 {{- $v := .Values }}
 {{- $access := $v.logging_data_access | default dict }}
@@ -71,20 +75,16 @@ spec:
 {{- if and $s.bq_partitioned_table (ne $s.type "bigquery") }}
 {{- fail (printf "organization: logging_sinks.%s: Can only set bq_partitioned_table when type is `bigquery`." $name) }}
 {{- end }}
-{{- if $s.intercept_children }}
-{{- include "kcc.unsupported" (list $ (printf "logging_sinks.%s.intercept_children" $name) true "LoggingLogSink has no interceptChildren, and fabric allows it only for a project sink, which is refused too") }}
-{{- end }}
-{{- if eq $s.type "project" }}
-{{- include "kcc.unsupported" (list $ (printf "logging_sinks.%s with type project" $name) true "LoggingLogSink's destination is a BigQuery dataset, a log bucket, a Pub/Sub topic or a Cloud Storage bucket, never another project") }}
+{{- $include := ternary true $s.include_children (kindIs "invalid" $s.include_children) }}
+{{- if and $s.intercept_children (not (and $include (eq $s.type "project"))) }}
+{{- fail (printf "organization: logging_sinks.%s: 'type' must be set to 'project' if 'intercept_children' is 'true'." $name) }}
 {{- end }}
 {{- $iam := ternary true $s.iam (kindIs "invalid" $s.iam) }}
-{{- if and (eq $s.type "bigquery") $iam }}
-{{- include "kcc.unsupported" (list $ (printf "logging_sinks.%s.iam (true by default) on a bigquery sink" $name) true "the writer identity's grant on the dataset needs dataset IAM, which Config Connector has only as the alpha BigQueryDatasetAccess; set iam: false and grant roles/bigquery.dataEditor on the dataset elsewhere") }}
-{{- end }}
 {{- $dest := toString $s.destination }}
+{{- if eq $s.type "project" }}{{ $dest = trimPrefix "projects/" $dest }}{{ end }}
 {{- $kname := include "kcc.name" (list $.Release.Name "sink" $name) }}
 ---
-apiVersion: logging.cnrm.cloud.google.com/v1beta1
+apiVersion: logging.gcp.hfl.dev/v1beta1
 kind: LoggingLogSink
 metadata:
   {{- include "kcc.metadata" (dict "root" $ "name" $kname "id" (printf "logging-sink:%s" $name) "abandon" $abandon) | nindent 2 }}
@@ -100,6 +100,8 @@ spec:
     loggingLogBucketRef:
     {{- else if eq $s.type "pubsub" }}
     pubSubTopicRef:
+    {{- else if eq $s.type "project" }}
+    projectRef:
     {{- else }}
     storageBucketRef:
     {{- end }}
@@ -107,7 +109,8 @@ spec:
   {{- with $s.filter }}
   filter: {{ . | quote }}
   {{- end }}
-  includeChildren: {{ ternary true $s.include_children (kindIs "invalid" $s.include_children) }}
+  includeChildren: {{ $include }}
+  interceptChildren: {{ $s.intercept_children | default false }}
   disabled: {{ $s.disabled | default false }}
   {{- if eq $s.type "bigquery" }}
   bigqueryOptions:
@@ -123,33 +126,44 @@ spec:
 {{- if $iam }}
 {{- $parts := splitList "/" $dest }}
 ---
-apiVersion: iam.cnrm.cloud.google.com/v1beta1
-kind: IAMPolicyMember
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMMember
 metadata:
   {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "sink-writer" $name)) "id" (printf "logging-sink-writer:%s" $name)) | nindent 2 }}
 spec:
   memberFrom:
     logSinkRef:
+      apiVersion: logging.gcp.hfl.dev/v1beta1
       name: {{ $kname }}
   {{- if eq $s.type "storage" }}
   role: roles/storage.objectCreator
   resourceRef:
-    apiVersion: storage.cnrm.cloud.google.com/v1beta1
     kind: StorageBucket
     external: {{ $dest | quote }}
   {{- else if eq $s.type "pubsub" }}
   role: roles/pubsub.publisher
   resourceRef:
-    apiVersion: pubsub.cnrm.cloud.google.com/v1beta1
     kind: PubSubTopic
     external: {{ $dest | quote }}
+  {{- else if eq $s.type "bigquery" }}
+  {{- if or (lt (len $parts) 4) (ne (index $parts 2) "datasets") }}
+  {{- fail (printf "organization: logging_sinks.%s: a bigquery sink's destination must be projects/<project>/datasets/<dataset>" $name) }}
+  {{- end }}
+  role: roles/bigquery.dataEditor
+  resourceRef:
+    kind: BigQueryDataset
+    external: {{ printf "projects/%s/datasets/%s" (index $parts 1) (index $parts 3) | quote }}
+  {{- else if eq $s.type "project" }}
+  role: roles/logging.logWriter
+  resourceRef:
+    kind: Project
+    external: {{ printf "projects/%s" $dest | quote }}
   {{- else }}
   {{- if lt (len $parts) 6 }}
   {{- fail (printf "organization: logging_sinks.%s: a logging sink's destination must be projects/<project>/locations/<location>/buckets/<bucket>" $name) }}
   {{- end }}
   role: roles/logging.bucketWriter
   resourceRef:
-    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
     external: {{ printf "projects/%s" (index $parts 1) | quote }}
   condition:

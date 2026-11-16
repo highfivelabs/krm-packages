@@ -1,3 +1,3 @@
-# expect: logging_sinks.p.intercept_children is not supported
+# expect: organization: logging_sinks.p: 'type' must be set to 'project' if 'intercept_children' is 'true'.
 organization_id: organizations/123456789012
-logging_sinks: {p: {destination: my-project, type: project, intercept_children: true}}
+logging_sinks: {p: {destination: projects/my-project/topics/t, type: pubsub, intercept_children: true}}

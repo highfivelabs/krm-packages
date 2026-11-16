@@ -27,6 +27,15 @@ tags:
   catalog-mock-env:
     values:
       dev: {}
+# An intercepting sink to the mock project (config-connector-extensions'
+# LoggingLogSink), its writer identity granted logging.logWriter there by
+# an IAMMember (memberFrom.logSinkRef).
+logging_sinks:
+  audit:
+    destination: mock-project
+    type: project
+    intercept_children: true
+    filter: logName:cloudaudit.googleapis.com
 logging_exclusions:
   no-gce: resource.type=gce_instance
 asset_feeds:

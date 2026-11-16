@@ -1,0 +1,4 @@
+# expect: folder: logging_sinks.d: a bigquery sink's destination must be projects/<project>/datasets/<dataset>
+parent: organizations/123456789012
+name: f
+logging_sinks: {d: {destination: my-dataset, type: bigquery}}

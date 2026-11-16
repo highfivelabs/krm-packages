@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "access-level:corp"
@@ -51,7 +51,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "access-level:empty"
@@ -72,7 +72,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "access-level:ips"
@@ -95,7 +95,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "asset-feed:all"
@@ -125,7 +125,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "firewall_policy"
@@ -145,7 +145,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "contact:admins@example.org"
@@ -165,7 +165,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "contact:security@example.org"
@@ -185,7 +185,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "data-access:allServices"
@@ -208,7 +208,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "data-access:storage.googleapis.com"
@@ -231,7 +231,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "iam-binding-admins"
@@ -257,7 +257,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "iam-binding-iam-bpc:roles/storage.admin-test"
@@ -282,7 +282,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "custom-role:bareRole"
@@ -303,7 +303,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "custom-role:myRole"
@@ -317,6 +317,79 @@ spec:
     - "compute.instances.list"
     - "compute.instances.get"
 ---
+# Source: organization/templates/logging.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMMember
+metadata:
+  name: full-sink-writer-info
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: organization
+    app.kubernetes.io/version: "0.5.0"
+    team: "shop"
+  annotations:
+    hfl.dev/id: "logging-sink-writer:info"
+spec:
+  memberFrom:
+    logSinkRef:
+      apiVersion: logging.gcp.hfl.dev/v1beta1
+      name: full-sink-info
+  role: roles/pubsub.publisher
+  resourceRef:
+    kind: PubSubTopic
+    external: "projects/my-project/topics/info"
+---
+# Source: organization/templates/logging.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMMember
+metadata:
+  name: full-sink-writer-notice
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: organization
+    app.kubernetes.io/version: "0.5.0"
+    team: "shop"
+  annotations:
+    hfl.dev/id: "logging-sink-writer:notice"
+spec:
+  memberFrom:
+    logSinkRef:
+      apiVersion: logging.gcp.hfl.dev/v1beta1
+      name: full-sink-notice
+  role: roles/logging.bucketWriter
+  resourceRef:
+    kind: Project
+    external: "projects/my-project"
+  condition:
+    title: "notice bucket writer"
+    description: "Grants bucketWriter to the writer identity used by log sink notice on organizations/123456789012"
+    expression: "resource.name.endsWith('locations/global/buckets/notice')"
+---
+# Source: organization/templates/logging.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMMember
+metadata:
+  name: full-sink-writer-warnings
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: organization
+    app.kubernetes.io/version: "0.5.0"
+    team: "shop"
+  annotations:
+    hfl.dev/id: "logging-sink-writer:warnings"
+spec:
+  memberFrom:
+    logSinkRef:
+      apiVersion: logging.gcp.hfl.dev/v1beta1
+      name: full-sink-warnings
+  role: roles/storage.objectCreator
+  resourceRef:
+    kind: StorageBucket
+    external: "my-bucket"
+---
 # Source: organization/templates/iam.yaml
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPartialPolicy
@@ -326,7 +399,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "iam"
@@ -352,7 +425,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "tag-key:environment:iam"
@@ -375,7 +448,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "tag-value:existing/known:iam"
@@ -398,7 +471,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "iam-additive-browser"
@@ -419,7 +492,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "iam-additive-conditional"
@@ -443,7 +516,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "iam-additive-iam-bpa:user:two@example.org-roles/browser"
@@ -455,79 +528,6 @@ spec:
   role: "roles/browser"
   member: "user:two@example.org"
 ---
-# Source: organization/templates/logging.yaml
-apiVersion: iam.cnrm.cloud.google.com/v1beta1
-kind: IAMPolicyMember
-metadata:
-  name: full-sink-writer-info
-  labels:
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: "full"
-    app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
-    team: "shop"
-  annotations:
-    hfl.dev/id: "logging-sink-writer:info"
-spec:
-  memberFrom:
-    logSinkRef:
-      name: full-sink-info
-  role: roles/pubsub.publisher
-  resourceRef:
-    apiVersion: pubsub.cnrm.cloud.google.com/v1beta1
-    kind: PubSubTopic
-    external: "projects/my-project/topics/info"
----
-# Source: organization/templates/logging.yaml
-apiVersion: iam.cnrm.cloud.google.com/v1beta1
-kind: IAMPolicyMember
-metadata:
-  name: full-sink-writer-notice
-  labels:
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: "full"
-    app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
-    team: "shop"
-  annotations:
-    hfl.dev/id: "logging-sink-writer:notice"
-spec:
-  memberFrom:
-    logSinkRef:
-      name: full-sink-notice
-  role: roles/logging.bucketWriter
-  resourceRef:
-    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
-    kind: Project
-    external: "projects/my-project"
-  condition:
-    title: "notice bucket writer"
-    description: "Grants bucketWriter to the writer identity used by log sink notice on organizations/123456789012"
-    expression: "resource.name.endsWith('locations/global/buckets/notice')"
----
-# Source: organization/templates/logging.yaml
-apiVersion: iam.cnrm.cloud.google.com/v1beta1
-kind: IAMPolicyMember
-metadata:
-  name: full-sink-writer-warnings
-  labels:
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: "full"
-    app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
-    team: "shop"
-  annotations:
-    hfl.dev/id: "logging-sink-writer:warnings"
-spec:
-  memberFrom:
-    logSinkRef:
-      name: full-sink-warnings
-  role: roles/storage.objectCreator
-  resourceRef:
-    apiVersion: storage.cnrm.cloud.google.com/v1beta1
-    kind: StorageBucket
-    external: "my-bucket"
----
 # Source: organization/templates/workforce.yaml
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMWorkforcePool
@@ -537,7 +537,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "workforce-pool:corp"
@@ -560,7 +560,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "workforce-provider:corp/entra"
@@ -589,7 +589,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "workforce-provider:corp/okta"
@@ -621,7 +621,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "logging-exclusion:no-gce-instances"
@@ -633,7 +633,7 @@ spec:
   filter: "resource.type=gce_instance"
 ---
 # Source: organization/templates/logging.yaml
-apiVersion: logging.cnrm.cloud.google.com/v1beta1
+apiVersion: logging.gcp.hfl.dev/v1beta1
 kind: LoggingLogSink
 metadata:
   name: full-sink-debug
@@ -641,7 +641,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "logging-sink:debug"
@@ -654,12 +654,13 @@ spec:
     bigQueryDatasetRef:
       external: "projects/my-project/datasets/debug"
   includeChildren: true
+  interceptChildren: false
   disabled: false
   bigqueryOptions:
     usePartitionedTables: true
 ---
 # Source: organization/templates/logging.yaml
-apiVersion: logging.cnrm.cloud.google.com/v1beta1
+apiVersion: logging.gcp.hfl.dev/v1beta1
 kind: LoggingLogSink
 metadata:
   name: full-sink-info
@@ -667,7 +668,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "logging-sink:info"
@@ -681,10 +682,11 @@ spec:
       external: "projects/my-project/topics/info"
   filter: "severity=INFO"
   includeChildren: false
+  interceptChildren: false
   disabled: true
 ---
 # Source: organization/templates/logging.yaml
-apiVersion: logging.cnrm.cloud.google.com/v1beta1
+apiVersion: logging.gcp.hfl.dev/v1beta1
 kind: LoggingLogSink
 metadata:
   name: full-sink-notice
@@ -692,7 +694,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "logging-sink:notice"
@@ -705,13 +707,14 @@ spec:
     loggingLogBucketRef:
       external: "projects/my-project/locations/global/buckets/notice"
   includeChildren: true
+  interceptChildren: false
   disabled: false
   exclusions:
     - name: "no-compute"
       filter: "resource.type=gce_instance"
 ---
 # Source: organization/templates/logging.yaml
-apiVersion: logging.cnrm.cloud.google.com/v1beta1
+apiVersion: logging.gcp.hfl.dev/v1beta1
 kind: LoggingLogSink
 metadata:
   name: full-sink-warnings
@@ -719,7 +722,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "logging-sink:warnings"
@@ -733,6 +736,7 @@ spec:
       external: "my-bucket"
   filter: "severity=WARNING"
   includeChildren: true
+  interceptChildren: false
   disabled: false
 ---
 # Source: organization/templates/organization.yaml
@@ -744,7 +748,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "custom-constraint:custom.denyPublicBuckets"
@@ -766,7 +770,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "org_policy:compute.disableGuestAttributesAccess"
@@ -787,7 +791,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "org_policy:compute.managed.restrictProtocolForwardingCreationForTypes"
@@ -811,7 +815,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "org_policy:compute.requireOsLogin"
@@ -831,7 +835,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "org_policy:compute.restrictCloudNATUsage"
@@ -855,7 +859,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "org_policy:custom.denyPublicBuckets"
@@ -876,7 +880,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "org_policy:iam.allowedPolicyMemberDomains"
@@ -904,7 +908,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "pam-entitlement:net-admins"
@@ -945,7 +949,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "tag-binding:env-prod"
@@ -964,7 +968,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "tag-key:environment"
@@ -982,7 +986,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "network-tag-key:net-all"
@@ -1003,7 +1007,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "tag-value:environment/dev"
@@ -1022,7 +1026,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "tag-value:environment/prod"
@@ -1041,7 +1045,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "tag-value:existing/extra"
@@ -1060,7 +1064,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
     team: "shop"
   annotations:
     hfl.dev/id: "network-tag-value:net-all/true"
