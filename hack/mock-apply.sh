@@ -7,7 +7,7 @@
 # Package's outputs evaluated against the live objects, then every object
 # deleted. Heavy: run it on an offload VM, never on a laptop:
 #
-#   ../offload/offload run --hours 2 -- \
+#   ../scripts/offload/offload run --hours 2 -- \
 #     env CCE_TARBALL=gs://.../cce-<commit>.tar.gz hack/mock-apply.sh
 #
 # The fake cloud is config-connector-extensions' (its docs/fake-cloud.md):

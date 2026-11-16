@@ -40,7 +40,8 @@
 #
 # Environment: CI_NO_STATUS=1 (run, post nothing); OFFLOAD_PROJECT and
 # OFFLOAD_BUCKET (gs://..., where the log goes), from the environment or
-# the repository's git-ignored .env (.env.example).
+# the repository's git-ignored .env (.env.example; in a linked worktree
+# without one, the main clone's).
 set -euo pipefail
 
 # A git hook runs with GIT_DIR (and GIT_INDEX_FILE ...) set to this
@@ -55,10 +56,14 @@ ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT"
 die() { echo "gate: $*" >&2; exit 2; }
 
-if [[ -f "$ROOT/.env" ]]; then
+# A linked worktree (.worktrees/<task>) has no .env of its own unless one
+# is put there: read the main clone's, as Taskfile.yml does.
+envfile="$ROOT/.env"
+[[ -f "$envfile" ]] || envfile="$(cd "$(git rev-parse --path-format=absolute --git-common-dir)/.." && pwd)/.env"
+if [[ -f "$envfile" ]]; then
   set -a
-  # shellcheck disable=SC1091
-  . "$ROOT/.env"
+  # shellcheck disable=SC1090
+  . "$envfile"
   set +a
 fi
 PROJECT="${OFFLOAD_PROJECT:-}"

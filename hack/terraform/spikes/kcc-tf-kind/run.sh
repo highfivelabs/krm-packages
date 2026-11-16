@@ -9,7 +9,7 @@
 # run it against a kind cluster with the real project GCP_PROJECT, and
 # set the project's default network tier through the kind.
 #
-#   ../offload/offload run --machine n2-standard-16 --hours 2 \
+#   ../scripts/offload/offload run --machine n2-standard-16 --hours 2 \
 #     --sa "$GCP_CCE_LIVE_SA" -- env GCP_PROJECT="$GCP_PROJECT" \
 #     hack/terraform/spikes/kcc-tf-kind/run.sh
 #

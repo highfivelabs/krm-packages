@@ -6,7 +6,7 @@
 # kind cluster, pointed at moto (no AWS credentials exist). Creates an SCP,
 # updates it, deletes it, and records what happened and what it cost.
 #
-#   ../offload/offload run --machine c3d-standard-8 --hours 1 -- \
+#   ../scripts/offload/offload run --machine c3d-standard-8 --hours 1 -- \
 #     hack/terraform/spikes/aws-organizations/run.sh
 #
 # Writes offload-artifacts/spike-aws/: log.txt, timings.csv, stats.txt, dumps.
