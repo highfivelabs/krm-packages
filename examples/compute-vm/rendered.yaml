@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "compute-vm-dev-web-vm"
     app.kubernetes.io/name: compute-vm
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     app: "web"
     disk_name: "data"
     disk_type: "pd-ssd"
@@ -31,7 +31,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "compute-vm-dev-web-vm"
     app.kubernetes.io/name: compute-vm
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     app: "web"
   annotations:
     hfl.dev/id: "disk_snapshot:data-daily"
@@ -53,7 +53,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "compute-vm-dev-web-vm"
     app.kubernetes.io/name: compute-vm
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     app: "web"
   annotations:
     hfl.dev/id: "instance"
@@ -108,7 +108,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "compute-vm-dev-web-vm"
     app.kubernetes.io/name: compute-vm
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     app: "web"
   annotations:
     hfl.dev/id: "snapshot_schedule:daily"
@@ -135,7 +135,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "compute-vm-dev-web-vm"
     app.kubernetes.io/name: compute-vm
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     app: "web"
   annotations:
     hfl.dev/id: "service_account"

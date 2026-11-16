@@ -4,7 +4,7 @@ Layout after specs/record/plans.md R2 (one change per object); not captured from
   create  Template   compute-vm 1.0.0
   create  Stack      my-team/compute-vm  (Template compute-vm)
   create  Instance   my-team/dev/compute-vm-dev  (Stack compute-vm, Template version 1.0.0)
-  create  Component  compute-vm-dev-web-vm  (gcp-compute-vm 0.1.0)
+  create  Component  compute-vm-dev-web-vm  (gcp-compute-vm 0.2.0)
             create  ComputeDisk                compute-vm-dev-web-vm-disk-data  (named web-0-data in the cloud)
             create  ComputeDiskResourcePolicyAttachment compute-vm-dev-web-vm-disk-data-snapshot-daily  (named web-0-daily in the cloud)
             create  ComputeInstance            compute-vm-dev-web-vm  (named web-0 in the cloud)

@@ -4,7 +4,7 @@ Layout after specs/record/plans.md R2 (one change per object); not captured from
   create  Template   ncc-spoke-ra 1.0.0
   create  Stack      my-team/ncc-spoke-ra  (Template ncc-spoke-ra)
   create  Instance   my-team/dev/ncc-spoke-ra-dev  (Stack ncc-spoke-ra, Template version 1.0.0)
-  create  Component  ncc-spoke-ra-dev-spoke-ra  (gcp-ncc-spoke-ra 0.1.0)
+  create  Component  ncc-spoke-ra-dev-spoke-ra  (gcp-ncc-spoke-ra 0.2.0)
             create  ComputeRouter              ncc-spoke-ra-dev-spoke-ra-router  (named spoke-ra-cr in the cloud)
             create  ComputeRouterInterface     ncc-spoke-ra-dev-spoke-ra-intf0  (named spoke-ra-cr-intf0 in the cloud)
             create  ComputeRouterInterface     ncc-spoke-ra-dev-spoke-ra-intf1  (named spoke-ra-cr-intf1 in the cloud)
