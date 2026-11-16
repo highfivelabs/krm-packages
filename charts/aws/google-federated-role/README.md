@@ -99,7 +99,15 @@ actions the tests' fixture clean-ups and Auto Scaling groups need, and
 a fourth with the IAM, ECS and Lambda clean-ups, which take a third
 policy, `part-3` (ack-extensions now splits the policies to 5,900
 characters: this chart renders a document longer than ack-extensions
-measures it).
+measures it). Applied a fifth time (HFL-623 follow-ups) with the calls of
+the default EC2 kinds (`DefaultVPC`, `DefaultNetworkACL`,
+`DefaultRouteTable`; ack-extensions ACKQ16-1: `ec2:CreateDefaultVpc`,
+`ec2:ReplaceNetworkAclEntry`, `ec2:ReplaceNetworkAclAssociation` and
+others), their fixtures' clean-up (`ec2:DeleteNetworkAcl`), and
+`s3:PutObjectRetention` for the Bucket extension's Object Lock test; the
+IAM statement moved from `part-1` to `part-2` and the SSO, Secrets
+Manager, SSM, STS and tagging ones from `part-2` to `part-3` as the
+documents grew.
 
 `tests/ack-extensions-live-tests.values.yaml` is the instance for
 ack-extensions' live tests: the role `ack-extensions-live-tests` in the AWS
