@@ -37,6 +37,11 @@ logging_sinks:
     type: project
     intercept_children: true
     filter: logName:cloudaudit.googleapis.com
+# The organization's Log Router settings (config-connector-extensions'
+# LoggingSettings): a storage location and the _Default sink off.
+logging_settings:
+  disable_default_sink: true
+  storage_location: europe-west1
 logging_exclusions:
   no-gce: resource.type=gce_instance
 iam_deny_policies:

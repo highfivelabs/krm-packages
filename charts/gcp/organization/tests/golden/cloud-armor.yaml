@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "cloud-armor"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.6.0"
+    app.kubernetes.io/version: "0.7.0"
   annotations:
     hfl.dev/id: "cloud_armor_policy"
 spec:
@@ -26,7 +26,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "cloud-armor"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.6.0"
+    app.kubernetes.io/version: "0.7.0"
   annotations:
     hfl.dev/id: "service-identity:privilegedaccessmanager.googleapis.com"
 spec:
@@ -43,7 +43,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "cloud-armor"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.6.0"
+    app.kubernetes.io/version: "0.7.0"
   annotations:
     hfl.dev/id: "service-identity:securitycenter.googleapis.com"
 spec:

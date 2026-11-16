@@ -282,7 +282,7 @@ Rank 1. Terraform module: [`modules/project`](https://github.com/GoogleCloudPlat
 | `google_pubsub_topic_iam_member` | IAMPolicyMember -> PubSubTopic |  |
 | `google_resource_manager_lien` | ResourceManagerLien |  |
 | `google_scc_management_project_security_health_analytics_custom_module` | SecurityCenterManagementSecurityHealthAnalyticsCustomModule | alpha only |
-| `google_scc_v2_project_mute_config` | SecurityCenterMuteConfig (securitycenter.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
+| `google_scc_v2_project_mute_config` | none | **gap** |
 | `google_storage_bucket_iam_member` | IAMPolicyMember -> StorageBucket |  |
 | `google_tags_tag_binding` | TagsTagBinding |  |
 | `google_tags_tag_key` | TagsTagKey |  |
@@ -321,7 +321,7 @@ Rank 2. Terraform module: [`modules/folder`](https://github.com/GoogleCloudPlatf
 | `google_project_iam_member` | IAMPolicyMember -> Project |  |
 | `google_pubsub_topic_iam_member` | IAMPolicyMember -> PubSubTopic |  |
 | `google_scc_management_folder_security_health_analytics_custom_module` | SecurityCenterManagementSecurityHealthAnalyticsCustomModule | alpha only |
-| `google_scc_v2_folder_mute_config` | SecurityCenterMuteConfig (securitycenter.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
+| `google_scc_v2_folder_mute_config` | none | **gap** |
 | `google_storage_bucket_iam_member` | IAMPolicyMember -> StorageBucket |  |
 | `google_tags_tag_binding` | TagsTagBinding |  |
 
@@ -359,7 +359,7 @@ Rank 3. Terraform module: [`modules/organization`](https://github.com/GoogleClou
 | `google_project_iam_member` | IAMPolicyMember -> Project |  |
 | `google_pubsub_topic_iam_member` | IAMPolicyMember -> PubSubTopic |  |
 | `google_scc_management_organization_security_health_analytics_custom_module` | SecurityCenterManagementSecurityHealthAnalyticsCustomModule | alpha only |
-| `google_scc_v2_organization_mute_config` | SecurityCenterMuteConfig (securitycenter.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
+| `google_scc_v2_organization_mute_config` | none | **gap** |
 | `google_storage_bucket_iam_member` | IAMPolicyMember -> StorageBucket |  |
 | `google_tags_tag_binding` | TagsTagBinding |  |
 | `google_tags_tag_key` | TagsTagKey |  |

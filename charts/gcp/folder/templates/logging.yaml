@@ -24,6 +24,14 @@ role on the destination: storage.objectCreator on a bucket,
 pubsub.publisher on a topic, bigquery.dataEditor on a dataset,
 logging.bucketWriter on a log bucket's project (with fabric's condition on
 the bucket) and logging.logWriter on a destination project.
+google_logging_folder_settings.default (logging_settings, when not null):
+config-connector-extensions' LoggingSettings (logging.gcp.hfl.dev/v1beta1)
+on the folder, with disableDefaultSink, the CMEK key kms_key_name
+(kmsKeyRef.external) and storageLocation as given; a field left null is
+not set, so not managed, as fabric leaves it null. The settings always
+exist: the object is always abandoned, so deleting it leaves them, as
+removing fabric's variable does. A $context lookup in kms_key_name is
+refused.
 */ -}}
 {{- $v := .Values }}
 {{- $access := $v.logging_data_access | default dict }}
@@ -171,4 +179,27 @@ spec:
     expression: {{ printf "resource.name.endsWith('locations/%s/buckets/%s')" (index $parts 3) (index $parts 5) | quote }}
   {{- end }}
 {{- end }}
+{{- end }}
+{{- with $v.logging_settings }}
+{{- if hasPrefix "$" (toString .kms_key_name) }}
+{{- include "kcc.unsupported" (list $ "context" "x" (printf "logging_settings.kms_key_name %q is a fabric $context lookup; Bundt replaces them with ${...} expressions and valueFrom in the component's inputs" .kms_key_name)) }}
+{{- end }}
+---
+apiVersion: logging.gcp.hfl.dev/v1beta1
+kind: LoggingSettings
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "logging-settings")) "id" "logging-settings" "abandon" "true") | nindent 2 }}
+spec:
+  folderRef:
+    {{- include "folder.ref" $ | nindent 4 }}
+  {{- if not (kindIs "invalid" .disable_default_sink) }}
+  disableDefaultSink: {{ .disable_default_sink }}
+  {{- end }}
+  {{- with .kms_key_name }}
+  kmsKeyRef:
+    external: {{ . | quote }}
+  {{- end }}
+  {{- with .storage_location }}
+  storageLocation: {{ . | quote }}
+  {{- end }}
 {{- end }}

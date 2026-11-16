@@ -42,7 +42,7 @@ gcp,organization,custom_constraint_ids,yes
 gcp,organization,custom_role_id,yes
 gcp,organization,custom_roles,no
 gcp,organization,id,yes
-gcp,organization,logging_identities,no
+gcp,organization,logging_identities,yes
 gcp,organization,logging_sinks,no
 gcp,organization,network_tag_keys,yes
 gcp,organization,network_tag_values,yes

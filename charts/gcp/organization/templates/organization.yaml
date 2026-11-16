@@ -15,7 +15,8 @@ organization. google_org_policy_custom_constraint.constraint: an
 OrgPolicyCustomConstraint per entry of org_policy_custom_constraints.
 google_tags_tag_binding.binding: a TagsTagBinding per entry of
 tag_bindings. Refused (README.md): the variables with no stable Config
-Connector kind, and the variables the other files of the module port.
+Connector kind, and the variables the other files of the module port
+(logging_settings: logging.yaml).
 */ -}}
 {{- $v := .Values }}
 {{- include "kcc.names" (list $ list) }}
@@ -24,8 +25,7 @@ Connector kind, and the variables the other files of the module port.
 {{- include "kcc.unsupported" (list $ "context" $v.context "Bundt replaces fabric's $context lookups with ${...} expressions in the component's inputs") }}
 {{- include "kcc.unsupported" (list $ "factories_config" $v.factories_config "a chart cannot read the caller's files: their entries go in the variables they feed (custom_roles, org_policies, org_policy_custom_constraints, pam_entitlements, tags)") }}
 {{- include "kcc.unsupported" (list $ "asset_search" $v.asset_search "a search is a read at plan time, not a resource; Bundt does not run one") }}
-{{- include "kcc.unsupported" (list $ "scc_mute_configs" $v.scc_mute_configs "Config Connector's SecurityCenterMuteConfig is a v1 API mute config (organizations/N/muteConfigs); fabric's is a Security Command Center v2 one (organizations/N/locations/global/muteConfigs), which has no kind") }}
-{{- include "kcc.unsupported" (list $ "logging_settings" $v.logging_settings "Config Connector has no kind for an organization's logging settings (LoggingSettings)") }}
+{{- include "kcc.unsupported" (list $ "scc_mute_configs" $v.scc_mute_configs "Config Connector's and config-connector-extensions' SecurityCenterMuteConfig (securitycenter.gcp.hfl.dev/v1beta1) is a v1 API mute config (organizations/N/muteConfigs); fabric's is a Security Command Center v2 one (organizations/N/locations/global/muteConfigs), which no kind makes yet (config-connector-extensions docs/design.md, item 42)") }}
 {{- $contacts := $v.contacts | default dict }}
 {{- range $email := keys $contacts | sortAlpha }}
 {{- $types := index $contacts $email }}

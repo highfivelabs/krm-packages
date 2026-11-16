@@ -1,6 +1,7 @@
 # An existing folder (folder_create: false): no Folder is made; IAM, a
-# contact, an org policy, a tag binding, a sink, the firewall policy
-# association, an asset feed and a service agent go on folders/1234567890.
+# contact, an org policy, a tag binding, a sink, the logging settings, the
+# firewall policy association, an asset feed and a service agent go on
+# folders/1234567890.
 folder_create: false
 id: folders/1234567890
 iam:
@@ -17,6 +18,7 @@ logging_sinks:
   audit:
     destination: audit-bucket
     type: storage
+logging_settings: {disable_default_sink: false}
 asset_feeds:
   iam: {content_type: IAM_POLICY, feed_output_config: {pubsub_destination: {topic: projects/feeds-project/topics/iam}}}
 service_agents_config:

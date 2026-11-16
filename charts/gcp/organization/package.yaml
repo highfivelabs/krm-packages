@@ -13,8 +13,10 @@
 # locations/global/workforcePools/... name), and service_agents (each
 # ServiceIdentity's status.email, keyed by its service: fabric outputs
 # whole agent objects keyed by agent name, and several of its agents share
-# a service). Not outputs:
-# asset_search_results, logging_identities, scc_mute_configs and
+# a service), and logging_identities (the LoggingSettings' Log Router
+# service accounts, kms and logging, from status.observedState; both null
+# without logging_settings, as fabric's). Not outputs:
+# asset_search_results, scc_mute_configs and
 # scim_tenants (their variables are refused),
 # scc_custom_sha_modules_ids (Google Cloud assigns a module's ID, and the
 # alpha kind does not report it), and fabric's whole objects
@@ -25,7 +27,7 @@ kind: Package
 metadata:
   name: gcp-organization
 spec:
-  version: 0.6.0
+  version: 0.7.0
   engine: helm
   providers: [kcc]
   outputs:
@@ -60,3 +62,10 @@ spec:
           + '/providers/' + v.spec.resourceID})
     service_agents: >-
       resources.transformMapEntry(k, v, v.kind == 'ServiceIdentity', {v.spec.resourceID: v.status.email})
+    logging_identities: >-
+      'logging-settings' in resources && has(resources['logging-settings'].status.observedState)
+        ? {'kms': has(resources['logging-settings'].status.observedState.kmsServiceAccountID)
+             ? dyn(resources['logging-settings'].status.observedState.kmsServiceAccountID) : null,
+           'logging': has(resources['logging-settings'].status.observedState.loggingServiceAccountID)
+             ? dyn(resources['logging-settings'].status.observedState.loggingServiceAccountID) : null}
+        : {'kms': null, 'logging': null}

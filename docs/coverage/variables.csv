@@ -78,13 +78,13 @@ gcp,folder,iam_deny_policies,"map(object({display_name, rules}))",yes,,
 gcp,folder,id,string,yes,,
 gcp,folder,logging_data_access,"map(object({ADMIN_READ, DATA_READ, DATA_WRITE}))",yes,,
 gcp,folder,logging_exclusions,map(string),yes,,
-gcp,folder,logging_settings,"object({disable_default_sink, kms_key_name, storage_location})",no,Config Connector has no kind for a folder's logging settings (LoggingSettings),gap
+gcp,folder,logging_settings,"object({disable_default_sink, kms_key_name, storage_location})",yes,,
 gcp,folder,logging_sinks,"map(object({bq_partitioned_table, description, destination, disabled, exclusions, filter, +4}))",yes,,
 gcp,folder,name,string,yes,,
 gcp,folder,org_policies,"map(object({inherit_from_parent, reset, rules}))",yes,,
 gcp,folder,pam_entitlements,"map(object({additional_notification_targets, eligible_users, manual_approvals, max_request_duration, privileged_access, requester_justification_config}))",yes,,
 gcp,folder,parent,string,yes,,
-gcp,folder,scc_mute_configs,"map(object({description, filter, type}))",no,Config Connector has no Security Command Center v2 mute config kind (SecurityCenterMuteConfig),gap
+gcp,folder,scc_mute_configs,"map(object({description, filter, type}))",no,"Config Connector's and config-connector-extensions' SecurityCenterMuteConfig (securitycenter.gcp.hfl.dev/v1beta1) is a v1 API mute config (folders/N/muteConfigs); fabric's is a Security Command Center v2 one (folders/N/locations/global/muteConfigs), which no kind makes yet (config-connector-extensions docs/design.md, item 42)",gap
 gcp,folder,scc_sha_custom_modules,"map(object({description, enablement_state, predicate, recommendation, resource_selector, severity}))",no,"SecurityCenterManagementSecurityHealthAnalyticsCustomModule is v1alpha1; not ported yet, even with allow_alpha",alpha
 gcp,folder,service_agents_config,"object({create_agents, services})",yes,,
 gcp,folder,tag_bindings,map(string),yes,,
@@ -108,7 +108,7 @@ gcp,organization,iam_by_principals_conditional,"map(object({condition, roles}))"
 gcp,organization,iam_deny_policies,"map(object({display_name, rules}))",yes,,
 gcp,organization,logging_data_access,"map(object({ADMIN_READ, DATA_READ, DATA_WRITE}))",yes,,
 gcp,organization,logging_exclusions,map(string),yes,,
-gcp,organization,logging_settings,"object({disable_default_sink, kms_key_name, storage_location})",no,Config Connector has no kind for an organization's logging settings (LoggingSettings),gap
+gcp,organization,logging_settings,"object({disable_default_sink, kms_key_name, storage_location})",yes,,
 gcp,organization,logging_sinks,"map(object({bq_partitioned_table, description, destination, disabled, exclusions, filter, +4}))",yes,,
 gcp,organization,model_armor_floor_setting,"object({enforce, filters, integrated_services, multi_language_detection})",partial,"ModelArmorFloorSetting is v1alpha1: needs allow_alpha: true; integrated_services is refused on an organization, as fabric refuses it",alpha
 gcp,organization,network_tags,"map(object({description, iam, iam_bindings, iam_bindings_additive, id, network, +1}))",partial,tag keys and values take no IAM conditions,gap
@@ -116,7 +116,7 @@ gcp,organization,org_policies,"map(object({inherit_from_parent, reset, rules}))"
 gcp,organization,org_policy_custom_constraints,"map(object({action_type, condition, description, display_name, method_types, resource_types}))",yes,,
 gcp,organization,organization_id,string,yes,,
 gcp,organization,pam_entitlements,"map(object({additional_notification_targets, eligible_users, manual_approvals, max_request_duration, privileged_access, requester_justification_config}))",yes,,
-gcp,organization,scc_mute_configs,"map(object({description, filter, type}))",no,"Config Connector's SecurityCenterMuteConfig is a v1 API mute config (organizations/N/muteConfigs); fabric's is a Security Command Center v2 one at location global, which has no kind",gap
+gcp,organization,scc_mute_configs,"map(object({description, filter, type}))",no,"Config Connector's and config-connector-extensions' SecurityCenterMuteConfig (securitycenter.gcp.hfl.dev/v1beta1) is a v1 API mute config (organizations/N/muteConfigs); fabric's is a Security Command Center v2 one (organizations/N/locations/global/muteConfigs), which no kind makes yet (config-connector-extensions docs/design.md, item 42)",gap
 gcp,organization,scc_sha_custom_modules,"map(object({description, enablement_state, predicate, recommendation, resource_selector, severity}))",partial,SecurityCenterManagementSecurityHealthAnalyticsCustomModule is v1alpha1: needs allow_alpha: true,alpha
 gcp,organization,service_agents_config,"object({create_agents, services})",yes,,
 gcp,organization,tag_bindings,map(string),yes,,

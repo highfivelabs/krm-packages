@@ -57,6 +57,7 @@ The module's variables, with the same names, types and defaults.
 | `logging_data_access` | an `IAMAuditConfig` per service with its log types and exempted members |
 | `logging_exclusions` | a `LoggingLogExclusion` per entry, described `<name> (Terraform-managed).` |
 | `logging_sinks` | a `LoggingLogSink` per entry on the organization, config-connector-extensions' kind (`logging.gcp.hfl.dev/v1beta1`; Config Connector's has no `interceptChildren` and no project destination) (type `logging` by default, `include_children`, default true, `intercept_children` with type `project`, filter, exclusions, `disabled`, BigQuery partitioned tables; type `project` sends to a project, its ID or `projects/<id>`), and, with `iam` (the default), a config-connector-extensions `IAMMember` granting its writer identity (`memberFrom.logSinkRef`) fabric's role on the destination: `roles/storage.objectCreator` on a bucket, `roles/pubsub.publisher` on a topic, `roles/bigquery.dataEditor` on a dataset, `roles/logging.bucketWriter` on a log bucket's project (with fabric's condition on the bucket), `roles/logging.logWriter` on a destination project. `intercept_children` without type `project` and `include_children` stops the render with fabric's message |
+| `logging_settings` | the organization's Log Router settings as config-connector-extensions' `LoggingSettings` (`logging.gcp.hfl.dev/v1beta1`; Config Connector has no kind for them): `disable_default_sink`, the CMEK key `kms_key_name` (`kmsKeyRef.external`, a key's full name) and `storage_location`; a field left null is not managed. The settings always exist, so the object is always abandoned: deleting it leaves them, as removing fabric's variable does. A `$context` lookup in `kms_key_name` or `storage_location` is refused |
 | `pam_entitlements` | a `PrivilegedAccessManagerEntitlement` per entry on the organization, as the `folder` chart's |
 | `access_policy`, `access_levels` | a basic `AccessContextManagerAccessLevel` per entry in the access policy `access_policy` (its number), named by its key (with a `namePrefix`, `<namePrefix>_<key>`, hyphens as underscores), titled by its title or key, with its combining function and conditions: device policy, IP subnetworks, members (users and service accounts, fabric's check), `negate`, regions, required access levels (another level's resource name, or `$access_levels:<key>` for one of this chart's); fabric's checks of the combining function, encryption statuses and management levels. A condition's `vpc_subnets` is refused (`AccessContextManagerAccessLevel` has no `vpcNetworkSources`) |
 | `asset_feeds` | an `AssetFeed` of config-connector-extensions (`asset.gcp.hfl.dev/v1beta1`, as the `project` and `folder` charts) per entry on the organization, its ID the key, to the Pub/Sub topic `projects/<project>/topics/<topic>`, with its content type (fabric's check), asset types and names and condition. `billing_project` is not carried ("Differences from the module") |
@@ -69,7 +70,7 @@ The module's variables, with the same names, types and defaults.
 | `model_armor_floor_setting` | alpha: the organization's `ModelArmorFloorSetting` (location `global`), as fabric builds it: enforcement (default true), malicious URI, prompt injection and jailbreak, responsible AI and sensitive data filters, multi-language detection; fabric's checks, and its refusal of `integrated_services` on an organization. The floor setting always exists, so the object is always abandoned: deleting it leaves the setting, as removing fabric's variable does |
 | `scc_sha_custom_modules` | alpha: a `SecurityCenterManagementSecurityHealthAnalyticsCustomModule` per entry (location `global`), its display name the key, with its predicate, resource types, description, recommendation, severity and enablement state (default `ENABLED`) |
 | `context`, `factories_config`, `asset_search` | refused, by design: Bundt replaces `$context` lookups with `${...}` expressions; a chart cannot read the caller's files (their entries go in `custom_roles`, `org_policies`, `org_policy_custom_constraints`, `pam_entitlements` and `tags`); a search is a read at plan time, not a resource |
-| `logging_settings`, `scc_mute_configs` | refused, gaps: Config Connector has no kind for an organization's logging settings or a Security Command Center v2 mute config (its `SecurityCenterMuteConfig` is the v1 API's, `organizations/N/muteConfigs`, a different resource from fabric's `organizations/N/locations/global/muteConfigs`) |
+| `scc_mute_configs` | refused, a gap: no kind makes a Security Command Center v2 mute config. Config Connector's and config-connector-extensions' `SecurityCenterMuteConfig` (`securitycenter.gcp.hfl.dev/v1beta1`) is the v1 API's, `organizations/N/muteConfigs`, a different resource from fabric's `organizations/N/locations/global/muteConfigs`; a v2 kind is config-connector-extensions' `docs/design.md` item 42 |
 | `deletion_policy` | not a fabric variable; `ABANDON` keeps the cloud resources |
 
 ## Outputs
@@ -84,8 +85,10 @@ and `workforce_identity_provider_names` (`locations/global/workforcePools/...`),
 keyed as fabric keys them, and `service_agents`: each `ServiceIdentity`'s
 `status.email`, keyed by its service (fabric outputs whole agent objects
 keyed by agent name, with emails it computes from the organization number;
-the chart outputs the email the API returns, one per service). Not
-outputs: `asset_search_results`, `logging_identities`, `scc_mute_configs`
+the chart outputs the email the API returns, one per service), and `logging_identities`: `kms` and `logging`, the Log
+Router's service accounts from the `LoggingSettings`' status, both null
+without `logging_settings`, as fabric's. Not
+outputs: `asset_search_results`, `scc_mute_configs`
 and `scim_tenants` (their variables are refused),
 `scc_custom_sha_modules_ids` (Google Cloud assigns a module's ID, and the
 alpha kind does not report it), and fabric's whole objects
@@ -121,12 +124,13 @@ Found porting this module, for config-connector-extensions:
 OAuth 2.0 client attributes; `AssetFeed` has no billing project;
 `AccessContextManagerGCPUserAccessBinding` has no scoped access
 settings; no kinds
-for `google_scc_v2_organization_mute_config`,
-`google_logging_organization_settings` or
+for `google_scc_v2_organization_mute_config` (config-connector-extensions'
+`SecurityCenterMuteConfig` is the v1 API's) or
 `google_iam_workforce_pool_provider_scim_tenant`
 (`docs/coverage/blocked-kinds.md`). config-connector-extensions'
 `ComputeOrganizationSecurityPolicyAssociation` (with the exclusions) and
-`ServiceIdentity` (an organization's) filled two of them (0.4.0).
+`ServiceIdentity` (an organization's) filled two of them (0.4.0), and its
+`LoggingSettings` `google_logging_organization_settings` (0.7.0).
 
 ## Config Connector bugs
 
@@ -195,11 +199,24 @@ On 2026-11-16 (0.6.0, run `off-catalog-1116041737-16616`, config-connector-exten
 `IAMDenyPolicy` (`iam.gcp.hfl.dev`) on the organization Ready and deleted,
 with all 13 objects of the case.
 
+And on 2026-11-16 (0.7.0, run `off-catalog-1116143047-24863`,
+config-connector-extensions `5c223962`) with `logging_settings` added
+(config-connector-extensions' `LoggingSettings`): all 14 objects Ready,
+the outputs evaluated (`logging_identities.kms` the organization's Log
+Router service account; mockgcp returns no `loggingServiceAccountId`, so
+`logging` was null), all deleted.
+
 Not applied live: live runs are pending KEYLIVE, and a live run needs an
 organization the test identity may change (nothing can create one).
 
 ## Changes
 
+- **0.7.0** (2026-11-16): `logging_settings` renders config-connector-
+  extensions' `LoggingSettings` (`logging.gcp.hfl.dev/v1beta1`, at the
+  pin `5c223962`) on the organization, always abandoned, and the
+  `logging_identities` output reads its status. `scc_mute_configs` stays
+  refused, its reason now naming config-connector-extensions' v1 API
+  `SecurityCenterMuteConfig`.
 - **0.6.0** (2026-11-16): `iam_deny_policies` render config-connector-
   extensions' `IAMDenyPolicy` (`iam.gcp.hfl.dev/v1beta1`), as the
   `folder` and `project` charts do, and no longer need `allow_alpha`.
