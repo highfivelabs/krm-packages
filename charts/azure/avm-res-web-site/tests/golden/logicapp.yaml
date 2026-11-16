@@ -1,0 +1,94 @@
+---
+# Source: avm-res-web-site/templates/main.yaml
+apiVersion: web.azure.com/v20250501
+kind: Site
+metadata:
+  name: logicapp-site
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "logicapp"
+    app.kubernetes.io/name: avm-res-web-site
+    app.kubernetes.io/version: "0.6.0"
+  annotations:
+    hfl.dev/id: "site"
+spec:
+  azureName: "app-logic"
+  location: "eastus2"
+  owner:
+    armId: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example"
+  kind: "functionapp,workflowapp"
+  clientAffinityEnabled: false
+  clientCertEnabled: false
+  enabled: true
+  httpsOnly: true
+  outboundVnetRouting:
+    allTraffic: false
+    applicationTraffic: false
+    backupRestoreTraffic: false
+    contentShareTraffic: false
+    imagePullTraffic: false
+  publicNetworkAccess: Disabled
+  reserved: false
+  serverFarmReference:
+    armId: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example/providers/Microsoft.Web/serverfarms/asp-ws1
+  siteConfig:
+    alwaysOn: true
+    ftpsState: FtpsOnly
+    http20Enabled: false
+    ipSecurityRestrictionsDefaultAction: Allow
+    loadBalancing: LeastRequests
+    managedPipelineMode: Integrated
+    minTlsVersion: "1.3"
+    remoteDebuggingEnabled: false
+    scmIpSecurityRestrictionsDefaultAction: Allow
+    scmIpSecurityRestrictionsUseMain: false
+    scmMinTlsVersion: "1.2"
+    scmType: None
+    use32BitWorkerProcess: false
+    vnetRouteAllEnabled: false
+    webSocketsEnabled: false
+---
+# Source: avm-res-web-site/templates/main.yaml
+apiVersion: web.azure.hfl.dev/v20260715
+kind: SitesConfigAppSettings
+metadata:
+  name: logicapp-appsettings
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "logicapp"
+    app.kubernetes.io/name: avm-res-web-site
+    app.kubernetes.io/version: "0.6.0"
+  annotations:
+    hfl.dev/id: "config_appsettings"
+spec:
+  owner:
+    name: logicapp-site
+  settings:
+    - name: APPINSIGHTS_INSTRUMENTATIONKEY
+      valueFromSecret:
+        key: instrumentationKey
+        name: app-logic-insights
+    - name: AzureFunctionsJobHost__extensionBundle__id
+      value: Microsoft.Azure.Functions.ExtensionBundle.Workflows
+    - name: AzureFunctionsJobHost__extensionBundle__version
+      value: '[1.*, 2.0.0)'
+    - name: AzureWebJobsStorage
+      template: DefaultEndpointsProtocol=https;AccountName=stlogicexample;AccountKey=$(value)
+      valueFromSecret:
+        key: key1
+        name: app-logic-storage
+    - name: FUNCTIONS_EXTENSION_VERSION
+      value: ~4
+    - name: FUNCTIONS_WORKER_RUNTIME
+      value: dotnet
+    - name: WEBSITE_CONTENTAZUREFILECONNECTIONSTRING
+      template: DefaultEndpointsProtocol=https;AccountName=stlogicexample;AccountKey=$(value)
+      valueFromSecret:
+        key: key1
+        name: app-logic-storage
+    - name: WEBSITE_CONTENTSHARE
+      value: app-logic-content
+    - name: WEBSITE_NODE_DEFAULT_VERSION
+      value: ~22
+    - name: WORKFLOWS_SUBSCRIPTION_ID
+      value: 00000000-0000-0000-0000-000000000000

@@ -1,0 +1,17 @@
+# A Standard Logic App: the module's app settings for kind logicapp
+# (runtime, worker, Node.js version, extension bundle, content share), with
+# the storage account's access key a reference to a Kubernetes Secret that
+# aso-extensions' SitesConfigAppSettings puts into the two storage
+# connection strings (template), and the instrumentation key from a Secret.
+name: app-logic
+location: eastus2
+parent_id: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example
+service_plan_resource_id: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example/providers/Microsoft.Web/serverFarms/asp-ws1
+ftp_publish_basic_authentication_enabled: true
+kind: logicapp
+os_type: Windows
+storage_account_name: stlogicexample
+storage_account_access_key: {secretName: app-logic-storage, key: key1}
+storage_account_share_name: app-logic-content
+application_insights_key: {secretName: app-logic-insights, key: instrumentationKey}
+app_settings: {WORKFLOWS_SUBSCRIPTION_ID: 00000000-0000-0000-0000-000000000000}

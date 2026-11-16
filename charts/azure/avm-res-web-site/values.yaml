@@ -46,13 +46,15 @@ app_service_active_slot: null
 app_settings: {}
 # The Application Insights connection string. Provide this from an
 # externally managed Application Insights resource.
-# Refused when set: a secret value (the module marks it sensitive), the
-# builder's decision.
+# A reference to a Kubernetes Secret, {secretName, key} (docs/secrets.md); a
+# string is refused. Written with the other app settings by aso-extensions'
+# SitesConfigAppSettings.
 application_insights_connection_string: null
 # The Application Insights instrumentation key. Provide this from an
 # externally managed Application Insights resource.
-# Refused when set: a secret value (the module marks it sensitive), the
-# builder's decision.
+# A reference to a Kubernetes Secret, {secretName, key} (docs/secrets.md); a
+# string is refused. Written with the other app settings by aso-extensions'
+# SitesConfigAppSettings.
 application_insights_key: null
 # A map of authentication settings to assign to the App Service.
 # Refused when set: sites/config authsettings has no ASO or aso-extensions
@@ -75,8 +77,7 @@ backup: {}
 builtin_logging_enabled: true
 # The version of the extension bundle to use. Defaults to `[1.*, 2.0.0)`.
 # (Logic App)
-# Refused at any other value: only a Logic App reads it, and kind logicapp
-# is refused.
+# Read for kind logicapp only, as in the module.
 bundle_version: '[1.*, 2.0.0)'
 # A map of `Microsoft.Web/certificates` resources to create on the App
 # Service plan. Each entry materialises a certificate that can be referenced
@@ -111,8 +112,9 @@ client_certificate_mode: Required
 # `manage_connection_strings` is `true`. - `name` - (Optional) The name of
 # the connection string. - `type` - (Optional) The type of the connection
 # string. - `value` - (Optional) The value of the connection string.
-# Refused when set: a connection string's value is a secret, the builder's
-# decision.
+# Each value is a reference to a Kubernetes Secret, {secretName, key}
+# (docs/secrets.md); a string is refused; type is required (Azure's). Written
+# by aso-extensions' SitesConfigConnectionStrings, the whole set.
 connection_strings: {}
 # (Optional) The size of the function container in MB. Only applicable to
 # Function Apps under a Consumption plan.
@@ -142,7 +144,8 @@ delete_empty_service_plan: true
 # A map of deployment slots to create for the App Service.
 # Each slot must set ftp_publish_basic_authentication_enabled and
 # webdeploy_publish_basic_authentication_enabled to true; its
-# connection_strings, private_endpoints, zip_deploy_file, site_config.application_insights_* and
+# connection_strings and site_config.application_insights_* take references
+# to Kubernetes Secrets (docs/secrets.md); its private_endpoints, zip_deploy_file and
 # custom_domains.*.certificate_key are refused.
 deployment_slots: {}
 # Whether to inherit the lock from the parent resource for the deployment
@@ -213,8 +216,9 @@ key_vault_reference_identity: null
 # The type of App Service to deploy. This maps to the ARM API `kind`
 # property. Possible values are `functionapp`, `webapp` and `logicapp`.
 # Defaults to `webapp`.
-# logicapp is refused: the module writes the storage account key into an app
-# setting.
+# logicapp needs storage_account_name and storage_account_access_key (a
+# reference to a Kubernetes Secret), which the app settings carry in the
+# storage connection string.
 kind: webapp
 # Azure region where the resource should be deployed.
 location: ''
@@ -224,12 +228,10 @@ lock: null
 # through the `WEBSITE_NODE_DEFAULT_VERSION` app setting. Defaults to `~22`.
 # Use a tilde so that Azure selects the latest available minor version
 # within that major version.
-# Refused at any other value: only a Logic App reads it, and kind logicapp
-# is refused.
+# Read for kind logicapp only, as in the module.
 logic_app_node_version: ~22
 # The runtime version for the Logic App. Defaults to `~4`.
-# Refused at any other value: only a Logic App reads it, and kind logicapp
-# is refused.
+# Read for kind logicapp only, as in the module.
 logic_app_runtime_version: ~4
 # A map of logs configuration for the App Service: one entry,
 # aso-extensions' SitesConfigLogs. A Blob Storage destination's sas_url is
@@ -241,8 +243,7 @@ logs: {}
 # connection strings unmanaged and skip the config endpoint. Switching from
 # `true` to `false` removes the update resource from Terraform state without
 # deleting connection strings in Azure.
-# Accepted; the chart sends no connection strings (connection_strings is
-# refused).
+# false: the chart sends no connection strings, as the module.
 manage_connection_strings: true
 # (Optional) The Azure Resource Manager ID of the Azure Container Apps
 # managed environment to host this App Service in.
@@ -310,12 +311,12 @@ service_plan_resource_id: ''
 # An object that configures the App Service's site configuration. These map
 # to the ARM API `siteConfig` properties.
 # application_insights_connection_string and application_insights_key are
-# refused (secret values).
+# references to Kubernetes Secrets, {secretName, key} (docs/secrets.md).
 site_config: {}
 # A map of sensitive app settings to apply to the deployment slot(s). The
 # key MUST be the same key as the slot key.
-# Refused when set: secret values (the module marks them sensitive), the
-# builder's decision.
+# Each value is a reference to a Kubernetes Secret, {secretName, key}
+# (docs/secrets.md); a string is refused, and so is a key that names no slot.
 slot_sensitive_app_settings: {}
 # A map of sensitive values (Storage Access Key) for the Storage Account SMB
 # file shares to mount to the deployment slots. The key is the supplied
@@ -332,8 +333,9 @@ ssh_enabled: null
 sticky_settings: {}
 # The access key of the Storage Account for the Function App. Required when
 # `kind` is `logicapp`.
-# Refused when set: a secret value (the module marks it sensitive), the
-# builder's decision.
+# A reference to a Kubernetes Secret, {secretName, key} (docs/secrets.md),
+# holding the key; the chart puts it into the storage connection string
+# (AzureWebJobsStorage) with aso-extensions' template. A string is refused.
 storage_account_access_key: null
 # The name of the Storage Account for the Function App. Required when `kind`
 # is `logicapp`, and when `storage_uses_managed_identity` is `true`.
@@ -342,7 +344,7 @@ storage_account_name: null
 # set, the storage account must be specified in the app settings.
 storage_account_required: null
 # The name of the storage account file share (Logic App).
-# Refused when set: only a Logic App reads it, and kind logicapp is refused.
+# Read for kind logicapp only, as in the module.
 storage_account_share_name: null
 # The authentication type Flex Consumption uses to read the deployment
 # package from its blob container. Possible values are
@@ -381,8 +383,7 @@ tags: null
 # Refused when set: ASO has none; Bundt sets a component's time limit.
 timeouts: null
 # Should the extension bundle be used? (Logic App) Defaults to `true`.
-# Refused when false: only a Logic App reads it, and kind logicapp is
-# refused.
+# Read for kind logicapp only, as in the module.
 use_extension_bundle: true
 # Should backup and restore operations over the linked virtual network be
 # enabled? Defaults to `false`.

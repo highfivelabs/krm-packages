@@ -1,0 +1,9 @@
+# expect: storage_account_access_key takes a reference to a Kubernetes Secret
+name: app
+location: eastus2
+parent_id: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg
+service_plan_resource_id: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg/providers/Microsoft.Web/serverFarms/asp
+ftp_publish_basic_authentication_enabled: true
+kind: logicapp
+storage_account_name: stlogic
+storage_account_access_key: c2VjcmV0

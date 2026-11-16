@@ -590,7 +590,7 @@ password secret name.
 | `slot` | `sites/slots` | aso-extensions `SitesSlot` (2026-07-15) |
 | `hostname_binding` | `sites/hostNameBindings` (and a slot's) | aso-extensions `SitesHostNameBinding`, `SitesSlotsHostNameBinding` |
 | `certificate` | `Web/certificates` | aso-extensions `Certificate` |
-| `config_*` (appsettings, connectionstrings, authsettings, authsettingsV2, logs, backup, metadata, azurestorageaccounts, slotConfigNames) | `sites/config` | aso-extensions `SitesConfigAuthSettingsV2`, `SitesConfigLogs`, `SitesConfigSlotConfigNames` (2026-07-15, `8d7f8c2`); appsettings, metadata, connection strings and storage mounts inline in `siteConfig`; **GAP**: authsettings (v1) and backup (PUT with no GET) |
+| `config_*` (appsettings, connectionstrings, authsettings, authsettingsV2, logs, backup, metadata, azurestorageaccounts, slotConfigNames) | `sites/config` | aso-extensions `SitesConfigAuthSettingsV2`, `SitesConfigLogs`, `SitesConfigSlotConfigNames` (2026-07-15, `8d7f8c2`); `SitesConfigAppSettings`, `SitesConfigConnectionStrings` (by hand, values from Secrets; RECWEB, 2026-11-15) for secret app settings and connection strings; plain app settings, metadata and storage mounts inline in `siteConfig`; **GAP**: authsettings (v1) and backup (PUT with no GET) |
 | `publishing_credential_policy` | `sites/basicPublishingCredentialsPolicies` | aso-extensions `SitesBasicPublishingCredentialsPolicyFtp`, `...Scm` (2026-07-15, `8d7f8c2`); a slot's: **GAP** |
 
 Ported as `charts/azure/avm-res-web-site` (2026-11-13): 79 of 99
@@ -602,11 +602,13 @@ credential policies (`ftp_publish_basic_authentication_enabled: false`,
 the module's default, renders the FTP one) are too. Still gaps: the
 `sites/config` sections `auth_settings` (v1) and `backup`, a slot's
 publishing credential policies and the slot swap (`app_service_active_slot`,
-an action). Connection strings and the Application Insights key and
-connection string are refused as secret values (the builder's decision;
-storage mounts' access keys and PFX uploads are references to Kubernetes
-Secrets from 0.5.0, secrets.md); Logic Apps (`kind: logicapp`) too, since the
-module writes the storage account key into an app setting. Not applied
+an action). Storage mounts' access keys and PFX uploads are references to
+Kubernetes Secrets from 0.5.0 (secrets.md); from 0.6.0 so are connection
+strings, the Application Insights key and connection string, a slot's
+sensitive app settings and the storage account key, which the module writes
+into app settings (aso-extensions' `SitesConfigAppSettings` and
+`SitesConfigConnectionStrings`, the builder's RECWEB answer, 2026-11-15), and
+Logic Apps (`kind: logicapp`) are mapped with them. Not applied
 live: the sandbox's App Service quota is 0 (the serverfarm chart below);
 its case `web` is opt-in. Its `tests/mock.values.yaml` passed against the
 fake cloud (run `off-catalog-1113080724-28823`: the site, slot, hostname
