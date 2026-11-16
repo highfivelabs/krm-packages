@@ -28,7 +28,7 @@ spec:
       'cluster' in resources && has(resources.cluster.status.ackResourceMetadata.arn)
       ? dyn(resources.cluster.status.ackResourceMetadata.arn) : null
     cluster_certificate_authority_data: >-
-      'cluster' in resources && has(resources.cluster.status.certificateAuthority.data)
+      'cluster' in resources && has(resources.cluster.status.certificateAuthority) && has(resources.cluster.status.certificateAuthority.data)
       ? dyn(resources.cluster.status.certificateAuthority.data) : null
     cluster_endpoint: >-
       'cluster' in resources && has(resources.cluster.status.endpoint)
@@ -39,15 +39,18 @@ spec:
     cluster_name: >-
       'cluster' in resources ? dyn(resources.cluster.spec.name) : dyn('')
     cluster_oidc_issuer_url: >-
-      'cluster' in resources && has(resources.cluster.status.identity.oidc.issuer)
+      'cluster' in resources && has(resources.cluster.status.identity) && has(resources.cluster.status.identity.oidc)
+      && has(resources.cluster.status.identity.oidc.issuer)
       ? dyn(resources.cluster.status.identity.oidc.issuer) : null
     cluster_dualstack_oidc_issuer_url: >-
-      'cluster' in resources && has(resources.cluster.status.identity.oidc.issuer)
+      'cluster' in resources && has(resources.cluster.status.identity) && has(resources.cluster.status.identity.oidc)
+      && has(resources.cluster.status.identity.oidc.issuer)
       ? dyn(resources.cluster.status.identity.oidc.issuer
           .replace('https://oidc.eks.', 'https://oidc-eks.').replace('.amazonaws.com/', '.api.aws/'))
       : null
     oidc_provider: >-
-      'cluster' in resources && has(resources.cluster.status.identity.oidc.issuer)
+      'cluster' in resources && has(resources.cluster.status.identity) && has(resources.cluster.status.identity.oidc)
+      && has(resources.cluster.status.identity.oidc.issuer)
       ? dyn(resources.cluster.status.identity.oidc.issuer.replace('https://', '')) : null
     cluster_version: >-
       'cluster' in resources && has(resources.cluster.spec.version)
@@ -62,13 +65,16 @@ spec:
       'cluster' in resources && has(resources.cluster.status.clusterSecurityGroupID)
       ? dyn(resources.cluster.status.clusterSecurityGroupID) : null
     cluster_service_cidr: >-
-      'cluster' in resources && has(resources.cluster.spec.kubernetesNetworkConfig.serviceIPv4CIDR)
+      'cluster' in resources && has(resources.cluster.spec.kubernetesNetworkConfig)
+      && has(resources.cluster.spec.kubernetesNetworkConfig.serviceIPv4CIDR)
       ? dyn(resources.cluster.spec.kubernetesNetworkConfig.serviceIPv4CIDR) : null
     cluster_ip_family: >-
-      'cluster' in resources && has(resources.cluster.spec.kubernetesNetworkConfig.ipFamily)
+      'cluster' in resources && has(resources.cluster.spec.kubernetesNetworkConfig)
+      && has(resources.cluster.spec.kubernetesNetworkConfig.ipFamily)
       ? dyn(resources.cluster.spec.kubernetesNetworkConfig.ipFamily) : null
     cluster_control_plane_scaling_tier: >-
-      'cluster' in resources && has(resources.cluster.spec.controlPlaneScalingConfig.tier)
+      'cluster' in resources && has(resources.cluster.spec.controlPlaneScalingConfig)
+      && has(resources.cluster.spec.controlPlaneScalingConfig.tier)
       ? dyn(resources.cluster.spec.controlPlaneScalingConfig.tier) : null
     access_entries: >-
       resources.filter(k, k.startsWith('access-entry-')).transformMapEntry(i, k, {
@@ -141,5 +147,5 @@ spec:
         k.substring(11): has(resources[k].status.ackResourceMetadata.arn) ? resources[k].status.ackResourceMetadata.arn : ''})
     eks_managed_node_groups_autoscaling_group_names: >-
       resources.filter(k, k.startsWith('node-group-')
-          && has(resources[k].status.resources.autoScalingGroups))
+          && has(resources[k].status.resources) && has(resources[k].status.resources.autoScalingGroups))
         .map(k, resources[k].status.resources.autoScalingGroups.map(g, g.name)).flatten()
