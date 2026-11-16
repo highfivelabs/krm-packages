@@ -2206,120 +2206,120 @@ aws,rds,timezone,string,yes,,
 aws,rds,upgrade_storage_config,bool,no,ACK's DBInstance has no field for it,gap
 aws,rds,username,string,yes,,
 aws,rds,vpc_security_group_ids,list(string),yes,,
-aws,rds-aurora,allocated_storage,number,no,,no-chart
-aws,rds-aurora,allow_major_version_upgrade,bool,no,,no-chart
-aws,rds-aurora,apply_immediately,bool,no,,no-chart
-aws,rds-aurora,auto_minor_version_upgrade,bool,no,,no-chart
-aws,rds-aurora,autoscaling_enabled,bool,no,,no-chart
-aws,rds-aurora,autoscaling_max_capacity,number,no,,no-chart
-aws,rds-aurora,autoscaling_min_capacity,number,no,,no-chart
-aws,rds-aurora,autoscaling_policy_name,string,no,,no-chart
-aws,rds-aurora,autoscaling_scale_in_cooldown,number,no,,no-chart
-aws,rds-aurora,autoscaling_scale_out_cooldown,number,no,,no-chart
-aws,rds-aurora,autoscaling_target_connections,number,no,,no-chart
-aws,rds-aurora,autoscaling_target_cpu,number,no,,no-chart
-aws,rds-aurora,availability_zones,list(string),no,,no-chart
-aws,rds-aurora,backtrack_window,number,no,,no-chart
-aws,rds-aurora,backup_retention_period,number,no,,no-chart
-aws,rds-aurora,cloudwatch_log_group_class,string,no,,no-chart
-aws,rds-aurora,cloudwatch_log_group_kms_key_id,string,no,,no-chart
-aws,rds-aurora,cloudwatch_log_group_retention_in_days,number,no,,no-chart
-aws,rds-aurora,cloudwatch_log_group_skip_destroy,bool,no,,no-chart
-aws,rds-aurora,cloudwatch_log_group_tags,map(string),no,,no-chart
-aws,rds-aurora,cluster_activity_stream,"object({include_audit_fields, kms_key_id, mode})",no,,no-chart
-aws,rds-aurora,cluster_ca_cert_identifier,string,no,,no-chart
-aws,rds-aurora,cluster_db_instance_parameter_group_name,string,no,,no-chart
-aws,rds-aurora,cluster_instance_class,string,no,,no-chart
-aws,rds-aurora,cluster_members,list(string),no,,no-chart
-aws,rds-aurora,cluster_monitoring_interval,number,no,,no-chart
-aws,rds-aurora,cluster_parameter_group,"object({description, family, name, parameters, use_name_prefix})",no,,no-chart
-aws,rds-aurora,cluster_parameter_group_name,string,no,,no-chart
-aws,rds-aurora,cluster_performance_insights_enabled,bool,no,,no-chart
-aws,rds-aurora,cluster_performance_insights_kms_key_id,string,no,,no-chart
-aws,rds-aurora,cluster_performance_insights_retention_period,number,no,,no-chart
-aws,rds-aurora,cluster_scalability_type,string,no,,no-chart
-aws,rds-aurora,cluster_tags,map(string),no,,no-chart
-aws,rds-aurora,cluster_timeouts,"object({create, delete, update})",no,,no-chart
-aws,rds-aurora,cluster_use_name_prefix,bool,no,,no-chart
-aws,rds-aurora,copy_tags_to_snapshot,bool,no,,no-chart
-aws,rds-aurora,create,bool,no,,no-chart
-aws,rds-aurora,create_cloudwatch_log_group,bool,no,,no-chart
-aws,rds-aurora,create_db_subnet_group,bool,no,,no-chart
-aws,rds-aurora,create_monitoring_role,bool,no,,no-chart
-aws,rds-aurora,create_security_group,bool,no,,no-chart
-aws,rds-aurora,database_insights_mode,string,no,,no-chart
-aws,rds-aurora,database_name,string,no,,no-chart
-aws,rds-aurora,db_parameter_group,"object({description, family, name, parameters, use_name_prefix})",no,,no-chart
-aws,rds-aurora,db_subnet_group_name,string,no,,no-chart
-aws,rds-aurora,delete_automated_backups,bool,no,,no-chart
-aws,rds-aurora,deletion_protection,bool,no,,no-chart
-aws,rds-aurora,domain,string,no,,no-chart
-aws,rds-aurora,domain_iam_role_name,string,no,,no-chart
-aws,rds-aurora,enable_global_write_forwarding,bool,no,,no-chart
-aws,rds-aurora,enable_http_endpoint,bool,no,,no-chart
-aws,rds-aurora,enable_local_write_forwarding,bool,no,,no-chart
-aws,rds-aurora,enabled_cloudwatch_logs_exports,list(string),no,,no-chart
-aws,rds-aurora,endpoints,"map(object({excluded_members, identifier, static_members, tags, type}))",no,,no-chart
-aws,rds-aurora,engine,string,no,,no-chart
-aws,rds-aurora,engine_lifecycle_support,string,no,,no-chart
-aws,rds-aurora,engine_mode,string,no,,no-chart
-aws,rds-aurora,engine_version,string,no,,no-chart
-aws,rds-aurora,final_snapshot_identifier,string,no,,no-chart
-aws,rds-aurora,global_cluster_identifier,string,no,,no-chart
-aws,rds-aurora,iam_database_authentication_enabled,bool,no,,no-chart
-aws,rds-aurora,iam_role_description,string,no,,no-chart
-aws,rds-aurora,iam_role_max_session_duration,number,no,,no-chart
-aws,rds-aurora,iam_role_name,string,no,,no-chart
-aws,rds-aurora,iam_role_path,string,no,,no-chart
-aws,rds-aurora,iam_role_permissions_boundary,string,no,,no-chart
-aws,rds-aurora,iam_role_use_name_prefix,bool,no,,no-chart
-aws,rds-aurora,instance_timeouts,"object({create, delete, update})",no,,no-chart
-aws,rds-aurora,instances,"map(object({apply_immediately, auto_minor_version_upgrade, availability_zone, ca_cert_identifier, copy_tags_to_snapshot, custom_iam_instance_profile, +14}))",no,,no-chart
-aws,rds-aurora,instances_use_identifier_prefix,bool,no,,no-chart
-aws,rds-aurora,iops,number,no,,no-chart
-aws,rds-aurora,is_primary_cluster,bool,no,,no-chart
-aws,rds-aurora,kms_key_id,string,no,,no-chart
-aws,rds-aurora,manage_master_user_password,bool,no,,no-chart
-aws,rds-aurora,manage_master_user_password_rotation,bool,no,,no-chart
-aws,rds-aurora,master_password_wo,string,no,,no-chart
-aws,rds-aurora,master_password_wo_version,number,no,,no-chart
-aws,rds-aurora,master_user_password_rotate_immediately,bool,no,,no-chart
-aws,rds-aurora,master_user_password_rotation_automatically_after_days,number,no,,no-chart
-aws,rds-aurora,master_user_password_rotation_duration,string,no,,no-chart
-aws,rds-aurora,master_user_password_rotation_schedule_expression,string,no,,no-chart
-aws,rds-aurora,master_user_secret_kms_key_id,string,no,,no-chart
-aws,rds-aurora,master_username,string,no,,no-chart
-aws,rds-aurora,monitoring_role_arn,string,no,,no-chart
-aws,rds-aurora,name,string,no,,no-chart
-aws,rds-aurora,network_type,string,no,,no-chart
-aws,rds-aurora,port,string,no,,no-chart
-aws,rds-aurora,predefined_metric_type,string,no,,no-chart
-aws,rds-aurora,preferred_backup_window,string,no,,no-chart
-aws,rds-aurora,preferred_maintenance_window,string,no,,no-chart
-aws,rds-aurora,putin_khuylo,bool,no,,no-chart
-aws,rds-aurora,region,string,no,,no-chart
-aws,rds-aurora,replication_source_identifier,string,no,,no-chart
-aws,rds-aurora,restore_to_point_in_time,"object({restore_to_time, restore_type, source_cluster_identifier, source_cluster_resource_id, use_latest_restorable_time})",no,,no-chart
-aws,rds-aurora,role_associations,"map(object({feature_name, role_arn}))",no,,no-chart
-aws,rds-aurora,s3_import,"object({bucket_name, bucket_prefix, ingestion_role, source_engine_version})",no,,no-chart
-aws,rds-aurora,scaling_configuration,"object({auto_pause, max_capacity, min_capacity, seconds_before_timeout, seconds_until_auto_pause, timeout_action})",no,,no-chart
-aws,rds-aurora,security_group_description,string,no,,no-chart
-aws,rds-aurora,security_group_egress_rules,"map(object({cidr_ipv4, cidr_ipv6, description, from_port, ip_protocol, name, +5}))",no,,no-chart
-aws,rds-aurora,security_group_ingress_rules,"map(object({cidr_ipv4, cidr_ipv6, description, from_port, ip_protocol, name, +5}))",no,,no-chart
-aws,rds-aurora,security_group_name,string,no,,no-chart
-aws,rds-aurora,security_group_tags,map(string),no,,no-chart
-aws,rds-aurora,security_group_use_name_prefix,bool,no,,no-chart
-aws,rds-aurora,serverlessv2_scaling_configuration,"object({max_capacity, min_capacity, seconds_until_auto_pause})",no,,no-chart
-aws,rds-aurora,shard_group,"object({compute_redundancy, identifier, max_acu, min_acu, publicly_accessible, tags, +1})",no,,no-chart
-aws,rds-aurora,skip_final_snapshot,bool,no,,no-chart
-aws,rds-aurora,snapshot_identifier,string,no,,no-chart
-aws,rds-aurora,source_region,string,no,,no-chart
-aws,rds-aurora,storage_encrypted,bool,no,,no-chart
-aws,rds-aurora,storage_type,string,no,,no-chart
-aws,rds-aurora,subnets,list(string),no,,no-chart
-aws,rds-aurora,tags,map(string),no,,no-chart
-aws,rds-aurora,vpc_id,string,no,,no-chart
-aws,rds-aurora,vpc_security_group_ids,list(string),no,,no-chart
+aws,rds-aurora,allocated_storage,number,yes,,
+aws,rds-aurora,allow_major_version_upgrade,bool,no,ACK's DBCluster (rds-controller v1.14.2) has no field for it (AllowMajorVersionUpgrade),gap
+aws,rds-aurora,apply_immediately,bool,partial,"accepted unset or true: ACK applies a cluster's and its instances' changes immediately; false (wait for the maintenance window) is refused, here and on an instance",gap
+aws,rds-aurora,auto_minor_version_upgrade,bool,yes,,
+aws,rds-aurora,autoscaling_enabled,bool,yes,,
+aws,rds-aurora,autoscaling_max_capacity,number,yes,,
+aws,rds-aurora,autoscaling_min_capacity,number,yes,,
+aws,rds-aurora,autoscaling_policy_name,string,yes,,
+aws,rds-aurora,autoscaling_scale_in_cooldown,number,yes,,
+aws,rds-aurora,autoscaling_scale_out_cooldown,number,yes,,
+aws,rds-aurora,autoscaling_target_connections,number,yes,,
+aws,rds-aurora,autoscaling_target_cpu,number,yes,,
+aws,rds-aurora,availability_zones,list(string),yes,,
+aws,rds-aurora,backtrack_window,number,yes,,
+aws,rds-aurora,backup_retention_period,number,yes,,
+aws,rds-aurora,cloudwatch_log_group_class,string,no,ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no field for the log group class,gap
+aws,rds-aurora,cloudwatch_log_group_kms_key_id,string,yes,,
+aws,rds-aurora,cloudwatch_log_group_retention_in_days,number,yes,,
+aws,rds-aurora,cloudwatch_log_group_skip_destroy,bool,yes,,
+aws,rds-aurora,cloudwatch_log_group_tags,map(string),yes,,
+aws,rds-aurora,cluster_activity_stream,"object({include_audit_fields, kms_key_id, mode})",no,"no kind or field starts a database activity stream (StartActivityStream): ACK's DBCluster (rds-controller v1.14.2) only reports one in its status, and ack-extensions has no kind for it",gap
+aws,rds-aurora,cluster_ca_cert_identifier,string,partial,"accepted, and carried to each instance (DBInstance.caCertificateIdentifier) as the module does; ACK's DBCluster (rds-controller v1.14.2) has no field for it, so it is refused when the chart renders no instance (a Multi-AZ DB cluster)",gap
+aws,rds-aurora,cluster_db_instance_parameter_group_name,string,no,"ACK's DBCluster (rds-controller v1.14.2) has no field for it (DBInstanceParameterGroupName, sent with a major version upgrade)",gap
+aws,rds-aurora,cluster_instance_class,string,yes,,
+aws,rds-aurora,cluster_members,list(string),no,"ACK's DBCluster (rds-controller v1.14.2) has no field for it: RDS reports the members (status.dbClusterMembers), and each instance joins by its own dbClusterIdentifier",gap
+aws,rds-aurora,cluster_monitoring_interval,number,yes,,
+aws,rds-aurora,cluster_parameter_group,"object({description, family, name, parameters, use_name_prefix})",partial,"accepted, except use_name_prefix: true (the default) names the group as given, without Terraform's random suffix, and each parameter's apply_method: ACK's DBClusterParameterGroup takes names and values (parameterOverrides) and picks immediate or pending-reboot from each parameter's metadata",gap
+aws,rds-aurora,cluster_parameter_group_name,string,yes,,
+aws,rds-aurora,cluster_performance_insights_enabled,bool,yes,,
+aws,rds-aurora,cluster_performance_insights_kms_key_id,string,yes,,
+aws,rds-aurora,cluster_performance_insights_retention_period,number,yes,,
+aws,rds-aurora,cluster_scalability_type,string,no,"ACK's DBCluster (rds-controller v1.14.2) has no field for it (ClusterScalabilityType), so an Aurora Limitless cluster cannot be made",gap
+aws,rds-aurora,cluster_tags,map(string),yes,,
+aws,rds-aurora,cluster_timeouts,"object({create, delete, update})",no,"Terraform's create, update and delete timeouts: ACK retries until the cluster is synced, and Bundt waits for it",by-design
+aws,rds-aurora,cluster_use_name_prefix,bool,no,an identifier with Terraform's random suffix would change between renders,gap
+aws,rds-aurora,copy_tags_to_snapshot,bool,yes,,
+aws,rds-aurora,create,bool,yes,,
+aws,rds-aurora,create_cloudwatch_log_group,bool,yes,,
+aws,rds-aurora,create_db_subnet_group,bool,yes,,
+aws,rds-aurora,create_monitoring_role,bool,yes,,
+aws,rds-aurora,create_security_group,bool,yes,,
+aws,rds-aurora,database_insights_mode,string,yes,,
+aws,rds-aurora,database_name,string,yes,,
+aws,rds-aurora,db_parameter_group,"object({description, family, name, parameters, use_name_prefix})",partial,"accepted, except use_name_prefix: true (the default) names the group as given, without Terraform's random suffix, and each parameter's apply_method: ACK's DBParameterGroup takes names and values (parameterOverrides) and picks immediate or pending-reboot from each parameter's metadata",gap
+aws,rds-aurora,db_subnet_group_name,string,yes,,
+aws,rds-aurora,delete_automated_backups,bool,yes,,
+aws,rds-aurora,deletion_protection,bool,yes,,
+aws,rds-aurora,domain,string,yes,,
+aws,rds-aurora,domain_iam_role_name,string,yes,,
+aws,rds-aurora,enable_global_write_forwarding,bool,yes,,
+aws,rds-aurora,enable_http_endpoint,bool,yes,,
+aws,rds-aurora,enable_local_write_forwarding,bool,no,ACK's DBCluster (rds-controller v1.14.2) has no field for it (EnableLocalWriteForwarding),gap
+aws,rds-aurora,enabled_cloudwatch_logs_exports,list(string),yes,,
+aws,rds-aurora,endpoints,"map(object({excluded_members, identifier, static_members, tags, type}))",yes,,
+aws,rds-aurora,engine,string,partial,"accepted when set; unset is refused: ACK's DBCluster requires engine, where Terraform's provider takes aurora",gap
+aws,rds-aurora,engine_lifecycle_support,string,no,ACK's DBCluster (rds-controller v1.14.2) has no field for it (EngineLifecycleSupport),gap
+aws,rds-aurora,engine_mode,string,yes,,
+aws,rds-aurora,engine_version,string,yes,,
+aws,rds-aurora,final_snapshot_identifier,string,yes,,
+aws,rds-aurora,global_cluster_identifier,string,yes,,
+aws,rds-aurora,iam_database_authentication_enabled,bool,yes,,
+aws,rds-aurora,iam_role_description,string,yes,,
+aws,rds-aurora,iam_role_max_session_duration,number,yes,,
+aws,rds-aurora,iam_role_name,string,yes,,
+aws,rds-aurora,iam_role_path,string,yes,,
+aws,rds-aurora,iam_role_permissions_boundary,string,yes,,
+aws,rds-aurora,iam_role_use_name_prefix,bool,no,a name with Terraform's random suffix (name_prefix) would change between renders,gap
+aws,rds-aurora,instance_timeouts,"object({create, delete, update})",no,"Terraform's create, update and delete timeouts: ACK retries until each instance is synced, and Bundt waits for it",by-design
+aws,rds-aurora,instances,"map(object({apply_immediately, auto_minor_version_upgrade, availability_zone, ca_cert_identifier, copy_tags_to_snapshot, custom_iam_instance_profile, +14}))",partial,"accepted, except an instance's identifier_prefix (an identifier with Terraform's random suffix would change between renders) and apply_immediately: false (ACK applies changes immediately)",gap
+aws,rds-aurora,instances_use_identifier_prefix,bool,no,an identifier with Terraform's random suffix would change between renders,gap
+aws,rds-aurora,iops,number,yes,,
+aws,rds-aurora,is_primary_cluster,bool,yes,,
+aws,rds-aurora,kms_key_id,string,yes,,
+aws,rds-aurora,manage_master_user_password,bool,yes,,
+aws,rds-aurora,manage_master_user_password_rotation,bool,no,rotation of the managed master user secret (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no rotation (secretsmanager-controller PR #69) and ack-extensions has none at the catalog's ACKX_COMMIT,gap
+aws,rds-aurora,master_password_wo,string,partial,"a reference to a Kubernetes Secret, {secretName, key}, rendered as DBCluster's spec.masterUserPassword (ACK's SecretKeyReference; docs/secrets.md), used when manage_master_user_password is false, as the module uses it; the password itself, a string, is refused: it would be in the rendered manifest",by-design
+aws,rds-aurora,master_password_wo_version,number,no,ACK sends the Secret's value when the reference (masterUserPassword) changes and has no version to bump: point master_password_wo at a new Secret or key to set a new password,gap
+aws,rds-aurora,master_user_password_rotate_immediately,bool,no,rotation of the managed master user secret (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no rotation (secretsmanager-controller PR #69) and ack-extensions has none at the catalog's ACKX_COMMIT,gap
+aws,rds-aurora,master_user_password_rotation_automatically_after_days,number,no,rotation of the managed master user secret (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no rotation (secretsmanager-controller PR #69) and ack-extensions has none at the catalog's ACKX_COMMIT,gap
+aws,rds-aurora,master_user_password_rotation_duration,string,no,rotation of the managed master user secret (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no rotation (secretsmanager-controller PR #69) and ack-extensions has none at the catalog's ACKX_COMMIT,gap
+aws,rds-aurora,master_user_password_rotation_schedule_expression,string,no,rotation of the managed master user secret (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no rotation (secretsmanager-controller PR #69) and ack-extensions has none at the catalog's ACKX_COMMIT,gap
+aws,rds-aurora,master_user_secret_kms_key_id,string,yes,,
+aws,rds-aurora,master_username,string,yes,,
+aws,rds-aurora,monitoring_role_arn,string,yes,,
+aws,rds-aurora,name,string,yes,,
+aws,rds-aurora,network_type,string,yes,,
+aws,rds-aurora,port,string,yes,,
+aws,rds-aurora,predefined_metric_type,string,yes,,
+aws,rds-aurora,preferred_backup_window,string,yes,,
+aws,rds-aurora,preferred_maintenance_window,string,yes,,
+aws,rds-aurora,putin_khuylo,bool,yes,,
+aws,rds-aurora,region,string,yes,,
+aws,rds-aurora,replication_source_identifier,string,yes,,
+aws,rds-aurora,restore_to_point_in_time,"object({restore_to_time, restore_type, source_cluster_identifier, source_cluster_resource_id, use_latest_restorable_time})",partial,"accepted (DBCluster's sourceDBClusterIdentifier, restoreToTime, restoreType and useLatestRestorableTime, which make ACK call RestoreDBClusterToPointInTime), except source_cluster_resource_id: ACK's DBCluster has no field for it",gap
+aws,rds-aurora,role_associations,"map(object({feature_name, role_arn}))",partial,DBRoleAssociation is an ack-extensions kind (outside ACK's releases): needs allow_alpha: true,alpha
+aws,rds-aurora,s3_import,"object({bucket_name, bucket_prefix, ingestion_role, source_engine_version})",no,ACK's DBCluster (rds-controller v1.14.2) has no restore from S3 (RestoreDBClusterFromS3),gap
+aws,rds-aurora,scaling_configuration,"object({auto_pause, max_capacity, min_capacity, seconds_before_timeout, seconds_until_auto_pause, timeout_action})",yes,,
+aws,rds-aurora,security_group_description,string,yes,,
+aws,rds-aurora,security_group_egress_rules,"map(object({cidr_ipv4, cidr_ipv6, description, from_port, ip_protocol, name, +5}))",partial,"accepted, but each rule's name, tags and region are not carried: ACK keeps a group's rules inline in SecurityGroup, which has no per-rule tags; a region other than the chart's is refused",gap
+aws,rds-aurora,security_group_ingress_rules,"map(object({cidr_ipv4, cidr_ipv6, description, from_port, ip_protocol, name, +5}))",partial,"accepted, but each rule's name, tags and region are not carried: ACK keeps a group's rules inline in SecurityGroup, which has no per-rule tags; a region other than the chart's is refused",gap
+aws,rds-aurora,security_group_name,string,yes,,
+aws,rds-aurora,security_group_tags,map(string),yes,,
+aws,rds-aurora,security_group_use_name_prefix,bool,partial,"accepted: true (the default) names the group security_group_name (or name) as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' groups apart",gap
+aws,rds-aurora,serverlessv2_scaling_configuration,"object({max_capacity, min_capacity, seconds_until_auto_pause})",yes,,
+aws,rds-aurora,shard_group,"object({compute_redundancy, identifier, max_acu, min_acu, publicly_accessible, tags, +1})",no,"a DB shard group needs an Aurora Limitless cluster (cluster_scalability_type: limitless), which ACK's DBCluster (rds-controller v1.14.2) cannot make; ack-extensions' Cloud Control DBShardGroup (rds.cloudcontrol.aws.hfl.dev) exists but has no such cluster to join",gap
+aws,rds-aurora,skip_final_snapshot,bool,yes,,
+aws,rds-aurora,snapshot_identifier,string,yes,,
+aws,rds-aurora,source_region,string,yes,,
+aws,rds-aurora,storage_encrypted,bool,yes,,
+aws,rds-aurora,storage_type,string,yes,,
+aws,rds-aurora,subnets,list(string),yes,,
+aws,rds-aurora,tags,map(string),yes,,
+aws,rds-aurora,vpc_id,string,partial,accepted when set; unset with create_security_group: true (Terraform's default VPC) is refused: ACK's SecurityGroup needs its VPC's ID,gap
+aws,rds-aurora,vpc_security_group_ids,list(string),partial,"accepted with create_security_group: false; with the chart's own group it is refused, since ACK's DBCluster cannot take group references and IDs together (vpcSecurityGroupRefs, vpcSecurityGroupIDs)",gap
 aws,acm,acm_certificate_domain_validation_options,any,yes,,
 aws,acm,certificate_transparency_logging_preference,bool,yes,,
 aws,acm,create_certificate,bool,yes,,

@@ -1536,7 +1536,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/rds-aurora/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-rds-aurora/tree/v10.4.2
-    chart: null
+    chart: charts/aws/rds-aurora
   - id: aws/acm
     cloud: aws
     module: acm

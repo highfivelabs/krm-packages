@@ -1,0 +1,164 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Where this chart came from: the Terraform module it ports and the release
+# it was ported from. Machine-readable; `task upstream-check` keeps it equal
+# to upstream/modules.yaml and Chart.yaml. To take a newer release, see
+# UPSTREAM.md ("Moving the pins").
+module: aws/rds-aurora
+repo: https://github.com/terraform-aws-modules/terraform-aws-rds-aurora
+path: .
+version: v10.4.2
+commit: 652c0648a304e04bb53b5411874f519ace3585b6
+license: Apache-2.0
+copyright: null
+module_url: https://github.com/terraform-aws-modules/terraform-aws-rds-aurora/tree/v10.4.2
+registry_url: https://registry.terraform.io/modules/terraform-aws-modules/rds-aurora/aws
+synced: 2026-11-16
+# Module variables the chart keeps in values.yaml (so tfvars convert one to
+# one) but refuses when set (to anything but the module's default), or
+# accepts only in part. Read by `task coverage`; `task coverage-verify`
+# renders the chart to check that each one is refused. kind: gap (no ACK or
+# ack-extensions kind or field), not-ported (ACK has it, the chart does not
+# map it yet), alpha (only an ack-extensions kind, behind allow_alpha) or
+# by-design (Bundt replaces it). partial: the variable is
+# accepted, the reason says what is not carried.
+refused:
+- variable: allow_major_version_upgrade
+  kind: gap
+  reason: "ACK's DBCluster (rds-controller v1.14.2) has no field for it (AllowMajorVersionUpgrade)"
+- variable: apply_immediately
+  kind: gap
+  reason: "accepted unset or true: ACK applies a cluster's and its instances' changes immediately; false (wait for the maintenance window) is refused, here and on an instance"
+  partial: true
+- variable: cloudwatch_log_group_class
+  kind: gap
+  reason: "ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no field for the log group class"
+- variable: cluster_activity_stream
+  kind: gap
+  reason: "no kind or field starts a database activity stream (StartActivityStream): ACK's DBCluster (rds-controller v1.14.2) only reports one in its status, and ack-extensions has no kind for it"
+- variable: cluster_ca_cert_identifier
+  kind: gap
+  reason: "accepted, and carried to each instance (DBInstance.caCertificateIdentifier) as the module does; ACK's DBCluster (rds-controller v1.14.2) has no field for it, so it is refused when the chart renders no instance (a Multi-AZ DB cluster)"
+  partial: true
+- variable: cluster_db_instance_parameter_group_name
+  kind: gap
+  reason: "ACK's DBCluster (rds-controller v1.14.2) has no field for it (DBInstanceParameterGroupName, sent with a major version upgrade)"
+- variable: cluster_members
+  kind: gap
+  reason: "ACK's DBCluster (rds-controller v1.14.2) has no field for it: RDS reports the members (status.dbClusterMembers), and each instance joins by its own dbClusterIdentifier"
+- variable: cluster_parameter_group
+  kind: gap
+  reason: "accepted, except use_name_prefix: true (the default) names the group as given, without Terraform's random suffix, and each parameter's apply_method: ACK's DBClusterParameterGroup takes names and values (parameterOverrides) and picks immediate or pending-reboot from each parameter's metadata"
+  partial: true
+  fields:
+  - use_name_prefix
+  - parameters
+- variable: cluster_scalability_type
+  kind: gap
+  reason: "ACK's DBCluster (rds-controller v1.14.2) has no field for it (ClusterScalabilityType), so an Aurora Limitless cluster cannot be made"
+- variable: cluster_timeouts
+  kind: by-design
+  reason: "Terraform's create, update and delete timeouts: ACK retries until the cluster is synced, and Bundt waits for it"
+- variable: cluster_use_name_prefix
+  kind: gap
+  reason: "an identifier with Terraform's random suffix would change between renders"
+- variable: db_parameter_group
+  kind: gap
+  reason: "accepted, except use_name_prefix: true (the default) names the group as given, without Terraform's random suffix, and each parameter's apply_method: ACK's DBParameterGroup takes names and values (parameterOverrides) and picks immediate or pending-reboot from each parameter's metadata"
+  partial: true
+  fields:
+  - use_name_prefix
+  - parameters
+- variable: enable_local_write_forwarding
+  kind: gap
+  reason: "ACK's DBCluster (rds-controller v1.14.2) has no field for it (EnableLocalWriteForwarding)"
+- variable: engine
+  kind: gap
+  reason: "accepted when set; unset is refused: ACK's DBCluster requires engine, where Terraform's provider takes aurora"
+  partial: true
+- variable: engine_lifecycle_support
+  kind: gap
+  reason: "ACK's DBCluster (rds-controller v1.14.2) has no field for it (EngineLifecycleSupport)"
+- variable: iam_role_use_name_prefix
+  kind: gap
+  reason: "a name with Terraform's random suffix (name_prefix) would change between renders"
+- variable: instance_timeouts
+  kind: by-design
+  reason: "Terraform's create, update and delete timeouts: ACK retries until each instance is synced, and Bundt waits for it"
+- variable: instances
+  kind: gap
+  reason: "accepted, except an instance's identifier_prefix (an identifier with Terraform's random suffix would change between renders) and apply_immediately: false (ACK applies changes immediately)"
+  partial: true
+  fields:
+  - identifier_prefix
+- variable: instances_use_identifier_prefix
+  kind: gap
+  reason: "an identifier with Terraform's random suffix would change between renders"
+- variable: manage_master_user_password_rotation
+  kind: gap
+  reason: "rotation of the managed master user secret (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no rotation (secretsmanager-controller PR #69) and ack-extensions has none at the catalog's ACKX_COMMIT"
+- variable: master_password_wo
+  kind: by-design
+  reason: "a reference to a Kubernetes Secret, {secretName, key}, rendered as DBCluster's spec.masterUserPassword (ACK's SecretKeyReference; docs/secrets.md), used when manage_master_user_password is false, as the module uses it; the password itself, a string, is refused: it would be in the rendered manifest"
+  partial: true
+- variable: master_password_wo_version
+  kind: gap
+  reason: "ACK sends the Secret's value when the reference (masterUserPassword) changes and has no version to bump: point master_password_wo at a new Secret or key to set a new password"
+- variable: master_user_password_rotate_immediately
+  kind: gap
+  reason: "rotation of the managed master user secret (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no rotation (secretsmanager-controller PR #69) and ack-extensions has none at the catalog's ACKX_COMMIT"
+- variable: master_user_password_rotation_automatically_after_days
+  kind: gap
+  reason: "rotation of the managed master user secret (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no rotation (secretsmanager-controller PR #69) and ack-extensions has none at the catalog's ACKX_COMMIT"
+- variable: master_user_password_rotation_duration
+  kind: gap
+  reason: "rotation of the managed master user secret (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no rotation (secretsmanager-controller PR #69) and ack-extensions has none at the catalog's ACKX_COMMIT"
+- variable: master_user_password_rotation_schedule_expression
+  kind: gap
+  reason: "rotation of the managed master user secret (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no rotation (secretsmanager-controller PR #69) and ack-extensions has none at the catalog's ACKX_COMMIT"
+- variable: restore_to_point_in_time
+  kind: gap
+  reason: "accepted (DBCluster's sourceDBClusterIdentifier, restoreToTime, restoreType and useLatestRestorableTime, which make ACK call RestoreDBClusterToPointInTime), except source_cluster_resource_id: ACK's DBCluster has no field for it"
+  partial: true
+  fields:
+  - source_cluster_resource_id
+- variable: role_associations
+  kind: alpha
+  reason: "DBRoleAssociation is an ack-extensions kind (outside ACK's releases): needs allow_alpha: true"
+  partial: true
+  needs_allow_alpha: true
+- variable: s3_import
+  kind: gap
+  reason: "ACK's DBCluster (rds-controller v1.14.2) has no restore from S3 (RestoreDBClusterFromS3)"
+- variable: security_group_egress_rules
+  kind: gap
+  reason: "accepted, but each rule's name, tags and region are not carried: ACK keeps a group's rules inline in SecurityGroup, which has no per-rule tags; a region other than the chart's is refused"
+  partial: true
+  fields:
+  - name
+  - tags
+  - region
+- variable: security_group_ingress_rules
+  kind: gap
+  reason: "accepted, but each rule's name, tags and region are not carried: ACK keeps a group's rules inline in SecurityGroup, which has no per-rule tags; a region other than the chart's is refused"
+  partial: true
+  fields:
+  - name
+  - tags
+  - region
+- variable: security_group_use_name_prefix
+  kind: gap
+  reason: "accepted: true (the default) names the group security_group_name (or name) as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' groups apart"
+  partial: true
+- variable: shard_group
+  kind: gap
+  reason: "a DB shard group needs an Aurora Limitless cluster (cluster_scalability_type: limitless), which ACK's DBCluster (rds-controller v1.14.2) cannot make; ack-extensions' Cloud Control DBShardGroup (rds.cloudcontrol.aws.hfl.dev) exists but has no such cluster to join"
+- variable: vpc_id
+  kind: gap
+  reason: "accepted when set; unset with create_security_group: true (Terraform's default VPC) is refused: ACK's SecurityGroup needs its VPC's ID"
+  partial: true
+- variable: vpc_security_group_ids
+  kind: gap
+  reason: "accepted with create_security_group: false; with the chart's own group it is refused, since ACK's DBCluster cannot take group references and IDs together (vpcSecurityGroupRefs, vpcSecurityGroupIDs)"
+  partial: true

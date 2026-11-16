@@ -1,0 +1,161 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf: the cluster's instances (aws_rds_cluster_instance.this,
+rds/DBInstance with dbClusterIdentifierRef), its additional endpoints
+(aws_rds_cluster_endpoint.this, rds/DBClusterEndpoint) and its role
+associations (aws_rds_cluster_role_association.this, ack-extensions'
+DBRoleAssociation with dbClusterRef). No instances or endpoints for a
+serverless (v1) cluster, as in the module. An instance takes its engine
+version, storage and subnet group from the cluster, so the chart does not
+repeat them (RDS rejects an Aurora instance's own engine version change).
+*/ -}}
+{{- $v := .Values -}}
+{{- if include "aurora.on" $ }}
+{{- $rel := .Release.Name }}
+{{- $region := $v.region }}
+{{- $clusterObj := include "ack.name" (list $rel "cluster") }}
+{{- $ids := include "aurora.instances" $ | fromJson }}
+{{- if and $v.cluster_ca_cert_identifier (not $ids) }}
+{{- fail "rds-aurora: cluster_ca_cert_identifier without instances is not supported: ACK's DBCluster (rds-controller v1.14.2) has no field for the cluster's CA certificate (a Multi-AZ DB cluster's); the chart carries it to each instance, as the module does (docs/aws.md)" }}
+{{- end }}
+{{- $monitoringRole := include "aurora.monitoringRole" $ }}
+{{- range $key := keys $ids | sortAlpha }}
+{{- $i := index $v.instances $key | default dict }}
+{{- if $i.identifier_prefix }}
+{{- fail (printf "rds-aurora: instances.%s.identifier_prefix is not supported: an identifier with Terraform's random suffix would change between renders; set identifier (docs/aws.md)" $key) }}
+{{- end }}
+{{- include "aurora.applyImmediately" (list $ (printf "instances.%s.apply_immediately" $key) $i.apply_immediately) }}
+{{- $class := $i.instance_class | default $v.cluster_instance_class }}
+{{- if not $class }}
+{{- fail (printf "rds-aurora: instances.%s needs an instance class: set its instance_class or cluster_instance_class" $key) }}
+{{- end }}
+{{- $copyTags := $i.copy_tags_to_snapshot }}
+{{- if kindIs "invalid" $copyTags }}{{ $copyTags = $v.copy_tags_to_snapshot }}{{ end }}
+---
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBInstance
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "instance" $key)) "id" (printf "instance-%s" $key) "region" $region) | nindent 2 }}
+spec:
+  dbInstanceIdentifier: {{ index $ids $key | quote }}
+  dbClusterIdentifierRef:
+    from:
+      name: {{ $clusterObj }}
+  dbInstanceClass: {{ $class | quote }}
+  engine: {{ $v.engine | quote }}
+{{- $amvu := $i.auto_minor_version_upgrade }}
+{{- if kindIs "invalid" $amvu }}{{ $amvu = $v.auto_minor_version_upgrade }}{{ end }}
+{{- if not (kindIs "invalid" $amvu) }}
+  autoMinorVersionUpgrade: {{ $amvu }}
+{{- end }}
+{{- with $i.availability_zone }}
+  availabilityZone: {{ . | quote }}
+{{- end }}
+{{- with ($i.ca_cert_identifier | default $v.cluster_ca_cert_identifier) }}
+  caCertificateIdentifier: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $copyTags) }}
+  copyTagsToSnapshot: {{ $copyTags }}
+{{- end }}
+{{- with $i.custom_iam_instance_profile }}
+  customIAMInstanceProfile: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.db_parameter_group) }}
+  dbParameterGroupRef:
+    from:
+      name: {{ include "ack.name" (list $rel "db-parameter-group") }}
+{{- else if $i.db_parameter_group_name }}
+  dbParameterGroupName: {{ $i.db_parameter_group_name | quote }}
+{{- end }}
+{{- $mi := $i.monitoring_interval }}
+{{- if kindIs "invalid" $mi }}{{ $mi = $v.cluster_monitoring_interval }}{{ end }}
+{{- if not (kindIs "invalid" $mi) }}
+  monitoringInterval: {{ int64 $mi }}
+{{- end }}
+{{- if and $monitoringRole (gt (int64 ($mi | default 0)) 0) }}
+  monitoringRoleRef:
+    from:
+      name: {{ include "ack.name" (list $rel "monitoring-role") }}
+{{- else if $i.monitoring_role_arn }}
+  monitoringRoleARN: {{ $i.monitoring_role_arn | quote }}
+{{- end }}
+{{- $pie := $i.performance_insights_enabled }}
+{{- if kindIs "invalid" $pie }}{{ $pie = $v.cluster_performance_insights_enabled }}{{ end }}
+{{- if not (kindIs "invalid" $pie) }}
+  performanceInsightsEnabled: {{ $pie }}
+{{- end }}
+{{- with ($i.performance_insights_kms_key_id | default $v.cluster_performance_insights_kms_key_id) }}
+  performanceInsightsKMSKeyID: {{ . | quote }}
+{{- end }}
+{{- $pir := $i.performance_insights_retention_period }}
+{{- if kindIs "invalid" $pir }}{{ $pir = $v.cluster_performance_insights_retention_period }}{{ end }}
+{{- if not (kindIs "invalid" $pir) }}
+  performanceInsightsRetentionPeriod: {{ int64 $pir }}
+{{- end }}
+{{- with ($i.preferred_maintenance_window | default $v.preferred_maintenance_window) }}
+  preferredMaintenanceWindow: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $i.promotion_tier) }}
+  promotionTier: {{ int64 $i.promotion_tier }}
+{{- end }}
+{{- if not (kindIs "invalid" $i.publicly_accessible) }}
+  publiclyAccessible: {{ $i.publicly_accessible }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags $i.tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* Cluster Endpoint(s) */}}
+{{- if not (include "aurora.serverless" $) }}
+{{- range $key := keys ($v.endpoints | default dict) | sortAlpha }}
+{{- $e := index $v.endpoints $key }}
+---
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBClusterEndpoint
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "endpoint" $key)) "id" (printf "endpoint-%s" $key) "region" $region) | nindent 2 }}
+spec:
+  dbClusterEndpointIdentifier: {{ include "ack.cloudName" (list $ "DB cluster endpoint identifier" (lower $e.identifier) 63 "letter") | quote }}
+  dbClusterIdentifierRef:
+    from:
+      name: {{ $clusterObj }}
+  endpointType: {{ $e.type | quote }}
+{{- range $f := list (list "excluded_members" "excludedMembers") (list "static_members" "staticMembers") }}
+{{- with index $e (index $f 0) }}
+  {{ index $f 1 }}:
+{{- range . }}
+    - {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags $e.tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- /* Cluster IAM Roles: feature_name, else the map's key */}}
+{{- range $key := keys ($v.role_associations | default dict) | sortAlpha }}
+{{- include "ack.alpha" (list $ "role_associations" true "DBRoleAssociation (ack-extensions)") }}
+{{- $r := index $v.role_associations $key | default dict }}
+{{- if not $r.role_arn }}
+{{- fail (printf "rds-aurora: role_associations.%s.role_arn is required: the ARN of the IAM role to associate" $key) }}
+{{- end }}
+---
+apiVersion: rds.aws.hfl.dev/v1alpha1
+kind: DBRoleAssociation
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "role-association" $key)) "id" (printf "role-association-%s" $key) "region" $region) | nindent 2 }}
+spec:
+  dbClusterRef:
+    from:
+      name: {{ $clusterObj }}
+  featureName: {{ $r.feature_name | default $key | quote }}
+  roleARN: {{ $r.role_arn | quote }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,1302 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "rds-aurora values (terraform-aws-modules rds-aurora v10.4.2)",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "names": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cluster": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "dbSubnetGroup": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "clusterParameterGroup": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "dbParameterGroup": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "securityGroup": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "monitoringRole": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        }
+      }
+    },
+    "namePrefix": {
+      "type": "string",
+      "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?)?$",
+      "maxLength": 63
+    },
+    "labels": {
+      "type": "object",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean",
+          "null"
+        ]
+      }
+    },
+    "allow_alpha": {
+      "type": "boolean"
+    },
+    "deletion_policy": {
+      "type": "string",
+      "enum": [
+        "DELETE",
+        "ABANDON",
+        "PREVENT"
+      ]
+    },
+    "allocated_storage": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "The amount of storage in gibibytes (GiB) to allocate to each DB instance in the Multi-AZ DB cluster. (This setting is required to create a Multi-AZ DB cluster)"
+    },
+    "allow_major_version_upgrade": {
+      "type": "boolean",
+      "description": "Not supported: ACK's DBCluster (rds-controller v1.14.2) has no field for it (AllowMajorVersionUpgrade)"
+    },
+    "apply_immediately": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Specifies whether any cluster modifications are applied immediately, or during the next maintenance window. Default is `false`"
+    },
+    "auto_minor_version_upgrade": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Whether to apply minor engine upgrades automatically to the DB cluster during the maintenance window. Defaults to `true`"
+    },
+    "autoscaling_enabled": {
+      "type": "boolean",
+      "description": "Determines whether autoscaling of the cluster read replicas is enabled"
+    },
+    "autoscaling_max_capacity": {
+      "type": "number",
+      "description": "Maximum number of read replicas permitted when autoscaling is enabled"
+    },
+    "autoscaling_min_capacity": {
+      "type": "number",
+      "description": "Minimum number of read replicas permitted when autoscaling is enabled"
+    },
+    "autoscaling_policy_name": {
+      "type": "string",
+      "description": "Autoscaling policy name"
+    },
+    "autoscaling_scale_in_cooldown": {
+      "type": "number",
+      "description": "Cooldown in seconds before allowing further scaling operations after a scale in"
+    },
+    "autoscaling_scale_out_cooldown": {
+      "type": "number",
+      "description": "Cooldown in seconds before allowing further scaling operations after a scale out"
+    },
+    "autoscaling_target_connections": {
+      "type": "number",
+      "description": "Average number of connections threshold which will initiate autoscaling. Default value is 70% of db.r4/r5/r6g.large's default max_connections"
+    },
+    "autoscaling_target_cpu": {
+      "type": "number",
+      "description": "CPU threshold which will initiate autoscaling"
+    },
+    "availability_zones": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "description": "List of EC2 Availability Zones for the DB cluster storage where DB cluster instances can be created. RDS automatically assigns 3 AZs if less than 3 AZs are configured, which will show as a difference requiring resource recreation next Terraform apply"
+    },
+    "backtrack_window": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "The target backtrack window, in seconds. Only available for `aurora` engine currently. To disable backtracking, set this value to 0. Must be between 0 and 259200 (72 hours)"
+    },
+    "backup_retention_period": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "The days to retain backups for"
+    },
+    "cloudwatch_log_group_class": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Not supported: ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no field for the log group class"
+    },
+    "cloudwatch_log_group_kms_key_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The ARN of the KMS Key to use when encrypting log data"
+    },
+    "cloudwatch_log_group_retention_in_days": {
+      "type": "number",
+      "description": "The number of days to retain CloudWatch logs for the DB instance"
+    },
+    "cloudwatch_log_group_skip_destroy": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Set to true if you do not wish the log group (and any logs it may contain) to be deleted at destroy time, and instead just remove the log group from the Terraform state"
+    },
+    "cloudwatch_log_group_tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "A map of tags to add to all resources"
+    },
+    "cluster_activity_stream": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Not supported: no kind or field starts a database activity stream (StartActivityStream): ACK's DBCluster (rds-controller v1.14.2) only reports one in its status, and ack-extensions has no kind for it"
+    },
+    "cluster_ca_cert_identifier": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The CA certificate identifier to use for the DB cluster's server certificate. Currently only supported for multi-az DB clusters"
+    },
+    "cluster_db_instance_parameter_group_name": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Not supported: ACK's DBCluster (rds-controller v1.14.2) has no field for it (DBInstanceParameterGroupName, sent with a major version upgrade)"
+    },
+    "cluster_instance_class": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The compute and memory capacity of each DB instance in the Multi-AZ DB cluster (not all DB instance classes are available in all AWS Regions, or for all database engines)"
+    },
+    "cluster_members": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "description": "Not supported: ACK's DBCluster (rds-controller v1.14.2) has no field for it: RDS reports the members (status.dbClusterMembers), and each instance joins by its own dbClusterIdentifier"
+    },
+    "cluster_monitoring_interval": {
+      "type": "number",
+      "description": "Interval, in seconds, between points when Enhanced Monitoring metrics are collected for the DB cluster. To turn off collecting Enhanced Monitoring metrics, specify 0. Valid Values: 0, 1, 5, 10, 15, 30, 60"
+    },
+    "cluster_parameter_group": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "use_name_prefix": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "family": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              },
+              "apply_method": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "name",
+              "value"
+            ]
+          }
+        }
+      },
+      "required": [
+        "family"
+      ],
+      "description": "Map of nested arguments for the created DB cluster parameter group"
+    },
+    "cluster_parameter_group_name": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The name of an existing DB cluster parameter group. Required when `cluster_parameter_group` is not provided (`null`)"
+    },
+    "cluster_performance_insights_enabled": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Enables Performance Insights for the RDS Cluster"
+    },
+    "cluster_performance_insights_kms_key_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Specifies the KMS Key ID to encrypt Performance Insights data. If not specified, the default RDS KMS key will be used (aws/rds)"
+    },
+    "cluster_performance_insights_retention_period": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Specifies the amount of time to retain performance insights data for. Defaults to 7 days if Performance Insights are enabled. Valid values are 7, month * 31 (where month is a number of months from 1-23), and 731"
+    },
+    "cluster_scalability_type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Not supported: ACK's DBCluster (rds-controller v1.14.2) has no field for it (ClusterScalabilityType), so an Aurora Limitless cluster cannot be made"
+    },
+    "cluster_tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "A map of tags to add to all resources"
+    },
+    "cluster_timeouts": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Not supported: Terraform's create, update and delete timeouts: ACK retries until the cluster is synced, and Bundt waits for it"
+    },
+    "cluster_use_name_prefix": {
+      "type": "boolean",
+      "description": "Not supported: an identifier with Terraform's random suffix would change between renders"
+    },
+    "copy_tags_to_snapshot": {
+      "type": "boolean",
+      "description": "Copy all Cluster `tags` to snapshots"
+    },
+    "create": {
+      "type": "boolean",
+      "description": "Whether cluster should be created (affects nearly all resources)"
+    },
+    "create_cloudwatch_log_group": {
+      "type": "boolean",
+      "description": "Determines whether a CloudWatch log group is created for each `enabled_cloudwatch_logs_exports`"
+    },
+    "create_db_subnet_group": {
+      "type": "boolean",
+      "description": "Determines whether to create the database subnet group or use existing"
+    },
+    "create_monitoring_role": {
+      "type": "boolean",
+      "description": "Determines whether to create the IAM role for RDS enhanced monitoring"
+    },
+    "create_security_group": {
+      "type": "boolean",
+      "description": "Determines whether to create security group for RDS cluster"
+    },
+    "database_insights_mode": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The mode of Database Insights to enable for the DB cluster. Valid values: standard, advanced"
+    },
+    "database_name": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Name for an automatically created database on cluster creation"
+    },
+    "db_parameter_group": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "use_name_prefix": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "family": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              },
+              "apply_method": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "name",
+              "value"
+            ]
+          }
+        }
+      },
+      "required": [
+        "family"
+      ],
+      "description": "Map of nested arguments for the created DB parameter group"
+    },
+    "db_subnet_group_name": {
+      "type": "string",
+      "description": "The name of the subnet group name (existing or created)"
+    },
+    "delete_automated_backups": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Specifies whether to remove automated backups immediately after the DB cluster is deleted"
+    },
+    "deletion_protection": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "If the DB instance should have deletion protection enabled. The database can't be deleted when this value is set to `true`. The default is `false`"
+    },
+    "domain": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The ID of the Directory Service Active Directory domain to create the instance in"
+    },
+    "domain_iam_role_name": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "(Required if domain is provided) The name of the IAM role to be used when making API calls to the Directory Service"
+    },
+    "enable_global_write_forwarding": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Whether cluster should forward writes to an associated global cluster. Applied to secondary clusters to enable them to forward writes to an `aws_rds_global_cluster`'s primary cluster"
+    },
+    "enable_http_endpoint": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Enable HTTP endpoint (data API). Only valid when engine_mode is set to `serverless`"
+    },
+    "enable_local_write_forwarding": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Not supported: ACK's DBCluster (rds-controller v1.14.2) has no field for it (EnableLocalWriteForwarding)"
+    },
+    "enabled_cloudwatch_logs_exports": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Set of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: `audit`, `error`, `general`, `slowquery`, `postgresql`"
+    },
+    "endpoints": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "identifier": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "excluded_members": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "static_members": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "A map of tags to add to only the cluster. Used for AWS Instance Scheduler tagging"
+          }
+        },
+        "required": [
+          "identifier",
+          "type"
+        ]
+      },
+      "description": "Map of additional cluster endpoints and their attributes to be created"
+    },
+    "engine": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The name of the database engine to be used for this DB cluster. Defaults to `aurora`. Valid Values: `aurora`, `aurora-mysql`, `aurora-postgresql`"
+    },
+    "engine_lifecycle_support": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Not supported: ACK's DBCluster (rds-controller v1.14.2) has no field for it (EngineLifecycleSupport)"
+    },
+    "engine_mode": {
+      "type": "string",
+      "description": "The database engine mode. Valid values: `global`, `multimaster`, `parallelquery`, `provisioned`, `serverless`. Defaults to: `provisioned`"
+    },
+    "engine_version": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The database engine version. Updating this argument results in an outage"
+    },
+    "final_snapshot_identifier": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The name of your final DB snapshot when this DB cluster is deleted. If omitted, no final snapshot will be made"
+    },
+    "global_cluster_identifier": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The global cluster identifier specified on `aws_rds_global_cluster`"
+    },
+    "iam_database_authentication_enabled": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Specifies whether or not mappings of AWS Identity and Access Management (IAM) accounts to database accounts is enabled"
+    },
+    "iam_role_description": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Description of the monitoring role"
+    },
+    "iam_role_max_session_duration": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Maximum session duration (in seconds) that you want to set for the monitoring role"
+    },
+    "iam_role_name": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Friendly name of the monitoring role"
+    },
+    "iam_role_path": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Path for the monitoring role"
+    },
+    "iam_role_permissions_boundary": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The ARN of the policy that is used to set the permissions boundary for the monitoring role"
+    },
+    "iam_role_use_name_prefix": {
+      "type": "boolean",
+      "description": "Not supported: a name with Terraform's random suffix (name_prefix) would change between renders"
+    },
+    "instance_timeouts": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Not supported: Terraform's create, update and delete timeouts: ACK retries until each instance is synced, and Bundt waits for it"
+    },
+    "instances": {
+      "type": "object",
+      "additionalProperties": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "apply_immediately": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "auto_minor_version_upgrade": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "availability_zone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ca_cert_identifier": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "copy_tags_to_snapshot": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "custom_iam_instance_profile": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "db_parameter_group_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "db_subnet_group_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "identifier": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "identifier_prefix": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "instance_class": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "monitoring_interval": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "monitoring_role_arn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "performance_insights_enabled": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "performance_insights_kms_key_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "performance_insights_retention_period": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "preferred_maintenance_window": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "promotion_tier": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "publicly_accessible": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "tags": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "A map of tags to add to only the cluster. Used for AWS Instance Scheduler tagging"
+          }
+        }
+      },
+      "description": "Map of cluster instances and any specific/overriding attributes to be created"
+    },
+    "instances_use_identifier_prefix": {
+      "type": "boolean",
+      "description": "Not supported: an identifier with Terraform's random suffix would change between renders"
+    },
+    "iops": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "The amount of Provisioned IOPS (input/output operations per second) to be initially allocated for each DB instance in the Multi-AZ DB cluster"
+    },
+    "is_primary_cluster": {
+      "type": "boolean",
+      "description": "Determines whether cluster is primary cluster with writer instance (set to `false` for global cluster and replica clusters)"
+    },
+    "kms_key_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The ARN for the KMS encryption key. When specifying `kms_key_id`, `storage_encrypted` needs to be set to `true`"
+    },
+    "manage_master_user_password": {
+      "type": "boolean",
+      "description": "Set to true to allow RDS to manage the master user password in Secrets Manager. Cannot be set if `master_password_wo` is provided"
+    },
+    "manage_master_user_password_rotation": {
+      "type": "boolean",
+      "description": "Not supported: rotation of the managed master user secret (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no rotation (secretsmanager-controller PR #69) and ack-extensions has none at the catalog's ACKX_COMMIT"
+    },
+    "master_password_wo": {
+      "type": [
+        "object",
+        "string",
+        "null"
+      ],
+      "properties": {
+        "secretName": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      },
+      "description": "A reference to a Kubernetes Secret, {secretName, key}; a string is refused (docs/secrets.md)"
+    },
+    "master_password_wo_version": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Not supported: ACK sends the Secret's value when the reference (masterUserPassword) changes and has no version to bump: point master_password_wo at a new Secret or key to set a new password"
+    },
+    "master_user_password_rotate_immediately": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Not supported: rotation of the managed master user secret (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no rotation (secretsmanager-controller PR #69) and ack-extensions has none at the catalog's ACKX_COMMIT"
+    },
+    "master_user_password_rotation_automatically_after_days": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Not supported: rotation of the managed master user secret (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no rotation (secretsmanager-controller PR #69) and ack-extensions has none at the catalog's ACKX_COMMIT"
+    },
+    "master_user_password_rotation_duration": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Not supported: rotation of the managed master user secret (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no rotation (secretsmanager-controller PR #69) and ack-extensions has none at the catalog's ACKX_COMMIT"
+    },
+    "master_user_password_rotation_schedule_expression": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Not supported: rotation of the managed master user secret (aws_secretsmanager_secret_rotation) has no kind: ACK's Secret has no rotation (secretsmanager-controller PR #69) and ack-extensions has none at the catalog's ACKX_COMMIT"
+    },
+    "master_user_secret_kms_key_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The Amazon Web Services KMS key identifier is the key ARN, key ID, alias ARN, or alias name for the KMS key"
+    },
+    "master_username": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Username for the master DB user. Required unless `snapshot_identifier` or `replication_source_identifier` is provided or unless a `global_cluster_identifier` is provided when the cluster is the secondary cluster of a global database"
+    },
+    "monitoring_role_arn": {
+      "type": "string",
+      "description": "IAM role used by RDS to send enhanced monitoring metrics to CloudWatch"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name used across resources created"
+    },
+    "network_type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The type of network stack to use (IPV4 or DUAL)"
+    },
+    "port": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The port on which the DB accepts connections"
+    },
+    "predefined_metric_type": {
+      "type": "string",
+      "description": "The metric type to scale on. Valid values are `RDSReaderAverageCPUUtilization` and `RDSReaderAverageDatabaseConnections`"
+    },
+    "preferred_backup_window": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Daily time range during which automated backups are created if automated backups are enabled using the BackupRetentionPeriod parameter.Time in UTC. Default: A 30-minute window selected at random from an 8-hour block of time per region, e.g. `04:00-09:00`"
+    },
+    "preferred_maintenance_window": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Weekly time range during which system maintenance can occur, in (UTC) e.g., `wed:04:00-wed:04:30`"
+    },
+    "putin_khuylo": {
+      "type": "boolean",
+      "description": "Do you agree that Putin doesn't respect Ukrainian sovereignty and territorial integrity? More info: https://en.wikipedia.org/wiki/Putin_khuylo!"
+    },
+    "region": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Region where the resource(s) will be managed. Defaults to the Region set in the provider configuration"
+    },
+    "replication_source_identifier": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ARN of a source DB cluster or DB instance if this DB cluster is to be created as a Read Replica"
+    },
+    "restore_to_point_in_time": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "restore_to_time": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "restore_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_cluster_identifier": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_cluster_resource_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "use_latest_restorable_time": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "description": "Map of nested attributes for cloning Aurora cluster"
+    },
+    "role_associations": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "feature_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "role_arn": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Map of IAM roles and supported feature names to associate with the cluster"
+    },
+    "s3_import": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Not supported: ACK's DBCluster (rds-controller v1.14.2) has no restore from S3 (RestoreDBClusterFromS3)"
+    },
+    "scaling_configuration": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "auto_pause": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "max_capacity": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "min_capacity": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "seconds_before_timeout": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "seconds_until_auto_pause": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "timeout_action": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "Map of nested attributes with scaling properties. Only valid when `engine_mode` is set to `serverless`"
+    },
+    "security_group_description": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The description of the security group. If value is set to empty string it will contain cluster name in the description"
+    },
+    "security_group_egress_rules": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cidr_ipv4": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cidr_ipv6": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "from_port": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "ip_protocol": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "prefix_list_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "referenced_security_group_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "region": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tags": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "A map of tags to add to only the cluster. Used for AWS Instance Scheduler tagging"
+          },
+          "to_port": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        }
+      },
+      "description": "Map of security group egress rules to add to the security group created"
+    },
+    "security_group_ingress_rules": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cidr_ipv4": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cidr_ipv6": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "from_port": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "ip_protocol": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "prefix_list_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "referenced_security_group_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "region": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tags": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "A map of tags to add to only the cluster. Used for AWS Instance Scheduler tagging"
+          },
+          "to_port": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        }
+      },
+      "description": "Map of security group ingress rules to add to the security group created"
+    },
+    "security_group_name": {
+      "type": "string",
+      "description": "The security group name. Default value is (`var.name`)"
+    },
+    "security_group_tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "A map of tags to add to all resources"
+    },
+    "security_group_use_name_prefix": {
+      "type": "boolean",
+      "description": "Determines whether the security group name (`var.name`) is used as a prefix"
+    },
+    "serverlessv2_scaling_configuration": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "max_capacity": {
+          "type": "number"
+        },
+        "min_capacity": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "seconds_until_auto_pause": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "max_capacity"
+      ],
+      "description": "Map of nested attributes with serverless v2 scaling properties. Only valid when `engine_mode` is set to `provisioned`"
+    },
+    "shard_group": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Not supported: a DB shard group needs an Aurora Limitless cluster (cluster_scalability_type: limitless), which ACK's DBCluster (rds-controller v1.14.2) cannot make; ack-extensions' Cloud Control DBShardGroup (rds.cloudcontrol.aws.hfl.dev) exists but has no such cluster to join"
+    },
+    "skip_final_snapshot": {
+      "type": "boolean",
+      "description": "Determines whether a final snapshot is created before the cluster is deleted. If true is specified, no snapshot is created"
+    },
+    "snapshot_identifier": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Specifies whether or not to create this cluster from a snapshot. You can use either the name or ARN when specifying a DB cluster snapshot, or the ARN when specifying a DB snapshot"
+    },
+    "source_region": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The source region for an encrypted replica DB cluster"
+    },
+    "storage_encrypted": {
+      "type": "boolean",
+      "description": "Specifies whether the DB cluster is encrypted. The default is `true`"
+    },
+    "storage_type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Determines the storage type for the DB cluster. Optional for Single-AZ, required for Multi-AZ DB clusters. Valid values for Single-AZ: `aurora`, `\"\"` (default, both refer to Aurora Standard), `aurora-iopt1` (Aurora I/O Optimized). Valid values for Multi-AZ: `io1` (default)"
+    },
+    "subnets": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of subnet IDs used by database subnet group created"
+    },
+    "tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "A map of tags to add to all resources"
+    },
+    "vpc_id": {
+      "type": "string",
+      "description": "ID of the VPC where to create security group"
+    },
+    "vpc_security_group_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of VPC security groups to associate to the cluster in addition to the security group created"
+    }
+  }
+}

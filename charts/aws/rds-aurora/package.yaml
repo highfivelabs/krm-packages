@@ -1,0 +1,82 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (docs/design.md, "Outputs"): the module's
+# outputs for what the chart ports, from the live DBCluster
+# (resources.cluster), instances (instance-<key>), endpoints
+# (endpoint-<key>), role associations (role-association-<key>), groups
+# (db-subnet-group, db-cluster-parameter-group, db-parameter-group,
+# security-group), monitoring role (enhanced-monitoring-role) and log groups
+# (log-group-<export>), and the component's values (inputs). Terraform's id
+# of a group is its name, of the cluster its identifier. Not provided: the
+# cluster's CA certificate and its validity and the upgrade rollout order,
+# which ACK's DBCluster neither takes nor reports, and the activity stream's,
+# rotation's and shard group's (refused).
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: aws-rds-aurora
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [ack]
+  outputs:
+    db_subnet_group_name: >-
+      'db-subnet-group' in resources ? resources['db-subnet-group'].spec.name
+      : ('cluster' in resources && has(resources.cluster.spec.dbSubnetGroupName) ? resources.cluster.spec.dbSubnetGroupName : null)
+    cluster_arn: >-
+      'cluster' in resources ? resources.cluster.status.ackResourceMetadata.arn : null
+    cluster_id: >-
+      'cluster' in resources ? resources.cluster.spec.dbClusterIdentifier : null
+    cluster_resource_id: >-
+      'cluster' in resources && has(resources.cluster.status.dbClusterResourceID) ? resources.cluster.status.dbClusterResourceID : null
+    cluster_members: >-
+      'cluster' in resources && has(resources.cluster.status.dbClusterMembers)
+      ? dyn(resources.cluster.status.dbClusterMembers.map(m, m.dbInstanceIdentifier)) : null
+    cluster_endpoint: >-
+      'cluster' in resources && has(resources.cluster.status.endpoint) ? resources.cluster.status.endpoint : null
+    cluster_reader_endpoint: >-
+      'cluster' in resources && has(resources.cluster.status.readerEndpoint) ? resources.cluster.status.readerEndpoint : null
+    cluster_engine_version_actual: >-
+      'cluster' in resources && has(resources.cluster.spec.engineVersion) ? resources.cluster.spec.engineVersion : null
+    cluster_database_name: >-
+      'cluster' in resources && has(resources.cluster.spec.databaseName) ? resources.cluster.spec.databaseName : null
+    cluster_port: >-
+      'cluster' in resources && has(resources.cluster.spec.port) ? resources.cluster.spec.port : null
+    cluster_master_username: >-
+      'cluster' in resources && has(resources.cluster.spec.masterUsername) ? resources.cluster.spec.masterUsername : null
+    cluster_master_user_secret: >-
+      'cluster' in resources && has(resources.cluster.status.masterUserSecret) ? resources.cluster.status.masterUserSecret : null
+    cluster_hosted_zone_id: >-
+      'cluster' in resources && has(resources.cluster.status.hostedZoneID) ? resources.cluster.status.hostedZoneID : null
+    cluster_instances: >-
+      resources.filter(k, k.startsWith('instance-')).transformMapEntry(i, k, {k.substring(9): {
+        'identifier': resources[k].spec.dbInstanceIdentifier,
+        'arn': resources[k].status.ackResourceMetadata.arn,
+        'endpoint': has(resources[k].status.endpoint) ? resources[k].status.endpoint.address : null,
+        'instance_class': resources[k].spec.dbInstanceClass}})
+    additional_cluster_endpoints: >-
+      resources.filter(k, k.startsWith('endpoint-')).transformMapEntry(i, k, {k.substring(9): {
+        'id': resources[k].spec.dbClusterEndpointIdentifier,
+        'arn': resources[k].status.ackResourceMetadata.arn,
+        'endpoint': has(resources[k].status.endpoint) ? resources[k].status.endpoint : null}})
+    cluster_role_associations: >-
+      resources.filter(k, k.startsWith('role-association-')).transformMapEntry(i, k, {k.substring(17): resources[k].spec})
+    enhanced_monitoring_iam_role_name: >-
+      'enhanced-monitoring-role' in resources ? resources['enhanced-monitoring-role'].spec.name : null
+    enhanced_monitoring_iam_role_arn: >-
+      'enhanced-monitoring-role' in resources ? resources['enhanced-monitoring-role'].status.ackResourceMetadata.arn : null
+    enhanced_monitoring_iam_role_unique_id: >-
+      'enhanced-monitoring-role' in resources && has(resources['enhanced-monitoring-role'].status.roleID) ? resources['enhanced-monitoring-role'].status.roleID : null
+    security_group_id: >-
+      'security-group' in resources && has(resources['security-group'].status.id) ? resources['security-group'].status.id : null
+    db_cluster_parameter_group_arn: >-
+      'db-cluster-parameter-group' in resources ? resources['db-cluster-parameter-group'].status.ackResourceMetadata.arn : null
+    db_cluster_parameter_group_id: >-
+      'db-cluster-parameter-group' in resources ? resources['db-cluster-parameter-group'].spec.name : null
+    db_parameter_group_arn: >-
+      'db-parameter-group' in resources ? resources['db-parameter-group'].status.ackResourceMetadata.arn : null
+    db_parameter_group_id: >-
+      'db-parameter-group' in resources ? resources['db-parameter-group'].spec.name : null
+    db_cluster_cloudwatch_log_groups: >-
+      resources.filter(k, k.startsWith('log-group-')).transformMapEntry(i, k, {k.substring(10): resources[k].spec})

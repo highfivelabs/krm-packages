@@ -1,0 +1,6 @@
+# expect: rds-aurora: security_group_ingress_rules.a.region is not supported
+name: x
+engine: aurora-postgresql
+vpc_id: vpc-12345678
+region: us-east-1
+security_group_ingress_rules: {a: {cidr_ipv4: 10.0.0.0/8, region: us-west-2}}

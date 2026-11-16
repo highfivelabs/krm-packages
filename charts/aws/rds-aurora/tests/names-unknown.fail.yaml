@@ -1,0 +1,5 @@
+# expect: names: Additional property instance is not allowed
+name: x
+engine: aurora-postgresql
+vpc_id: vpc-12345678
+names: {instance: x}

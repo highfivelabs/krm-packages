@@ -1,0 +1,530 @@
+---
+# Source: rds-aurora/templates/monitoring.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: full-monitoring-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "enhanced-monitoring-role"
+spec:
+  name: "orders-rds-monitoring"
+  description: "Enhanced monitoring for orders"
+  path: "/rds/"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"monitoring.rds.amazonaws.com\"]}}],\"Version\":\"2012-10-17\"}"
+  maxSessionDuration: 7200
+  policies:
+    - "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+  tags:
+    - key: "team"
+      value: "orders"
+---
+# Source: rds-aurora/templates/cluster.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBCluster
+metadata:
+  name: full-cluster
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster"
+    services.k8s.aws/region: "eu-west-1"
+    rds.services.k8s.aws/delete-automated-backups: "false"
+    rds.services.k8s.aws/final-db-snapshot-identifier: "orders-final"
+    rds.services.k8s.aws/skip-final-snapshot: "false"
+spec:
+  dbClusterIdentifier: "orders"
+  engine: "aurora-mysql"
+  backtrackWindow: 3600
+  engineMode: "provisioned"
+  engineVersion: "8.0.mysql_aurora.3.08.0"
+  availabilityZones:
+    - "eu-west-1a"
+    - "eu-west-1b"
+    - "eu-west-1c"
+  backupRetentionPeriod: 7
+  copyTagsToSnapshot: true
+  databaseInsightsMode: "standard"
+  databaseName: "orders"
+  dbClusterParameterGroupRef:
+    from:
+      name: full-cluster-parameter-group
+  dbSubnetGroupRef:
+    from:
+      name: full-subnet-group
+  deletionProtection: true
+  enableCloudwatchLogsExports:
+    - "audit"
+    - "error"
+    - "slowquery"
+  enableIAMDatabaseAuthentication: true
+  enablePerformanceInsights: true
+  performanceInsightsRetentionPeriod: 7
+  kmsKeyID: "arn:aws:kms:eu-west-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+  masterUserPassword:
+    name: "orders-db"
+    key: "password"
+  masterUsername: "admin"
+  monitoringInterval: 60
+  monitoringRoleRef:
+    from:
+      name: full-monitoring-role
+  networkType: "IPV4"
+  port: 3307
+  preferredBackupWindow: "02:00-03:00"
+  preferredMaintenanceWindow: "sun:05:00-sun:06:00"
+  serverlessV2ScalingConfiguration:
+    maxCapacity: 4
+    minCapacity: 0.5
+    secondsUntilAutoPause: 3600
+  storageEncrypted: true
+  vpcSecurityGroupRefs:
+    - from:
+        name: full-sg
+  tags:
+    - key: "schedule"
+      value: "office-hours"
+    - key: "team"
+      value: "orders"
+---
+# Source: rds-aurora/templates/instances.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBClusterEndpoint
+metadata:
+  name: full-endpoint-excluded
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "endpoint-excluded"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  dbClusterEndpointIdentifier: "excluded-readers"
+  dbClusterIdentifierRef:
+    from:
+      name: full-cluster
+  endpointType: "ANY"
+  excludedMembers:
+    - "orders-analytics"
+  tags:
+    - key: "team"
+      value: "orders"
+---
+# Source: rds-aurora/templates/instances.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBClusterEndpoint
+metadata:
+  name: full-endpoint-static
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "endpoint-static"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  dbClusterEndpointIdentifier: "static-readers"
+  dbClusterIdentifierRef:
+    from:
+      name: full-cluster
+  endpointType: "READER"
+  staticMembers:
+    - "orders-analytics"
+  tags:
+    - key: "team"
+      value: "orders"
+    - key: "use"
+      value: "reports"
+---
+# Source: rds-aurora/templates/cluster.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBClusterParameterGroup
+metadata:
+  name: full-cluster-parameter-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "db-cluster-parameter-group"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "orders"
+  description: "orders cluster parameters"
+  family: "aurora-mysql8.0"
+  parameterOverrides:
+    "character_set_server": "utf8mb4"
+    "require_secure_transport": "ON"
+  tags:
+    - key: "team"
+      value: "orders"
+---
+# Source: rds-aurora/templates/instances.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBInstance
+metadata:
+  name: full-instance-analytics
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "instance-analytics"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  dbInstanceIdentifier: "orders-analytics"
+  dbClusterIdentifierRef:
+    from:
+      name: full-cluster
+  dbInstanceClass: "db.r7g.large"
+  engine: "aurora-mysql"
+  copyTagsToSnapshot: true
+  dbParameterGroupRef:
+    from:
+      name: full-db-parameter-group
+  monitoringInterval: 60
+  monitoringRoleRef:
+    from:
+      name: full-monitoring-role
+  performanceInsightsEnabled: false
+  performanceInsightsRetentionPeriod: 7
+  preferredMaintenanceWindow: "sun:05:00-sun:06:00"
+  publiclyAccessible: false
+  tags:
+    - key: "team"
+      value: "orders"
+---
+# Source: rds-aurora/templates/instances.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBInstance
+metadata:
+  name: full-instance-reader
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "instance-reader"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  dbInstanceIdentifier: "orders-reader"
+  dbClusterIdentifierRef:
+    from:
+      name: full-cluster
+  dbInstanceClass: "db.r7g.large"
+  engine: "aurora-mysql"
+  availabilityZone: "eu-west-1b"
+  copyTagsToSnapshot: true
+  dbParameterGroupRef:
+    from:
+      name: full-db-parameter-group
+  monitoringInterval: 30
+  monitoringRoleRef:
+    from:
+      name: full-monitoring-role
+  performanceInsightsEnabled: true
+  performanceInsightsRetentionPeriod: 7
+  preferredMaintenanceWindow: "sun:05:00-sun:06:00"
+  tags:
+    - key: "role"
+      value: "reader"
+    - key: "team"
+      value: "orders"
+---
+# Source: rds-aurora/templates/instances.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBInstance
+metadata:
+  name: full-instance-writer
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "instance-writer"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  dbInstanceIdentifier: "orders-writer"
+  dbClusterIdentifierRef:
+    from:
+      name: full-cluster
+  dbInstanceClass: "db.serverless"
+  engine: "aurora-mysql"
+  copyTagsToSnapshot: true
+  dbParameterGroupRef:
+    from:
+      name: full-db-parameter-group
+  monitoringInterval: 60
+  monitoringRoleRef:
+    from:
+      name: full-monitoring-role
+  performanceInsightsEnabled: true
+  performanceInsightsRetentionPeriod: 7
+  preferredMaintenanceWindow: "sun:05:00-sun:06:00"
+  promotionTier: 0
+  tags:
+    - key: "team"
+      value: "orders"
+---
+# Source: rds-aurora/templates/cluster.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBParameterGroup
+metadata:
+  name: full-db-parameter-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "db-parameter-group"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "orders-instances"
+  description: "aurora-mysql8.0 for Aurora cluster orders"
+  family: "aurora-mysql8.0"
+  parameterOverrides:
+    "connect_timeout": "60"
+  tags:
+    - key: "team"
+      value: "orders"
+---
+# Source: rds-aurora/templates/instances.yaml
+apiVersion: rds.aws.hfl.dev/v1alpha1
+kind: DBRoleAssociation
+metadata:
+  name: full-role-association-lambda
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "role-association-lambda"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  dbClusterRef:
+    from:
+      name: full-cluster
+  featureName: "Lambda"
+  roleARN: "arn:aws:iam::111122223333:role/orders-lambda"
+---
+# Source: rds-aurora/templates/instances.yaml
+apiVersion: rds.aws.hfl.dev/v1alpha1
+kind: DBRoleAssociation
+metadata:
+  name: full-role-association-s3import-dd939dac
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "role-association-s3Import"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  dbClusterRef:
+    from:
+      name: full-cluster
+  featureName: "s3Import"
+  roleARN: "arn:aws:iam::111122223333:role/orders-s3-import"
+---
+# Source: rds-aurora/templates/cluster.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBSubnetGroup
+metadata:
+  name: full-subnet-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "db-subnet-group"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "orders"
+  description: "For Aurora cluster orders"
+  subnetIDs:
+    - "subnet-0123456789abcdef0"
+    - "subnet-0123456789abcdef1"
+  tags:
+    - key: "team"
+      value: "orders"
+---
+# Source: rds-aurora/templates/cluster.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: full-log-audit
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group-audit"
+    services.k8s.aws/region: "eu-west-1"
+    services.k8s.aws/deletion-policy: "retain"
+spec:
+  name: "/aws/rds/cluster/orders/audit"
+  retentionDays: 30
+  tags:
+    "logs": "yes"
+    "team": "orders"
+---
+# Source: rds-aurora/templates/cluster.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: full-log-error
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group-error"
+    services.k8s.aws/region: "eu-west-1"
+    services.k8s.aws/deletion-policy: "retain"
+spec:
+  name: "/aws/rds/cluster/orders/error"
+  retentionDays: 30
+  tags:
+    "logs": "yes"
+    "team": "orders"
+---
+# Source: rds-aurora/templates/cluster.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: full-log-slowquery
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group-slowquery"
+    services.k8s.aws/region: "eu-west-1"
+    services.k8s.aws/deletion-policy: "retain"
+spec:
+  name: "/aws/rds/cluster/orders/slowquery"
+  retentionDays: 30
+  tags:
+    "logs": "yes"
+    "team": "orders"
+---
+# Source: rds-aurora/templates/monitoring.yaml
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalableTarget
+metadata:
+  name: full-autoscaling-target
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "autoscaling-target"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  serviceNamespace: rds
+  scalableDimension: rds:cluster:ReadReplicaCount
+  resourceID: "cluster:orders"
+  minCapacity: 1
+  maxCapacity: 5
+---
+# Source: rds-aurora/templates/monitoring.yaml
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalingPolicy
+metadata:
+  name: full-autoscaling-policy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "autoscaling-policy"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  policyName: "target-metric"
+  policyType: TargetTrackingScaling
+  serviceNamespace: rds
+  scalableDimension: rds:cluster:ReadReplicaCount
+  resourceRef:
+    from:
+      name: full-autoscaling-target
+  targetTrackingScalingPolicyConfiguration:
+    predefinedMetricSpecification:
+      predefinedMetricType: "RDSReaderAverageDatabaseConnections"
+    scaleInCooldown: 300
+    scaleOutCooldown: 300
+    targetValue: 500
+---
+# Source: rds-aurora/templates/security-group.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: full-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-aurora
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "security-group"
+    services.k8s.aws/region: "eu-west-1"
+spec:
+  name: "orders-db"
+  description: "Orders database"
+  vpcID: "vpc-0123456789abcdef0"
+  ingressRules:
+    - ipProtocol: "tcp"
+      fromPort: 3307
+      toPort: 3307
+      ipRanges:
+        - {"cidrIP":"10.0.0.0/16","description":"from the VPC"}
+    - ipProtocol: "tcp"
+      fromPort: 3307
+      toPort: 3307
+      userIDGroupPairs:
+        - {}
+    - ipProtocol: "tcp"
+      fromPort: 3307
+      toPort: 3307
+      ipv6Ranges:
+        - {"cidrIPv6":"2001:db8::/56"}
+  egressRules:
+    - ipProtocol: "-1"
+      fromPort: -1
+      toPort: -1
+      ipRanges:
+        - {"cidrIP":"0.0.0.0/0"}
+    - ipProtocol: "tcp"
+      fromPort: 443
+      toPort: 3307
+      prefixListIDs:
+        - {"prefixListID":"pl-6da54004"}
+  tags:
+    - key: "Name"
+      value: "orders-db"
+    - key: "team"
+      value: "orders"
+    - key: "tier"
+      value: "data"

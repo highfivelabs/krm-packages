@@ -264,7 +264,7 @@ belongs in the team's CI.
 
 | Submodule | Creates | ACK |
 | --- | --- | --- |
-| root | cluster, cluster instances, custom endpoints, cluster and DB parameter groups, subnet group, security group, monitoring role, read-replica autoscaling, log groups, role association, activity stream, shard group, secret rotation | `rds/DBCluster`, `rds/DBInstance` (with `dbClusterIdentifier`), `rds/DBClusterEndpoint`, `rds/DBClusterParameterGroup`, `rds/DBParameterGroup`, `rds/DBSubnetGroup`, `ec2/SecurityGroup`, `iam/Role`, `applicationautoscaling/ScalableTarget`, `applicationautoscaling/ScalingPolicy`, `cloudwatchlogs/LogGroup`. **GAP**: role association, activity stream, shard group, rotation |
+| root | cluster, cluster instances, custom endpoints, cluster and DB parameter groups, subnet group, security group, monitoring role, read-replica autoscaling, log groups, role association, activity stream, shard group, secret rotation | `rds/DBCluster`, `rds/DBInstance` (with `dbClusterIdentifier`), `rds/DBClusterEndpoint`, `rds/DBClusterParameterGroup`, `rds/DBParameterGroup`, `rds/DBSubnetGroup`, `ec2/SecurityGroup`, `iam/Role`, `applicationautoscaling/ScalableTarget`, `applicationautoscaling/ScalingPolicy`, `cloudwatchlogs/LogGroup`; ack-extensions' `DBRoleAssociation` (`dbClusterRef`) for role associations and Cloud Control `DBShardGroup`. **GAP**: activity stream, rotation; `DBCluster` lacks `clusterScalabilityType` (so no Limitless cluster for a shard group to join), `enableLocalWriteForwarding`, `engineLifecycleSupport`, `allowMajorVersionUpgrade` and a restore from S3 (section 8, `charts/aws/rds-aurora`) |
 | `dsql` | Aurora DSQL cluster, peering, policy | `dsql/Cluster` (v1.4.0). **GAP**: peering, policy |
 
 ### 10. acm (v6.3.1)
