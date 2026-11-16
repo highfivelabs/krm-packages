@@ -10,7 +10,12 @@
 # NetworkServicesGateway (v1beta1 at 1.160.0) has no network, subnetwork,
 # gatewaySecurityPolicy, certificateUrls, labels or routingMode, and requires scope;
 # the inventory then finds config-connector-extensions' NetworkServicesGateway
-# by name, as it does EndpointsService and ChronicleRuleDeployment. "HFL:" names
+# by name, as it does EndpointsService and ChronicleRuleDeployment.
+# google_scc_v2_*_mute_config is None too: Config Connector's and
+# config-connector-extensions' SecurityCenterMuteConfig is the v1 API's
+# ({parent}/muteConfigs/{id}), not fabric's v2 one at location global
+# ({parent}/locations/global/muteConfigs/{id}); a v2 kind is
+# config-connector-extensions docs/design.md item 42. "HFL:" names
 # an extensions kind it cannot find by name (IAMPolicyBinding).
 M = {
  "google_access_context_manager_gcp_user_access_binding": "AccessContextManagerGCPUserAccessBinding",
@@ -109,7 +114,7 @@ M = {
  "google_scc_management_folder_security_health_analytics_custom_module": "SecurityCenterManagementSecurityHealthAnalyticsCustomModule",
  "google_scc_management_organization_security_health_analytics_custom_module": "SecurityCenterManagementSecurityHealthAnalyticsCustomModule",
  "google_scc_management_project_security_health_analytics_custom_module": "SecurityCenterManagementSecurityHealthAnalyticsCustomModule",
- "google_scc_v2_folder_mute_config": "SecurityCenterMuteConfig", "google_scc_v2_organization_mute_config": "SecurityCenterMuteConfig", "google_scc_v2_project_mute_config": "SecurityCenterMuteConfig",
+ "google_scc_v2_folder_mute_config": None, "google_scc_v2_organization_mute_config": None, "google_scc_v2_project_mute_config": None,
  "google_secret_manager_regional_secret": "HFL:SecretManagerSecret (secretmanager.gcp.hfl.dev, spec.location)",
  "google_secret_manager_regional_secret_version": "HFL:SecretManagerSecretVersion (secretmanager.gcp.hfl.dev)",
  "google_secure_source_manager_branch_rule": "SecureSourceManagerBranchRule", "google_secure_source_manager_instance": "SecureSourceManagerInstance",

@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "deny"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.6.0"
+    app.kubernetes.io/version: "0.7.0"
   annotations:
     hfl.dev/id: "deny-policy:conditional-key-deny"
 spec:
@@ -36,7 +36,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "deny"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.6.0"
+    app.kubernetes.io/version: "0.7.0"
   annotations:
     hfl.dev/id: "deny-policy:prevent-sa-token-creation"
 spec:

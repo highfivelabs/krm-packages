@@ -72,7 +72,8 @@ id: null
 logging_data_access: {}
 # Logging exclusions for this folder, {NAME => FILTER}.
 logging_exclusions: {}
-# Default settings for logging resources. Refused when set (README.md).
+# Default settings for logging resources, {disable_default_sink, kms_key_name,
+# storage_location}: config-connector-extensions' LoggingSettings.
 logging_settings: null
 # Logging sinks to create for the folder.
 logging_sinks: {}

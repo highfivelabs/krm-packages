@@ -39,7 +39,7 @@ gcp,project,google_project_service_identity,stable,ServiceIdentity
 gcp,project,google_pubsub_topic_iam_member,stable,IAMPolicyMember -> PubSubTopic
 gcp,project,google_resource_manager_lien,stable,ResourceManagerLien
 gcp,project,google_scc_management_project_security_health_analytics_custom_module,alpha,SecurityCenterManagementSecurityHealthAnalyticsCustomModule
-gcp,project,google_scc_v2_project_mute_config,extensions,SecurityCenterMuteConfig (securitycenter.gcp.hfl.dev/v1beta1)
+gcp,project,google_scc_v2_project_mute_config,none,
 gcp,project,google_storage_bucket_iam_member,stable,IAMPolicyMember -> StorageBucket
 gcp,project,google_tags_tag_binding,stable,TagsTagBinding
 gcp,project,google_tags_tag_key,stable,TagsTagKey
@@ -69,7 +69,7 @@ gcp,folder,google_privileged_access_manager_entitlement,stable,PrivilegedAccessM
 gcp,folder,google_project_iam_member,stable,IAMPolicyMember -> Project
 gcp,folder,google_pubsub_topic_iam_member,stable,IAMPolicyMember -> PubSubTopic
 gcp,folder,google_scc_management_folder_security_health_analytics_custom_module,alpha,SecurityCenterManagementSecurityHealthAnalyticsCustomModule
-gcp,folder,google_scc_v2_folder_mute_config,extensions,SecurityCenterMuteConfig (securitycenter.gcp.hfl.dev/v1beta1)
+gcp,folder,google_scc_v2_folder_mute_config,none,
 gcp,folder,google_storage_bucket_iam_member,stable,IAMPolicyMember -> StorageBucket
 gcp,folder,google_tags_tag_binding,stable,TagsTagBinding
 gcp,organization,google_access_context_manager_access_level,stable,AccessContextManagerAccessLevel
@@ -98,7 +98,7 @@ gcp,organization,google_privileged_access_manager_entitlement,stable,PrivilegedA
 gcp,organization,google_project_iam_member,stable,IAMPolicyMember -> Project
 gcp,organization,google_pubsub_topic_iam_member,stable,IAMPolicyMember -> PubSubTopic
 gcp,organization,google_scc_management_organization_security_health_analytics_custom_module,alpha,SecurityCenterManagementSecurityHealthAnalyticsCustomModule
-gcp,organization,google_scc_v2_organization_mute_config,extensions,SecurityCenterMuteConfig (securitycenter.gcp.hfl.dev/v1beta1)
+gcp,organization,google_scc_v2_organization_mute_config,none,
 gcp,organization,google_storage_bucket_iam_member,stable,IAMPolicyMember -> StorageBucket
 gcp,organization,google_tags_tag_binding,stable,TagsTagBinding
 gcp,organization,google_tags_tag_key,stable,TagsTagKey

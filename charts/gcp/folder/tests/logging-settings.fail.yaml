@@ -1,4 +1,4 @@
-# expect: logging_settings is not supported
+# expect: is a fabric $context lookup
 parent: organizations/123456789012
 name: f
-logging_settings: {disable_default_sink: true}
+logging_settings: {kms_key_name: "$kms_keys:logging"}

@@ -1,6 +1,7 @@
 # The module README's log sinks and data access logs examples, less the
 # $context destination (Bundt replaces it), plus an intercepting project
-# sink.
+# sink and the organization's logging settings (the module README's
+# logging_settings example has none; fabric's variable).
 organization_id: organizations/1122334455
 logging_sinks:
   warnings:
@@ -26,6 +27,10 @@ logging_sinks:
     filter: logName:cloudaudit.googleapis.com
     type: project
     intercept_children: true
+logging_settings:
+  disable_default_sink: true
+  kms_key_name: projects/kms-project/locations/europe-west1/keyRings/logging/cryptoKeys/router
+  storage_location: europe-west1
 logging_exclusions:
   no-gce-instances: resource.type=gce_instance
 logging_data_access:
