@@ -1,0 +1,5 @@
+# expect: alb: route53_records is not supported
+name: x
+vpc_id: vpc-1
+route53_records:
+  a: {zone_id: Z1, type: A}

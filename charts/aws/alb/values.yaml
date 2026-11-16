@@ -1,0 +1,226 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values mirror the Terraform variables of terraform-aws-modules' alb module
+# (v10.5.1): same names, types and defaults, so a module block's arguments
+# become a values file one to one. values.schema.json carries the types. A
+# variable the chart cannot carry stays here and stops the render when set
+# (upstream.yaml lists them; README.md says why).
+
+# Names, labels and tags (docs/design.md, "Names, labels and tags"). Not
+# Terraform variables, except tags, which is the module's own.
+#
+# Names in full: {loadBalancer, securityGroup}. A name set here takes no
+# namePrefix. Unset, the load balancer is named name and its group
+# security_group_name (else name). Target groups are named by their name,
+# with the namePrefix.
+names: {}
+# An optional convenience: "<namePrefix>-" in front of every name the chart
+# gives (never one set under names). Empty (the default) changes nothing.
+namePrefix: ""
+# Kubernetes labels on every object. They stay in Kubernetes: ACK does not
+# copy labels to AWS (AWS tags are the module's tags variable).
+labels: {}
+# No kind here is outside ACK's released controllers; kept for the common
+# values (docs/design.md, "Alpha kinds").
+allow_alpha: false
+# DELETE (default): deleting the component deletes the load balancer and
+# everything with it. ABANDON keeps them (services.k8s.aws/deletion-policy:
+# retain).
+deletion_policy: DELETE
+
+# The module's variables, in its order, with its defaults.
+
+# Controls if resources should be created (affects nearly all resources)
+create: true
+# Region where the resource(s) will be managed. Defaults to the Region set
+# in the provider configuration
+region: null
+# A map of tags to add to all resources
+tags: {}
+# Map containing access logging configuration for load balancer
+access_logs: null
+# Client keep alive value in seconds. The valid range is 60-604800 seconds.
+# The default is 3600 seconds
+client_keep_alive: null
+# Map containing access logging configuration for load balancer
+connection_logs: null
+# The ID of the customer owned ipv4 pool to use for this load balancer
+customer_owned_ipv4_pool: null
+# Determines how the load balancer handles requests that might pose a
+# security risk to an application due to HTTP desync. Valid values are
+# `monitor`, `defensive` (default), `strictest`
+desync_mitigation_mode: null
+# Indicates how traffic is distributed among the load balancer Availability
+# Zones. Possible values are any_availability_zone (default),
+# availability_zone_affinity, or partial_availability_zone_affinity. Only
+# valid for network type load balancers
+dns_record_client_routing_policy: null
+# Indicates whether HTTP headers with header fields that are not valid are
+# removed by the load balancer (`true`) or routed to targets (`false`). The
+# default is `true`. Elastic Load Balancing requires that message header
+# names contain only alphanumeric characters and hyphens. Only valid for
+# Load Balancers of type `application`
+drop_invalid_header_fields: true
+# If `true`, cross-zone load balancing of the load balancer will be enabled.
+# For application load balancer this feature is always enabled (`true`) and
+# cannot be disabled. Defaults to `true`
+enable_cross_zone_load_balancing: true
+# If `true`, deletion of the load balancer will be disabled via the AWS API.
+# This will prevent Terraform from deleting the load balancer. Defaults to
+# `true`
+enable_deletion_protection: true
+# Indicates whether HTTP/2 is enabled in application load balancers.
+# Defaults to `true`
+enable_http2: null
+# Indicates whether the two headers (`x-amzn-tls-version` and `x-amzn-tls-
+# cipher-suite`), which contain information about the negotiated TLS version
+# and cipher suite, are added to the client request before sending it to the
+# target. Only valid for Load Balancers of type `application`. Defaults to
+# `false`
+enable_tls_version_and_cipher_suite_headers: null
+# Indicates whether to allow a WAF-enabled load balancer to route requests
+# to targets if it is unable to forward the request to AWS WAF. Defaults to
+# `false`
+enable_waf_fail_open: null
+# Indicates whether the X-Forwarded-For header should preserve the source
+# port that the client used to connect to the load balancer in `application`
+# load balancers. Defaults to `false`
+enable_xff_client_port: null
+# Whether zonal shift is enabled
+enable_zonal_shift: null
+# Indicates whether inbound security group rules are enforced for traffic
+# originating from a PrivateLink. Only valid for Load Balancers of type
+# network. The possible values are on and off
+# Not supported (gap): ACK's LoadBalancer (elbv2-controller v1.10.0) has no
+# field for it.
+enforce_security_group_inbound_rules_on_private_link_traffic: null
+# Map containing health check logging configuration for application load
+# balancers
+health_check_logs: null
+# The time in seconds that the connection is allowed to be idle. Only valid
+# for Load Balancers of type `application`. Default: `60`
+idle_timeout: null
+# If true, the LB will be internal. Defaults to `false`
+internal: null
+# The type of IP addresses used by the subnets for your load balancer. The
+# possible values are `ipv4` and `dualstack`
+ip_address_type: null
+# The IPAM pools to use with the load balancer
+# Not supported (gap): ACK's LoadBalancer (elbv2-controller v1.10.0) has no
+# IPAM pools field.
+ipam_pools: null
+# The type of load balancer to create. Possible values are `application`,
+# `gateway`, or `network`. The default value is `application`
+load_balancer_type: application
+# Minimum capacity for a load balancer. Only valid for Load Balancers of
+# type `application` or `network`
+# Not supported (gap): ACK's LoadBalancer (elbv2-controller v1.10.0) has no
+# capacity reservation field.
+minimum_load_balancer_capacity: null
+# The name of the LB. This name must be unique within your AWS account, can
+# have a maximum of 32 characters, must contain only alphanumeric characters
+# or hyphens, and must not begin or end with a hyphen
+# In part: accepted, and required: unset (with name_prefix unset), Terraform
+# generates a name, which would change between renders.
+name: null
+# Creates a unique name beginning with the specified prefix. Conflicts with
+# `name`
+# Not supported (gap): Terraform appends a random suffix, and a render must
+# not change between plans; give name (namePrefix keeps two Instances' load
+# balancers apart).
+name_prefix: null
+# Indicates whether the Application Load Balancer should preserve the Host
+# header in the HTTP request and send it to the target without any change.
+# Defaults to `false`
+preserve_host_header: null
+# A list of security group IDs to assign to the LB
+# In part: accepted with create_security_group: false; with the chart's own
+# group it is refused, since ACK's LoadBalancer cannot take group references
+# and IDs together.
+security_groups: []
+# A list of subnet mapping blocks describing subnets to attach to load
+# balancer
+subnet_mapping: null
+# A list of subnet IDs to attach to the LB. Subnets cannot be updated for
+# Load Balancers of type `network`. Changing this value for load balancers
+# of type `network` will force a recreation of the resource
+subnets: null
+# Determines how the load balancer modifies the X-Forwarded-For header in
+# the HTTP request before sending the request to the target. The possible
+# values are `append`, `preserve`, and `remove`. Only valid for Load
+# Balancers of type `application`. The default is `append`
+xff_header_processing_mode: null
+# Create, update, and delete timeout configurations for the load balancer
+# Not supported (by-design): Terraform's create, update and delete timeouts:
+# ACK retries until the load balancer is synced, and Bundt waits for it.
+timeouts: null
+# Default port used across the listener and target group
+default_port: 80
+# Default protocol used across the listener and target group
+default_protocol: HTTP
+# Map of listener configurations to create
+# In part: accepted, but the listener attributes (routing_http_*,
+# tcp_idle_timeout_seconds), additional_certificate_arns,
+# mutual_authentication.advertise_trust_store_ca_names, jwt_validation
+# actions, rule transforms and regex_values conditions have no ACK field and
+# are refused; a rule needs priority (ACK requires it).
+listeners: {}
+# Map of target group configurations to create
+# In part: accepted, but each group needs name (name_prefix, a random
+# suffix, is refused), and attach_lambda_permission is refused: ack-
+# extensions' Lambda Permission cannot reference the target group this
+# render makes (the lambda_* fields go with it).
+target_groups: null
+# Map of additional target group attachments to create. Use
+# `target_group_key` to attach to the target group created in
+# `target_groups`
+additional_target_group_attachments: null
+# Determines if a security group is created
+create_security_group: true
+# Name to use on security group created
+security_group_name: null
+# Determines whether the security group name (`security_group_name`) is used
+# as a prefix
+# In part: accepted: true (the default) names the group as given, without
+# Terraform's random suffix, since a render must not change between plans;
+# the namePrefix value keeps two Instances' groups apart.
+security_group_use_name_prefix: true
+# Description of the security group created
+security_group_description: null
+# Identifier of the VPC where the security group will be created
+# In part: accepted when set; unset with create_security_group: true
+# (Terraform's default VPC) is refused: ACK's SecurityGroup needs its VPC's
+# ID.
+vpc_id: null
+# Security group ingress rules to add to the security group created
+# In part: accepted, but each rule's name and tags are not carried: ACK
+# keeps a group's rules inline in SecurityGroup, which has no per-rule tags.
+security_group_ingress_rules: null
+# Security group egress rules to add to the security group created
+# In part: accepted, but each rule's name and tags are not carried: ACK
+# keeps a group's rules inline in SecurityGroup, which has no per-rule tags.
+security_group_egress_rules: null
+# A map of additional tags to add to the security group created
+security_group_tags: {}
+# Map of Route53 records to create. Each record map should contain
+# `zone_id`, `name`, and `type`
+# Not supported (gap): an alias record needs the load balancer's DNS name
+# and zone ID, which exist only in its status, and ACK's RecordSet has no
+# reference to a LoadBalancer; make the records in a route53 component from
+# this one's dns_name and zone_id outputs.
+route53_records: null
+# Indicates whether a Web Application Firewall (WAF) ACL should be
+# associated with the load balancer
+# Not supported (gap): ack-extensions' WebACLAssociation takes the load
+# balancer's ARN only as a string, with no reference to the LoadBalancer
+# this render makes.
+associate_web_acl: false
+# Web Application Firewall (WAF) ARN of the resource to associate with the
+# load balancer
+# Not supported (gap): used only with associate_web_acl, which is refused.
+web_acl_arn: null
+# Do you agree that Putin doesn't respect Ukrainian sovereignty and
+# territorial integrity? More info:
+# https://en.wikipedia.org/wiki/Putin_khuylo!
+putin_khuylo: true

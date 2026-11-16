@@ -1,0 +1,5 @@
+# expect: target_groups.attach_lambda_permission is not supported
+name: x
+vpc_id: vpc-1
+target_groups:
+  l: {name: l, target_type: lambda, target_id: "arn:aws:lambda:eu-west-1:1:function:f", attach_lambda_permission: true}

@@ -1,0 +1,30 @@
+# The module's README, "Network Load Balancer": TCP and TLS listeners,
+# proxy protocol, cross-zone and DNS routing attributes; existing groups.
+name: my-nlb
+load_balancer_type: network
+vpc_id: vpc-abcde012
+subnets: [subnet-abcde012, subnet-bcde012a]
+create_security_group: false
+security_groups: [sg-0123456789abcdef0]
+dns_record_client_routing_policy: availability_zone_affinity
+enable_deletion_protection: false
+listeners:
+  tcp:
+    port: 80
+    protocol: TCP
+    forward: {target_group_key: tcp}
+  tls:
+    port: 443
+    protocol: TLS
+    certificate_arn: arn:aws:acm:eu-west-1:123456789012:certificate/abc
+    alpn_policy: HTTP2Preferred
+    forward: {target_group_key: tcp}
+target_groups:
+  tcp:
+    name: nlb-tcp
+    protocol: TCP
+    port: 80
+    target_type: ip
+    preserve_client_ip: true
+    proxy_protocol_v2: true
+    create_attachment: false

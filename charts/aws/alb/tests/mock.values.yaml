@@ -1,0 +1,32 @@
+# Applied to the fake AWS by hack/mock-apply-aws.sh: an application load
+# balancer in the VPC and subnets tests/mock.needs.yaml makes
+# (tests/mock.set.yaml), with its group, an HTTP listener forwarding to an
+# IP target group, and a rule.
+name: catalog-alb
+region: us-east-1
+vpc_id: vpc-set-by-mock-set-yaml
+subnets: [subnet-set-by-mock-set-yaml, subnet-set-by-mock-set-yaml]
+enable_deletion_protection: false
+security_group_ingress_rules:
+  http: {from_port: 80, cidr_ipv4: 10.40.0.0/16}
+listeners:
+  http:
+    port: 80
+    protocol: HTTP
+    forward: {target_group_key: app}
+    rules:
+      health:
+        priority: 10
+        actions:
+          - fixed_response: {content_type: text/plain, message_body: ok, status_code: "200"}
+        conditions:
+          - path_pattern: {values: [/healthz]}
+target_groups:
+  app:
+    name: catalog-alb-app
+    protocol: HTTP
+    port: 80
+    target_type: ip
+    create_attachment: false
+    health_check: {path: /, matcher: "200"}
+tags: {catalog-test: "true"}

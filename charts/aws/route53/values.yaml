@@ -1,0 +1,102 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values mirror the Terraform variables of terraform-aws-modules' route53
+# module (v6.5.1): same names, types and defaults, so a module block's
+# arguments become a values file one to one. values.schema.json carries the
+# types. A variable the chart cannot carry stays here and stops the render
+# when set (upstream.yaml lists them; README.md says why).
+
+# Names, labels and tags (docs/design.md, "Names, labels and tags"). Not
+# Terraform variables, except tags, which is the module's own.
+#
+# The chart names nothing: a zone's name is its domain (name) and a record's
+# is a name in it, so it takes no names keys and namePrefix changes nothing.
+names: {}
+namePrefix: ""
+# Kubernetes labels on every object. They stay in Kubernetes: ACK does not
+# copy labels to AWS (AWS tags are the module's tags variable).
+labels: {}
+# No kind here is outside ACK's released controllers; kept for the common
+# values (docs/design.md, "Alpha kinds").
+allow_alpha: false
+# DELETE (default): deleting the component deletes the zone and its records.
+# ABANDON keeps them (services.k8s.aws/deletion-policy: retain).
+deletion_policy: DELETE
+
+# The module's variables, in its order, with its defaults.
+
+# Whether to create Route53 zone
+create: true
+# Tags added to all zones. Will take precedence over tags from the 'zones'
+# variable
+tags: {}
+# Determines whether to create the Route53 zone or lookup an existing zone
+# Not supported (by-design): false looks an existing zone up by name; a render
+# cannot look anything up: the zone is another component's, and its records
+# belong in that component.
+create_zone: true
+# Determines whether to ignore VPC association changes after creation
+# Not supported (gap): ACK's HostedZone owns the zone's VPC associations and
+# removes ones made elsewhere.
+ignore_vpc: false
+# Whether the hosted zone is private. Only applicable when `create_zone = false`
+# Not supported (by-design): used only to look up an existing zone.
+private_zone: false
+# The ID of the VPC associated with the existing hosted zone. Only applicable
+# when `create_zone = false`
+# Not supported (by-design): used only to look up an existing zone.
+vpc_id: null
+# A comment for the hosted zone. Defaults to `Managed by Terraform`
+comment: null
+# The ID of the reusable delegation set whose NS records you want to assign to
+# the hosted zone. Conflicts with vpc as delegation sets can only be used for
+# public zones
+delegation_set_id: null
+# Whether to destroy all records (possibly managed outside of Terraform) in the
+# zone when destroying the zone
+# Not supported (gap) when true: ACK's HostedZone has no such field.
+force_destroy: null
+# Whether to enable Route 53 Accelerated Recovery for the public hosted zone
+# Not supported (gap): ACK's HostedZone has no field for it.
+enable_accelerated_recovery: null
+# This is the name of the hosted zone
+name: ""
+# Configuration block(s) specifying VPC(s) to associate with a private hosted
+# zone ({vpc_id, vpc_region})
+# In part: each entry needs vpc_region (ACK requires it).
+vpc: null
+# Timeouts for the Route53 zone operations
+# Not supported (by-design): ACK retries until the zone is synced, and Bundt
+# waits for it.
+timeouts: null
+# A map of VPC association authorizations to create for the Route53 zone
+# Not supported (gap): no ACK or ack-extensions kind.
+vpc_association_authorizations: null
+# Whether to enable DNSSEC for the Route53 zone
+# Not supported (gap): ack-extensions' KeySigningKey and DNSSEC cannot
+# reference the zone this render makes.
+enable_dnssec: false
+# Whether to create a KMS key for DNSSEC signing
+# Not supported (gap): used only with enable_dnssec.
+create_dnssec_kms_key: true
+# The ARN of the KMS key to use for DNSSEC signing
+# Not supported (gap): used only with enable_dnssec.
+dnssec_kms_key_arn: null
+# The description of the key as viewed in AWS console
+# Not supported (gap): used only with enable_dnssec.
+dnssec_kms_key_description: Route53 DNSSEC KMS Key
+# A list of aliases to create
+# Not supported (gap): used only with enable_dnssec.
+dnssec_kms_key_aliases: []
+# Additional tags to apply to the KMS key created for DNSSEC signing
+# Not supported (gap): used only with enable_dnssec.
+dnssec_kms_key_tags: {}
+# Name of the Route 53 key signing key (KSK)
+# Not supported (gap): used only with enable_dnssec.
+dnssec_key_signing_key_name: null
+# A map of Route53 records to create in the zone. The key can be used as the
+# subdomain name, or `name` can be used to specify the full name
+# In part: geoproximity_routing_policy and allow_overwrite: true are refused;
+# timeouts is not carried.
+records: {}

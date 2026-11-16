@@ -1,0 +1,145 @@
+---
+# Source: alb/templates/listeners.yaml
+apiVersion: elbv2.services.k8s.aws/v1alpha1
+kind: Listener
+metadata:
+  name: mock-listener-http
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: alb
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "listener-http"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  loadBalancerRef:
+    from:
+      name: mock-lb
+  port: 80
+  protocol: "HTTP"
+  defaultActions:
+    - targetGroupRef:
+        from:
+          name: mock-tg-app
+      type: forward
+  tags:
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: alb/templates/load-balancer.yaml
+apiVersion: elbv2.services.k8s.aws/v1alpha1
+kind: LoadBalancer
+metadata:
+  name: mock-lb
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: alb
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "load-balancer"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "catalog-alb"
+  type: "application"
+  subnets:
+    - "subnet-set-by-mock-set-yaml"
+    - "subnet-set-by-mock-set-yaml"
+  securityGroupRefs:
+    - from:
+        name: mock-sg
+  attributes:
+    - key: "deletion_protection.enabled"
+      value: "false"
+    - key: "routing.http.drop_invalid_header_fields.enabled"
+      value: "true"
+  tags:
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: alb/templates/listeners.yaml
+apiVersion: elbv2.services.k8s.aws/v1alpha1
+kind: Rule
+metadata:
+  name: mock-rule-http-health
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: alb
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "rule-http/health"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  listenerRef:
+    from:
+      name: mock-listener-http
+  priority: 10
+  actions:
+    - fixedResponseConfig:
+        contentType: text/plain
+        messageBody: ok
+        statusCode: "200"
+      type: fixed-response
+  conditions:
+    - field: path-pattern
+      pathPatternConfig:
+        values:
+        - /healthz
+  tags:
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: alb/templates/security-group.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: mock-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: alb
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "security-group"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "catalog-alb"
+  description: "Security group for catalog-alb application load balancer"
+  vpcID: "vpc-set-by-mock-set-yaml"
+  ingressRules:
+    - ipProtocol: "tcp"
+      fromPort: 80
+      toPort: 80
+      ipRanges:
+        - {"cidrIP":"10.40.0.0/16"}
+  tags:
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: alb/templates/target-groups.yaml
+apiVersion: elbv2.services.k8s.aws/v1alpha1
+kind: TargetGroup
+metadata:
+  name: mock-tg-app
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: alb
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "target-group-app"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "catalog-alb-app"
+  targetType: "ip"
+  port: 80
+  protocol: "HTTP"
+  vpcID: "vpc-set-by-mock-set-yaml"
+  matcher:
+    httpCode: "200"
+  healthCheckPath: "/"
+  tags:
+    - key: "catalog-test"
+      value: "true"

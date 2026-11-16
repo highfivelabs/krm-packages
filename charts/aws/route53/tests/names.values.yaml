@@ -1,0 +1,7 @@
+# labels and tags (docs/design.md, "Names, labels and tags"); this chart
+# takes no names keys.
+name: shop.example.com
+labels: {hfl.dev/team: shop}
+tags: {team: shop}
+records:
+  www: {type: A, ttl: 60, records: [192.0.2.10]}

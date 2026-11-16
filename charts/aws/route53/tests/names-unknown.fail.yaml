@@ -1,0 +1,3 @@
+# expect: names: Additional property zone is not allowed
+names: {zone: x}
+name: example.com

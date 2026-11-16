@@ -1,0 +1,80 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "Security Group": the load balancer's group (aws_security_group.this)
+and its rules (aws_vpc_security_group_ingress_rule,
+aws_vpc_security_group_egress_rule), which ACK keeps inline as
+SecurityGroup.ingressRules and egressRules, as charts/aws/security-group
+does. The load balancer takes it by reference (securityGroupRefs).
+*/ -}}
+{{- $v := .Values -}}
+{{- if and $v.create $v.putin_khuylo $v.create_security_group }}
+{{- $derived := $v.security_group_name | default $v.name | default "" }}
+{{- $name := include "ack.resourceName" (list $ "securityGroup" "security group" $derived 255) }}
+{{- if not $name }}
+{{- fail "alb: name is required: the load balancer's security group is named security_group_name, else name (or names.securityGroup)" }}
+{{- end }}
+{{- if not $v.vpc_id }}
+{{- fail "alb: vpc_id is required with create_security_group: true: ACK's SecurityGroup needs its VPC's ID, and the chart cannot look up the account's default VPC, which Terraform takes when vpc_id is unset (docs/aws.md)" }}
+{{- end }}
+---
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "sg")) "id" "security-group" "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ $name | quote }}
+  description: {{ $v.security_group_description | default (printf "Security group for %s %s load balancer" $name ($v.load_balancer_type | default "application")) | quote }}
+  vpcID: {{ $v.vpc_id | quote }}
+{{- range $dir := list "ingress" "egress" }}
+{{- $rules := index $v (printf "security_group_%s_rules" $dir) | default dict }}
+{{- if $rules }}
+  {{ $dir }}Rules:
+{{- range $key := keys $rules | sortAlpha }}
+{{- $r := index $rules $key }}
+{{- $set := list }}
+{{- range $f := list "cidr_ipv4" "cidr_ipv6" "prefix_list_id" "referenced_security_group_id" }}
+{{- if index $r $f }}{{ $set = append $set $f }}{{ end }}
+{{- end }}
+{{- if ne (len $set) 1 }}
+{{- fail (printf "alb: security_group_%s_rules.%s: Each %s rule must set exactly one of cidr_ipv4, cidr_ipv6, prefix_list_id, or referenced_security_group_id." $dir $key $dir) }}
+{{- end }}
+{{- $from := $r.from_port }}
+{{- if kindIs "invalid" $from }}{{ $from = $r.to_port }}{{ end }}
+{{- $to := $r.to_port }}
+{{- if kindIs "invalid" $to }}{{ $to = $r.from_port }}{{ end }}
+{{- $desc := dict }}
+{{- with $r.description }}{{ $desc = dict "description" . }}{{ end }}
+    - ipProtocol: {{ $r.ip_protocol | default "tcp" | toString | quote }}
+{{- if not (kindIs "invalid" $from) }}
+      fromPort: {{ int64 $from }}
+{{- end }}
+{{- if not (kindIs "invalid" $to) }}
+      toPort: {{ int64 $to }}
+{{- end }}
+{{- if $r.cidr_ipv4 }}
+      ipRanges:
+        - {{ toJson (merge (dict "cidrIP" $r.cidr_ipv4) $desc) }}
+{{- else if $r.cidr_ipv6 }}
+      ipv6Ranges:
+        - {{ toJson (merge (dict "cidrIPv6" $r.cidr_ipv6) $desc) }}
+{{- else if $r.prefix_list_id }}
+      prefixListIDs:
+        - {{ toJson (merge (dict "prefixListID" $r.prefix_list_id) $desc) }}
+{{- else if eq $r.referenced_security_group_id "self" }}
+      {{- /* self: a pair without a group ID is this group (ACK fills its ID in) */}}
+      userIDGroupPairs:
+        - {{ toJson $desc }}
+{{- else }}
+      userIDGroupPairs:
+        - {{ toJson (merge (dict "groupID" $r.referenced_security_group_id) $desc) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags $v.security_group_tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}

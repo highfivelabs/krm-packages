@@ -1,0 +1,5 @@
+# expect: jwt_validation is not supported
+name: x
+vpc_id: vpc-1
+listeners:
+  http: {jwt_validation: {issuer: i, jwks_endpoint: j}}

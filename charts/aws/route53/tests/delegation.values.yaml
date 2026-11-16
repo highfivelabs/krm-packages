@@ -1,0 +1,5 @@
+# A public zone on a reusable delegation set, kept when the component is
+# deleted.
+name: shop.example.com.
+delegation_set_id: N1PA6795SAMPLE
+deletion_policy: ABANDON

@@ -1,0 +1,90 @@
+---
+# Source: route53/templates/zone.yaml
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: HostedZone
+metadata:
+  name: mock-zone
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "zone"
+spec:
+  name: "catalog-mock.example.com"
+  hostedZoneConfig:
+    comment: "Managed by Terraform"
+  tags:
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: route53/templates/records.yaml
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: RecordSet
+metadata:
+  name: mock-record-blue
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "record-blue"
+spec:
+  hostedZoneRef:
+    from:
+      name: mock-zone
+  name: "app"
+  recordType: "CNAME"
+  setIdentifier: "blue"
+  weight: 90
+  ttl: 60
+  resourceRecords:
+    - value: "blue.example.net."
+---
+# Source: route53/templates/records.yaml
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: RecordSet
+metadata:
+  name: mock-record-green
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "record-green"
+spec:
+  hostedZoneRef:
+    from:
+      name: mock-zone
+  name: "app"
+  recordType: "CNAME"
+  setIdentifier: "green"
+  weight: 10
+  ttl: 60
+  resourceRecords:
+    - value: "green.example.net."
+---
+# Source: route53/templates/records.yaml
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: RecordSet
+metadata:
+  name: mock-record-www
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "record-www"
+spec:
+  hostedZoneRef:
+    from:
+      name: mock-zone
+  name: "www"
+  recordType: "A"
+  ttl: 60
+  resourceRecords:
+    - value: "192.0.2.10"

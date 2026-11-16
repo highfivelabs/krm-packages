@@ -1,0 +1,49 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "Zone": the hosted zone (aws_route53_zone.this) as ACK's
+HostedZone. A private zone's VPCs (var.vpc) are spec.vpcs, which ACK keeps
+equal to the zone's associations. A delegation set and accelerated recovery
+apply to a public zone only, as in the module.
+*/ -}}
+{{- include "ack.names" (list $ list) -}}
+{{- $v := .Values -}}
+{{- if $v.create }}
+{{- if not $v.name }}
+{{- fail "route53: name is required: the hosted zone's domain name" }}
+{{- end }}
+---
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: HostedZone
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "zone")) "id" "zone" "region" "") | nindent 2 }}
+spec:
+  name: {{ $v.name | quote }}
+  hostedZoneConfig:
+    {{- /* Unset, the Terraform provider's default. */}}
+    comment: {{ $v.comment | default "Managed by Terraform" | quote }}
+{{- if $v.vpc }}
+    privateZone: true
+  vpcs:
+{{- range $key := keys $v.vpc | sortAlpha }}
+{{- $e := index $v.vpc $key }}
+{{- if not $e.vpc_id }}
+{{- fail (printf "route53: vpc.%s needs vpc_id" $key) }}
+{{- end }}
+{{- if not $e.vpc_region }}
+{{- fail (printf "route53: vpc.%s needs vpc_region: ACK's HostedZone requires each VPC's region, and the chart cannot know the provider's region Terraform defaults to" $key) }}
+{{- end }}
+    - vpcID: {{ $e.vpc_id | quote }}
+      vpcRegion: {{ $e.vpc_region | quote }}
+{{- end }}
+{{- else }}
+{{- with $v.delegation_set_id }}
+  delegationSetID: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}

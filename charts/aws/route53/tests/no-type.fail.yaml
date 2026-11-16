@@ -1,0 +1,4 @@
+# expect: route53: records.a needs type
+name: example.com
+records:
+  a: {type: "", ttl: 60, records: [192.0.2.1]}

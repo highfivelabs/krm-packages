@@ -1,0 +1,49 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# What tests/mock.values.yaml needs and the chart does not make: a VPC and
+# two subnets in two zones (hack/mock-apply-aws.sh applies them first,
+# deletes them last).
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: VPC
+metadata:
+  name: alb-vpc
+  annotations:
+    services.k8s.aws/region: us-east-1
+spec:
+  cidrBlocks: [10.40.0.0/16]
+  tags:
+    - key: catalog-test
+      value: "true"
+---
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: Subnet
+metadata:
+  name: alb-subnet-a
+  annotations:
+    services.k8s.aws/region: us-east-1
+spec:
+  vpcRef:
+    from:
+      name: alb-vpc
+  cidrBlock: 10.40.1.0/24
+  availabilityZone: us-east-1a
+  tags:
+    - key: catalog-test
+      value: "true"
+---
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: Subnet
+metadata:
+  name: alb-subnet-b
+  annotations:
+    services.k8s.aws/region: us-east-1
+spec:
+  vpcRef:
+    from:
+      name: alb-vpc
+  cidrBlock: 10.40.2.0/24
+  availabilityZone: us-east-1b
+  tags:
+    - key: catalog-test
+      value: "true"

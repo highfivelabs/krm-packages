@@ -1,0 +1,5 @@
+# expect: target_groups.a needs name
+name: x
+vpc_id: vpc-1
+target_groups:
+  a: {port: 80}

@@ -1,0 +1,5 @@
+# expect: alb: associate_web_acl is not supported
+name: x
+vpc_id: vpc-1
+associate_web_acl: true
+web_acl_arn: arn:aws:wafv2:eu-west-1:1:regional/webacl/x/1

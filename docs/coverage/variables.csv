@@ -2469,28 +2469,28 @@ aws,sqs,sqs_managed_sse_enabled,bool,yes,,
 aws,sqs,tags,map(string),yes,,
 aws,sqs,use_name_prefix,bool,no,a queue name with Terraform's random suffix (name_prefix) would change between renders; set name (the namePrefix value keeps two Instances' queues apart),gap
 aws,sqs,visibility_timeout_seconds,number,yes,,
-aws,route53,comment,string,no,,no-chart
-aws,route53,create,bool,no,,no-chart
-aws,route53,create_dnssec_kms_key,bool,no,,no-chart
-aws,route53,create_zone,bool,no,,no-chart
-aws,route53,delegation_set_id,string,no,,no-chart
-aws,route53,dnssec_key_signing_key_name,string,no,,no-chart
-aws,route53,dnssec_kms_key_aliases,list(string),no,,no-chart
-aws,route53,dnssec_kms_key_arn,string,no,,no-chart
-aws,route53,dnssec_kms_key_description,string,no,,no-chart
-aws,route53,dnssec_kms_key_tags,map(string),no,,no-chart
-aws,route53,enable_accelerated_recovery,bool,no,,no-chart
-aws,route53,enable_dnssec,bool,no,,no-chart
-aws,route53,force_destroy,bool,no,,no-chart
-aws,route53,ignore_vpc,bool,no,,no-chart
-aws,route53,name,string,no,,no-chart
-aws,route53,private_zone,bool,no,,no-chart
-aws,route53,records,"map(object({alias, allow_overwrite, cidr_routing_policy, failover_routing_policy, full_name, geolocation_routing_policy, +11}))",no,,no-chart
-aws,route53,tags,map(string),no,,no-chart
-aws,route53,timeouts,"object({create, delete, update})",no,,no-chart
-aws,route53,vpc,"map(object({vpc_id, vpc_region}))",no,,no-chart
-aws,route53,vpc_association_authorizations,"map(object({vpc_id, vpc_region}))",no,,no-chart
-aws,route53,vpc_id,string,no,,no-chart
+aws,route53,comment,string,yes,,
+aws,route53,create,bool,yes,,
+aws,route53,create_dnssec_kms_key,bool,no,"used only with enable_dnssec, which is refused",gap
+aws,route53,create_zone,bool,no,"false looks an existing zone up by name (data.aws_route53_zone); a render cannot look anything up: the zone is another component's, and its records belong in that component",by-design
+aws,route53,delegation_set_id,string,yes,,
+aws,route53,dnssec_key_signing_key_name,string,no,"used only with enable_dnssec, which is refused",gap
+aws,route53,dnssec_kms_key_aliases,list(string),no,"used only with enable_dnssec, which is refused",gap
+aws,route53,dnssec_kms_key_arn,string,no,"used only with enable_dnssec, which is refused",gap
+aws,route53,dnssec_kms_key_description,string,no,"used only with enable_dnssec, which is refused",gap
+aws,route53,dnssec_kms_key_tags,map(string),no,"used only with enable_dnssec, which is refused",gap
+aws,route53,enable_accelerated_recovery,bool,no,ACK's HostedZone (route53-controller v1.8.0) has no field for Route 53 Accelerated Recovery,gap
+aws,route53,enable_dnssec,bool,no,"ack-extensions' KeySigningKey and DNSSEC (Cloud Control) take the zone's ID only as a string, with no reference to a HostedZone, so they cannot be wired to the zone this render makes",gap
+aws,route53,force_destroy,bool,no,ACK's HostedZone has no field to delete records made elsewhere before the zone; Route 53 refuses to delete a zone that still has them,gap
+aws,route53,ignore_vpc,bool,no,ACK's HostedZone owns the zone's VPC associations (spec.vpcs) and removes ones made elsewhere; leaving them alone after creation has no ACK equivalent,gap
+aws,route53,name,string,yes,,
+aws,route53,private_zone,bool,no,"used only to look up an existing zone (create_zone: false), which is refused",by-design
+aws,route53,records,"map(object({alias, allow_overwrite, cidr_routing_policy, failover_routing_policy, full_name, geolocation_routing_policy, +11}))",partial,"accepted, but geoproximity_routing_policy (ACK's RecordSet has no geoproximity field), allow_overwrite: true (no UPSERT-on-create field) and an alias's zone_id self (aliasTarget takes a zone only by ID, with no reference) are refused, and each record's timeouts is not carried (ACK retries until synced)",gap
+aws,route53,tags,map(string),yes,,
+aws,route53,timeouts,"object({create, delete, update})",no,"Terraform's create, update and delete timeouts: ACK retries until the zone is synced, and Bundt waits for it",by-design
+aws,route53,vpc,"map(object({vpc_id, vpc_region}))",partial,"accepted, but each entry needs vpc_region: ACK's HostedZone requires it, and the chart cannot know the provider's region Terraform defaults to",gap
+aws,route53,vpc_association_authorizations,"map(object({vpc_id, vpc_region}))",no,aws_route53_vpc_association_authorization has no ACK or ack-extensions kind (no Cloud Control type),gap
+aws,route53,vpc_id,string,no,"used only to look up an existing zone (create_zone: false), which is refused",by-design
 aws,ecs,capacity_providers,"map(object({auto_scaling_group_provider, managed_instances_provider, name, tags}))",no,,no-chart
 aws,ecs,cloudwatch_log_group_class,string,no,,no-chart
 aws,ecs,cloudwatch_log_group_kms_key_id,string,no,,no-chart
@@ -2551,56 +2551,56 @@ aws,ecs,task_exec_iam_statements,"map(object({actions, condition, effect, not_ac
 aws,ecs,task_exec_secret_arns,list(string),no,,no-chart
 aws,ecs,task_exec_ssm_param_arns,list(string),no,,no-chart
 aws,ecs,vpc_id,string,no,,no-chart
-aws,alb,access_logs,"object({bucket, enabled, prefix})",no,,no-chart
-aws,alb,additional_target_group_attachments,"map(object({availability_zone, port, target_group_key, target_id, target_type}))",no,,no-chart
-aws,alb,associate_web_acl,bool,no,,no-chart
-aws,alb,client_keep_alive,number,no,,no-chart
-aws,alb,connection_logs,"object({bucket, enabled, prefix})",no,,no-chart
-aws,alb,create,bool,no,,no-chart
-aws,alb,create_security_group,bool,no,,no-chart
-aws,alb,customer_owned_ipv4_pool,string,no,,no-chart
-aws,alb,default_port,number,no,,no-chart
-aws,alb,default_protocol,string,no,,no-chart
-aws,alb,desync_mitigation_mode,string,no,,no-chart
-aws,alb,dns_record_client_routing_policy,string,no,,no-chart
-aws,alb,drop_invalid_header_fields,bool,no,,no-chart
-aws,alb,enable_cross_zone_load_balancing,bool,no,,no-chart
-aws,alb,enable_deletion_protection,bool,no,,no-chart
-aws,alb,enable_http2,bool,no,,no-chart
-aws,alb,enable_tls_version_and_cipher_suite_headers,bool,no,,no-chart
-aws,alb,enable_waf_fail_open,bool,no,,no-chart
-aws,alb,enable_xff_client_port,bool,no,,no-chart
-aws,alb,enable_zonal_shift,bool,no,,no-chart
-aws,alb,enforce_security_group_inbound_rules_on_private_link_traffic,string,no,,no-chart
-aws,alb,health_check_logs,"object({bucket, enabled, prefix})",no,,no-chart
-aws,alb,idle_timeout,number,no,,no-chart
-aws,alb,internal,bool,no,,no-chart
-aws,alb,ip_address_type,string,no,,no-chart
-aws,alb,ipam_pools,object({ipv4_ipam_pool_id}),no,,no-chart
-aws,alb,listeners,"map(object({additional_certificate_arns, alpn_policy, authenticate_cognito, authenticate_oidc, certificate_arn, fixed_response, +31}))",no,,no-chart
-aws,alb,load_balancer_type,string,no,,no-chart
-aws,alb,minimum_load_balancer_capacity,object({capacity_units}),no,,no-chart
-aws,alb,name,string,no,,no-chart
-aws,alb,name_prefix,string,no,,no-chart
-aws,alb,preserve_host_header,bool,no,,no-chart
-aws,alb,putin_khuylo,bool,no,,no-chart
-aws,alb,region,string,no,,no-chart
-aws,alb,route53_records,"map(object({evaluate_target_health, name, type, zone_id}))",no,,no-chart
-aws,alb,security_group_description,string,no,,no-chart
-aws,alb,security_group_egress_rules,"map(object({cidr_ipv4, cidr_ipv6, description, from_port, ip_protocol, name, +4}))",no,,no-chart
-aws,alb,security_group_ingress_rules,"map(object({cidr_ipv4, cidr_ipv6, description, from_port, ip_protocol, name, +4}))",no,,no-chart
-aws,alb,security_group_name,string,no,,no-chart
-aws,alb,security_group_tags,map(string),no,,no-chart
-aws,alb,security_group_use_name_prefix,bool,no,,no-chart
-aws,alb,security_groups,list(string),no,,no-chart
-aws,alb,subnet_mapping,"list(object({allocation_id, ipv6_address, private_ipv4_address, subnet_id}))",no,,no-chart
-aws,alb,subnets,list(string),no,,no-chart
-aws,alb,tags,map(string),no,,no-chart
-aws,alb,target_groups,"map(object({attach_lambda_permission, availability_zone, connection_termination, create_attachment, deregistration_delay, health_check, +27}))",no,,no-chart
-aws,alb,timeouts,"object({create, delete, update})",no,,no-chart
-aws,alb,vpc_id,string,no,,no-chart
-aws,alb,web_acl_arn,string,no,,no-chart
-aws,alb,xff_header_processing_mode,string,no,,no-chart
+aws,alb,access_logs,"object({bucket, enabled, prefix})",yes,,
+aws,alb,additional_target_group_attachments,"map(object({availability_zone, port, target_group_key, target_id, target_type}))",yes,,
+aws,alb,associate_web_acl,bool,no,"ack-extensions' WebACLAssociation takes the load balancer's ARN only as a string, with no reference to the LoadBalancer this render makes",gap
+aws,alb,client_keep_alive,number,yes,,
+aws,alb,connection_logs,"object({bucket, enabled, prefix})",yes,,
+aws,alb,create,bool,yes,,
+aws,alb,create_security_group,bool,yes,,
+aws,alb,customer_owned_ipv4_pool,string,yes,,
+aws,alb,default_port,number,yes,,
+aws,alb,default_protocol,string,yes,,
+aws,alb,desync_mitigation_mode,string,yes,,
+aws,alb,dns_record_client_routing_policy,string,yes,,
+aws,alb,drop_invalid_header_fields,bool,yes,,
+aws,alb,enable_cross_zone_load_balancing,bool,yes,,
+aws,alb,enable_deletion_protection,bool,yes,,
+aws,alb,enable_http2,bool,yes,,
+aws,alb,enable_tls_version_and_cipher_suite_headers,bool,yes,,
+aws,alb,enable_waf_fail_open,bool,yes,,
+aws,alb,enable_xff_client_port,bool,yes,,
+aws,alb,enable_zonal_shift,bool,yes,,
+aws,alb,enforce_security_group_inbound_rules_on_private_link_traffic,string,no,ACK's LoadBalancer (elbv2-controller v1.10.0) has no field for it,gap
+aws,alb,health_check_logs,"object({bucket, enabled, prefix})",yes,,
+aws,alb,idle_timeout,number,yes,,
+aws,alb,internal,bool,yes,,
+aws,alb,ip_address_type,string,yes,,
+aws,alb,ipam_pools,object({ipv4_ipam_pool_id}),no,ACK's LoadBalancer (elbv2-controller v1.10.0) has no IPAM pools field,gap
+aws,alb,listeners,"map(object({additional_certificate_arns, alpn_policy, authenticate_cognito, authenticate_oidc, certificate_arn, fixed_response, +31}))",partial,"accepted, but the listener attributes (routing_http_*, tcp_idle_timeout_seconds), additional_certificate_arns, mutual_authentication.advertise_trust_store_ca_names, jwt_validation actions, rule transforms and regex_values conditions have no ACK field and are refused; a rule needs priority (ACK requires it)",gap
+aws,alb,load_balancer_type,string,yes,,
+aws,alb,minimum_load_balancer_capacity,object({capacity_units}),no,ACK's LoadBalancer (elbv2-controller v1.10.0) has no capacity reservation field,gap
+aws,alb,name,string,partial,"accepted, and required: unset (with name_prefix unset), Terraform generates a name, which would change between renders",gap
+aws,alb,name_prefix,string,no,"Terraform appends a random suffix, and a render must not change between plans; give name (namePrefix keeps two Instances' load balancers apart)",gap
+aws,alb,preserve_host_header,bool,yes,,
+aws,alb,putin_khuylo,bool,yes,,
+aws,alb,region,string,yes,,
+aws,alb,route53_records,"map(object({evaluate_target_health, name, type, zone_id}))",no,"an alias record needs the load balancer's DNS name and zone ID, which exist only in its status, and ACK's RecordSet has no reference to a LoadBalancer; make the records in a route53 component from this one's dns_name and zone_id outputs",gap
+aws,alb,security_group_description,string,yes,,
+aws,alb,security_group_egress_rules,"map(object({cidr_ipv4, cidr_ipv6, description, from_port, ip_protocol, name, +4}))",partial,"accepted, but each rule's name and tags are not carried: ACK keeps a group's rules inline in SecurityGroup, which has no per-rule tags",gap
+aws,alb,security_group_ingress_rules,"map(object({cidr_ipv4, cidr_ipv6, description, from_port, ip_protocol, name, +4}))",partial,"accepted, but each rule's name and tags are not carried: ACK keeps a group's rules inline in SecurityGroup, which has no per-rule tags",gap
+aws,alb,security_group_name,string,yes,,
+aws,alb,security_group_tags,map(string),yes,,
+aws,alb,security_group_use_name_prefix,bool,partial,"accepted: true (the default) names the group as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' groups apart",gap
+aws,alb,security_groups,list(string),partial,"accepted with create_security_group: false; with the chart's own group it is refused, since ACK's LoadBalancer cannot take group references and IDs together",gap
+aws,alb,subnet_mapping,"list(object({allocation_id, ipv6_address, private_ipv4_address, subnet_id}))",yes,,
+aws,alb,subnets,list(string),yes,,
+aws,alb,tags,map(string),yes,,
+aws,alb,target_groups,"map(object({attach_lambda_permission, availability_zone, connection_termination, create_attachment, deregistration_delay, health_check, +27}))",partial,"accepted, but each group needs name (name_prefix, a random suffix, is refused), and attach_lambda_permission is refused: ack-extensions' Lambda Permission cannot reference the target group this render makes (the lambda_* fields go with it)",gap
+aws,alb,timeouts,"object({create, delete, update})",no,"Terraform's create, update and delete timeouts: ACK retries until the load balancer is synced, and Bundt waits for it",by-design
+aws,alb,vpc_id,string,partial,accepted when set; unset with create_security_group: true (Terraform's default VPC) is refused: ACK's SecurityGroup needs its VPC's ID,gap
+aws,alb,web_acl_arn,string,no,"used only with associate_web_acl, which is refused",gap
+aws,alb,xff_header_processing_mode,string,yes,,
 aws,dynamodb-table,attributes,list(map(string)),yes,,
 aws,dynamodb-table,autoscaling_defaults,map(string),yes,,
 aws,dynamodb-table,autoscaling_enabled,bool,no,the module's Application Auto Scaling targets and policies (applicationautoscaling-controller's ScalableTarget and ScalingPolicy) are not ported yet,not-ported

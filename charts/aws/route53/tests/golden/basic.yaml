@@ -1,0 +1,113 @@
+---
+# Source: route53/templates/zone.yaml
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: HostedZone
+metadata:
+  name: basic-zone
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "zone"
+spec:
+  name: "example.com"
+  hostedZoneConfig:
+    comment: "Public zone for example.com"
+  tags:
+    - key: "Environment"
+      value: "dev"
+---
+# Source: route53/templates/records.yaml
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: RecordSet
+metadata:
+  name: basic-record-apex-mx
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "record-apex-mx"
+spec:
+  hostedZoneRef:
+    from:
+      name: basic-zone
+  name: "example.com."
+  recordType: "MX"
+  ttl: 3600
+  resourceRecords:
+    - value: "10 mail.example.com."
+---
+# Source: route53/templates/records.yaml
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: RecordSet
+metadata:
+  name: basic-record-blue
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "record-blue"
+spec:
+  hostedZoneRef:
+    from:
+      name: basic-zone
+  name: "test"
+  recordType: "CNAME"
+  setIdentifier: "test-primary"
+  weight: 90
+  ttl: 5
+  resourceRecords:
+    - value: "test.example.com."
+---
+# Source: route53/templates/records.yaml
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: RecordSet
+metadata:
+  name: basic-record-green
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "record-green"
+spec:
+  hostedZoneRef:
+    from:
+      name: basic-zone
+  name: "test"
+  recordType: "CNAME"
+  setIdentifier: "test-secondary"
+  weight: 10
+  ttl: 5
+  resourceRecords:
+    - value: "test2.example.com."
+---
+# Source: route53/templates/records.yaml
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: RecordSet
+metadata:
+  name: basic-record-s3-bucket
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "record-s3-bucket"
+spec:
+  hostedZoneRef:
+    from:
+      name: basic-zone
+  name: "s3-bucket"
+  recordType: "A"
+  aliasTarget:
+    dnsName: "s3-website-eu-west-1.amazonaws.com"
+    evaluateTargetHealth: false
+    hostedZoneID: "Z1BKCTXD74EZPE"

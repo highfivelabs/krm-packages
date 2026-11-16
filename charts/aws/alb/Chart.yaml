@@ -1,0 +1,24 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: v2
+name: alb
+description: >-
+  An Elastic Load Balancing v2 load balancer (application, network or
+  gateway) with its listeners, listener rules, target groups and security
+  group, as AWS Controllers for Kubernetes (ACK) objects. A port of
+  terraform-aws-modules' alb module (its root).
+type: application
+version: 0.1.0
+# The module release this chart was ported from (UPSTREAM.md).
+appVersion: "terraform-aws-alb-v10.5.1"
+kubeVersion: ">=1.27.0-0"
+keywords: [aws, ack, elbv2, alb, nlb, load-balancer, terraform-aws-modules]
+home: https://github.com/highfivelabs/catalog
+sources:
+  - https://github.com/terraform-aws-modules/terraform-aws-alb/tree/6c6e48c10d450d01cf6715346e926df0b858efc2
+annotations:
+  hfl.dev/source: terraform-aws-alb
+  hfl.dev/source-version: v10.5.1
+  hfl.dev/source-commit: 6c6e48c10d450d01cf6715346e926df0b858efc2
+  hfl.dev/ack-elbv2-controller: "v1.10.0"
+  hfl.dev/ack-ec2-controller: "v1.23.1"

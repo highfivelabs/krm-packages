@@ -1,0 +1,4 @@
+# expect: route53: vpc.a needs vpc_region
+name: internal.example.com
+vpc:
+  a: {vpc_id: vpc-1}

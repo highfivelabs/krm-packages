@@ -1,0 +1,5 @@
+# expect: alb: name_prefix is not supported
+name_prefix: web-
+security_group_name: web
+names: {loadBalancer: web}
+vpc_id: vpc-1

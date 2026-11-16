@@ -1,0 +1,14 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The namePrefix convention (docs/design.md, "Names, labels and tags"): the
+# load balancer's, its security group's and each target group's names
+# carry the namePrefix (unique per account and region, or per VPC). Each
+# is spec.name.
+exempt:
+  Listener: "a load balancer and a port identify it; it has no name"
+  Rule: "a listener and a priority identify it; it has no name"
+nameFields:
+  LoadBalancer: name
+  SecurityGroup: name
+  TargetGroup: name

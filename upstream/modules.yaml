@@ -1592,7 +1592,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/route53/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-route53/tree/v6.5.1
-    chart: null
+    chart: charts/aws/route53
   - id: aws/ecs
     cloud: aws
     module: ecs
@@ -1620,7 +1620,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/alb/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-alb/tree/v10.5.1
-    chart: null
+    chart: charts/aws/alb
   - id: aws/dynamodb-table
     cloud: aws
     module: dynamodb-table

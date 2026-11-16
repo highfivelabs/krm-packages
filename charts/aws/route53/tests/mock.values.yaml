@@ -1,0 +1,8 @@
+# Applied to the fake AWS by hack/mock-apply-aws.sh: a public zone with a
+# plain record and a weighted pair.
+name: catalog-mock.example.com
+tags: {catalog-test: "true"}
+records:
+  www: {type: A, ttl: 60, records: [192.0.2.10]}
+  blue: {name: app, type: CNAME, ttl: 60, records: [blue.example.net.], set_identifier: blue, weighted_routing_policy: {weight: 90}}
+  green: {name: app, type: CNAME, ttl: 60, records: [green.example.net.], set_identifier: green, weighted_routing_policy: {weight: 10}}

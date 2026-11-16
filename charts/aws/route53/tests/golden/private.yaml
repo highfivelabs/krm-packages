@@ -1,0 +1,172 @@
+---
+# Source: route53/templates/zone.yaml
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: HostedZone
+metadata:
+  name: private-zone
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "private"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "zone"
+spec:
+  name: "internal.example.com"
+  hostedZoneConfig:
+    comment: "Managed by Terraform"
+    privateZone: true
+  vpcs:
+    - vpcID: "vpc-0123456789abcdef0"
+      vpcRegion: "eu-west-1"
+    - vpcID: "vpc-0fedcba9876543210"
+      vpcRegion: "us-east-1"
+---
+# Source: route53/templates/records.yaml
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: RecordSet
+metadata:
+  name: private-record-cidr
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "private"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "record-cidr"
+spec:
+  hostedZoneRef:
+    from:
+      name: private-zone
+  name: "cidr"
+  recordType: "A"
+  cidrRoutingConfig:
+    collectionID: "9ac77ea5-3d5c-4b2e-9a1f-0a1b2c3d4e5f"
+    locationName: "office"
+  setIdentifier: "c1"
+  ttl: 300
+  resourceRecords:
+    - value: "10.0.0.50"
+---
+# Source: route53/templates/records.yaml
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: RecordSet
+metadata:
+  name: private-record-db-primary
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "private"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "record-db-primary"
+spec:
+  hostedZoneRef:
+    from:
+      name: private-zone
+  name: "db"
+  recordType: "A"
+  failover: "PRIMARY"
+  healthCheckID: "11111111-2222-3333-4444-555555555555"
+  setIdentifier: "primary"
+  ttl: 60
+  resourceRecords:
+    - value: "10.0.0.10"
+---
+# Source: route53/templates/records.yaml
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: RecordSet
+metadata:
+  name: private-record-db-secondary
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "private"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "record-db-secondary"
+spec:
+  hostedZoneRef:
+    from:
+      name: private-zone
+  name: "db"
+  recordType: "A"
+  failover: "SECONDARY"
+  setIdentifier: "secondary"
+  ttl: 60
+  resourceRecords:
+    - value: "10.1.0.10"
+---
+# Source: route53/templates/records.yaml
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: RecordSet
+metadata:
+  name: private-record-geo
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "private"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "record-geo"
+spec:
+  hostedZoneRef:
+    from:
+      name: private-zone
+  name: "geo"
+  recordType: "A"
+  geoLocation:
+    continentCode: "EU"
+  setIdentifier: "europe"
+  ttl: 300
+  resourceRecords:
+    - value: "10.0.0.20"
+---
+# Source: route53/templates/records.yaml
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: RecordSet
+metadata:
+  name: private-record-latency
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "private"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "record-latency"
+spec:
+  hostedZoneRef:
+    from:
+      name: private-zone
+  name: "latency"
+  recordType: "A"
+  region: "eu-west-1"
+  setIdentifier: "euw1"
+  ttl: 300
+  resourceRecords:
+    - value: "10.0.0.30"
+---
+# Source: route53/templates/records.yaml
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: RecordSet
+metadata:
+  name: private-record-multi
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "private"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "record-multi"
+spec:
+  hostedZoneRef:
+    from:
+      name: private-zone
+  name: "multi"
+  recordType: "A"
+  multiValueAnswer: true
+  setIdentifier: "m1"
+  ttl: 300
+  resourceRecords:
+    - value: "10.0.0.40"
+    - value: "10.0.0.41"

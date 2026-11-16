@@ -1,0 +1,3 @@
+# expect: route53: force_destroy is not supported
+name: example.com
+force_destroy: true

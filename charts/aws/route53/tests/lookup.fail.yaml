@@ -1,0 +1,3 @@
+# expect: route53: create_zone is not supported
+name: example.com
+create_zone: false

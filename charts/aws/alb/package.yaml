@@ -1,0 +1,60 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (docs/design.md, "Outputs"): the module's
+# outputs from the live LoadBalancer (resources.load-balancer), Listeners
+# (resources.listener-<key>), Rules (resources.rule-<listener>/<rule>),
+# TargetGroups (resources.target-group-<key>) and SecurityGroup
+# (resources.security-group). id is the load balancer's ARN, as
+# Terraform's. listeners, listener_rules and target_groups are the one
+# field consumers take from each, its ARN, by key (outputs are selective;
+# Terraform's outputs are the whole resources). EC2 reports no ARN for a
+# group, so security_group_arn is built as the Terraform provider builds
+# it. Not provided: route53_records (refused).
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: aws-alb
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [ack]
+  outputs:
+    id: >-
+      'load-balancer' in resources && has(resources['load-balancer'].status.ackResourceMetadata.arn)
+      ? dyn(resources['load-balancer'].status.ackResourceMetadata.arn) : null
+    arn: >-
+      'load-balancer' in resources && has(resources['load-balancer'].status.ackResourceMetadata.arn)
+      ? dyn(resources['load-balancer'].status.ackResourceMetadata.arn) : null
+    arn_suffix: >-
+      'load-balancer' in resources && has(resources['load-balancer'].status.ackResourceMetadata.arn)
+      ? dyn(resources['load-balancer'].status.ackResourceMetadata.arn.substring(
+          resources['load-balancer'].status.ackResourceMetadata.arn.indexOf(':loadbalancer/') + 14))
+      : null
+    dns_name: >-
+      'load-balancer' in resources && has(resources['load-balancer'].status.dnsName)
+      ? dyn(resources['load-balancer'].status.dnsName) : null
+    zone_id: >-
+      'load-balancer' in resources && has(resources['load-balancer'].status.canonicalHostedZoneID)
+      ? dyn(resources['load-balancer'].status.canonicalHostedZoneID) : null
+    listeners: >-
+      resources.filter(k, k.startsWith('listener-')).transformMapEntry(i, k, {
+        k.substring(9): has(resources[k].status.ackResourceMetadata.arn) ? resources[k].status.ackResourceMetadata.arn : ''})
+    listener_rules: >-
+      resources.filter(k, k.startsWith('rule-')).transformMapEntry(i, k, {
+        k.substring(5): has(resources[k].status.ackResourceMetadata.arn) ? resources[k].status.ackResourceMetadata.arn : ''})
+    target_groups: >-
+      resources.filter(k, k.startsWith('target-group-')).transformMapEntry(i, k, {
+        k.substring(13): has(resources[k].status.ackResourceMetadata.arn) ? resources[k].status.ackResourceMetadata.arn : ''})
+    security_group_id: >-
+      'security-group' in resources && has(resources['security-group'].status.id)
+      ? dyn(resources['security-group'].status.id) : null
+    security_group_arn: >-
+      'security-group' in resources && has(resources['security-group'].status.id)
+      ? dyn('arn:'
+        + (resources['security-group'].status.ackResourceMetadata.region.startsWith('cn-') ? 'aws-cn'
+          : (resources['security-group'].status.ackResourceMetadata.region.startsWith('us-gov-') ? 'aws-us-gov' : 'aws'))
+        + ':ec2:' + resources['security-group'].status.ackResourceMetadata.region
+        + ':' + resources['security-group'].status.ackResourceMetadata.ownerAccountID
+        + ':security-group/' + resources['security-group'].status.id)
+      : null

@@ -1,0 +1,5 @@
+# expect: forward.target_group_key "nope" is not a key of target_groups
+name: x
+vpc_id: vpc-1
+listeners:
+  http: {forward: {target_group_key: nope}}

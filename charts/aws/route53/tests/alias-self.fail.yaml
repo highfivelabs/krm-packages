@@ -1,0 +1,4 @@
+# expect: alias.zone_id self is not supported
+name: example.com
+records:
+  a: {type: A, alias: {name: www.example.com, zone_id: self}}

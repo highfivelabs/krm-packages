@@ -1,0 +1,97 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "Records": one RecordSet per entry of records
+(aws_route53_record.this), in the zone this chart makes (hostedZoneRef).
+ACK appends the zone's domain to a name that does not end with a dot, so a
+record named by its key or name is "<name>.<zone>", as in the module, and
+full_name is given fully qualified (with a trailing dot).
+*/ -}}
+{{- $v := .Values -}}
+{{- if $v.create }}
+{{- range $key := keys ($v.records | default dict) | sortAlpha }}
+{{- $r := index $v.records $key }}
+{{- if not $r.type }}
+{{- fail (printf "route53: records.%s needs type" $key) }}
+{{- end }}
+{{- if $r.geoproximity_routing_policy }}
+{{- fail (printf "route53: records.%s: records.geoproximity_routing_policy is not supported: ACK's RecordSet (route53-controller v1.8.0) has no geoproximity field (docs/aws.md)" $key) }}
+{{- end }}
+{{- if $r.allow_overwrite }}
+{{- fail (printf "route53: records.%s: records.allow_overwrite is not supported: ACK's RecordSet has no field to overwrite a record already there (UPSERT on create) (docs/aws.md)" $key) }}
+{{- end }}
+{{- $name := "" }}
+{{- if $r.full_name }}
+{{- $name = printf "%s." (trimSuffix "." $r.full_name) }}
+{{- else if not (kindIs "invalid" $r.name) }}
+{{- $name = $r.name }}
+{{- else }}
+{{- $name = $key }}
+{{- end }}
+---
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: RecordSet
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "record" $key)) "id" (printf "record-%s" $key)) | nindent 2 }}
+spec:
+  hostedZoneRef:
+    from:
+      name: {{ include "ack.name" (list $.Release.Name "zone") }}
+  name: {{ $name | quote }}
+  recordType: {{ $r.type | quote }}
+{{- if $r.alias }}
+{{- if eq (toString $r.alias.zone_id) "self" }}
+{{- fail (printf "route53: records.%s: alias.zone_id self is not supported: ACK's RecordSet takes an alias target's zone only as an ID, with no reference to the zone this render makes (docs/aws.md); give the zone's ID" $key) }}
+{{- end }}
+  aliasTarget:
+    dnsName: {{ $r.alias.name | quote }}
+    evaluateTargetHealth: {{ $r.alias.evaluate_target_health | default false }}
+    hostedZoneID: {{ $r.alias.zone_id | quote }}
+{{- end }}
+{{- with $r.cidr_routing_policy }}
+  cidrRoutingConfig:
+    collectionID: {{ .collection_id | quote }}
+    locationName: {{ .location_name | quote }}
+{{- end }}
+{{- with $r.failover_routing_policy }}
+  failover: {{ .type | quote }}
+{{- end }}
+{{- with $r.geolocation_routing_policy }}
+  geoLocation:
+{{- with .continent }}
+    continentCode: {{ . | quote }}
+{{- end }}
+{{- with .country }}
+    countryCode: {{ . | quote }}
+{{- end }}
+{{- with .subdivision }}
+    subdivisionCode: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with $r.health_check_id }}
+  healthCheckID: {{ . | quote }}
+{{- end }}
+{{- with $r.latency_routing_policy }}
+  region: {{ .region | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $r.multivalue_answer_routing_policy) }}
+  multiValueAnswer: {{ $r.multivalue_answer_routing_policy }}
+{{- end }}
+{{- with $r.set_identifier }}
+  setIdentifier: {{ . | quote }}
+{{- end }}
+{{- with $r.weighted_routing_policy }}
+  weight: {{ int64 .weight }}
+{{- end }}
+{{- if not (kindIs "invalid" $r.ttl) }}
+  ttl: {{ int64 $r.ttl }}
+{{- end }}
+{{- with $r.records }}
+  resourceRecords:
+{{- range . }}
+    - value: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

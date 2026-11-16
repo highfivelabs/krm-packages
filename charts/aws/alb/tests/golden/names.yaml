@@ -1,0 +1,80 @@
+---
+# Source: alb/templates/listeners.yaml
+apiVersion: elbv2.services.k8s.aws/v1alpha1
+kind: Listener
+metadata:
+  name: names-listener-http
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: alb
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "listener-http"
+spec:
+  loadBalancerRef:
+    from:
+      name: names-lb
+  port: 80
+  protocol: "HTTP"
+  defaultActions:
+    - fixedResponseConfig:
+        contentType: text/plain
+        statusCode: "404"
+      type: fixed-response
+  tags:
+    - key: "team"
+      value: "shop"
+---
+# Source: alb/templates/load-balancer.yaml
+apiVersion: elbv2.services.k8s.aws/v1alpha1
+kind: LoadBalancer
+metadata:
+  name: names-lb
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: alb
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "load-balancer"
+spec:
+  name: "shop-dev-euw1-web"
+  type: "application"
+  subnets:
+    - "subnet-1"
+    - "subnet-2"
+  securityGroupRefs:
+    - from:
+        name: names-sg
+  attributes:
+    - key: "deletion_protection.enabled"
+      value: "true"
+    - key: "routing.http.drop_invalid_header_fields.enabled"
+      value: "true"
+  tags:
+    - key: "team"
+      value: "shop"
+---
+# Source: alb/templates/security-group.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: names-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: alb
+    app.kubernetes.io/version: "0.1.0"
+    hfl.dev/team: "shop"
+  annotations:
+    hfl.dev/id: "security-group"
+spec:
+  name: "shop-dev-euw1-web-lb"
+  description: "Security group for shop-dev-euw1-web-lb application load balancer"
+  vpcID: "vpc-0123456789abcdef0"
+  tags:
+    - key: "team"
+      value: "shop"

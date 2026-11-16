@@ -1,0 +1,5 @@
+# expect: listeners.additional_certificate_arns is not supported
+name: x
+vpc_id: vpc-1
+listeners:
+  https: {port: 443, protocol: HTTPS, certificate_arn: a, additional_certificate_arns: [b], fixed_response: {content_type: text/plain}}
