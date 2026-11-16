@@ -148,7 +148,7 @@ the outputs evaluated (`id` the folder's `folders/N`), all deleted, the
 deny policy included (an earlier run, `off-catalog-1113174707-3197` at
 `3de8de68`, left it undeleted: "Config Connector bugs"). An earlier run
 with an org policy evaluated `organization_policies_ids` and left the
-policy undeleted (same section). Contacts, sinks, PAM, tag bindings, the
+policy undeleted (same section). Contacts, PAM, tag bindings, the
 firewall policy association and Autokey are render-tested only.
 
 And on 2026-11-15 (0.3.0, run `off-catalog-1116014618-16654`, config-connector-extensions
@@ -158,6 +158,15 @@ exclusion, deny policy and `AssetFeed` all Ready and deleted, the
 ("Config Connector bugs"); the case no longer sets one. The Cloud Armor
 association needs a policy the case does not make, and is render-tested
 only.
+
+On 2026-11-16 (0.4.0, run `off-catalog-1116031417-15757`, config-connector-extensions
+`40da91d3`) with an intercepting sink of type `project` to the mock
+project added: the `LoggingLogSink` (`logging.gcp.hfl.dev`) and the
+`IAMMember` granting its writer identity `roles/logging.logWriter` on the
+project (`memberFrom.logSinkRef`) Ready and deleted, with all 8 objects of
+the case. mockgcp makes up a writer identity for every sink and does not
+model the interception itself (config-connector-extensions'
+`docs/fake-cloud.md`).
 
 Not applied live: live runs are pending KEYLIVE (and the test provisioner's
 folder, `docs/design.md`, "The test provisioner").

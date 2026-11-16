@@ -173,13 +173,22 @@ evaluated (`custom_constraint_ids`, `custom_role_id`,
 The run before it (`off-catalog-1113165419-19612`) found that an IAM
 `resourceRef` to the organization needs its `apiVersion`, now set. Not
 applied: contacts (mockgcp's essential contacts take only a project
-parent), sinks, PAM, the firewall policy association and tag bindings,
+parent), PAM, the firewall policy association and tag bindings,
 render-tested only.
 
 On 2026-11-15 (0.4.0, run `off-catalog-1116014618-16654`, config-connector-extensions
 `81c3f9b5`) with an asset feed and a service agent added: all 10 objects
 Ready and deleted, `service_agents` evaluated. The Cloud Armor association
 needs a policy the case does not make, and is render-tested only.
+
+On 2026-11-16 (0.5.0, run `off-catalog-1116031417-15757`, config-connector-extensions
+`40da91d3`) with an intercepting sink of type `project` to the mock
+project added: the `LoggingLogSink` (`logging.gcp.hfl.dev`) and the
+`IAMMember` granting its writer identity `roles/logging.logWriter` on the
+project (`memberFrom.logSinkRef`) Ready and deleted, with all 11 objects of
+the case. mockgcp makes up a writer identity for every sink and does not
+model the interception itself (config-connector-extensions'
+`docs/fake-cloud.md`).
 
 Not applied live: live runs are pending KEYLIVE, and a live run needs an
 organization the test identity may change (nothing can create one).
