@@ -200,6 +200,13 @@ objects Ready and deleted, among them a `Certificate` uploaded from a PFX
 and its password and the `Site` with an Azure Files mount, each from a
 Secret the run made (`hack/test-secret.sh`), and the outputs evaluated.
 
+0.6.0 against the fake cloud (stock ASO v2.22.0, aso-extensions' manager
+at `e9f424a`), run `off-catalog-1116002901-3000` (2026-11-15): all 18
+objects Ready and deleted, among them the site's and the slot's
+`SitesConfigAppSettings` (the Application Insights connection string and a
+slot's sensitive setting from Secrets the run made) and the site's
+`SitesConfigConnectionStrings`, and the outputs evaluated.
+
 ## Changes
 
 - **0.6.0** (2026-11-15): the secret app settings and connection strings
