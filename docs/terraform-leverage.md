@@ -42,7 +42,8 @@ Per-repository files for the three coverage dashboards are in
    (b) Upjet providers (`crossplane-contrib`, Apache-2.0, released about
    monthly): the only path that gives real controllers for nearly free.
    **Yes for AWS** as an opt-in fourth provider type, **maybe for Google
-   Cloud**, **no for Azure**. Needs the builder's decision (below).
+   Cloud**, **no for Azure**. The builder decided on 2026-11-09 (below):
+   Upjet is the fallback behind Cloud Control for AWS.
    (c) A generator of our own from provider schemas: **no**; the CRD half
    is easy (4 seconds), the controller half is Upjet.
    (d) Benchmark and roadmap: **yes, now**, and **Magic Modules' YAML
@@ -56,7 +57,9 @@ Per-repository files for the three coverage dashboards are in
 7. **Decision for the builder:** is a Crossplane/Upjet provider type
    acceptable in Bundt's story of Kubernetes-native clouds, at least for AWS
    Organizations, IAM Identity Center, Control Tower and the security
-   services? Details in "Recommendation".
+   services? Details in "Recommendation". **Answered 2026-11-09:** Cloud
+   Control first, Upjet as the fallback ("Decisions for the builder" in
+   "Recommendation").
 
 ## Pinned sources
 
@@ -903,19 +906,33 @@ bars (`google`, `google-beta`) or the `google-beta` one alone, as it differs
 by under a point. For Azure, `azurerm` only, with a note that `azapi` is
 generic.
 
-*Decisions for the builder.*
+*Decisions for the builder* (all four answered; each says when and
+where).
 
 1. **Is a Crossplane/Upjet provider type acceptable in Bundt's story of
    Kubernetes-native clouds?** It is Kubernetes-native (CRDs, conditions,
    no CLI in the SDK mode), but it is a second control-plane runtime and its
    objects are Terraform-shaped. A yes gives AWS its largest step; a no
    leaves AWS to ACK plus our kinds, with the Terraform data as a roadmap.
+   **Answered 2026-11-09** (ack-extensions `docs/cloudcontrol.md`,
+   "Decisions (2026-11-09)"): for the AWS long tail a generic Cloud Control
+   manager with CRDs generated from the CloudFormation schemas comes
+   first, and "Upjet remains the fallback for types this route can't
+   handle". On 2026-11-10 (K11) the builder added: "fork IFF it doesnt
+   actually use TF under the provider hood and the upjet machinery is
+   useful to us. if it isnt we should create similar but make it ours."
 2. Whether the lawyer review in "Licence and risk" should happen before or
-   after the first AWS provider is adopted.
+   after the first AWS provider is adopted. **Answered 2026-11-10** (B7,
+   the builder: "when i find council. backlog it"): backlogged until
+   counsel is found.
 3. Whether Magic Modules' YAML should become a scaffolder input for Google
-   Cloud (recommended).
+   Cloud (recommended). **Answered 2026-11-09**: yes, by the builder's
+   direction "I think we should look at Magic Modules really closely"
+   (factory `docs/prior-art.md`); the scaffolder reads it as the GCP
+   behaviour layer (factory `docs/design.md`, section 5.7).
 4. Whether to re-check `foundation.md` item 3 (organization custom roles)
-   against a real organization.
+   against a real organization. **Answered 2026-11-10** (G8, the builder:
+   "confirmed"): the org-level check is allowed.
 
 ## Files
 
