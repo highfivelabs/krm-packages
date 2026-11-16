@@ -44,14 +44,12 @@ refused:
     fields: [tls_inspect, security_profile_group, target_tags, match.source_tags]
     values: [apply_security_profile_group]
   - variable: ingress_mirroring_rules
-    kind: alpha
-    reason: "ComputeNetworkFirewallPolicyPacketMirroringRule (config-connector-extensions) is v1alpha1: needs allow_alpha: true; tls_inspect and match.source_tags are refused (the kind has no tlsInspect or srcSecureTags)"
+    kind: gap
+    reason: "accepted as config-connector-extensions' ComputeNetworkFirewallPolicyPacketMirroringRule (v1beta1); tls_inspect and match.source_tags are refused (the kind has no tlsInspect or srcSecureTags)"
     partial: true
     fields: [tls_inspect, match.source_tags]
-    needs_allow_alpha: true
   - variable: egress_mirroring_rules
-    kind: alpha
-    reason: "ComputeNetworkFirewallPolicyPacketMirroringRule (config-connector-extensions) is v1alpha1: needs allow_alpha: true; tls_inspect and match.source_tags are refused (the kind has no tlsInspect or srcSecureTags)"
+    kind: gap
+    reason: "accepted as config-connector-extensions' ComputeNetworkFirewallPolicyPacketMirroringRule (v1beta1); tls_inspect and match.source_tags are refused (the kind has no tlsInspect or srcSecureTags)"
     partial: true
     fields: [tls_inspect, match.source_tags]
-    needs_allow_alpha: true

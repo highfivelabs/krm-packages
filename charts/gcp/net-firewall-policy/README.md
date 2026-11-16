@@ -6,7 +6,7 @@ config-connector-extensions objects. A port of Cloud Foundation Fabric's
 [`modules/net-firewall-policy`](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/f706bc3b6166787df01402f73a96f1de57097477/modules/net-firewall-policy)
 at v60.0.0 (`f706bc3b`), Apache-2.0, Copyright Google LLC. Bundt Package
 `gcp-net-firewall-policy` (`package.yaml`). Checked against Config
-Connector v1.160.0 and config-connector-extensions at `89806ec7`.
+Connector v1.160.0 and config-connector-extensions at `5c223962`.
 
 The module was `blocked` in the coverage (`docs/coverage`): Config
 Connector has a global network policy's rule
@@ -14,9 +14,10 @@ Connector has a global network policy's rule
 policy or packet mirroring kinds. config-connector-extensions now provides
 the rule and its regional policy, association and rule kinds as
 `compute.gcp.hfl.dev/v1beta1` (the regional ones since `81c3f9b5`), so a
-global or regional policy needs no `allow_alpha`; its packet mirroring rule
-is `v1alpha1`, so mirroring rules need `allow_alpha: true`
-(`docs/design.md`, "Alpha kinds"). The CRDs are copied in
+global or regional policy needs no `allow_alpha`, and so is its packet
+mirroring rule (`v1beta1` since config-connector-extensions `5c223962`, after
+its live pass), so mirroring rules render wherever fabric renders them,
+without `allow_alpha`. The CRDs are copied in
 `crds/config-connector-extensions`.
 
 ## Example
@@ -44,11 +45,11 @@ The module's variables, with the same names, types and defaults.
 | `names.policy` | not a fabric variable: the policy's name in full (a hierarchical policy's short name), used as given (no `namePrefix`) and checked (63 characters, a leading letter) (`docs/design.md`, "Names, labels and tags") |
 | `namePrefix` | not a fabric variable: an optional convenience; when set, the derived policy name, and so the associations' names, start with `<namePrefix>-`; empty changes nothing |
 | `labels`, `tags` | Kubernetes labels on every object; firewall policies take no Google Cloud labels |
-| `allow_alpha` | not a fabric variable: accepts packet mirroring rules (config-connector-extensions' `v1alpha1` `ComputeNetworkFirewallPolicyPacketMirroringRule`) |
+| `allow_alpha` | not a fabric variable: no kind of this chart is alpha any more; kept so components that set it still render, it changes nothing |
 | `name`, `parent_id`, `region`, `description` | the policy: with `region` null a `ComputeFirewallPolicy` under `parent_id` (`folders/…` or `organizations/…`); with `global` a `ComputeNetworkFirewallPolicy` in project `parent_id`; with a region a `ComputeRegionNetworkFirewallPolicy` |
 | `attachments` | an association per entry, named `<policy>-<key>`: a folder or the organization for a hierarchical policy, a VPC for a network policy (a VPC ID is rendered as its self link, as Terraform records it) |
 | `ingress_rules`, `egress_rules` | a rule per entry, keyed `<direction>/<name>`, with fabric's defaults (ingress `allow`, egress `deny`, `disabled: false`, every protocol): ranges (distinct), address groups, FQDNs, region codes and threat intelligences on the source (ingress) or destination (egress) side, target service accounts, secure tags (network policies), target resources (hierarchical) |
-| `ingress_mirroring_rules`, `egress_mirroring_rules` | a `ComputeNetworkFirewallPolicyPacketMirroringRule` (`allow_alpha`) per entry on a global policy, as fabric only makes them there: action (`mirror`), security profile group (a key of `security_profile_group_ids`, or as given), target secure tags, ranges and protocols |
+| `ingress_mirroring_rules`, `egress_mirroring_rules` | a `ComputeNetworkFirewallPolicyPacketMirroringRule` of config-connector-extensions (`compute.gcp.hfl.dev/v1beta1`) per entry on a global policy, as fabric only makes them there: action (`mirror`), security profile group (a key of `security_profile_group_ids`, or as given), target secure tags, ranges and protocols |
 | `security_profile_group_ids` | the security profile groups mirroring rules name by key |
 | `factories_config`, `factories_data` | the factory: a chart cannot read the caller's files, so `factories_config` is accepted and ignored, and the files' contents go under `factories_data` (`cidrs`, `ingress_rules`, `egress_rules`, `ingress_mirroring_rules`, `egress_mirroring_rules`), with the CIDR file's names expanded in the factory's rules, as fabric does |
 | `deletion_policy` | not a fabric variable; `ABANDON` keeps the policy, associations and rules |
@@ -105,10 +106,12 @@ against Config Connector v1.160.0's and config-connector-extensions' CRD
 schemas, and the refusals in `tests/*.fail.yaml`.
 
 The fake-cloud case (`tests/mock.values.yaml`, `task test-mock
-MOCK_CHARTS=net-firewall-policy`) applies a global network policy, which
-is Config Connector's own kind. Its rules, the regional kinds and the
-mirroring rules are render-tested only (the fake-cloud case does not set
-them yet; the pin, `81c3f9b5`, serves them).
+MOCK_CHARTS=net-firewall-policy`) applies a global network policy (Config
+Connector's own kind) and an egress `do_not_mirror` packet mirroring rule
+(config-connector-extensions' `v1beta1` kind, served by the pin). A `mirror`
+rule needs a security profile group with a mirroring endpoint group, which
+the case does not make, so it is render-tested only, as are the firewall
+rules and the regional kinds.
 Hierarchical policies need an organization or folder and are not applied.
 
 Live (`hack/live-apply.sh`, `tests/live.yaml` and `tests/live-regional.yaml`;
@@ -124,6 +127,12 @@ the rerun (2026-11-14, `cat-11140025-cb6a`) passed.
 
 ## Changes
 
+- **0.3.0** (2026-11-16): packet mirroring rules render
+  config-connector-extensions' `ComputeNetworkFirewallPolicyPacketMirroringRule`
+  at `v1beta1` and no longer need `allow_alpha`. The kind keeps its group
+  and name, so existing objects are not replaced, but its CRD no longer
+  serves `v1alpha1`: upgrade config-connector-extensions to `5c223962` or
+  later together with the chart.
 - **0.2.0** (2026-11-15): a regional policy, its associations and rules
   render config-connector-extensions' `v1beta1` kinds and need no
   `allow_alpha`.

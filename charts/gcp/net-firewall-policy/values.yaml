@@ -23,8 +23,9 @@ labels: {}
 # Cloud labels on every resource; firewall policies take none, so these
 # stay in Kubernetes too.
 tags: {}
-# Not a fabric variable: true accepts the v1alpha1 kind packet mirroring
-# rules need (docs/design.md, "Alpha kinds").
+# Not a fabric variable: no kind of this chart is alpha any more
+# (config-connector-extensions' packet mirroring rule is v1beta1 since
+# 0.3.0); kept so components that set it still render, it changes nothing.
 allow_alpha: false
 
 # Ids of the resources to which this policy will be attached, in

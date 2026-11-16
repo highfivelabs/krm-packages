@@ -675,7 +675,7 @@ Rank 22. Terraform module: [`modules/net-firewall-policy`](https://github.com/Go
 | `google_compute_firewall_policy_rule` | ComputeFirewallPolicyRule |  |
 | `google_compute_network_firewall_policy` | ComputeNetworkFirewallPolicy |  |
 | `google_compute_network_firewall_policy_association` | ComputeNetworkFirewallPolicyAssociation |  |
-| `google_compute_network_firewall_policy_packet_mirroring_rule` | ComputeNetworkFirewallPolicyPacketMirroringRule (compute.gcp.hfl.dev/v1alpha1) | gap kind (config-connector-extensions) |
+| `google_compute_network_firewall_policy_packet_mirroring_rule` | ComputeNetworkFirewallPolicyPacketMirroringRule (compute.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_compute_network_firewall_policy_rule` | ComputeNetworkFirewallPolicyRule (compute.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_compute_region_network_firewall_policy` | ComputeRegionNetworkFirewallPolicy (compute.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |
 | `google_compute_region_network_firewall_policy_association` | ComputeRegionNetworkFirewallPolicyAssociation (compute.gcp.hfl.dev/v1beta1) | gap kind (config-connector-extensions) |

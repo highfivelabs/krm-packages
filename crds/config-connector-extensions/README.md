@@ -70,14 +70,15 @@ validate Config Connector's own kinds against its CRDs.
 | `compute.gcp.hfl.dev_computeregionnetworkfirewallpolicies.yaml` | `ComputeRegionNetworkFirewallPolicy` (`compute.gcp.hfl.dev/v1beta1`) | `config/crds/` at `81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15, the pin) |
 | `compute.gcp.hfl.dev_computeregionnetworkfirewallpolicyassociations.yaml` | `ComputeRegionNetworkFirewallPolicyAssociation` (`compute.gcp.hfl.dev/v1beta1`) | `config/crds/` at `81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15, the pin) |
 | `compute.gcp.hfl.dev_computeregionnetworkfirewallpolicyrules.yaml` | `ComputeRegionNetworkFirewallPolicyRule` (`compute.gcp.hfl.dev/v1beta1`) | `config/crds/` at `81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15, the pin) |
+| `compute.gcp.hfl.dev_computenetworkfirewallpolicypacketmirroringrules.yaml` | `ComputeNetworkFirewallPolicyPacketMirroringRule` (`compute.gcp.hfl.dev/v1beta1` since config-connector-extensions #147; `net-firewall-policy`'s mirroring rules) | `config/crds/` at `5c223962e302e2b9ea39b6d26a4ae62913b3236f` (2026-11-16, the pin) |
 | `asset.gcp.hfl.dev_assetfeeds.yaml` | `AssetFeed` (`asset.gcp.hfl.dev/v1beta1`: Config Connector's direct `AssetFeed` with its parent comparison fixed, a project named by ID or number alike) | `config/crds/` at `81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15, the pin) |
 | `compute.gcp.hfl.dev_computeorganizationsecuritypolicyassociations.yaml` | `ComputeOrganizationSecurityPolicyAssociation` (`compute.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`; with `excludedFolders` and `excludedProjects`) | `config/crds/` at `81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15, the pin) |
 | `logging.gcp.hfl.dev_logginglogsinks.yaml` | `LoggingLogSink` (`logging.gcp.hfl.dev/v1beta1`: Config Connector's with `interceptChildren` and a project destination) | `config/crds/` at `40da91d3fbfc7253c03669b32fbd8e5013de023f` (2026-11-16, the pin) |
 | `serviceusage.gcp.hfl.dev_serviceidentities.yaml` | `ServiceIdentity` (`serviceusage.gcp.hfl.dev/v1beta1`: a folder's or an organization's service identity) | `config/crds/` at `81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15, the pin) |
 
 `Taskfile.yml`'s `CCE_COMMIT`, which the fake-cloud and live runs use, is
-`a65d1edb3783427c59932d27d5c415a82930d90b` (2026-11-16; #141 after `40da91d3`
-changed no CRD), at or after every
+`5c223962e302e2b9ea39b6d26a4ae62913b3236f` (2026-11-16: #146, the node pool reference fix, and #147,
+the packet mirroring rule at `v1beta1`), at or after every
 copy above, so the fake cloud serves each of these kinds (each file is the
 same at the pin). config-connector-extensions #131 and #132 moved
 `ComputeRegionNetworkEndpoint`, `ComputeRegionNetworkFirewallPolicy`,

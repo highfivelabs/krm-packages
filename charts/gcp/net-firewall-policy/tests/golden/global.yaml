@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "global"
     app.kubernetes.io/name: net-firewall-policy
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "policy"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -28,7 +28,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "global"
     app.kubernetes.io/name: net-firewall-policy
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "association:my-vpc"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -51,7 +51,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "global"
     app.kubernetes.io/name: net-firewall-policy
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "rule:egress/smtp"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -90,7 +90,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "global"
     app.kubernetes.io/name: net-firewall-policy
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "rule:ingress/from-factory"
     cnrm.cloud.google.com/project-id: "my-project"
@@ -125,7 +125,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "global"
     app.kubernetes.io/name: net-firewall-policy
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "rule:ingress/tagged"
     cnrm.cloud.google.com/project-id: "my-project"
