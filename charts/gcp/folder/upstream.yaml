@@ -50,12 +50,6 @@ refused:
   - variable: logging_settings
     kind: gap
     reason: "Config Connector has no kind for a folder's logging settings (LoggingSettings)"
-  - variable: logging_sinks
-    kind: gap
-    reason: "intercept_children is refused (LoggingLogSink has no interceptChildren); a sink of type project is refused (LoggingLogSink's destination is never a project); a bigquery sink needs iam: false (dataset IAM is alpha)"
-    partial: true
-    fields: [intercept_children]
-    values: [project]
   - variable: scc_mute_configs
     kind: gap
     reason: "Config Connector has no Security Command Center v2 mute config kind (SecurityCenterMuteConfig)"

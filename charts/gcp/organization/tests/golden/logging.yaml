@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "logging"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "data-access:allServices"
 spec:
@@ -30,7 +30,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "logging"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "data-access:storage.googleapis.com"
 spec:
@@ -44,24 +44,46 @@ spec:
     - logType: "DATA_WRITE"
 ---
 # Source: organization/templates/logging.yaml
-apiVersion: iam.cnrm.cloud.google.com/v1beta1
-kind: IAMPolicyMember
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMMember
+metadata:
+  name: logging-sink-writer-audit
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "logging"
+    app.kubernetes.io/name: organization
+    app.kubernetes.io/version: "0.5.0"
+  annotations:
+    hfl.dev/id: "logging-sink-writer:audit"
+spec:
+  memberFrom:
+    logSinkRef:
+      apiVersion: logging.gcp.hfl.dev/v1beta1
+      name: logging-sink-audit
+  role: roles/logging.logWriter
+  resourceRef:
+    kind: Project
+    external: "projects/my-audit-project"
+---
+# Source: organization/templates/logging.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMMember
 metadata:
   name: logging-sink-writer-debug
   labels:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "logging"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "logging-sink-writer:debug"
 spec:
   memberFrom:
     logSinkRef:
+      apiVersion: logging.gcp.hfl.dev/v1beta1
       name: logging-sink-debug
   role: roles/logging.bucketWriter
   resourceRef:
-    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Project
     external: "projects/my-project"
   condition:
@@ -70,46 +92,68 @@ spec:
     expression: "resource.name.endsWith('locations/global/buckets/my-bucket')"
 ---
 # Source: organization/templates/logging.yaml
-apiVersion: iam.cnrm.cloud.google.com/v1beta1
-kind: IAMPolicyMember
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMMember
+metadata:
+  name: logging-sink-writer-info
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "logging"
+    app.kubernetes.io/name: organization
+    app.kubernetes.io/version: "0.5.0"
+  annotations:
+    hfl.dev/id: "logging-sink-writer:info"
+spec:
+  memberFrom:
+    logSinkRef:
+      apiVersion: logging.gcp.hfl.dev/v1beta1
+      name: logging-sink-info
+  role: roles/bigquery.dataEditor
+  resourceRef:
+    kind: BigQueryDataset
+    external: "projects/my-project/datasets/bq_sink"
+---
+# Source: organization/templates/logging.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMMember
 metadata:
   name: logging-sink-writer-notice
   labels:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "logging"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "logging-sink-writer:notice"
 spec:
   memberFrom:
     logSinkRef:
+      apiVersion: logging.gcp.hfl.dev/v1beta1
       name: logging-sink-notice
   role: roles/pubsub.publisher
   resourceRef:
-    apiVersion: pubsub.cnrm.cloud.google.com/v1beta1
     kind: PubSubTopic
     external: "projects/my-project/topics/pubsub_sink"
 ---
 # Source: organization/templates/logging.yaml
-apiVersion: iam.cnrm.cloud.google.com/v1beta1
-kind: IAMPolicyMember
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMMember
 metadata:
   name: logging-sink-writer-warnings
   labels:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "logging"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "logging-sink-writer:warnings"
 spec:
   memberFrom:
     logSinkRef:
+      apiVersion: logging.gcp.hfl.dev/v1beta1
       name: logging-sink-warnings
   role: roles/storage.objectCreator
   resourceRef:
-    apiVersion: storage.cnrm.cloud.google.com/v1beta1
     kind: StorageBucket
     external: "test-prod-log-audit-0"
 ---
@@ -122,7 +166,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "logging"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "logging-exclusion:no-gce-instances"
 spec:
@@ -133,7 +177,32 @@ spec:
   filter: "resource.type=gce_instance"
 ---
 # Source: organization/templates/logging.yaml
-apiVersion: logging.cnrm.cloud.google.com/v1beta1
+apiVersion: logging.gcp.hfl.dev/v1beta1
+kind: LoggingLogSink
+metadata:
+  name: logging-sink-audit
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "logging"
+    app.kubernetes.io/name: organization
+    app.kubernetes.io/version: "0.5.0"
+  annotations:
+    hfl.dev/id: "logging-sink:audit"
+spec:
+  resourceID: "audit"
+  organizationRef:
+    external: "1122334455"
+  description: "audit (Terraform-managed)."
+  destination:
+    projectRef:
+      external: "my-audit-project"
+  filter: "logName:cloudaudit.googleapis.com"
+  includeChildren: true
+  interceptChildren: true
+  disabled: false
+---
+# Source: organization/templates/logging.yaml
+apiVersion: logging.gcp.hfl.dev/v1beta1
 kind: LoggingLogSink
 metadata:
   name: logging-sink-debug
@@ -141,7 +210,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "logging"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "logging-sink:debug"
 spec:
@@ -154,13 +223,14 @@ spec:
       external: "projects/my-project/locations/global/buckets/my-bucket"
   filter: "severity=DEBUG"
   includeChildren: true
+  interceptChildren: false
   disabled: false
   exclusions:
     - name: "no-compute"
       filter: "logName:compute"
 ---
 # Source: organization/templates/logging.yaml
-apiVersion: logging.cnrm.cloud.google.com/v1beta1
+apiVersion: logging.gcp.hfl.dev/v1beta1
 kind: LoggingLogSink
 metadata:
   name: logging-sink-info
@@ -168,7 +238,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "logging"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "logging-sink:info"
 spec:
@@ -181,12 +251,13 @@ spec:
       external: "projects/my-project/datasets/bq_sink"
   filter: "severity=INFO"
   includeChildren: true
+  interceptChildren: false
   disabled: false
   bigqueryOptions:
     usePartitionedTables: true
 ---
 # Source: organization/templates/logging.yaml
-apiVersion: logging.cnrm.cloud.google.com/v1beta1
+apiVersion: logging.gcp.hfl.dev/v1beta1
 kind: LoggingLogSink
 metadata:
   name: logging-sink-notice
@@ -194,7 +265,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "logging"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "logging-sink:notice"
 spec:
@@ -207,10 +278,11 @@ spec:
       external: "projects/my-project/topics/pubsub_sink"
   filter: "severity=NOTICE"
   includeChildren: true
+  interceptChildren: false
   disabled: false
 ---
 # Source: organization/templates/logging.yaml
-apiVersion: logging.cnrm.cloud.google.com/v1beta1
+apiVersion: logging.gcp.hfl.dev/v1beta1
 kind: LoggingLogSink
 metadata:
   name: logging-sink-warnings
@@ -218,7 +290,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "logging"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "logging-sink:warnings"
 spec:
@@ -231,4 +303,5 @@ spec:
       external: "test-prod-log-audit-0"
   filter: "severity=WARNING"
   includeChildren: true
+  interceptChildren: false
   disabled: false

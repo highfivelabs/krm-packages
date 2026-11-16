@@ -153,6 +153,30 @@ The decisions of 2026-11-09, applied in the sections below.
     service, and `service_agents` outputs each one's `status.email`; and
     `cloud-function-v1`'s `iam` is one `IAMBinding` per role on the
     function, exact as fabric's binding.
+16. **Folder and organization log sinks are config-connector-extensions'
+    `LoggingLogSink`, granted with its `IAMMember`** (the builder,
+    2026-11-15, CCEQ, answering config-connector-extensions' section 10
+    question 7: "Q7: our own LoggingLogSink (v1beta1); no Folder kind
+    (deletion-policy abandon or Bundt's guard); our own OrgPolicyPolicy
+    only if the catalog can't order deletes; build the service-agents
+    config under decision 18."). The `folder` and `organization` charts
+    render `logging_sinks` as `logging.gcp.hfl.dev/v1beta1`
+    `LoggingLogSink` (config-connector-extensions #137), which has
+    `interceptChildren` and a project destination: `intercept_children`
+    and type `project` are no longer refused (fabric's own check, that
+    `intercept_children` needs type `project` and `include_children`,
+    stops the render). Config Connector's `IAMPolicyMember.memberFrom.logSinkRef`
+    resolves only Config Connector's `LoggingLogSink`, so the writer
+    identity is granted with config-connector-extensions' `IAMMember`
+    (`iam.gcp.hfl.dev/v1beta1`) and its `memberFrom.logSinkRef`
+    (config-connector-extensions #139), which waits for the sink's
+    `status.writerIdentity`. The roles are fabric's per type:
+    `storage.objectCreator` on a bucket, `pubsub.publisher` on a topic,
+    `bigquery.dataEditor` on a dataset (no longer refused: `IAMMember`
+    takes a `BigQueryDataset`), `logging.bucketWriter` on a log bucket's
+    project under fabric's condition, and `logging.logWriter` on a
+    destination project. The `project` chart keeps Config Connector's
+    sink (it needs neither field).
 
 ## Summary
 
@@ -808,6 +832,7 @@ and `net-vpc-firewall` components, not worked here yet.
 | `iam_bindings` `{KEY: {role, members, condition}}` | one `IAMBinding` each (config-connector-extensions, `iam.gcp.hfl.dev/v1beta1`); on a resource `IAMBinding` does not take (a subnet), bindings of the `IAMPartialPolicy` | with `IAMBinding`, exact, as fabric's: the role's (and condition's) members on the resource are the listed ones, others are removed |
 | `iam_bindings_additive` `{KEY: {member, role, condition}}`, `iam_by_principals_additive` | one `IAMPolicyMember` each | the same: additive |
 | roles granted *to* a service account elsewhere (`iam_project_roles`, `iam_storage_bindings`, ...) | one `IAMPolicyMember` each, `memberFrom.serviceAccountRef` naming the chart's account | the same; the member is resolved by Config Connector, no email crosses the plan |
+| a log sink's writer identity granted on its destination (`.*_sinks_binding`) | `IAMPolicyMember` `memberFrom.logSinkRef` for Config Connector's sink (`project` chart); config-connector-extensions' `IAMMember` `memberFrom.logSinkRef` for its own (`folder`, `organization`; decision 16) | additive |
 | IAM on a resource IAMPolicyMember cannot reference (regional secrets, managed folders, log views, 32 types) | none | a gap (inventory, gap 2) |
 
 - **Never `IAMPolicy`.** It owns the whole policy: on a project it would

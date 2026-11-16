@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "asset-feed:catalog-mock-feed"
 spec:
@@ -31,7 +31,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "custom-role:catalogMockRole"
     cnrm.cloud.google.com/organization-id: "123450000000"
@@ -42,6 +42,28 @@ spec:
   permissions:
     - "compute.instances.list"
 ---
+# Source: organization/templates/logging.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMMember
+metadata:
+  name: mock-sink-writer-audit
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: organization
+    app.kubernetes.io/version: "0.5.0"
+  annotations:
+    hfl.dev/id: "logging-sink-writer:audit"
+spec:
+  memberFrom:
+    logSinkRef:
+      apiVersion: logging.gcp.hfl.dev/v1beta1
+      name: mock-sink-audit
+  role: roles/logging.logWriter
+  resourceRef:
+    kind: Project
+    external: "projects/mock-project"
+---
 # Source: organization/templates/iam.yaml
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPartialPolicy
@@ -51,7 +73,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "iam"
 spec:
@@ -73,7 +95,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "iam-additive-browser"
 spec:
@@ -93,7 +115,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "logging-exclusion:no-gce"
 spec:
@@ -102,6 +124,31 @@ spec:
     external: "organizations/123450000000"
   description: "no-gce (Terraform-managed)."
   filter: "resource.type=gce_instance"
+---
+# Source: organization/templates/logging.yaml
+apiVersion: logging.gcp.hfl.dev/v1beta1
+kind: LoggingLogSink
+metadata:
+  name: mock-sink-audit
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: organization
+    app.kubernetes.io/version: "0.5.0"
+  annotations:
+    hfl.dev/id: "logging-sink:audit"
+spec:
+  resourceID: "audit"
+  organizationRef:
+    external: "123450000000"
+  description: "audit (Terraform-managed)."
+  destination:
+    projectRef:
+      external: "mock-project"
+  filter: "logName:cloudaudit.googleapis.com"
+  includeChildren: true
+  interceptChildren: true
+  disabled: false
 ---
 # Source: organization/templates/organization.yaml
 apiVersion: orgpolicy.cnrm.cloud.google.com/v1beta1
@@ -112,7 +159,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "custom-constraint:custom.catalogMockConstraint"
 spec:
@@ -133,7 +180,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "org_policy:compute.disableGuestAttributesAccess"
 spec:
@@ -153,7 +200,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "service-identity:privilegedaccessmanager.googleapis.com"
 spec:
@@ -170,7 +217,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "tag-key:catalog-mock-env"
 spec:
@@ -187,7 +234,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: organization
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "tag-value:catalog-mock-env/dev"
 spec:

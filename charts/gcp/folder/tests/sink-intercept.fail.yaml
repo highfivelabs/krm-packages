@@ -1,4 +1,4 @@
-# expect: logging_sinks.p.intercept_children is not supported
+# expect: folder: logging_sinks.p: 'type' must be set to 'project' if 'intercept_children' is 'true'.
 parent: organizations/123456789012
 name: f
-logging_sinks: {p: {destination: other-project, type: project, intercept_children: true}}
+logging_sinks: {p: {destination: my-bucket, type: storage, intercept_children: true}}

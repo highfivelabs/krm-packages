@@ -44,7 +44,7 @@ The module's variables, with the same names, types and defaults.
 | `tag_bindings` | a `TagsTagBinding` per entry, of the tag value on the folder |
 | `logging_data_access` | an `IAMAuditConfig` per service with its log types and exempted members |
 | `logging_exclusions` | a `LoggingLogExclusion` per entry, described `<name> (Terraform-managed).` |
-| `logging_sinks` | a `LoggingLogSink` per entry on the folder (`include_children`, default true, filter, exclusions, `disabled`, BigQuery partitioned tables), and, with `iam` (the default), an `IAMPolicyMember` granting its writer identity write access to the destination, as fabric grants it. Refused: `intercept_children` (`LoggingLogSink` has no `interceptChildren`; fabric allows it only for a `project` sink), type `project` (a sink's destination is never a project), and `iam` on a `bigquery` sink (dataset IAM is the alpha `BigQueryDatasetAccess`: set `iam: false`) |
+| `logging_sinks` | a `LoggingLogSink` per entry on the folder, config-connector-extensions' kind (`logging.gcp.hfl.dev/v1beta1`; Config Connector's has no `interceptChildren` and no project destination) (`include_children`, default true, `intercept_children` with type `project`, filter, exclusions, `disabled`, BigQuery partitioned tables; type `project` sends to a project, its ID or `projects/<id>`), and, with `iam` (the default), a config-connector-extensions `IAMMember` granting its writer identity (`memberFrom.logSinkRef`) fabric's role on the destination: `roles/storage.objectCreator` on a bucket, `roles/pubsub.publisher` on a topic, `roles/bigquery.dataEditor` on a dataset, `roles/logging.bucketWriter` on a log bucket's project (with fabric's condition on the bucket), `roles/logging.logWriter` on a destination project. `intercept_children` without type `project` and `include_children` stops the render with fabric's message |
 | `pam_entitlements` | a `PrivilegedAccessManagerEntitlement` per entry on the folder, as the `project` chart's |
 | `deletion_protection` | `false`, the default, is accepted; `true` is refused: Config Connector's `Folder` has no `deletionProtection` (`deletion_policy: ABANDON` keeps the folder when the component is deleted) |
 | `context`, `factories_config`, `asset_search` | refused, by design: Bundt replaces `$context` lookups with `${...}` expressions; a chart cannot read the caller's files (their entries go in `org_policies` and `pam_entitlements`); a search is a read at plan time, not a resource |
@@ -86,7 +86,7 @@ logging come under it (`docs/design.md`, "From Terraform").
 ## Config Connector gaps
 
 Found porting this module, for config-connector-extensions: `Folder` has no
-`deletionProtection`; `LoggingLogSink` has no `interceptChildren`; no
+`deletionProtection`; no
 kinds for `google_logging_folder_settings`,
 `google_scc_v2_folder_mute_config` or `google_folder_service_identity`
 (`docs/coverage/blocked-kinds.md`).
@@ -164,6 +164,16 @@ folder, `docs/design.md`, "The test provisioner").
 
 ## Changes
 
+- **0.4.0** (2026-11-16): `logging_sinks` as config-connector-extensions'
+  `LoggingLogSink` (`logging.gcp.hfl.dev/v1beta1`), taking
+  `intercept_children` and type `project`; the writer identity's grant
+  as its `IAMMember` (`memberFrom.logSinkRef`), with fabric's role per
+  type, a `bigquery` sink's included (config-connector-extensions
+  40da91d3, its #137 and #139). The sinks are new objects of another
+  kind: an existing component's Config Connector sinks are deleted and
+  made again under the same names unless they are abandoned first
+  (`cnrm.cloud.google.com/deletion-policy: abandon`) and acquired by the
+  new ones.
 - **0.3.0** (2026-11-15): `asset_feeds` as config-connector-extensions'
   `AssetFeed` (`asset.gcp.hfl.dev/v1beta1`); `service_agents_config` as
   its `ServiceIdentity` (`serviceusage.gcp.hfl.dev/v1beta1`), one per

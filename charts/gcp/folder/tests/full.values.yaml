@@ -70,6 +70,14 @@ logging_sinks:
     destination: projects/my-project/datasets/debug
     type: bigquery
     bq_partitioned_table: true
+  audit:
+    destination: my-audit-project
+    type: project
+    intercept_children: true
+    filter: logName:cloudaudit.googleapis.com
+  unmanaged:
+    destination: projects/my-project/datasets/unmanaged
+    type: bigquery
     iam: false
 pam_entitlements:
   net-admins:

@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "asset-feed:buckets"
 spec:
@@ -34,7 +34,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "firewall_policy"
 spec:
@@ -54,7 +54,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "contact:admins@example.org"
 spec:
@@ -73,7 +73,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "contact:security@example.org"
 spec:
@@ -92,7 +92,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "folder"
 spec:
@@ -109,7 +109,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "data-access:allServices"
 spec:
@@ -131,7 +131,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "data-access:storage.googleapis.com"
 spec:
@@ -153,7 +153,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "iam-binding-admins"
 spec:
@@ -178,7 +178,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "iam-binding-iam-bpc:roles/storage.admin-test"
 spec:
@@ -193,6 +193,120 @@ spec:
     title: "test"
     expression: "resource.matchTag('123/env', 'test')"
 ---
+# Source: folder/templates/logging.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMMember
+metadata:
+  name: full-sink-writer-audit
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: folder
+    app.kubernetes.io/version: "0.4.0"
+  annotations:
+    hfl.dev/id: "logging-sink-writer:audit"
+spec:
+  memberFrom:
+    logSinkRef:
+      apiVersion: logging.gcp.hfl.dev/v1beta1
+      name: full-sink-audit
+  role: roles/logging.logWriter
+  resourceRef:
+    kind: Project
+    external: "projects/my-audit-project"
+---
+# Source: folder/templates/logging.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMMember
+metadata:
+  name: full-sink-writer-debug
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: folder
+    app.kubernetes.io/version: "0.4.0"
+  annotations:
+    hfl.dev/id: "logging-sink-writer:debug"
+spec:
+  memberFrom:
+    logSinkRef:
+      apiVersion: logging.gcp.hfl.dev/v1beta1
+      name: full-sink-debug
+  role: roles/bigquery.dataEditor
+  resourceRef:
+    kind: BigQueryDataset
+    external: "projects/my-project/datasets/debug"
+---
+# Source: folder/templates/logging.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMMember
+metadata:
+  name: full-sink-writer-info
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: folder
+    app.kubernetes.io/version: "0.4.0"
+  annotations:
+    hfl.dev/id: "logging-sink-writer:info"
+spec:
+  memberFrom:
+    logSinkRef:
+      apiVersion: logging.gcp.hfl.dev/v1beta1
+      name: full-sink-info
+  role: roles/pubsub.publisher
+  resourceRef:
+    kind: PubSubTopic
+    external: "projects/my-project/topics/info"
+---
+# Source: folder/templates/logging.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMMember
+metadata:
+  name: full-sink-writer-notice
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: folder
+    app.kubernetes.io/version: "0.4.0"
+  annotations:
+    hfl.dev/id: "logging-sink-writer:notice"
+spec:
+  memberFrom:
+    logSinkRef:
+      apiVersion: logging.gcp.hfl.dev/v1beta1
+      name: full-sink-notice
+  role: roles/logging.bucketWriter
+  resourceRef:
+    kind: Project
+    external: "projects/my-project"
+  condition:
+    title: "notice bucket writer"
+    description: "Grants bucketWriter to the writer identity used by log sink notice on Full folder"
+    expression: "resource.name.endsWith('locations/global/buckets/notice')"
+---
+# Source: folder/templates/logging.yaml
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMMember
+metadata:
+  name: full-sink-writer-warnings
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: folder
+    app.kubernetes.io/version: "0.4.0"
+  annotations:
+    hfl.dev/id: "logging-sink-writer:warnings"
+spec:
+  memberFrom:
+    logSinkRef:
+      apiVersion: logging.gcp.hfl.dev/v1beta1
+      name: full-sink-warnings
+  role: roles/storage.objectCreator
+  resourceRef:
+    kind: StorageBucket
+    external: "my-bucket"
+---
 # Source: folder/templates/iam.yaml
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPartialPolicy
@@ -202,7 +316,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "iam"
 spec:
@@ -227,7 +341,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "iam-additive-browser"
 spec:
@@ -247,7 +361,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "iam-additive-iam-bpa:user:two@example.org-roles/browser"
 spec:
@@ -258,76 +372,6 @@ spec:
   role: "roles/browser"
   member: "user:two@example.org"
 ---
-# Source: folder/templates/logging.yaml
-apiVersion: iam.cnrm.cloud.google.com/v1beta1
-kind: IAMPolicyMember
-metadata:
-  name: full-sink-writer-info
-  labels:
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: "full"
-    app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
-  annotations:
-    hfl.dev/id: "logging-sink-writer:info"
-spec:
-  memberFrom:
-    logSinkRef:
-      name: full-sink-info
-  role: roles/pubsub.publisher
-  resourceRef:
-    apiVersion: pubsub.cnrm.cloud.google.com/v1beta1
-    kind: PubSubTopic
-    external: "projects/my-project/topics/info"
----
-# Source: folder/templates/logging.yaml
-apiVersion: iam.cnrm.cloud.google.com/v1beta1
-kind: IAMPolicyMember
-metadata:
-  name: full-sink-writer-notice
-  labels:
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: "full"
-    app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
-  annotations:
-    hfl.dev/id: "logging-sink-writer:notice"
-spec:
-  memberFrom:
-    logSinkRef:
-      name: full-sink-notice
-  role: roles/logging.bucketWriter
-  resourceRef:
-    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
-    kind: Project
-    external: "projects/my-project"
-  condition:
-    title: "notice bucket writer"
-    description: "Grants bucketWriter to the writer identity used by log sink notice on Full folder"
-    expression: "resource.name.endsWith('locations/global/buckets/notice')"
----
-# Source: folder/templates/logging.yaml
-apiVersion: iam.cnrm.cloud.google.com/v1beta1
-kind: IAMPolicyMember
-metadata:
-  name: full-sink-writer-warnings
-  labels:
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: "full"
-    app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
-  annotations:
-    hfl.dev/id: "logging-sink-writer:warnings"
-spec:
-  memberFrom:
-    logSinkRef:
-      name: full-sink-warnings
-  role: roles/storage.objectCreator
-  resourceRef:
-    apiVersion: storage.cnrm.cloud.google.com/v1beta1
-    kind: StorageBucket
-    external: "my-bucket"
----
 # Source: folder/templates/folder.yaml
 apiVersion: kms.cnrm.cloud.google.com/v1beta1
 kind: KMSAutokeyConfig
@@ -337,7 +381,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "autokey_config"
 spec:
@@ -355,7 +399,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "logging-exclusion:no-gce-instances"
 spec:
@@ -366,7 +410,32 @@ spec:
   filter: "resource.type=gce_instance"
 ---
 # Source: folder/templates/logging.yaml
-apiVersion: logging.cnrm.cloud.google.com/v1beta1
+apiVersion: logging.gcp.hfl.dev/v1beta1
+kind: LoggingLogSink
+metadata:
+  name: full-sink-audit
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: folder
+    app.kubernetes.io/version: "0.4.0"
+  annotations:
+    hfl.dev/id: "logging-sink:audit"
+spec:
+  resourceID: "audit"
+  folderRef:
+    name: full
+  description: "audit (Terraform-managed)."
+  destination:
+    projectRef:
+      external: "my-audit-project"
+  filter: "logName:cloudaudit.googleapis.com"
+  includeChildren: true
+  interceptChildren: true
+  disabled: false
+---
+# Source: folder/templates/logging.yaml
+apiVersion: logging.gcp.hfl.dev/v1beta1
 kind: LoggingLogSink
 metadata:
   name: full-sink-debug
@@ -374,7 +443,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "logging-sink:debug"
 spec:
@@ -386,12 +455,13 @@ spec:
     bigQueryDatasetRef:
       external: "projects/my-project/datasets/debug"
   includeChildren: true
+  interceptChildren: false
   disabled: false
   bigqueryOptions:
     usePartitionedTables: true
 ---
 # Source: folder/templates/logging.yaml
-apiVersion: logging.cnrm.cloud.google.com/v1beta1
+apiVersion: logging.gcp.hfl.dev/v1beta1
 kind: LoggingLogSink
 metadata:
   name: full-sink-info
@@ -399,7 +469,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "logging-sink:info"
 spec:
@@ -412,10 +482,11 @@ spec:
       external: "projects/my-project/topics/info"
   filter: "severity=INFO"
   includeChildren: false
+  interceptChildren: false
   disabled: true
 ---
 # Source: folder/templates/logging.yaml
-apiVersion: logging.cnrm.cloud.google.com/v1beta1
+apiVersion: logging.gcp.hfl.dev/v1beta1
 kind: LoggingLogSink
 metadata:
   name: full-sink-notice
@@ -423,7 +494,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "logging-sink:notice"
 spec:
@@ -435,13 +506,40 @@ spec:
     loggingLogBucketRef:
       external: "projects/my-project/locations/global/buckets/notice"
   includeChildren: true
+  interceptChildren: false
   disabled: false
   exclusions:
     - name: "no-compute"
       filter: "resource.type=gce_instance"
 ---
 # Source: folder/templates/logging.yaml
-apiVersion: logging.cnrm.cloud.google.com/v1beta1
+apiVersion: logging.gcp.hfl.dev/v1beta1
+kind: LoggingLogSink
+metadata:
+  name: full-sink-unmanaged
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: folder
+    app.kubernetes.io/version: "0.4.0"
+  annotations:
+    hfl.dev/id: "logging-sink:unmanaged"
+spec:
+  resourceID: "unmanaged"
+  folderRef:
+    name: full
+  description: "unmanaged (Terraform-managed)."
+  destination:
+    bigQueryDatasetRef:
+      external: "projects/my-project/datasets/unmanaged"
+  includeChildren: true
+  interceptChildren: false
+  disabled: false
+  bigqueryOptions:
+    usePartitionedTables: false
+---
+# Source: folder/templates/logging.yaml
+apiVersion: logging.gcp.hfl.dev/v1beta1
 kind: LoggingLogSink
 metadata:
   name: full-sink-warnings
@@ -449,7 +547,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "logging-sink:warnings"
 spec:
@@ -462,6 +560,7 @@ spec:
       external: "my-bucket"
   filter: "severity=WARNING"
   includeChildren: true
+  interceptChildren: false
   disabled: false
 ---
 # Source: folder/templates/org-policies.yaml
@@ -473,7 +572,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "org_policy:compute.disableGuestAttributesAccess"
 spec:
@@ -493,7 +592,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "org_policy:compute.restrictCloudNATUsage"
 spec:
@@ -516,7 +615,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "org_policy:iam.allowedPolicyMemberDomains"
 spec:
@@ -542,7 +641,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "pam-entitlement:net-admins"
 spec:
@@ -580,7 +679,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "service-identity:logging.googleapis.com"
 spec:
@@ -597,7 +696,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "service-identity:osconfig.googleapis.com"
 spec:
@@ -614,7 +713,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "full"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.3.0"
+    app.kubernetes.io/version: "0.4.0"
   annotations:
     hfl.dev/id: "tag-binding:env-prod"
 spec:

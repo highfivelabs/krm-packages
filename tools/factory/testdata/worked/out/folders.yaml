@@ -12,14 +12,14 @@ spec:
     - name: folder-team-a
       package:
         name: gcp-folder
-        version: "0.3.0"
+        version: "0.4.0"
       inputs:
         name: Team A
         parent: organizations/1234567890
     - name: folder-team-a-app-0
       package:
         name: gcp-folder
-        version: "0.3.0"
+        version: "0.4.0"
       inputs:
         name: App 0
         parent: "${components.folder-team-a.outputs.id}"
