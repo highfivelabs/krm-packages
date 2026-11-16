@@ -28,7 +28,7 @@ spec:
     armId: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-ops/providers/Microsoft.OperationalInsights/workspaces/law"
 ---
 # Source: avm-res-network-natgateway/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-natgw-lock
@@ -48,7 +48,7 @@ spec:
   level: CanNotDelete
 ---
 # Source: avm-res-network-natgateway/templates/public-ips.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-pip-v4-lock

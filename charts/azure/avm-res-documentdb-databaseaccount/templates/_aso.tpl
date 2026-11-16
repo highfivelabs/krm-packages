@@ -255,7 +255,7 @@ spec:
 
 {{/*
 aso.lock: the lock interface of an Azure Verified Module on one resource,
-as an aso-extensions ManagementLock (authorization.azure.hfl.dev/v1; ASO
+as an aso-extensions ManagementLock (authorization.azure.hfl.dev/v20200501; ASO
 has no lock kind, issue #3756). Its name is the module's: lock.name, else
 "lock-<kind>" (or the module's own default, defaultName).
 Arguments (a dict): root, base, idPrefix, owner, v (the lock), defaultName.
@@ -267,7 +267,7 @@ Arguments (a dict): root, base, idPrefix, owner, v (the lock), defaultName.
 {{- fail (printf "%s: Lock kind must be either `\"CanNotDelete\"` or `\"ReadOnly\"`." $root.Chart.Name) }}
 {{- end }}
 ---
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
 {{- include "aso.metadata" (dict "root" $root "name" (include "aso.name" (list $.base "lock")) "id" (printf "%slock" $.idPrefix) "abandon" (include "aso.abandon" $root)) | nindent 2 }}

@@ -65,7 +65,7 @@ spec:
     armId: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-full/providers/Microsoft.OperationalInsights/workspaces/law"
 ---
 # Source: avm-res-web-site/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: windows-site-lock
@@ -87,7 +87,7 @@ spec:
   level: CanNotDelete
 ---
 # Source: avm-res-web-site/templates/privateendpoints.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: windows-site-pe-pe-lock

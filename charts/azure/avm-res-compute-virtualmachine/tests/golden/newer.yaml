@@ -45,7 +45,7 @@ spec:
     - "1"
 ---
 # Source: avm-res-compute-virtualmachine/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: newer-vm-lock

@@ -1,6 +1,6 @@
 ---
 # Source: avm-res-resources-resourcegroup/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: abandon-rg-lock

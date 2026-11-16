@@ -111,7 +111,7 @@ spec:
     armId: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-mon/providers/Microsoft.OperationalInsights/workspaces/law"
 ---
 # Source: avm-res-insights-component/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-appi-lock

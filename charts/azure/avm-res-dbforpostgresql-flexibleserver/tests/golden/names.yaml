@@ -32,7 +32,7 @@ spec:
   version: "16"
 ---
 # Source: avm-res-dbforpostgresql-flexibleserver/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: names-psql-lock

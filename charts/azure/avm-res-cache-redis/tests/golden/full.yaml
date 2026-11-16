@@ -54,7 +54,7 @@ spec:
     armId: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-mon/providers/Microsoft.Storage/storageAccounts/stlogs"
 ---
 # Source: avm-res-cache-redis/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-redis-pe-a-lock
@@ -75,7 +75,7 @@ spec:
   notes: "keep the endpoint"
 ---
 # Source: avm-res-cache-redis/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-redis-lock

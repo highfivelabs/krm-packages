@@ -52,7 +52,7 @@ spec:
     team: shop
 ---
 # Source: avm-res-documentdb-databaseaccount/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: names-cosmos-pe-pe-lock
@@ -75,7 +75,7 @@ spec:
   notes: "Cannot delete or modify the resource or its child resources."
 ---
 # Source: avm-res-documentdb-databaseaccount/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: names-cosmos-lock

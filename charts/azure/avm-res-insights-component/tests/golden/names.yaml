@@ -32,7 +32,7 @@ spec:
     team: shop
 ---
 # Source: avm-res-insights-component/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: names-appi-lock

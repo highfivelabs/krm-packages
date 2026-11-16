@@ -793,6 +793,17 @@ refuses it when set, naming the gap (as every chart refuses what it cannot
 carry). Building a lock kind, upstream in ASO or in aso-extensions (the ARM
 rule was reversed on 2026-11-09), waits until a later catalog asks for it.
 
+**EXTQ-ASO-Q10-1 (the builder, 2026-11-15)**, verbatim: "EXTQ-ASO-Q10-1: as
+recommended ((a) Go ahead: generate authorization.azure.hfl.dev/v20200501
+ManagementLock in aso-extensions and, in the same window, switch the
+catalog's aso.lock helper (37 copies of _aso.tpl) and goldens to v20200501,
+merging aso-extensions first. Nothing is deployed yet, so no live v1 objects
+need migrating.)" Done: aso-extensions #96 generated the kind and removed
+`v1`; `aso.lock` renders `authorization.azure.hfl.dev/v20200501` since
+ASOX_COMMIT `ae2743c1`. A lock owned by name needs its owner's kind to be
+one aso-extensions' manager reads (its `controllers.OwnerTypes()`, which
+now holds every kind the charts lock); any other is owned by `armId`.
+
 ## 6. kro verdict for Azure
 
 **Not worth it. Helm, or `manifests`, for every Package in the top 25.**
@@ -900,7 +911,7 @@ of Config Connector's:
 | Interface | Object |
 | --- | --- |
 | `role_assignments` | `aso.roleAssignments`: ASO `RoleAssignment` (`authorization.azure.com/v20220401`), a role by ID (`armId`) or by name (`wellKnownName`) |
-| `lock` | `aso.lock`: aso-extensions `ManagementLock` (`authorization.azure.hfl.dev/v1`); ASO has none (#3756) |
+| `lock` | `aso.lock`: aso-extensions `ManagementLock` (`authorization.azure.hfl.dev/v20200501`); ASO has none (#3756) |
 | `diagnostic_settings` | `aso.diagnosticSettings`: ASO `DiagnosticSetting` (`insights.azure.com/v1api20210501preview`, Azure's only API version) |
 | `private_endpoints` | ASO `PrivateEndpoint` and `PrivateEndpointsPrivateDnsZoneGroup`: per chart, when a chart maps it |
 

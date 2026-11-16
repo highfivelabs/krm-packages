@@ -81,7 +81,7 @@ spec:
     armId: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-ops/providers/Microsoft.OperationalInsights/workspaces/law"
 ---
 # Source: avm-res-sql-server/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-sql-pool-standard-pool-42078e9f-lock
@@ -101,7 +101,7 @@ spec:
   level: ReadOnly
 ---
 # Source: avm-res-sql-server/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-sql-db-my-sample-db-c7eab6a6-lock
@@ -121,7 +121,7 @@ spec:
   level: CanNotDelete
 ---
 # Source: avm-res-sql-server/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-sql-pe-hub-lock
@@ -141,7 +141,7 @@ spec:
   level: CanNotDelete
 ---
 # Source: avm-res-sql-server/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-sql-lock

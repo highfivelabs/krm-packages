@@ -208,7 +208,7 @@ spec:
     - "psql-full-replica"
 ---
 # Source: avm-res-dbforpostgresql-flexibleserver/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-psql-pe-hub-lock
@@ -229,7 +229,7 @@ spec:
   notes: "Cannot delete or modify the resource or its child resources."
 ---
 # Source: avm-res-dbforpostgresql-flexibleserver/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-psql-lock

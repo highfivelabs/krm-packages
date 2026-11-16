@@ -22,7 +22,7 @@ renders the ASO `ResourceGroup` `rg-example` in `eastus2`
 | Module resource | When | Object (`hfl.dev/id`) |
 | --- | --- | --- |
 | `azapi_resource.this` (`Microsoft.Resources/resourceGroups`) | always | `ResourceGroup` (`resources.azure.com/v1api20200601`), `resource_group` |
-| `azapi_resource.lock` (`Microsoft.Authorization/locks`) | `lock` set | `ManagementLock` (aso-extensions, `authorization.azure.hfl.dev/v1`), `lock`, owned by the group |
+| `azapi_resource.lock` (`Microsoft.Authorization/locks`) | `lock` set | `ManagementLock` (aso-extensions, `authorization.azure.hfl.dev/v20200501`), `lock`, owned by the group |
 | `azapi_resource.role_assignments` | one per `role_assignments` entry | `RoleAssignment` (`authorization.azure.com/v20220401`), `role-assignment-<key>`, owned by the group |
 | `azapi_resource.telemetry` (a `Microsoft.Resources/deployments`) | never | the module's usage telemetry is not ported |
 

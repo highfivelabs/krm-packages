@@ -28,7 +28,7 @@ spec:
     armId: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-ops/providers/Microsoft.OperationalInsights/workspaces/law"
 ---
 # Source: avm-res-keyvault-vault/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-kv-pe-hub-lock
@@ -49,7 +49,7 @@ spec:
   notes: "keep the endpoint"
 ---
 # Source: avm-res-keyvault-vault/templates/main.yaml
-apiVersion: authorization.azure.hfl.dev/v1
+apiVersion: authorization.azure.hfl.dev/v20200501
 kind: ManagementLock
 metadata:
   name: full-kv-lock
