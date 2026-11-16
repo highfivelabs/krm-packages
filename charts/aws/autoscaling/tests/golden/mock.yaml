@@ -1,0 +1,156 @@
+---
+# Source: autoscaling/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: mock-iam-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: autoscaling
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam-role"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "catalog-asg"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"ec2.amazonaws.com\"]},\"Sid\":\"EC2AssumeRole\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: autoscaling/templates/autoscaling-group.yaml
+apiVersion: autoscaling.services.k8s.aws/v1alpha1
+kind: AutoScalingGroup
+metadata:
+  name: mock-autoscaling-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: autoscaling
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "autoscaling-group"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "catalog-asg"
+  minSize: 0
+  maxSize: 1
+  desiredCapacity: 0
+  vpcZoneIdentifier: "subnet-set-by-mock-set-yaml"
+  lifecycleHookSpecificationList:
+    - lifecycleHookName: "drain"
+      lifecycleTransition: "autoscaling:EC2_INSTANCE_TERMINATING"
+      defaultResult: "CONTINUE"
+      heartbeatTimeout: 60
+  launchTemplate:
+    launchTemplateName: catalog-asg
+    version: $Latest
+  newInstancesProtectedFromScaleIn: false
+  tags:
+    - key: "Name"
+      value: "catalog-asg"
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: autoscaling/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: InstanceProfile
+metadata:
+  name: mock-instance-profile
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: autoscaling
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam-instance-profile"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "catalog-asg"
+  roleRef:
+    from:
+      name: mock-iam-role
+  tags:
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: autoscaling/templates/launch-template.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: LaunchTemplate
+metadata:
+  name: mock-launch-template
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: autoscaling
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "launch-template"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "catalog-asg"
+  data:
+    iamInstanceProfile:
+      name: catalog-asg
+    imageID: ami-0123456789abcdef0
+    instanceType: t3.micro
+    metadataOptions:
+      httpEndpoint: enabled
+      httpPutResponseHopLimit: 1
+      httpTokens: required
+    monitoring:
+      enabled: true
+    tagSpecifications:
+    - resourceType: instance
+      tags:
+      - key: Name
+        value: catalog-asg
+      - key: catalog-test
+        value: "true"
+  tags:
+    - key: "catalog-test"
+      value: "true"
+---
+# Source: autoscaling/templates/autoscaling-group.yaml
+apiVersion: autoscaling.aws.hfl.dev/v1alpha1
+kind: ScalingPolicy
+metadata:
+  name: mock-policy-cpu
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: autoscaling
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "scaling-policy-cpu"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  autoScalingGroupName: "catalog-asg"
+  policyName: "cpu"
+  policyType: TargetTrackingScaling
+  targetTrackingConfiguration:
+    predefinedMetricSpecification:
+      predefinedMetricType: ASGAverageCPUUtilization
+    targetValue: 50
+---
+# Source: autoscaling/templates/autoscaling-group.yaml
+apiVersion: autoscaling.aws.hfl.dev/v1alpha1
+kind: ScheduledAction
+metadata:
+  name: mock-schedule-night
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: autoscaling
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "schedule-night"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  autoScalingGroupName: "catalog-asg"
+  scheduledActionName: "night"
+  desiredCapacity: 0
+  maxSize: 1
+  minSize: 0
+  recurrence: "0 20 * * *"

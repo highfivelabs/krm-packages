@@ -123,12 +123,14 @@ timeouts: {}
 
 # Determines whether an ElastiCache replication group will be created or not
 create_replication_group: true
-# The password of a password protected server
-# Not supported (by-design): a password is never a value; ACK's
-# ReplicationGroup takes it from a Kubernetes Secret.
+# The password of a password protected server, as a reference to a
+# Kubernetes Secret in the component's namespace, {secretName, key}
+# (docs/secrets.md), rendered as the replication group's authToken. The
+# token itself, a string, is refused. Needs transit_encryption_enabled.
 auth_token: null
 # SET, ROTATE or DELETE
-# Not supported (gap): used only with auth_token, which is refused.
+# Accepted in part (gap): unset or ROTATE; ACK sends a changed token
+# without a strategy, which ElastiCache treats as ROTATE.
 auth_token_update_strategy: null
 # Whether to enable encryption at rest
 at_rest_encryption_enabled: true

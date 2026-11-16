@@ -1,0 +1,10 @@
+# A replication group with an AUTH token from a Kubernetes Secret (put
+# there by External Secrets Operator), rendered as ACK's authToken
+# SecretKeyReference: the token never enters the values or the render.
+replication_group_id: sessions
+node_type: cache.t4g.small
+num_cache_clusters: 2
+subnet_ids: [subnet-0123456789abcdef0, subnet-0123456789abcdef1]
+vpc_id: vpc-0123456789abcdef0
+auth_token: {secretName: sessions-redis-auth, key: token}
+auth_token_update_strategy: ROTATE

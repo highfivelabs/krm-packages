@@ -1,0 +1,7 @@
+# expect: autoscaling: enabled_metrics is not supported
+name: x
+min_size: 0
+max_size: 1
+vpc_zone_identifier: [subnet-1]
+image_id: ami-1
+enabled_metrics: [GroupInServiceInstances]

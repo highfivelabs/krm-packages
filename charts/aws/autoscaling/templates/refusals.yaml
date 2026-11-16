@@ -1,0 +1,41 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+The module variables this chart keeps in its values but cannot carry
+(upstream.yaml, "refused"): each stops the render, naming the gap, when it
+is set (to anything but its Terraform default). Renders nothing.
+*/ -}}
+{{- $v := .Values -}}
+{{- include "ack.unsupported" (list $ "context" $v.context "ACK's AutoScalingGroup (autoscaling-controller v1.6.0) has no context field") }}
+{{- include "ack.unsupported" (list $ "enabled_metrics" $v.enabled_metrics "group metrics collection has no field: ACK's AutoScalingGroup (autoscaling-controller v1.6.0) reports enabledMetrics in its status only, and ack-extensions has no kind for EnableMetricsCollection") }}
+{{- include "ack.unsupported" (list $ "metrics_granularity" $v.metrics_granularity "it is used only with enabled_metrics, which is refused") }}
+{{- include "ack.unsupported" (list $ "force_delete_warm_pool" $v.force_delete_warm_pool "ack-extensions' WarmPool (Cloud Control) has no force delete field") }}
+{{- include "ack.unsupported" (list $ "ignore_failed_scaling_activities" $v.ignore_failed_scaling_activities "a Terraform wait: ACK does not wait for scaling activities, and Bundt reads the group's conditions") }}
+{{- include "ack.unsupported" (list $ "instance_refresh" $v.instance_refresh "ACK's AutoScalingGroup has no instance refresh, and ack-extensions has no kind for StartInstanceRefresh; with create_launch_template the group launches new instances from the template's latest version ($Latest)") }}
+{{- include "ack.unsupported" (list $ "launch_template_id" $v.launch_template_id "ACK's AutoScalingGroup names its launch template (launchTemplate.launchTemplateName) and has no ID field; with create_launch_template: false set launch_template_name to the template's name") }}
+{{- include "ack.unsupported" (list $ "min_elb_capacity" $v.min_elb_capacity "a Terraform wait for healthy load balancer instances: ACK does not wait, and Bundt reads the group's conditions") }}
+{{- include "ack.unsupported" (list $ "wait_for_capacity_timeout" $v.wait_for_capacity_timeout "a Terraform wait for capacity: ACK does not wait, and Bundt reads the group's conditions") }}
+{{- include "ack.unsupported" (list $ "wait_for_elb_capacity" $v.wait_for_elb_capacity "a Terraform wait for healthy load balancer instances: ACK does not wait, and Bundt reads the group's conditions") }}
+{{- include "ack.unsupported" (list $ "suspended_processes" $v.suspended_processes "ACK's AutoScalingGroup (autoscaling-controller v1.6.0) reports suspendedProcesses in its status only, and ack-extensions has no kind for SuspendProcesses") }}
+{{- include "ack.unsupported" (list $ "timeouts" $v.timeouts "Terraform's delete timeout: ACK retries until the group is gone, and Bundt waits for it") }}
+{{- include "ack.unsupported" (list $ "network_performance_options" $v.network_performance_options "ACK's LaunchTemplate (ec2-controller v1.23.1) has no networkPerformanceOptions field") }}
+{{- include "ack.unsupported" (list $ "secondary_interfaces" $v.secondary_interfaces "ACK's LaunchTemplate (ec2-controller v1.23.1) has no secondary interfaces field") }}
+{{- if $v.update_default_version }}
+{{- fail "autoscaling: update_default_version is not supported: true: ACK's LaunchTemplate (ec2-controller v1.23.1) makes a new version on a change and moves the default only to default_version, with no field to follow the latest (docs/aws.md); the chart's group launches from $Latest" }}
+{{- end }}
+{{- range $i, $b := ($v.block_device_mappings | default list) }}
+{{- include "ack.unsupported" (list $ (printf "block_device_mappings[%d].ebs.volume_initialization_rate" $i) ($b.ebs | default dict).volume_initialization_rate "ACK's LaunchTemplate (ec2-controller v1.23.1) has no volumeInitializationRate field") }}
+{{- end }}
+{{- range $i, $n := ($v.network_interfaces | default list) }}
+{{- include "ack.unsupported" (list $ (printf "network_interfaces[%d].connection_tracking_specification" $i) $n.connection_tracking_specification "ACK's LaunchTemplate (ec2-controller v1.23.1) has no connection tracking field") }}
+{{- include "ack.unsupported" (list $ (printf "network_interfaces[%d].ena_srd_specification" $i) $n.ena_srd_specification "ACK's LaunchTemplate (ec2-controller v1.23.1) has no ENA Express (enaSrdSpecification) field") }}
+{{- end }}
+{{- if $v.use_mixed_instances_policy }}
+{{- range $i, $o := (($v.mixed_instances_policy | default dict).launch_template | default dict).override | default list }}
+{{- include "ack.unsupported" (list $ (printf "mixed_instances_policy.launch_template.override[%d].launch_template_specification.launch_template_id" $i) ($o.launch_template_specification | default dict).launch_template_id "ACK's AutoScalingGroup names launch templates and has no ID field; set launch_template_name") }}
+{{- end }}
+{{- end }}
+{{- include "ack.alpha" (list $ "scaling_policies" $v.scaling_policies "ScalingPolicy (ack-extensions)") }}
+{{- include "ack.alpha" (list $ "schedules" $v.schedules "ScheduledAction (ack-extensions)") }}
+{{- include "ack.alpha" (list $ "warm_pool" $v.warm_pool "WarmPool (ack-extensions, Cloud Control)") }}

@@ -1,0 +1,7 @@
+# expect: namePrefix "shop-dev-euw1-team-x" is 21 of them
+namePrefix: shop-dev-euw1-team-x
+name: x
+min_size: 0
+max_size: 1
+create_iam_instance_profile: true
+iam_role_name: abcdefghijabcdefghijabcdefghijabcdefghijabcdefghij

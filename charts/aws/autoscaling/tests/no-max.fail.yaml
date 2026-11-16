@@ -1,0 +1,3 @@
+# expect: autoscaling: max_size is required
+name: x
+min_size: 1

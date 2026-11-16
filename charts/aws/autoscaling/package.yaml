@@ -1,0 +1,105 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (docs/design.md, "Outputs"): the module's
+# outputs from the live AutoScalingGroup (resources.autoscaling-group),
+# LaunchTemplate (resources.launch-template), Role (resources.iam-role),
+# InstanceProfile (resources.iam-instance-profile), ScalingPolicies
+# (resources.scaling-policy-<key>) and ScheduledActions
+# (resources.schedule-<key>). The group's and instance profile's IDs are
+# their names, as Terraform's. ACK keeps vpcZoneIdentifier as one
+# comma-separated string; the output splits it into the module's list.
+# autoscaling_group_enabled_metrics is always empty (enabled_metrics is
+# refused). iam_instance_profile_arn is the given iam_instance_profile_arn
+# when the chart makes no profile, as the module's.
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: aws-autoscaling
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [ack]
+  outputs:
+    launch_template_id: >-
+      'launch-template' in resources && has(resources['launch-template'].status.id)
+      ? dyn(resources['launch-template'].status.id) : null
+    launch_template_arn: >-
+      'launch-template' in resources && has(resources['launch-template'].status.ackResourceMetadata)
+      && has(resources['launch-template'].status.ackResourceMetadata.arn)
+      ? dyn(resources['launch-template'].status.ackResourceMetadata.arn) : null
+    launch_template_name: >-
+      'launch-template' in resources ? dyn(resources['launch-template'].spec.name) : null
+    launch_template_latest_version: >-
+      'launch-template' in resources && has(resources['launch-template'].status.latestVersion)
+      ? dyn(resources['launch-template'].status.latestVersion) : null
+    launch_template_default_version: >-
+      'launch-template' in resources && has(resources['launch-template'].spec.defaultVersion)
+      ? dyn(resources['launch-template'].spec.defaultVersion) : null
+    autoscaling_group_id: >-
+      'autoscaling-group' in resources ? dyn(resources['autoscaling-group'].spec.name) : null
+    autoscaling_group_name: >-
+      'autoscaling-group' in resources ? dyn(resources['autoscaling-group'].spec.name) : null
+    autoscaling_group_arn: >-
+      'autoscaling-group' in resources && has(resources['autoscaling-group'].status.ackResourceMetadata)
+      && has(resources['autoscaling-group'].status.ackResourceMetadata.arn)
+      ? dyn(resources['autoscaling-group'].status.ackResourceMetadata.arn) : null
+    autoscaling_group_min_size: >-
+      'autoscaling-group' in resources ? dyn(resources['autoscaling-group'].spec.minSize) : null
+    autoscaling_group_max_size: >-
+      'autoscaling-group' in resources ? dyn(resources['autoscaling-group'].spec.maxSize) : null
+    autoscaling_group_desired_capacity: >-
+      'autoscaling-group' in resources && has(resources['autoscaling-group'].spec.desiredCapacity)
+      ? dyn(resources['autoscaling-group'].spec.desiredCapacity) : null
+    autoscaling_group_default_cooldown: >-
+      'autoscaling-group' in resources && has(resources['autoscaling-group'].spec.defaultCooldown)
+      ? dyn(resources['autoscaling-group'].spec.defaultCooldown) : null
+    autoscaling_group_health_check_grace_period: >-
+      'autoscaling-group' in resources && has(resources['autoscaling-group'].spec.healthCheckGracePeriod)
+      ? dyn(resources['autoscaling-group'].spec.healthCheckGracePeriod) : null
+    autoscaling_group_health_check_type: >-
+      'autoscaling-group' in resources && has(resources['autoscaling-group'].spec.healthCheckType)
+      ? dyn(resources['autoscaling-group'].spec.healthCheckType) : null
+    autoscaling_group_availability_zones: >-
+      'autoscaling-group' in resources && has(resources['autoscaling-group'].spec.availabilityZones)
+      ? dyn(resources['autoscaling-group'].spec.availabilityZones) : dyn([])
+    autoscaling_group_vpc_zone_identifier: >-
+      'autoscaling-group' in resources && has(resources['autoscaling-group'].spec.vpcZoneIdentifier)
+      && resources['autoscaling-group'].spec.vpcZoneIdentifier != ''
+      ? dyn(resources['autoscaling-group'].spec.vpcZoneIdentifier.split(',')) : dyn([])
+    autoscaling_group_load_balancers: >-
+      'autoscaling-group' in resources && has(resources['autoscaling-group'].spec.loadBalancerNames)
+      ? dyn(resources['autoscaling-group'].spec.loadBalancerNames) : dyn([])
+    autoscaling_group_target_group_arns: >-
+      'autoscaling-group' in resources && has(resources['autoscaling-group'].spec.targetGroupARNs)
+      ? dyn(resources['autoscaling-group'].spec.targetGroupARNs) : dyn([])
+    autoscaling_group_enabled_metrics: >-
+      dyn([])
+    autoscaling_schedule_arns: >-
+      resources.filter(k, k.startsWith('schedule-')).transformMapEntry(i, k, {k.substring(9):
+        has(resources[k].status.ackResourceMetadata) && has(resources[k].status.ackResourceMetadata.arn)
+        ? dyn(resources[k].status.ackResourceMetadata.arn) : dyn(null)})
+    autoscaling_policy_arns: >-
+      resources.filter(k, k.startsWith('scaling-policy-')).transformMapEntry(i, k, {k.substring(15):
+        has(resources[k].status.ackResourceMetadata) && has(resources[k].status.ackResourceMetadata.arn)
+        ? dyn(resources[k].status.ackResourceMetadata.arn) : dyn(null)})
+    iam_role_name: >-
+      'iam-role' in resources ? dyn(resources['iam-role'].spec.name) : null
+    iam_role_arn: >-
+      'iam-role' in resources && has(resources['iam-role'].status.ackResourceMetadata)
+      && has(resources['iam-role'].status.ackResourceMetadata.arn)
+      ? dyn(resources['iam-role'].status.ackResourceMetadata.arn) : null
+    iam_role_unique_id: >-
+      'iam-role' in resources && has(resources['iam-role'].status.roleID)
+      ? dyn(resources['iam-role'].status.roleID) : null
+    iam_instance_profile_arn: >-
+      'iam-instance-profile' in resources
+      ? (has(resources['iam-instance-profile'].status.ackResourceMetadata)
+        && has(resources['iam-instance-profile'].status.ackResourceMetadata.arn)
+        ? dyn(resources['iam-instance-profile'].status.ackResourceMetadata.arn) : null)
+      : dyn(inputs.iam_instance_profile_arn)
+    iam_instance_profile_id: >-
+      'iam-instance-profile' in resources ? dyn(resources['iam-instance-profile'].spec.name) : null
+    iam_instance_profile_unique: >-
+      'iam-instance-profile' in resources && has(resources['iam-instance-profile'].status.instanceProfileID)
+      ? dyn(resources['iam-instance-profile'].status.instanceProfileID) : null

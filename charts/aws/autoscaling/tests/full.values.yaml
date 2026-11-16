@@ -1,0 +1,160 @@
+# Most of the module: a mixed instances policy with overrides, a launch
+# template with block devices, a network interface, placement, Spot options
+# and its own instance profile and role, lifecycle hooks, a traffic source,
+# instance maintenance and lifecycle policies, and (allow_alpha) scaling
+# policies of each type, scheduled actions and a warm pool.
+allow_alpha: true
+name: workers
+instance_name: worker
+min_size: 0
+max_size: 10
+desired_capacity_type: units
+availability_zone_distribution: {capacity_distribution_strategy: balanced-best-effort}
+capacity_rebalance: true
+default_cooldown: 300
+default_instance_warmup: 120
+health_check_grace_period: 60
+health_check_type: ELB
+max_instance_lifetime: 604800
+protect_from_scale_in: true
+placement_group: workers-spread
+service_linked_role_arn: arn:aws:iam::111122223333:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling
+termination_policies: [OldestLaunchTemplate, Default]
+vpc_zone_identifier: [subnet-0123456789abcdef0, subnet-0123456789abcdef1]
+instance_maintenance_policy: {min_healthy_percentage: 90, max_healthy_percentage: 120}
+instance_lifecycle_policy: {retention_triggers: {terminate_hook_abandon: retain}}
+initial_lifecycle_hooks:
+  - name: drain
+    lifecycle_transition: autoscaling:EC2_INSTANCE_TERMINATING
+    default_result: CONTINUE
+    heartbeat_timeout: 300
+    notification_metadata: '{"drain": true}'
+    notification_target_arn: arn:aws:sqs:eu-west-1:111122223333:drain
+    role_arn: arn:aws:iam::111122223333:role/asg-notify
+traffic_source_attachments:
+  web:
+    traffic_source_identifier: arn:aws:elasticloadbalancing:eu-west-1:111122223333:targetgroup/web/0123456789abcdef
+autoscaling_group_tags: {tier: workers}
+autoscaling_group_tags_not_propagate_at_launch: [tier]
+use_mixed_instances_policy: true
+mixed_instances_policy:
+  instances_distribution:
+    on_demand_base_capacity: 1
+    on_demand_percentage_above_base_capacity: 25
+    spot_allocation_strategy: price-capacity-optimized
+  launch_template:
+    override:
+      - {instance_type: m6i.large, weighted_capacity: "2"}
+      - instance_requirements:
+          vcpu_count: {min: 2, max: 8}
+          memory_mib: {min: 4096}
+          memory_gib_per_vcpu: {min: 2, max: 8}
+          network_bandwidth_gbps: {min: 1}
+          baseline_ebs_bandwidth_mbps: {min: 100}
+          cpu_manufacturers: [intel, amd]
+        launch_template_specification: {launch_template_name: workers-arm, version: "$Default"}
+launch_template_name: workers-lt
+launch_template_description: Workers
+default_version: "1"
+image_id: ami-0123456789abcdef0
+instance_type: m6i.large
+key_name: ops
+user_data: IyEvYmluL2Jhc2gKZWNobyBoZWxsbwo=
+ebs_optimized: true
+disable_api_termination: false
+instance_initiated_shutdown_behavior: terminate
+block_device_mappings:
+  - device_name: /dev/xvda
+    ebs: {volume_size: 50, volume_type: gp3, iops: 3000, throughput: 125, encrypted: true, kms_key_id: arn:aws:kms:eu-west-1:111122223333:key/abc, delete_on_termination: true}
+  - {device_name: /dev/sdb, no_device: ""}
+capacity_reservation_specification:
+  capacity_reservation_preference: open
+cpu_options: {core_count: 1, threads_per_core: 2}
+credit_specification: {cpu_credits: standard}
+instance_market_options:
+  market_type: spot
+  spot_options: {max_price: "0.05", instance_interruption_behavior: terminate}
+maintenance_options: {auto_recovery: default}
+metadata_options: {http_endpoint: enabled, http_tokens: required, http_put_response_hop_limit: 2, instance_metadata_tags: enabled, http_protocol_ipv6: disabled}
+network_interfaces:
+  - device_index: 0
+    associate_public_ip_address: false
+    delete_on_termination: true
+    ipv4_prefix_count: 1
+    ipv6_addresses: ["2001:db8::10"]
+    security_groups: [sg-0123456789abcdef0]
+placement: {tenancy: default, partition_number: 1, host_resource_group_arn: arn:aws:resource-groups:eu-west-1:111122223333:group/hosts}
+private_dns_name_options: {hostname_type: resource-name, enable_resource_name_dns_a_record: true, enable_resource_name_dns_aaaa_record: false}
+license_specifications:
+  - license_configuration_arn: arn:aws:license-manager:eu-west-1:111122223333:license-configuration:lic-0123456789abcdef
+tag_specifications:
+  - resource_type: volume
+    tags: {backup: daily}
+  - resource_type: instance
+    tags: {role: worker}
+launch_template_tags: {lt: "yes"}
+security_groups: [sg-0fedcba9876543210]
+create_iam_instance_profile: true
+iam_role_name: workers
+iam_role_path: /asg/
+iam_role_description: Workers
+iam_role_permissions_boundary: arn:aws:iam::111122223333:policy/boundary
+iam_role_policies:
+  ssm: arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+iam_role_tags: {role: "yes"}
+scaling_policies:
+  cpu:
+    policy_type: TargetTrackingScaling
+    estimated_instance_warmup: 120
+    target_tracking_configuration:
+      predefined_metric_specification: {predefined_metric_type: ASGAverageCPUUtilization}
+      target_value: 50
+  queue:
+    name: queue-depth
+    policy_type: TargetTrackingScaling
+    target_tracking_configuration:
+      target_value: 100
+      disable_scale_in: true
+      customized_metric_specification:
+        metrics:
+          - id: m1
+            return_data: false
+            metric_stat:
+              metric:
+                metric_name: ApproximateNumberOfMessagesVisible
+                namespace: AWS/SQS
+                dimensions: [{name: QueueName, value: work}]
+              stat: Sum
+          - {id: e1, expression: m1 / 10, return_data: true}
+  steps:
+    policy_type: StepScaling
+    adjustment_type: ChangeInCapacity
+    metric_aggregation_type: Average
+    step_adjustment:
+      - {scaling_adjustment: 1, metric_interval_lower_bound: 0, metric_interval_upper_bound: 10}
+      - {scaling_adjustment: 2, metric_interval_lower_bound: 10}
+  predictive:
+    policy_type: PredictiveScaling
+    predictive_scaling_configuration:
+      mode: ForecastOnly
+      scheduling_buffer_time: 300
+      metric_specification:
+        target_value: 40
+        predefined_metric_pair_specification: {predefined_metric_type: ASGCPUUtilization}
+schedules:
+  night:
+    min_size: 0
+    max_size: 2
+    desired_capacity: 0
+    recurrence: "0 20 * * *"
+    time_zone: Europe/London
+  morning:
+    min_size: 1
+    max_size: 10
+    recurrence: "0 7 * * MON-FRI"
+warm_pool:
+  pool_state: Stopped
+  min_size: 1
+  max_group_prepared_capacity: 4
+  instance_reuse_policy: {reuse_on_scale_in: true}
+tags: {team: data}

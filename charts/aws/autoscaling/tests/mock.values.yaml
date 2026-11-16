@@ -1,0 +1,27 @@
+# Applied to the fake AWS by hack/mock-apply-aws.sh: an empty group (no
+# instances launched) in the subnet tests/mock.needs.yaml makes
+# (tests/mock.set.yaml), from the chart's launch template with its own
+# instance profile and role, a lifecycle hook, and (allow_alpha) a
+# target-tracking scaling policy and a recurring scheduled action.
+allow_alpha: true
+name: catalog-asg
+region: us-east-1
+min_size: 0
+max_size: 1
+desired_capacity: 0
+vpc_zone_identifier: [subnet-set-by-mock-set-yaml]
+image_id: ami-0123456789abcdef0
+instance_type: t3.micro
+create_iam_instance_profile: true
+iam_role_name: catalog-asg
+initial_lifecycle_hooks:
+  - {name: drain, lifecycle_transition: "autoscaling:EC2_INSTANCE_TERMINATING", default_result: CONTINUE, heartbeat_timeout: 60}
+scaling_policies:
+  cpu:
+    policy_type: TargetTrackingScaling
+    target_tracking_configuration:
+      predefined_metric_specification: {predefined_metric_type: ASGAverageCPUUtilization}
+      target_value: 50
+schedules:
+  night: {min_size: 0, max_size: 1, desired_capacity: 0, recurrence: "0 20 * * *"}
+tags: {catalog-test: "true"}

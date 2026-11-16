@@ -1,0 +1,8 @@
+# expect: autoscaling: schedules needs the alpha kind ScheduledAction (ack-extensions)
+name: x
+min_size: 0
+max_size: 1
+vpc_zone_identifier: [subnet-1]
+image_id: ami-1
+schedules:
+  night: {min_size: 0, recurrence: "0 20 * * *"}

@@ -1,0 +1,13 @@
+# The module's defaults with what ACK needs: a group of t3.micro instances
+# in two subnets from the chart's launch template (IMDSv2 required, detailed
+# monitoring on), tagged and with the tags carried to its instances.
+name: web
+min_size: 1
+max_size: 3
+desired_capacity: 2
+vpc_zone_identifier: [subnet-0123456789abcdef0, subnet-0123456789abcdef1]
+image_id: ami-0123456789abcdef0
+instance_type: t3.micro
+security_groups: [sg-0123456789abcdef0]
+health_check_type: EC2
+tags: {team: web}

@@ -1,0 +1,67 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "IAM Role / Instance Profile": with create_iam_instance_profile,
+the role (aws_iam_role.this, iam/Role) that EC2 assumes
+(data.aws_iam_policy_document.assume_role_policy), the managed policies
+attached to it (aws_iam_role_policy_attachment.this, the Role's policies)
+and its instance profile (aws_iam_instance_profile.this,
+iam/InstanceProfile, roleRef). The role is named
+coalesce(iam_instance_profile_name, iam_role_name) and the profile
+iam_role_name, as the module names them.
+*/ -}}
+{{- $v := .Values -}}
+{{- if and $v.create $v.putin_khuylo $v.create_iam_instance_profile }}
+{{- $region := $v.region | default "" }}
+{{- $role := include "autoscaling.roleName" $ }}
+{{- $roleObj := include "ack.name" (list .Release.Name "iam-role") }}
+{{- $roleTags := include "ack.tags" (list $ $v.tags $v.iam_role_tags) | fromJson }}
+{{- /* The partition's DNS suffix: amazonaws.com.cn in China, else amazonaws.com. */}}
+{{- $suffix := ternary "amazonaws.com.cn" "amazonaws.com" (hasPrefix "cn-" (toString $v.region)) }}
+{{- $trust := dict "Version" "2012-10-17" "Statement" (list (dict "Sid" "EC2AssumeRole" "Effect" "Allow" "Action" (list "sts:AssumeRole") "Principal" (dict "Service" (list (printf "ec2.%s" $suffix))))) }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $roleObj "id" "iam-role" "region" $region) | nindent 2 }}
+spec:
+  name: {{ $role | quote }}
+{{- with $v.iam_role_path }}
+  path: {{ . | quote }}
+{{- end }}
+{{- with $v.iam_role_description }}
+  description: {{ . | quote }}
+{{- end }}
+  assumeRolePolicyDocument: {{ toJson $trust | quote }}
+{{- with $v.iam_role_permissions_boundary }}
+  permissionsBoundary: {{ . | quote }}
+{{- end }}
+{{- with $v.iam_role_policies }}
+  policies:
+{{- range $k := keys . | sortAlpha }}
+    - {{ index $v.iam_role_policies $k | quote }}
+{{- end }}
+{{- end }}
+{{- with $roleTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: InstanceProfile
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "instance-profile")) "id" "iam-instance-profile" "region" $region) | nindent 2 }}
+spec:
+  name: {{ include "autoscaling.profileName" $ | quote }}
+{{- with $v.iam_role_path }}
+  path: {{ . | quote }}
+{{- end }}
+  roleRef:
+    from:
+      name: {{ $roleObj }}
+{{- with $roleTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}

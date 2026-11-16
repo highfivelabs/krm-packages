@@ -1,0 +1,14 @@
+# A group launching from an existing launch template, by name and version,
+# with an existing instance profile left to the template: the chart makes
+# only the group. Its tags stay on the group (ACK's group tags never
+# propagate at launch).
+name: batch
+min_size: 0
+max_size: 4
+availability_zones: [eu-west-1a, eu-west-1b]
+create_launch_template: false
+launch_template_name: batch-template
+launch_template_version: "3"
+ignore_desired_capacity_changes: true
+force_delete: true
+tags: {team: batch}

@@ -13,8 +13,9 @@ is set (to anything but its Terraform default). Renders nothing.
 {{- include "ack.unsupported" (list $ "final_snapshot_identifier" $v.final_snapshot_identifier "ACK's CacheCluster and ReplicationGroup (elasticache-controller v1.12.0) have no field for a final snapshot on delete") }}
 {{- include "ack.unsupported" (list $ "transit_encryption_mode" $v.transit_encryption_mode "ACK's ReplicationGroup (elasticache-controller v1.12.0) has no transitEncryptionMode field") }}
 {{- include "ack.unsupported" (list $ "timeouts" $v.timeouts "Terraform's create, update and delete timeouts: ACK retries until the cluster is synced, and Bundt waits for it") }}
-{{- include "ack.unsupported" (list $ "auth_token" $v.auth_token "a password is never a value: ACK's ReplicationGroup takes its auth token from a Kubernetes Secret (spec.authToken), which this chart does not make yet; use user_group_ids (RBAC) instead") }}
-{{- include "ack.unsupported" (list $ "auth_token_update_strategy" $v.auth_token_update_strategy "it is used only with auth_token, which is refused; ACK's ReplicationGroup has no field for it") }}
+{{- if not (has (toString ($v.auth_token_update_strategy | default "ROTATE")) (list "ROTATE")) }}
+{{- fail (printf "elasticache: auth_token_update_strategy is not supported: %s: ACK's ReplicationGroup (elasticache-controller v1.12.0) has no field for it and sends a changed token without a strategy, which ElastiCache treats as ROTATE; leave it unset or ROTATE" (toString $v.auth_token_update_strategy)) }}
+{{- end }}
 {{- include "ack.unsupported" (list $ "global_replication_group_id" $v.global_replication_group_id "ACK's ReplicationGroup (elasticache-controller v1.12.0) has no field to join a global replication group") }}
 {{- include "ack.unsupported" (list $ "global_replication_group_id_suffix" $v.global_replication_group_id_suffix "it is used only with a global replication group, which is refused") }}
 {{- include "ack.unsupported" (list $ "cluster_mode" $v.cluster_mode "ACK's ReplicationGroup (elasticache-controller v1.12.0) has no clusterMode field; cluster_mode_enabled is carried") }}

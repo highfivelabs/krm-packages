@@ -1,0 +1,8 @@
+# expect: autoscaling: ignore_desired_capacity_changes is not supported with desired_capacity
+name: x
+min_size: 0
+max_size: 1
+vpc_zone_identifier: [subnet-1]
+image_id: ami-1
+desired_capacity: 1
+ignore_desired_capacity_changes: true

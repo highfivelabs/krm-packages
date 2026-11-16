@@ -3,7 +3,17 @@
 #
 # What tests/mock.values.yaml needs and the chart does not make: a VPC with
 # subnets in two Availability Zones for the subnet group and the security
-# group (hack/mock-apply-aws.sh applies them first, deletes them last).
+# group (hack/mock-apply-aws.sh applies them first, deletes them last),
+# and the Kubernetes Secret the replication group's AUTH token comes from
+# (a test value, not a credential).
+apiVersion: v1
+kind: Secret
+metadata:
+  name: catalog-cache-auth
+type: Opaque
+stringData:
+  token: catalog-fake-aws-test-token
+---
 apiVersion: ec2.services.k8s.aws/v1alpha1
 kind: VPC
 metadata:

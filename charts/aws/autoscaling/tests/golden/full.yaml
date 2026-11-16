@@ -1,0 +1,405 @@
+---
+# Source: autoscaling/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: full-iam-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: autoscaling
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam-role"
+spec:
+  name: "workers"
+  path: "/asg/"
+  description: "Workers"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"ec2.amazonaws.com\"]},\"Sid\":\"EC2AssumeRole\"}],\"Version\":\"2012-10-17\"}"
+  permissionsBoundary: "arn:aws:iam::111122223333:policy/boundary"
+  policies:
+    - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  tags:
+    - key: "role"
+      value: "yes"
+    - key: "team"
+      value: "data"
+---
+# Source: autoscaling/templates/autoscaling-group.yaml
+apiVersion: autoscaling.services.k8s.aws/v1alpha1
+kind: AutoScalingGroup
+metadata:
+  name: full-autoscaling-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: autoscaling
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "autoscaling-group"
+spec:
+  name: "workers"
+  minSize: 0
+  maxSize: 10
+  desiredCapacityType: "units"
+  vpcZoneIdentifier: "subnet-0123456789abcdef0,subnet-0123456789abcdef1"
+  availabilityZoneDistribution:
+    capacityDistributionStrategy: balanced-best-effort
+  capacityRebalance: true
+  defaultCooldown: 300
+  defaultInstanceWarmup: 120
+  healthCheckGracePeriod: 60
+  healthCheckType: "ELB"
+  lifecycleHookSpecificationList:
+    - lifecycleHookName: "drain"
+      lifecycleTransition: "autoscaling:EC2_INSTANCE_TERMINATING"
+      defaultResult: "CONTINUE"
+      heartbeatTimeout: 300
+      notificationMetadata: "{\"drain\": true}"
+      notificationTargetARN: "arn:aws:sqs:eu-west-1:111122223333:drain"
+      roleARN: "arn:aws:iam::111122223333:role/asg-notify"
+  instanceLifecyclePolicy:
+    retentionTriggers:
+      terminateHookAbandon: retain
+  instanceMaintenancePolicy:
+    maxHealthyPercentage: 120
+    minHealthyPercentage: 90
+  mixedInstancesPolicy:
+    instancesDistribution:
+      onDemandBaseCapacity: 1
+      onDemandPercentageAboveBaseCapacity: 25
+      spotAllocationStrategy: price-capacity-optimized
+    launchTemplate:
+      launchTemplateSpecification:
+        launchTemplateName: workers-lt
+        version: $Latest
+      overrides:
+      - instanceType: m6i.large
+        weightedCapacity: "2"
+      - instanceRequirements:
+          baselineEBSBandwidthMbps:
+            min: 100
+          cpuManufacturers:
+          - intel
+          - amd
+          memoryGiBPerVCPU:
+            max: 8
+            min: 2
+          memoryMiB:
+            min: 4096
+          networkBandwidthGbps:
+            min: 1
+          vCPUCount:
+            max: 8
+            min: 2
+        launchTemplateSpecification:
+          launchTemplateName: workers-arm
+          version: $Default
+  maxInstanceLifetime: 604800
+  newInstancesProtectedFromScaleIn: true
+  placementGroup: "workers-spread"
+  serviceLinkedRoleARN: "arn:aws:iam::111122223333:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
+  terminationPolicies:
+    - OldestLaunchTemplate
+    - Default
+  trafficSources:
+    - identifier: "arn:aws:elasticloadbalancing:eu-west-1:111122223333:targetgroup/web/0123456789abcdef"
+      type: "elbv2"
+  tags:
+    - key: "Name"
+      value: "worker"
+    - key: "team"
+      value: "data"
+    - key: "tier"
+      value: "workers"
+---
+# Source: autoscaling/templates/iam.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: InstanceProfile
+metadata:
+  name: full-instance-profile
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: autoscaling
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "iam-instance-profile"
+spec:
+  name: "workers"
+  path: "/asg/"
+  roleRef:
+    from:
+      name: full-iam-role
+  tags:
+    - key: "role"
+      value: "yes"
+    - key: "team"
+      value: "data"
+---
+# Source: autoscaling/templates/launch-template.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: LaunchTemplate
+metadata:
+  name: full-launch-template
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: autoscaling
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "launch-template"
+spec:
+  name: "workers-lt"
+  versionDescription: "Workers"
+  defaultVersion: 1
+  data:
+    blockDeviceMappings:
+    - deviceName: /dev/xvda
+      ebs:
+        deleteOnTermination: true
+        encrypted: true
+        iops: 3000
+        kmsKeyID: arn:aws:kms:eu-west-1:111122223333:key/abc
+        throughput: 125
+        volumeSize: 50
+        volumeType: gp3
+    - deviceName: /dev/sdb
+      noDevice: ""
+    capacityReservationSpecification:
+      capacityReservationPreference: open
+    cpuOptions:
+      coreCount: 1
+      threadsPerCore: 2
+    creditSpecification:
+      cpuCredits: standard
+    disableAPITermination: false
+    ebsOptimized: true
+    iamInstanceProfile:
+      name: workers
+    imageID: ami-0123456789abcdef0
+    instanceInitiatedShutdownBehavior: terminate
+    instanceMarketOptions:
+      marketType: spot
+      spotOptions:
+        instanceInterruptionBehavior: terminate
+        maxPrice: "0.05"
+    instanceType: m6i.large
+    keyName: ops
+    licenseSpecifications:
+    - licenseConfigurationARN: arn:aws:license-manager:eu-west-1:111122223333:license-configuration:lic-0123456789abcdef
+    maintenanceOptions:
+      autoRecovery: default
+    metadataOptions:
+      httpEndpoint: enabled
+      httpProtocolIPv6: disabled
+      httpPutResponseHopLimit: 2
+      httpTokens: required
+      instanceMetadataTags: enabled
+    monitoring:
+      enabled: true
+    networkInterfaces:
+    - associatePublicIPAddress: false
+      deleteOnTermination: true
+      deviceIndex: 0
+      groups:
+      - sg-0123456789abcdef0
+      - sg-0fedcba9876543210
+      ipv4PrefixCount: 1
+      ipv6Addresses:
+      - ipv6Address: 2001:db8::10
+    placement:
+      hostResourceGroupARN: arn:aws:resource-groups:eu-west-1:111122223333:group/hosts
+      partitionNumber: 1
+      tenancy: default
+    privateDNSNameOptions:
+      enableResourceNameDNSAAAARecord: false
+      enableResourceNameDNSARecord: true
+      hostnameType: resource-name
+    tagSpecifications:
+    - resourceType: volume
+      tags:
+      - key: backup
+        value: daily
+      - key: team
+        value: data
+    - resourceType: instance
+      tags:
+      - key: Name
+        value: worker
+      - key: role
+        value: worker
+      - key: team
+        value: data
+    userData: IyEvYmluL2Jhc2gKZWNobyBoZWxsbwo=
+  tags:
+    - key: "lt"
+      value: "yes"
+    - key: "team"
+      value: "data"
+---
+# Source: autoscaling/templates/autoscaling-group.yaml
+apiVersion: autoscaling.aws.hfl.dev/v1alpha1
+kind: ScalingPolicy
+metadata:
+  name: full-policy-cpu
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: autoscaling
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "scaling-policy-cpu"
+spec:
+  autoScalingGroupName: "workers"
+  policyName: "cpu"
+  estimatedInstanceWarmup: 120
+  policyType: TargetTrackingScaling
+  targetTrackingConfiguration:
+    predefinedMetricSpecification:
+      predefinedMetricType: ASGAverageCPUUtilization
+    targetValue: 50
+---
+# Source: autoscaling/templates/autoscaling-group.yaml
+apiVersion: autoscaling.aws.hfl.dev/v1alpha1
+kind: ScalingPolicy
+metadata:
+  name: full-policy-predictive
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: autoscaling
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "scaling-policy-predictive"
+spec:
+  autoScalingGroupName: "workers"
+  policyName: "predictive"
+  policyType: PredictiveScaling
+  predictiveScalingConfiguration:
+    metricSpecifications:
+    - predefinedMetricPairSpecification:
+        predefinedMetricType: ASGCPUUtilization
+      targetValue: 40
+    mode: ForecastOnly
+    schedulingBufferTime: 300
+---
+# Source: autoscaling/templates/autoscaling-group.yaml
+apiVersion: autoscaling.aws.hfl.dev/v1alpha1
+kind: ScalingPolicy
+metadata:
+  name: full-policy-queue
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: autoscaling
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "scaling-policy-queue"
+spec:
+  autoScalingGroupName: "workers"
+  policyName: "queue-depth"
+  policyType: TargetTrackingScaling
+  targetTrackingConfiguration:
+    customizedMetricSpecification:
+      metrics:
+      - id: m1
+        metricStat:
+          metric:
+            dimensions:
+            - name: QueueName
+              value: work
+            metricName: ApproximateNumberOfMessagesVisible
+            namespace: AWS/SQS
+          stat: Sum
+        returnData: false
+      - expression: m1 / 10
+        id: e1
+        returnData: true
+    disableScaleIn: true
+    targetValue: 100
+---
+# Source: autoscaling/templates/autoscaling-group.yaml
+apiVersion: autoscaling.aws.hfl.dev/v1alpha1
+kind: ScalingPolicy
+metadata:
+  name: full-policy-steps
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: autoscaling
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "scaling-policy-steps"
+spec:
+  autoScalingGroupName: "workers"
+  policyName: "steps"
+  adjustmentType: ChangeInCapacity
+  metricAggregationType: Average
+  policyType: StepScaling
+  stepAdjustments:
+  - metricIntervalLowerBound: 0
+    metricIntervalUpperBound: 10
+    scalingAdjustment: 1
+  - metricIntervalLowerBound: 10
+    scalingAdjustment: 2
+---
+# Source: autoscaling/templates/autoscaling-group.yaml
+apiVersion: autoscaling.aws.hfl.dev/v1alpha1
+kind: ScheduledAction
+metadata:
+  name: full-schedule-morning
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: autoscaling
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "schedule-morning"
+spec:
+  autoScalingGroupName: "workers"
+  scheduledActionName: "morning"
+  maxSize: 10
+  minSize: 1
+  recurrence: "0 7 * * MON-FRI"
+---
+# Source: autoscaling/templates/autoscaling-group.yaml
+apiVersion: autoscaling.aws.hfl.dev/v1alpha1
+kind: ScheduledAction
+metadata:
+  name: full-schedule-night
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: autoscaling
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "schedule-night"
+spec:
+  autoScalingGroupName: "workers"
+  scheduledActionName: "night"
+  desiredCapacity: 0
+  maxSize: 2
+  minSize: 0
+  recurrence: "0 20 * * *"
+  timeZone: "Europe/London"
+---
+# Source: autoscaling/templates/autoscaling-group.yaml
+apiVersion: autoscaling.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: WarmPool
+metadata:
+  name: full-warm-pool
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: autoscaling
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "warm-pool"
+spec:
+  autoScalingGroupName: "workers"
+  instanceReusePolicy:
+    reuseOnScaleIn: true
+  maxGroupPreparedCapacity: 4
+  minSize: 1
+  poolState: Stopped

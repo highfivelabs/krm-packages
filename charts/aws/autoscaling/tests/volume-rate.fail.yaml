@@ -1,0 +1,9 @@
+# expect: autoscaling: block_device_mappings[0].ebs.volume_initialization_rate is not supported
+name: x
+min_size: 0
+max_size: 1
+vpc_zone_identifier: [subnet-1]
+image_id: ami-1
+block_device_mappings:
+  - device_name: /dev/xvda
+    ebs: {volume_size: 20, volume_initialization_rate: 300}

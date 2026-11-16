@@ -1,0 +1,2895 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "autoscaling values (terraform-aws-modules autoscaling v9.3.2)",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "names": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "autoScalingGroup": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "launchTemplate": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 128
+        },
+        "iamRole": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "instanceProfile": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "namePrefix": {
+      "type": "string",
+      "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?)?$",
+      "maxLength": 63
+    },
+    "labels": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean",
+          "null"
+        ]
+      }
+    },
+    "allow_alpha": {
+      "type": "boolean"
+    },
+    "deletion_policy": {
+      "type": "string",
+      "enum": [
+        "DELETE",
+        "ABANDON",
+        "PREVENT"
+      ]
+    },
+    "create": {
+      "type": "boolean"
+    },
+    "region": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tags": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean",
+          "null"
+        ]
+      }
+    },
+    "availability_zones": {
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "availability_zone_distribution": {
+      "additionalProperties": false,
+      "properties": {
+        "capacity_distribution_strategy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "capacity_rebalance": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "context": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "default_cooldown": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "default_instance_warmup": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "desired_capacity": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "desired_capacity_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "enabled_metrics": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "force_delete": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "force_delete_warm_pool": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "health_check_grace_period": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "health_check_type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "EC2",
+        "ELB",
+        "VPC_LATTICE",
+        "EBS",
+        null
+      ]
+    },
+    "ignore_failed_scaling_activities": {
+      "type": "boolean"
+    },
+    "ignore_desired_capacity_changes": {
+      "type": "boolean"
+    },
+    "initial_lifecycle_hooks": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "default_result": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "heartbeat_timeout": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "lifecycle_transition": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "notification_metadata": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "notification_target_arn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "role_arn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "lifecycle_transition",
+          "name"
+        ],
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "instance_maintenance_policy": {
+      "additionalProperties": false,
+      "properties": {
+        "max_healthy_percentage": {
+          "type": "number"
+        },
+        "min_healthy_percentage": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "max_healthy_percentage",
+        "min_healthy_percentage"
+      ],
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "instance_lifecycle_policy": {
+      "additionalProperties": false,
+      "properties": {
+        "retention_triggers": {
+          "additionalProperties": false,
+          "properties": {
+            "terminate_hook_abandon": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "instance_refresh": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Refused when set (upstream.yaml): kept so a module call converts one to one"
+    },
+    "launch_template_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "launch_template_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "max_instance_lifetime": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "max_size": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "metrics_granularity": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "min_elb_capacity": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "min_size": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "use_mixed_instances_policy": {
+      "type": "boolean"
+    },
+    "mixed_instances_policy": {
+      "additionalProperties": false,
+      "properties": {
+        "instances_distribution": {
+          "additionalProperties": false,
+          "properties": {
+            "on_demand_allocation_strategy": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "on_demand_base_capacity": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "on_demand_percentage_above_base_capacity": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "spot_allocation_strategy": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "spot_instance_pools": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "spot_max_price": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "launch_template": {
+          "additionalProperties": false,
+          "properties": {
+            "override": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "instance_requirements": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "accelerator_count": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "max": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "min": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "type": [
+                          "object",
+                          "null"
+                        ]
+                      },
+                      "accelerator_manufacturers": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": [
+                          "array",
+                          "null"
+                        ]
+                      },
+                      "accelerator_names": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": [
+                          "array",
+                          "null"
+                        ]
+                      },
+                      "accelerator_total_memory_mib": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "max": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "min": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "type": [
+                          "object",
+                          "null"
+                        ]
+                      },
+                      "accelerator_types": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": [
+                          "array",
+                          "null"
+                        ]
+                      },
+                      "allowed_instance_types": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": [
+                          "array",
+                          "null"
+                        ]
+                      },
+                      "bare_metal": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "baseline_ebs_bandwidth_mbps": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "max": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "min": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "type": [
+                          "object",
+                          "null"
+                        ]
+                      },
+                      "burstable_performance": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "cpu_manufacturers": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": [
+                          "array",
+                          "null"
+                        ]
+                      },
+                      "excluded_instance_types": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": [
+                          "array",
+                          "null"
+                        ]
+                      },
+                      "instance_generations": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": [
+                          "array",
+                          "null"
+                        ]
+                      },
+                      "local_storage": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "local_storage_types": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": [
+                          "array",
+                          "null"
+                        ]
+                      },
+                      "max_spot_price_as_percentage_of_optimal_on_demand_price": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "memory_gib_per_vcpu": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "max": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "min": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "type": [
+                          "object",
+                          "null"
+                        ]
+                      },
+                      "memory_mib": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "max": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "min": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "type": [
+                          "object",
+                          "null"
+                        ]
+                      },
+                      "network_bandwidth_gbps": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "max": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "min": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "type": [
+                          "object",
+                          "null"
+                        ]
+                      },
+                      "network_interface_count": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "max": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "min": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "type": [
+                          "object",
+                          "null"
+                        ]
+                      },
+                      "on_demand_max_price_percentage_over_lowest_price": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "require_hibernate_support": {
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
+                      },
+                      "spot_max_price_percentage_over_lowest_price": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "total_local_storage_gb": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "max": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "min": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "type": [
+                          "object",
+                          "null"
+                        ]
+                      },
+                      "vcpu_count": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "max": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "min": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "type": [
+                          "object",
+                          "null"
+                        ]
+                      }
+                    },
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "instance_type": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "launch_template_specification": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "launch_template_id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "launch_template_name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "version": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "weighted_capacity": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "type": "object"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "launch_template"
+      ],
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "name": {
+      "type": "string"
+    },
+    "use_name_prefix": {
+      "type": "boolean"
+    },
+    "placement_group": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "protect_from_scale_in": {
+      "type": "boolean"
+    },
+    "service_linked_role_arn": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "suspended_processes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "autoscaling_group_tags": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean",
+          "null"
+        ]
+      }
+    },
+    "autoscaling_group_tags_not_propagate_at_launch": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "instance_name": {
+      "type": "string"
+    },
+    "termination_policies": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "vpc_zone_identifier": {
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "wait_for_capacity_timeout": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "wait_for_elb_capacity": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "warm_pool": {
+      "properties": {
+        "instance_reuse_policy": {
+          "additionalProperties": false,
+          "properties": {
+            "reuse_on_scale_in": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "max_group_prepared_capacity": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "min_size": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "pool_state": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "timeouts": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Refused when set (upstream.yaml): kept so a module call converts one to one"
+    },
+    "create_launch_template": {
+      "type": "boolean"
+    },
+    "block_device_mappings": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "device_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ebs": {
+            "additionalProperties": false,
+            "properties": {
+              "delete_on_termination": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "encrypted": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "iops": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "kms_key_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "snapshot_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "throughput": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "volume_initialization_rate": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "volume_size": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "volume_type": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "no_device": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "virtual_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "capacity_reservation_specification": {
+      "additionalProperties": false,
+      "properties": {
+        "capacity_reservation_preference": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "capacity_reservation_target": {
+          "additionalProperties": false,
+          "properties": {
+            "capacity_reservation_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "capacity_reservation_resource_group_arn": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "cpu_options": {
+      "additionalProperties": false,
+      "properties": {
+        "amd_sev_snp": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "core_count": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "nested_virtualization": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "threads_per_core": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "credit_specification": {
+      "additionalProperties": false,
+      "properties": {
+        "cpu_credits": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "default_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "launch_template_description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "disable_api_stop": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "disable_api_termination": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "ebs_optimized": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "enclave_options": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "hibernation_options": {
+      "additionalProperties": false,
+      "properties": {
+        "configured": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "image_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "instance_initiated_shutdown_behavior": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "instance_market_options": {
+      "additionalProperties": false,
+      "properties": {
+        "market_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "spot_options": {
+          "additionalProperties": false,
+          "properties": {
+            "block_duration_minutes": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "instance_interruption_behavior": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "max_price": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "spot_instance_type": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "valid_until": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "instance_requirements": {
+      "additionalProperties": false,
+      "properties": {
+        "accelerator_count": {
+          "additionalProperties": false,
+          "properties": {
+            "max": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "min": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "accelerator_manufacturers": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "accelerator_names": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "accelerator_total_memory_mib": {
+          "additionalProperties": false,
+          "properties": {
+            "max": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "min": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "accelerator_types": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "allowed_instance_types": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "bare_metal": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "baseline_ebs_bandwidth_mbps": {
+          "additionalProperties": false,
+          "properties": {
+            "max": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "min": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "burstable_performance": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cpu_manufacturers": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "excluded_instance_types": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "instance_generations": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "local_storage": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "local_storage_types": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "max_spot_price_as_percentage_of_optimal_on_demand_price": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "memory_gib_per_vcpu": {
+          "additionalProperties": false,
+          "properties": {
+            "max": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "min": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "memory_mib": {
+          "additionalProperties": false,
+          "properties": {
+            "max": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "min": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "network_bandwidth_gbps": {
+          "additionalProperties": false,
+          "properties": {
+            "max": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "min": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "network_interface_count": {
+          "additionalProperties": false,
+          "properties": {
+            "max": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "min": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "on_demand_max_price_percentage_over_lowest_price": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "require_hibernate_support": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "spot_max_price_percentage_over_lowest_price": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "total_local_storage_gb": {
+          "additionalProperties": false,
+          "properties": {
+            "max": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "min": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "vcpu_count": {
+          "additionalProperties": false,
+          "properties": {
+            "max": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "min": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "instance_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "kernel_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "key_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "license_specifications": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "license_configuration_arn": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "license_configuration_arn"
+        ],
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "launch_template_name": {
+      "type": "string"
+    },
+    "launch_template_use_name_prefix": {
+      "type": "boolean"
+    },
+    "maintenance_options": {
+      "additionalProperties": false,
+      "properties": {
+        "auto_recovery": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "metadata_options": {
+      "additionalProperties": false,
+      "properties": {
+        "http_endpoint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "http_protocol_ipv6": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "http_put_response_hop_limit": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "http_tokens": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "instance_metadata_tags": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "enable_monitoring": {
+      "type": "boolean"
+    },
+    "network_interfaces": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "associate_carrier_ip_address": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "associate_public_ip_address": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "connection_tracking_specification": {
+            "additionalProperties": false,
+            "properties": {
+              "tcp_established_timeout": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "udp_stream_timeout": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "udp_timeout": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "delete_on_termination": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "device_index": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "ena_srd_specification": {
+            "additionalProperties": false,
+            "properties": {
+              "ena_srd_enabled": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "ena_srd_udp_specification": {
+                "additionalProperties": false,
+                "properties": {
+                  "ena_srd_udp_enabled": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  }
+                },
+                "type": [
+                  "object",
+                  "null"
+                ]
+              }
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "interface_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ipv4_address_count": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "ipv4_addresses": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "ipv4_prefix_count": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "ipv4_prefixes": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "ipv6_address_count": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "ipv6_addresses": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "ipv6_prefix_count": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "ipv6_prefixes": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "network_card_index": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "network_interface_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "primary_ipv6": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "private_ip_address": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "security_groups": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "subnet_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "network_performance_options": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Refused when set (upstream.yaml): kept so a module call converts one to one"
+    },
+    "placement": {
+      "additionalProperties": false,
+      "properties": {
+        "affinity": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "availability_zone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "group_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "group_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "host_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "host_resource_group_arn": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "partition_number": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "spread_domain": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tenancy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "private_dns_name_options": {
+      "additionalProperties": false,
+      "properties": {
+        "enable_resource_name_dns_a_record": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "enable_resource_name_dns_aaaa_record": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "hostname_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "ram_disk_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "secondary_interfaces": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "delete_on_termination": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "device_index": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "interface_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "network_card_index": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "private_ip_address_count": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "private_ip_addresses": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "secondary_subnet_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "tag_specifications": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "resource_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tags": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "update_default_version": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "user_data": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "security_groups": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "launch_template_tags": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean",
+          "null"
+        ]
+      }
+    },
+    "traffic_source_attachments": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "traffic_source_identifier": {
+            "type": "string"
+          },
+          "traffic_source_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "traffic_source_identifier"
+        ],
+        "type": "object"
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "schedules": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "desired_capacity": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "end_time": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "max_size": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "min_size": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "recurrence": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "start_time": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "time_zone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "scaling_policies": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "adjustment_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cooldown": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "enabled": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "estimated_instance_warmup": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "metric_aggregation_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "min_adjustment_magnitude": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "policy_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "predictive_scaling_configuration": {
+            "additionalProperties": false,
+            "properties": {
+              "max_capacity_breach_behavior": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "max_capacity_buffer": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "metric_specification": {
+                "additionalProperties": false,
+                "properties": {
+                  "customized_capacity_metric_specification": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "metric_data_queries": {
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "expression": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "id": {
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "metric_stat": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "metric": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "dimensions": {
+                                      "items": {
+                                        "additionalProperties": false,
+                                        "properties": {
+                                          "name": {
+                                            "type": "string"
+                                          },
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "name",
+                                          "value"
+                                        ],
+                                        "type": "object"
+                                      },
+                                      "type": [
+                                        "array",
+                                        "null"
+                                      ]
+                                    },
+                                    "metric_name": {
+                                      "type": "string"
+                                    },
+                                    "namespace": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "metric_name",
+                                    "namespace"
+                                  ],
+                                  "type": "object"
+                                },
+                                "stat": {
+                                  "type": "string"
+                                },
+                                "unit": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "metric",
+                                "stat"
+                              ],
+                              "type": [
+                                "object",
+                                "null"
+                              ]
+                            },
+                            "return_data": {
+                              "type": [
+                                "boolean",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id"
+                          ],
+                          "type": "object"
+                        },
+                        "type": [
+                          "array",
+                          "null"
+                        ]
+                      }
+                    },
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "customized_load_metric_specification": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "metric_data_queries": {
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "expression": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "id": {
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "metric_stat": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "metric": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "dimensions": {
+                                      "items": {
+                                        "additionalProperties": false,
+                                        "properties": {
+                                          "name": {
+                                            "type": "string"
+                                          },
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "name",
+                                          "value"
+                                        ],
+                                        "type": "object"
+                                      },
+                                      "type": [
+                                        "array",
+                                        "null"
+                                      ]
+                                    },
+                                    "metric_name": {
+                                      "type": "string"
+                                    },
+                                    "namespace": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "metric_name",
+                                    "namespace"
+                                  ],
+                                  "type": "object"
+                                },
+                                "stat": {
+                                  "type": "string"
+                                },
+                                "unit": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "metric",
+                                "stat"
+                              ],
+                              "type": [
+                                "object",
+                                "null"
+                              ]
+                            },
+                            "return_data": {
+                              "type": [
+                                "boolean",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id"
+                          ],
+                          "type": "object"
+                        },
+                        "type": [
+                          "array",
+                          "null"
+                        ]
+                      }
+                    },
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "customized_scaling_metric_specification": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "metric_data_queries": {
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "expression": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "id": {
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "metric_stat": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "metric": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "dimensions": {
+                                      "items": {
+                                        "additionalProperties": false,
+                                        "properties": {
+                                          "name": {
+                                            "type": "string"
+                                          },
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "name",
+                                          "value"
+                                        ],
+                                        "type": "object"
+                                      },
+                                      "type": [
+                                        "array",
+                                        "null"
+                                      ]
+                                    },
+                                    "metric_name": {
+                                      "type": "string"
+                                    },
+                                    "namespace": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "metric_name",
+                                    "namespace"
+                                  ],
+                                  "type": "object"
+                                },
+                                "stat": {
+                                  "type": "string"
+                                },
+                                "unit": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "metric",
+                                "stat"
+                              ],
+                              "type": [
+                                "object",
+                                "null"
+                              ]
+                            },
+                            "return_data": {
+                              "type": [
+                                "boolean",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id"
+                          ],
+                          "type": "object"
+                        },
+                        "type": [
+                          "array",
+                          "null"
+                        ]
+                      }
+                    },
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "predefined_load_metric_specification": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "predefined_metric_type": {
+                        "type": "string"
+                      },
+                      "resource_label": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "predefined_metric_type"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "predefined_metric_pair_specification": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "predefined_metric_type": {
+                        "type": "string"
+                      },
+                      "resource_label": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "predefined_metric_type"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "predefined_scaling_metric_specification": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "predefined_metric_type": {
+                        "type": "string"
+                      },
+                      "resource_label": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "predefined_metric_type"
+                    ],
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "target_value": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  }
+                },
+                "type": "object"
+              },
+              "mode": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "scheduling_buffer_time": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "metric_specification"
+            ],
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "scaling_adjustment": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "step_adjustment": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "metric_interval_lower_bound": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "metric_interval_upper_bound": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "scaling_adjustment": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "scaling_adjustment"
+              ],
+              "type": "object"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "target_tracking_configuration": {
+            "additionalProperties": false,
+            "properties": {
+              "customized_metric_specification": {
+                "additionalProperties": false,
+                "properties": {
+                  "metric_dimension": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "value"
+                      ],
+                      "type": "object"
+                    },
+                    "type": [
+                      "array",
+                      "null"
+                    ]
+                  },
+                  "metric_name": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "metrics": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "expression": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "label": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "metric_stat": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "metric": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "dimensions": {
+                                  "items": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "name": {
+                                        "type": "string"
+                                      },
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "name",
+                                      "value"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "type": [
+                                    "array",
+                                    "null"
+                                  ]
+                                },
+                                "metric_name": {
+                                  "type": "string"
+                                },
+                                "namespace": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "metric_name",
+                                "namespace"
+                              ],
+                              "type": "object"
+                            },
+                            "period": {
+                              "type": [
+                                "number",
+                                "null"
+                              ]
+                            },
+                            "stat": {
+                              "type": "string"
+                            },
+                            "unit": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "metric",
+                            "stat"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        },
+                        "return_data": {
+                          "type": [
+                            "boolean",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id"
+                      ],
+                      "type": "object"
+                    },
+                    "type": [
+                      "array",
+                      "null"
+                    ]
+                  },
+                  "namespace": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "period": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "statistic": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "unit": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "disable_scale_in": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "predefined_metric_specification": {
+                "additionalProperties": false,
+                "properties": {
+                  "predefined_metric_type": {
+                    "type": "string"
+                  },
+                  "resource_label": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "predefined_metric_type"
+                ],
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "target_value": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "target_value"
+            ],
+            "type": [
+              "object",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "create_iam_instance_profile": {
+      "type": "boolean"
+    },
+    "iam_instance_profile_arn": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "iam_instance_profile_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "iam_role_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "iam_role_use_name_prefix": {
+      "type": "boolean"
+    },
+    "iam_role_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "iam_role_description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "iam_role_permissions_boundary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "iam_role_policies": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "type": "object"
+    },
+    "iam_role_tags": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean",
+          "null"
+        ]
+      }
+    },
+    "putin_khuylo": {
+      "type": "boolean"
+    }
+  }
+}

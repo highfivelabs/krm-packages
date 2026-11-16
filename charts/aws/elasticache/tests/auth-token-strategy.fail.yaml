@@ -1,0 +1,7 @@
+# expect: elasticache: auth_token_update_strategy is not supported: SET
+replication_group_id: x
+node_type: cache.t4g.micro
+subnet_ids: [subnet-1]
+vpc_id: vpc-1
+auth_token: {secretName: redis-auth, key: token}
+auth_token_update_strategy: SET

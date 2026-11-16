@@ -1676,7 +1676,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/autoscaling/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-autoscaling/tree/v9.3.2
-    chart: null
+    chart: charts/aws/autoscaling
   - id: aws/secrets-manager
     cloud: aws
     module: secrets-manager

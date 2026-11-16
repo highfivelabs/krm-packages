@@ -1,0 +1,11 @@
+# expect: autoscaling: mixed_instances_policy.launch_template.override[0].launch_template_specification.launch_template_id is not supported
+name: x
+min_size: 0
+max_size: 1
+vpc_zone_identifier: [subnet-1]
+image_id: ami-1
+use_mixed_instances_policy: true
+mixed_instances_policy:
+  launch_template:
+    override:
+      - launch_template_specification: {launch_template_id: lt-1}

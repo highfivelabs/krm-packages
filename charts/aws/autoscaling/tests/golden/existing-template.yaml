@@ -1,0 +1,29 @@
+---
+# Source: autoscaling/templates/autoscaling-group.yaml
+apiVersion: autoscaling.services.k8s.aws/v1alpha1
+kind: AutoScalingGroup
+metadata:
+  name: existing-template-autoscaling-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing-template"
+    app.kubernetes.io/name: autoscaling
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "autoscaling-group"
+spec:
+  name: "batch"
+  minSize: 0
+  maxSize: 4
+  availabilityZones:
+    - eu-west-1a
+    - eu-west-1b
+  launchTemplate:
+    launchTemplateName: batch-template
+    version: "3"
+  newInstancesProtectedFromScaleIn: false
+  tags:
+    - key: "Name"
+      value: "batch"
+    - key: "team"
+      value: "batch"

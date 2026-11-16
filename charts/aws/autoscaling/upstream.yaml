@@ -1,0 +1,142 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Where this chart came from: the Terraform module it ports and the release
+# it was ported from. Machine-readable; `task upstream-check` keeps it equal
+# to upstream/modules.yaml and Chart.yaml. To take a newer release, see
+# UPSTREAM.md ("Moving the pins").
+module: aws/autoscaling
+repo: https://github.com/terraform-aws-modules/terraform-aws-autoscaling
+path: .
+version: v9.3.2
+commit: f90a581bcca0bab571022a021db155f2860e9b32
+license: Apache-2.0
+copyright: null
+module_url: https://github.com/terraform-aws-modules/terraform-aws-autoscaling/tree/v9.3.2
+registry_url: https://registry.terraform.io/modules/terraform-aws-modules/autoscaling/aws
+synced: 2026-11-16
+# Module variables the chart keeps in values.yaml (so tfvars convert one to
+# one) but refuses when set (to anything but the module's default), or
+# accepts only in part. Read by `task coverage`; `task coverage-verify`
+# renders the chart to check that each one is refused. kind: gap (no ACK or
+# ack-extensions kind or field), alpha (only an ack-extensions kind:
+# needs allow_alpha), not-ported (ACK has it, the chart does not map it
+# yet) or by-design (Bundt replaces it). partial: the variable is accepted,
+# the reason says what is not carried.
+refused:
+- variable: context
+  kind: gap
+  reason: "ACK's AutoScalingGroup (autoscaling-controller v1.6.0) has no context field"
+- variable: enabled_metrics
+  kind: gap
+  reason: "group metrics collection (EnableMetricsCollection) has no field: ACK's AutoScalingGroup reports enabledMetrics in its status only, and ack-extensions has no kind for it"
+- variable: metrics_granularity
+  kind: gap
+  reason: "used only with enabled_metrics, which is refused"
+- variable: force_delete
+  kind: gap
+  reason: "accepted: ACK's autoscaling-controller deletes every group with ForceDelete, so unset or false (Terraform: wait for the instances to terminate) is not carried; the group's instances are terminated with it either way"
+  partial: true
+- variable: force_delete_warm_pool
+  kind: gap
+  reason: "ack-extensions' WarmPool (Cloud Control) has no force delete field"
+- variable: ignore_failed_scaling_activities
+  kind: by-design
+  reason: "a Terraform wait: ACK does not wait for scaling activities, and Bundt reads the group's conditions"
+- variable: ignore_desired_capacity_changes
+  kind: gap
+  reason: "accepted unset or false, and true without desired_capacity; true with desired_capacity is refused: ACK keeps writing desiredCapacity, with no field to set it once and leave it to scaling"
+  partial: true
+- variable: instance_refresh
+  kind: gap
+  reason: "ACK's AutoScalingGroup has no instance refresh, and ack-extensions has no kind for StartInstanceRefresh"
+- variable: launch_template_id
+  kind: gap
+  reason: "ACK's AutoScalingGroup names its launch template (launchTemplate.launchTemplateName) and has no ID field; with create_launch_template: false set launch_template_name to the template's name"
+- variable: min_elb_capacity
+  kind: by-design
+  reason: "a Terraform wait for healthy load balancer instances: ACK does not wait, and Bundt reads the group's conditions"
+- variable: wait_for_capacity_timeout
+  kind: by-design
+  reason: "a Terraform wait for capacity: ACK does not wait, and Bundt reads the group's conditions"
+- variable: wait_for_elb_capacity
+  kind: by-design
+  reason: "a Terraform wait for healthy load balancer instances: ACK does not wait, and Bundt reads the group's conditions"
+- variable: suspended_processes
+  kind: gap
+  reason: "ACK's AutoScalingGroup reports suspendedProcesses in its status only (SuspendProcesses has no field), and ack-extensions has no kind for it"
+- variable: timeouts
+  kind: by-design
+  reason: "Terraform's delete timeout: ACK retries until the group is gone, and Bundt waits for it"
+- variable: use_name_prefix
+  kind: gap
+  reason: "accepted: true (the default) names the group name as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' groups apart"
+  partial: true
+- variable: launch_template_use_name_prefix
+  kind: gap
+  reason: "accepted: true (the default) names the launch template as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' templates apart"
+  partial: true
+- variable: iam_role_use_name_prefix
+  kind: gap
+  reason: "accepted: true (the default) names the IAM role and instance profile as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' roles apart"
+  partial: true
+- variable: create_launch_template
+  kind: gap
+  reason: "accepted; with false the group's tags do not reach its instances: ACK's AutoScalingGroup tags never propagate at launch (autoscaling-controller v1.6.0), so the chart carries the module's propagated tags on its own launch template's instance tag specification only"
+  partial: true
+- variable: autoscaling_group_tags_not_propagate_at_launch
+  kind: gap
+  reason: "accepted: ACK's AutoScalingGroup tags never propagate at launch, so the chart propagates the other tags through its launch template's instance tag specification (with create_launch_template: true)"
+  partial: true
+- variable: traffic_source_attachments
+  kind: gap
+  reason: "accepted as the group's trafficSources, which ACK sets when it creates the group: UpdateAutoScalingGroup has no traffic sources and ACK does not attach or detach them, so a change after creation is not applied"
+  partial: true
+- variable: initial_lifecycle_hooks
+  kind: gap
+  reason: "accepted as the group's lifecycleHookSpecificationList, set when ACK creates the group, as Terraform's initial_lifecycle_hook is; a change after creation is not applied"
+  partial: true
+- variable: block_device_mappings
+  kind: gap
+  reason: "accepted, but each EBS volume's volume_initialization_rate is refused: ACK's LaunchTemplate (ec2-controller v1.23.1) has no volumeInitializationRate field"
+  partial: true
+  fields:
+  - volume_initialization_rate
+- variable: network_interfaces
+  kind: gap
+  reason: "accepted, but connection_tracking_specification and ena_srd_specification are refused: ACK's LaunchTemplate (ec2-controller v1.23.1) has no fields for them"
+  partial: true
+  fields:
+  - connection_tracking_specification
+  - ena_srd_specification
+- variable: network_performance_options
+  kind: gap
+  reason: "ACK's LaunchTemplate (ec2-controller v1.23.1) has no networkPerformanceOptions field"
+- variable: secondary_interfaces
+  kind: gap
+  reason: "ACK's LaunchTemplate (ec2-controller v1.23.1) has no secondary interfaces field"
+- variable: update_default_version
+  kind: gap
+  reason: "accepted unset or false; true is refused: ACK's LaunchTemplate makes a new version on a change and moves the default only to default_version, with no field to follow the latest"
+  partial: true
+- variable: mixed_instances_policy
+  kind: gap
+  reason: "accepted, but an override's launch_template_specification.launch_template_id is refused: ACK's AutoScalingGroup names launch templates and has no ID field (set launch_template_name)"
+  partial: true
+  fields:
+  - launch_template_id
+- variable: scaling_policies
+  kind: alpha
+  reason: "ScalingPolicy is an ack-extensions kind (outside ACK's releases: autoscaling-controller v1.6.0 has only AutoScalingGroup): needs allow_alpha: true"
+  partial: true
+  needs_allow_alpha: true
+- variable: schedules
+  kind: alpha
+  reason: "ScheduledAction is an ack-extensions kind (outside ACK's releases: autoscaling-controller v1.6.0 has only AutoScalingGroup): needs allow_alpha: true"
+  partial: true
+  needs_allow_alpha: true
+- variable: warm_pool
+  kind: alpha
+  reason: "WarmPool is an ack-extensions Cloud Control kind (ACK's AutoScalingGroup has no warm pool field): needs allow_alpha: true"
+  partial: true
+  needs_allow_alpha: true

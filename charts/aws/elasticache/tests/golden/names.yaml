@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "names"
     app.kubernetes.io/name: elasticache
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     hfl.dev/team: "shop"
   annotations:
     hfl.dev/id: "parameter-group"
@@ -31,7 +31,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "names"
     app.kubernetes.io/name: elasticache
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     hfl.dev/team: "shop"
   annotations:
     hfl.dev/id: "subnet-group"
@@ -55,7 +55,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "names"
     app.kubernetes.io/name: elasticache
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     hfl.dev/team: "shop"
   annotations:
     hfl.dev/id: "log-group-slow-log"
@@ -75,7 +75,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "names"
     app.kubernetes.io/name: elasticache
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     hfl.dev/team: "shop"
   annotations:
     hfl.dev/id: "replication-group"
@@ -114,7 +114,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "names"
     app.kubernetes.io/name: elasticache
-    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/version: "0.2.0"
     hfl.dev/team: "shop"
   annotations:
     hfl.dev/id: "security-group"
