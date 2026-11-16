@@ -113,14 +113,14 @@ kinds for `google_logging_folder_settings`,
   policies before the folder (or Config Connector should skip the lookup
   on delete). The fake-cloud case leaves org policies out for this reason;
   they are render-tested only.
-- **A `ServiceIdentity` on a `Folder` object cannot be deleted once the
-  `Folder` object is gone** (config-connector-extensions `81c3f9b5`, run
-  `off-catalog-1116014618-16654`): its delete resolves `folderRef.name`
-  ("Update call failed: referenced Folder catalog-folder/mock not found"),
-  though Google Cloud has no call to delete a service identity. On an
-  existing folder (`folder_create: false`) the reference is external and
-  does not hit it. The fake-cloud case leaves service agents out; they are
-  render-tested only.
+- **Fixed: a `ServiceIdentity` on a `Folder` object could not be deleted
+  once the `Folder` object was gone** (config-connector-extensions
+  `81c3f9b5`, run `off-catalog-1116014618-16654`): its delete resolved
+  `folderRef.name` ("Update call failed: referenced Folder
+  catalog-folder/mock not found"), though Google Cloud has no call to
+  delete a service identity. config-connector-extensions #141 (in
+  `a65d1edb`, the pin since then) resolves nothing on delete, and the
+  service agent is back in `tests/mock.values.yaml` (Tests, below).
 
 ## Upstream
 
@@ -167,6 +167,11 @@ project (`memberFrom.logSinkRef`) Ready and deleted, with all 8 objects of
 the case. mockgcp makes up a writer identity for every sink and does not
 model the interception itself (config-connector-extensions'
 `docs/fake-cloud.md`).
+
+On 2026-11-16 (run `off-catalog-1116041737-16616`, config-connector-extensions
+`a65d1edb`) with the service agent back: the `ServiceIdentity` on the
+`Folder` object Ready (`service_agents` evaluated) and deleted with
+everything else at once, all 9 objects of the case.
 
 Not applied live: live runs are pending KEYLIVE (and the test provisioner's
 folder, `docs/design.md`, "The test provisioner").

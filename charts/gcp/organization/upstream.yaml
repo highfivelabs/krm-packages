@@ -46,10 +46,6 @@ refused:
   - variable: factories_config
     kind: by-design
     reason: "a chart cannot read the caller's files: their entries go in the variables they feed (custom_roles, org_policies, org_policy_custom_constraints, pam_entitlements, tags)"
-  - variable: iam_deny_policies
-    kind: alpha
-    reason: "IAMDenyPolicy is v1alpha1: needs allow_alpha: true"
-    partial: true
   - variable: logging_settings
     kind: gap
     reason: "Config Connector has no kind for an organization's logging settings (LoggingSettings)"

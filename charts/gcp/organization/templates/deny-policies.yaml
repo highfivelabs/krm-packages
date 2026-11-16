@@ -1,0 +1,62 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+Ported from cloud-foundation-fabric modules/organization/deny-policies.tf
+(v60.0.0), Copyright 2025 Google LLC, Apache-2.0.
+
+google_iam_deny_policy.default: an IAMDenyPolicy of config-connector-
+extensions (iam.gcp.hfl.dev/v1beta1, as the folder and project charts) per
+entry of iam_deny_policies on the organization, its ID the key (with the
+namePrefix): its display name, rules with their denied and exception
+principals and permissions and the denial condition, and fabric's check
+that each rule denies a principal a permission. Until 0.6.0 this was
+Config Connector's v1alpha1 IAMDenyPolicy behind allow_alpha.
+*/ -}}
+{{- $v := .Values }}
+{{- $abandon := include "kcc.abandon" . }}
+{{- $org := include "organization.id" . }}
+{{- $deny := $v.iam_deny_policies | default dict }}
+{{- range $key := keys $deny | sortAlpha }}
+{{- $d := index $deny $key }}
+{{- range $r := $d.rules }}
+{{- if not (and $r.denied_principals $r.denied_permissions) }}
+{{- fail "organization: Each rule in iam_deny_policies must have at least one denied principal and one denied permission." }}
+{{- end }}
+{{- end }}
+---
+apiVersion: iam.gcp.hfl.dev/v1beta1
+kind: IAMDenyPolicy
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "deny" $key)) "id" (printf "deny-policy:%s" $key) "abandon" $abandon) | nindent 2 }}
+spec:
+  resourceID: {{ include "kcc.cloudName" (list $ "IAM deny policy" $key 63) | quote }}
+  organizationRef:
+    external: {{ $org | quote }}
+  {{- with $d.display_name }}
+  displayName: {{ . | quote }}
+  {{- end }}
+  rules:
+    {{- range $r := $d.rules }}
+    - {{- with $r.description }}
+      description: {{ . | quote }}
+      {{- end }}
+      denyRule:
+        deniedPrincipals: {{ toJson $r.denied_principals }}
+        deniedPermissions: {{ toJson $r.denied_permissions }}
+        {{- with $r.exception_principals }}
+        exceptionPrincipals: {{ toJson . }}
+        {{- end }}
+        {{- with $r.exception_permissions }}
+        exceptionPermissions: {{ toJson . }}
+        {{- end }}
+        {{- with $r.denial_condition }}
+        denialCondition:
+          expression: {{ .expression | quote }}
+          {{- range $f := list "title" "description" "location" }}
+          {{- with (index $r.denial_condition $f) }}
+          {{ $f }}: {{ . | quote }}
+          {{- end }}
+          {{- end }}
+        {{- end }}
+    {{- end }}
+{{- end }}

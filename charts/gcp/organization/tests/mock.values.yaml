@@ -1,8 +1,9 @@
 # Applied to the fake cloud by hack/mock-apply.sh. The organization ID is
 # fake (mockgcp answers for any). Authoritative and additive IAM, a custom
 # role, a custom constraint and an organization policy, a tag key with a
-# value, a logging exclusion, an asset feed and a service agent
-# (config-connector-extensions' AssetFeed and ServiceIdentity, v1beta1). The org policy is on the organization, an
+# value, a logging exclusion, an IAM deny policy, an asset feed and a
+# service agent (config-connector-extensions' IAMDenyPolicy, AssetFeed and
+# ServiceIdentity, v1beta1). The org policy is on the organization, an
 # external reference, so it does not hit the folder chart's delete-order bug
 # (README.md, "Config Connector bugs"). No contact: mockgcp's essential
 # contacts take only a project parent.
@@ -38,6 +39,14 @@ logging_sinks:
     filter: logName:cloudaudit.googleapis.com
 logging_exclusions:
   no-gce: resource.type=gce_instance
+iam_deny_policies:
+  no-sa-keys:
+    display_name: No service account keys
+    rules:
+      - description: Nobody but the admins creates keys.
+        denied_principals: ["principalSet://goog/public:all"]
+        denied_permissions: ["iam.googleapis.com/serviceAccountKeys.create"]
+        exception_principals: ["principalSet://goog/group/admins@example.com"]
 asset_feeds:
   catalog-mock-feed:
     billing_project: mock-project

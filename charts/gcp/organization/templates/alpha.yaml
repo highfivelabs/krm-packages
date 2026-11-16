@@ -2,13 +2,12 @@
 Copyright 2026 High Five Labs
 SPDX-License-Identifier: Apache-2.0
 Ported from cloud-foundation-fabric modules/organization (v60.0.0):
-deny-policies.tf, context_aware_access.tf, model-armor.tf and
-scc-sha-custom-modules.tf, Copyright 2025 Google LLC, Apache-2.0.
+context_aware_access.tf, model-armor.tf and scc-sha-custom-modules.tf,
+Copyright 2025 Google LLC, Apache-2.0.
 
 The parts whose only Config Connector kind is v1alpha1: each needs
-allow_alpha: true (docs/design.md, "Alpha kinds").
-google_iam_deny_policy.default: an IAMDenyPolicy per entry of
-iam_deny_policies on the organization, its ID the key, with fabric's rules.
+allow_alpha: true (docs/design.md, "Alpha kinds"). IAM deny policies are
+config-connector-extensions' IAMDenyPolicy since 0.6.0 (deny-policies.yaml).
 google_access_context_manager_gcp_user_access_binding.binding: an
 AccessContextManagerGCPUserAccessBinding per entry of
 context_aware_access_bindings ("$access_levels:<key>" is this chart's
@@ -28,55 +27,9 @@ ID).
 {{- $abandon := include "kcc.abandon" . }}
 {{- $org := include "organization.id" . }}
 {{- $number := include "organization.number" . }}
-{{- include "kcc.alpha" (list $ "iam_deny_policies" $v.iam_deny_policies "IAMDenyPolicy") }}
 {{- include "kcc.alpha" (list $ "context_aware_access_bindings" $v.context_aware_access_bindings "AccessContextManagerGCPUserAccessBinding") }}
 {{- include "kcc.alpha" (list $ "model_armor_floor_setting" $v.model_armor_floor_setting "ModelArmorFloorSetting") }}
 {{- include "kcc.alpha" (list $ "scc_sha_custom_modules" $v.scc_sha_custom_modules "SecurityCenterManagementSecurityHealthAnalyticsCustomModule") }}
-{{- $deny := $v.iam_deny_policies | default dict }}
-{{- range $key := keys $deny | sortAlpha }}
-{{- $d := index $deny $key }}
-{{- range $r := $d.rules }}
-{{- if not (and $r.denied_principals $r.denied_permissions) }}
-{{- fail "organization: Each rule in iam_deny_policies must have at least one denied principal and one denied permission." }}
-{{- end }}
-{{- end }}
----
-apiVersion: iam.cnrm.cloud.google.com/v1alpha1
-kind: IAMDenyPolicy
-metadata:
-  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "deny" $key)) "id" (printf "deny-policy:%s" $key) "abandon" $abandon) | nindent 2 }}
-spec:
-  resourceID: {{ include "kcc.cloudName" (list $ "IAM deny policy" $key 63) | quote }}
-  organizationRef:
-    external: {{ $org | quote }}
-  {{- with $d.display_name }}
-  displayName: {{ . | quote }}
-  {{- end }}
-  rules:
-    {{- range $r := $d.rules }}
-    - {{- with $r.description }}
-      description: {{ . | quote }}
-      {{- end }}
-      denyRule:
-        deniedPrincipals: {{ toJson $r.denied_principals }}
-        deniedPermissions: {{ toJson $r.denied_permissions }}
-        {{- with $r.exception_principals }}
-        exceptionPrincipals: {{ toJson . }}
-        {{- end }}
-        {{- with $r.exception_permissions }}
-        exceptionPermissions: {{ toJson . }}
-        {{- end }}
-        {{- with $r.denial_condition }}
-        denialCondition:
-          expression: {{ .expression | quote }}
-          {{- range $f := list "title" "description" "location" }}
-          {{- with (index $r.denial_condition $f) }}
-          {{ $f }}: {{ . | quote }}
-          {{- end }}
-          {{- end }}
-        {{- end }}
-    {{- end }}
-{{- end }}
 {{- $caa := $v.context_aware_access_bindings | default dict }}
 {{- range $key := keys $caa | sortAlpha }}
 {{- $b := index $caa $key }}
