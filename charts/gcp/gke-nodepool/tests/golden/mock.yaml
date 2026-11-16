@@ -53,7 +53,7 @@ metadata:
     hfl.dev/id: "nodepool-fields"
 spec:
   resourceRef:
-    name: mock
+    external: "projects/mock-project/locations/us-central1-a/clusters/catalog-mock-cluster/nodePools/catalog-mock-pool"
   config:
     kubeletConfig:
       containerLogMaxFiles: 3

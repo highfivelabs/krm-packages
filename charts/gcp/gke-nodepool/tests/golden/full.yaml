@@ -174,7 +174,7 @@ metadata:
     cnrm.cloud.google.com/deletion-policy: abandon
 spec:
   resourceRef:
-    name: full
+    external: "projects/my-project/locations/europe-west1/clusters/cluster-0/nodePools/full"
   config:
     kubeletConfig:
       allowedUnsafeSysctls:

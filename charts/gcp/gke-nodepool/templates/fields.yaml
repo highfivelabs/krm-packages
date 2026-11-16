@@ -29,7 +29,11 @@ metadata:
   {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "fields")) "id" "nodepool-fields" "abandon" (include "kcc.abandon" $)) | nindent 2 }}
 spec:
   resourceRef:
-    name: {{ $.Release.Name }}
+    {{- /* By its full name, not the ContainerNodePool's: the node pool's
+    clusterRef is the cluster's bare name (nodepool.yaml), from which
+    Config Connector's ContainerNodePoolRef cannot resolve the pool, so a
+    reference by name never becomes ready (fake-cloud run, 2026-11-16). */}}
+    external: {{ printf "projects/%s/locations/%s/clusters/%s/nodePools/%s" $v.project_id $v.location ($v.cluster_id | default $v.cluster_name | splitList "/" | last) (include "nodepool.name" $) | quote }}
   config:
     kubeletConfig:
       {{- toYaml . | nindent 6 }}

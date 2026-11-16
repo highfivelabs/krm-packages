@@ -47,7 +47,9 @@ Set beside the node pool: `node_config.kubelet_config.insecure_kubelet_readonly_
 `.allowed_unsafe_sysctls` have no field in `ContainerNodePool`'s
 `kubeletConfig`; when any is set the chart renders a
 `ContainerNodePoolFields` (config-connector-extensions,
-`container.gcp.hfl.dev/v1beta1`) naming the node pool, which sets only
+`container.gcp.hfl.dev/v1beta1`) naming the node pool by its full name
+(`resourceRef.external`: Config Connector's reference cannot resolve a
+node pool whose `clusterRef` is the cluster's bare name, as this chart's is), which sets only
 those kubelet fields and leaves Config Connector's. Removing it unsets
 them (GKE's defaults apply again).
 
