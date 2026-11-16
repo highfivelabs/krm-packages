@@ -88,7 +88,13 @@ policies it made, sorted).
 (2026-11-16).** ACK's iam-controller adopted the role the CloudFormation
 stack had made, in place (same name and RoleId; ack-extensions
 `docs/live-runs.md`, AWSROLE-ADOPT), and the stack let go of it; the role
-is this instance's now.
+is this instance's now. Applied again the same day with the ACK-kind
+suite's statements (HFL-623): ACK adopted the role and `part-1` again,
+updated `part-1`'s document and made and attached `part-2`; all three
+objects `ACK.ResourceSynced`. A `Policy` is adopted by its ARN, not its
+name: each carries `services.k8s.aws/adoption-fields: {"arn": ...}` beside
+`adopt-or-create` (without it ACK called `CreatePolicy` and was refused
+`EntityAlreadyExists`).
 
 `tests/ack-extensions-live-tests.values.yaml` is the instance for
 ack-extensions' live tests: the role `ack-extensions-live-tests` in the AWS
@@ -112,9 +118,10 @@ the Cloud Control kinds sampled on live runs (`liveKinds`), the sweeper,
 the tests' fixtures, and (since 2026-11-16, HFL-623) the ACK-kind suite's
 calls, which take a second policy, `part-2`. When those change there, the
 statements are copied here and the instance is applied again through ACK
-the way it was adopted (`adoption-policy: adopt-or-create`, so the role and
-its policies are adopted again; `deletion_policy: ABANDON`; ACK's resource
-tags off). A check that the two files agree is not built yet.
+the way it was adopted (`adoption-policy: adopt-or-create` on every object,
+and `adoption-fields` with the ARN on each existing `Policy`, so the role
+and its policies are adopted again; `deletion_policy: ABANDON`; ACK's
+resource tags off). A check that the two files agree is not built yet.
 
 The unique ID in the file is a placeholder (`000000000000000000000`): this
 repository is public, and identifiers come from the environment. Set the
