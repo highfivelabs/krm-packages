@@ -67,7 +67,7 @@ reference to a Kubernetes Secret. */ -}}
 {{- $aiKeyPath := ternary "application_insights_key" (printf "%s.site_config.application_insights_key" $p) (kindIs "invalid" $ssc.application_insights_key) }}
 {{- with include "webcfg.secretSetting" (list $ $aiKeyPath $aiKey "") }}{{ $_ := set $entries "APPINSIGHTS_INSTRUMENTATIONKEY" (fromJson .) }}{{ end }}
 {{- range $sk, $sx := (index ($v.slot_sensitive_app_settings | default dict) $key | default dict) }}
-{{- $_ := set $entries $sk (include "webcfg.secretSetting" (list $ (printf "slot_sensitive_app_settings.%s.%s" $key $sk) $sx "") | fromJson) }}
+{{- with include "webcfg.secretSetting" (list $ (printf "slot_sensitive_app_settings.%s.%s" $key $sk) $sx "") }}{{ $_ := set $entries $sk (fromJson .) }}{{ end }}
 {{- end }}
 {{- $byKind := include "webcfg.hasRef" $entries | eq "true" }}
 {{- $inline := ternary (dict) (include "webcfg.plain" $entries | fromJson) $byKind }}
@@ -97,6 +97,8 @@ spec:
 {{- if $byKind }}
 {{- include "webcfg.appSettings" (dict "root" $ "name" (include "aso.name" (list $obj "appsettings")) "id" (printf "slot:%s/config_appsettings" $key) "abandon" $abandon "owner" $owner "settings" $entries) }}
 {{- end }}
+{{- /* a connection string's value is a reference even when manage_connection_strings is false and nothing is sent: it never sits in the inputs as text */ -}}
+{{- range $ck, $cv := ($s.connection_strings | default dict) }}{{ $_ := include "aso.secretRef" (list $ (printf "%s.connection_strings.%s.value" $p $ck) ($cv | default dict).value) }}{{ end }}
 {{- if and (eq (toString $s.manage_connection_strings) "true") $s.connection_strings }}
 {{- include "webcfg.connectionStrings" (dict "root" $ "name" (include "aso.name" (list $obj "connectionstrings")) "id" (printf "slot:%s/config_connectionstrings" $key) "abandon" $abandon "owner" $owner "path" (printf "%s.connection_strings" $p) "v" $s.connection_strings) }}
 {{- end }}

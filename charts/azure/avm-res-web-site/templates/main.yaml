@@ -182,6 +182,8 @@ spec:
 {{- if $byKind }}
 {{- include "webcfg.appSettings" (dict "root" $ "name" (include "aso.name" (list .Release.Name "appsettings")) "id" "config_appsettings" "abandon" $abandon "owner" (dict "name" $obj) "settings" $entries) }}
 {{- end }}
+{{- /* a connection string's value is a reference even when manage_connection_strings is false and nothing is sent: it never sits in the inputs as text */ -}}
+{{- range $ck, $cv := ($v.connection_strings | default dict) }}{{ $_ := include "aso.secretRef" (list $ (printf "connection_strings.%s.value" $ck) ($cv | default dict).value) }}{{ end }}
 {{- if and (eq (toString $v.manage_connection_strings) "true") $v.connection_strings }}
 {{- include "webcfg.connectionStrings" (dict "root" $ "name" (include "aso.name" (list .Release.Name "connectionstrings")) "id" "config_connectionstrings" "abandon" $abandon "owner" (dict "name" $obj) "path" "connection_strings" "v" $v.connection_strings) }}
 {{- end }}
