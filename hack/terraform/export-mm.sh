@@ -5,7 +5,7 @@
 # Reads Magic Modules' mmv1 resource definitions (the YAML the Google Terraform
 # providers are largely generated from) into CSVs. Run on an offload VM:
 #
-#   ../offload/offload run --machine e2-standard-4 -- hack/terraform/export-mm.sh
+#   ../scripts/offload/offload run --machine e2-standard-4 -- hack/terraform/export-mm.sh
 #
 # Writes offload-artifacts/terraform/: gcp.mm-resources.csv (one row per
 # resource definition), gcp.mm-properties.csv (counts of the keys used on

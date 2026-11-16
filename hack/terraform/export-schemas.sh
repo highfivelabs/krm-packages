@@ -7,7 +7,7 @@
 # provider's schema is a few hundred MB of JSON), so run it on an offload
 # VM, never on a laptop:
 #
-#   ../offload/offload run --machine e2-standard-4 -- hack/terraform/export-schemas.sh
+#   ../scripts/offload/offload run --machine e2-standard-4 -- hack/terraform/export-schemas.sh
 #
 # Writes offload-artifacts/terraform/: <cloud>.attributes.csv.gz,
 # <cloud>.tf-resources.csv, versions.txt. Needs network (OpenTofu releases and

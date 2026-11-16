@@ -8,7 +8,7 @@
 # passes; only in a project allowed below; only on an offload VM acting as
 # a service account, never with a key. `task test-live` runs it:
 #
-#   ../offload/offload run --sa "$GCP_LIVE_SA" \
+#   ../scripts/offload/offload run --sa "$GCP_LIVE_SA" \
 #     --machine e2-standard-8 --hours 2 -- env PROJECT="$GCP_PROJECT" \
 #     GCP_PROJECT="$GCP_PROJECT" CCE_TARBALL=gs://.../cce-<commit>.tar.gz \
 #     hack/live-apply.sh

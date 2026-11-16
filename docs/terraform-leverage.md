@@ -944,7 +944,7 @@ where).
 | `docs/terraform/spikes/` | the two spikes' logs and artifacts |
 | `hack/terraform/` | `export-schemas.sh`, `export-mm.sh`, `flatten.py`, `analyze.py`, `repo-files.py`, `run-analysis.sh`, `gaps.py`, `sample.py`, `overrides.csv`, `spikes/` |
 
-To rerun: `../offload/offload run -- hack/terraform/export-schemas.sh` and
+To rerun: `../scripts/offload/offload run -- hack/terraform/export-schemas.sh` and
 `export-mm.sh`, copy `offload-artifacts/terraform/*` to `docs/terraform/data/`,
 then `hack/terraform/run-analysis.sh DIR` with the three extensions
 repositories checked out under `DIR`.
