@@ -45,6 +45,7 @@ The module's variables, with the same names, types and defaults.
 | `logging_data_access` | an `IAMAuditConfig` per service with its log types and exempted members |
 | `logging_exclusions` | a `LoggingLogExclusion` per entry, described `<name> (Terraform-managed).` |
 | `logging_sinks` | a `LoggingLogSink` per entry on the folder, config-connector-extensions' kind (`logging.gcp.hfl.dev/v1beta1`; Config Connector's has no `interceptChildren` and no project destination) (`include_children`, default true, `intercept_children` with type `project`, filter, exclusions, `disabled`, BigQuery partitioned tables; type `project` sends to a project, its ID or `projects/<id>`), and, with `iam` (the default), a config-connector-extensions `IAMMember` granting its writer identity (`memberFrom.logSinkRef`) fabric's role on the destination: `roles/storage.objectCreator` on a bucket, `roles/pubsub.publisher` on a topic, `roles/bigquery.dataEditor` on a dataset, `roles/logging.bucketWriter` on a log bucket's project (with fabric's condition on the bucket), `roles/logging.logWriter` on a destination project. `intercept_children` without type `project` and `include_children` stops the render with fabric's message |
+| `logging_settings` | the folder's Log Router settings as config-connector-extensions' `LoggingSettings` (`logging.gcp.hfl.dev/v1beta1`; Config Connector has no kind for them), on the new folder's `Folder` object or the existing `id`: `disable_default_sink`, the CMEK key `kms_key_name` (`kmsKeyRef.external`, a key's full name) and `storage_location`; a field left null is not managed. The settings always exist, so the object is always abandoned: deleting it leaves them, as removing fabric's variable does. A `$context` lookup in `kms_key_name` is refused |
 | `pam_entitlements` | a `PrivilegedAccessManagerEntitlement` per entry on the folder, as the `project` chart's |
 | `deletion_protection` | `false`, the default, is accepted; `true` is refused: Config Connector's `Folder` has no `deletionProtection` (`deletion_policy: ABANDON` keeps the folder when the component is deleted) |
 | `context`, `factories_config`, `asset_search` | refused, by design: Bundt replaces `$context` lookups with `${...}` expressions; a chart cannot read the caller's files (their entries go in `org_policies` and `pam_entitlements`); a search is a read at plan time, not a resource |
@@ -53,7 +54,7 @@ The module's variables, with the same names, types and defaults.
 | `assured_workload_config`, `scc_sha_custom_modules` | refused: `AssuredWorkloadsWorkload` and `SecurityCenterManagementSecurityHealthAnalyticsCustomModule` are `v1alpha1` kinds, not ported yet |
 | `iam_deny_policies` | an `IAMDenyPolicy` of config-connector-extensions (`iam.gcp.hfl.dev/v1beta1`) per entry on the folder, named by its key: `display_name`, and each rule's description, denied and exception principals and permissions and denial condition; fabric's check that a rule has a denied principal and a denied permission |
 | `cloud_armor_policy` | a `ComputeOrganizationSecurityPolicyAssociation` of config-connector-extensions (`compute.gcp.hfl.dev/v1beta1`) of `policy_id` with the folder, named `name` or `folder-<number>`, as the `organization` chart does, with `excluded_projects` (`projects/<number>`). It needs an existing folder (`folder_create: false`, `id`): its `attachmentId` is the folder's number, which a new folder has only after it is made. `excluded_folders` is refused with fabric's message: folders can be excluded only from an organization's association |
-| `logging_settings`, `scc_mute_configs` | refused, gaps: Config Connector has no kind for a folder's logging settings or a Security Command Center v2 mute config |
+| `scc_mute_configs` | refused, a gap: no kind makes a Security Command Center v2 mute config. Config Connector's and config-connector-extensions' `SecurityCenterMuteConfig` (`securitycenter.gcp.hfl.dev/v1beta1`) is the v1 API's, `folders/N/muteConfigs`, a different resource from fabric's `folders/N/locations/global/muteConfigs`; a v2 kind is config-connector-extensions' `docs/design.md` item 42 |
 | `allow_alpha` | not a fabric variable. No feature of this chart needs an alpha kind since 0.3.0; the value changes nothing and is kept so components that set it still render |
 | `deletion_policy` | not a fabric variable; `ABANDON` keeps the cloud resources |
 
@@ -87,9 +88,11 @@ logging come under it (`docs/design.md`, "From Terraform").
 
 Found porting this module, for config-connector-extensions: `Folder` has no
 `deletionProtection`; no
-kinds for `google_logging_folder_settings`,
-`google_scc_v2_folder_mute_config` or `google_folder_service_identity`
-(`docs/coverage/blocked-kinds.md`).
+kind for `google_scc_v2_folder_mute_config` (config-connector-extensions'
+`SecurityCenterMuteConfig` is the v1 API's)
+(`docs/coverage/blocked-kinds.md`). config-connector-extensions filled
+`google_folder_service_identity` (`ServiceIdentity`, 0.3.0) and
+`google_logging_folder_settings` (`LoggingSettings`, 0.5.0).
 
 ## Config Connector bugs
 
@@ -178,6 +181,11 @@ folder, `docs/design.md`, "The test provisioner").
 
 ## Changes
 
+- **0.5.0** (2026-11-16): `logging_settings` renders config-connector-
+  extensions' `LoggingSettings` (`logging.gcp.hfl.dev/v1beta1`, at the
+  pin `5c223962`) on the folder, always abandoned. `scc_mute_configs`
+  stays refused, its reason now naming config-connector-extensions' v1
+  API `SecurityCenterMuteConfig`.
 - **0.4.0** (2026-11-16): `logging_sinks` as config-connector-extensions'
   `LoggingLogSink` (`logging.gcp.hfl.dev/v1beta1`), taking
   `intercept_children` and type `project`; the writer identity's grant

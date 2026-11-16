@@ -23,6 +23,7 @@ exempt:
   ModelArmorFloorSetting: "the organization's one floor setting; it has no name of its own"
   ServiceIdentity: "named by its service: an organization has one identity per service"
   SecurityCenterManagementSecurityHealthAnalyticsCustomModule: "Google Cloud assigns its ID; its display name is fabric's key, letters, digits and \"_\""
+  LoggingSettings: "the organization's one Log Router settings; it has no name of its own"
 nameFields:
   TagsTagKey: shortName
 compactNames:

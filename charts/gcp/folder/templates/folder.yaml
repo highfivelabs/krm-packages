@@ -36,8 +36,7 @@ such field), and the variables the other files of the module port.
 {{- include "kcc.unsupported" (list $ "factories_config" $v.factories_config "a chart cannot read the caller's files: their entries go in the variables they feed (org_policies, pam_entitlements)") }}
 {{- include "kcc.unsupported" (list $ "asset_search" $v.asset_search "a search is a read at plan time, not a resource; Bundt does not run one") }}
 {{- include "kcc.unsupported" (list $ "assured_workload_config" $v.assured_workload_config "AssuredWorkloadsWorkload is a v1alpha1 kind; not ported yet") }}
-{{- include "kcc.unsupported" (list $ "logging_settings" $v.logging_settings "Config Connector has no kind for a folder's logging settings (LoggingSettings)") }}
-{{- include "kcc.unsupported" (list $ "scc_mute_configs" $v.scc_mute_configs "Config Connector has no Security Command Center v2 mute config kind (SecurityCenterMuteConfig)") }}
+{{- include "kcc.unsupported" (list $ "scc_mute_configs" $v.scc_mute_configs "Config Connector's and config-connector-extensions' SecurityCenterMuteConfig (securitycenter.gcp.hfl.dev/v1beta1) is a v1 API mute config (folders/N/muteConfigs); fabric's is a Security Command Center v2 one (folders/N/locations/global/muteConfigs), which no kind makes yet (config-connector-extensions docs/design.md, item 42)") }}
 {{- include "kcc.unsupported" (list $ "scc_sha_custom_modules" $v.scc_sha_custom_modules "SecurityCenterManagementSecurityHealthAnalyticsCustomModule is a v1alpha1 kind; not ported yet") }}
 {{- if eq (toString $v.deletion_protection) "true" }}
 {{- include "kcc.unsupported" (list $ "deletion_protection: true" true "Config Connector's Folder has no deletionProtection; deletion_policy: ABANDON keeps the folder when the component is deleted") }}

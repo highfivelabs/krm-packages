@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "asset-feed:catalog-mock-feed"
 spec:
@@ -31,7 +31,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "folder"
 spec:
@@ -48,7 +48,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "iam_deny_policy:no-sa-keys"
 spec:
@@ -75,7 +75,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "logging-sink-writer:audit"
 spec:
@@ -97,7 +97,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "iam"
 spec:
@@ -119,7 +119,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "iam-additive-browser"
 spec:
@@ -139,7 +139,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "logging-exclusion:no-gce"
 spec:
@@ -158,7 +158,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "logging-sink:audit"
 spec:
@@ -174,6 +174,25 @@ spec:
   interceptChildren: true
   disabled: false
 ---
+# Source: folder/templates/logging.yaml
+apiVersion: logging.gcp.hfl.dev/v1beta1
+kind: LoggingSettings
+metadata:
+  name: mock-logging-settings
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: folder
+    app.kubernetes.io/version: "0.5.0"
+  annotations:
+    hfl.dev/id: "logging-settings"
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  folderRef:
+    name: mock
+  disableDefaultSink: true
+  storageLocation: "europe-west1"
+---
 # Source: folder/templates/service-agents.yaml
 apiVersion: serviceusage.gcp.hfl.dev/v1beta1
 kind: ServiceIdentity
@@ -183,7 +202,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: folder
-    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/version: "0.5.0"
   annotations:
     hfl.dev/id: "service-identity:osconfig.googleapis.com"
 spec:

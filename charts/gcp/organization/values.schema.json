@@ -1141,11 +1141,32 @@
       }
     },
     "logging_settings": {
-      "description": "Default settings for logging resources; refused when set (README.md).",
+      "description": "Default settings for logging resources: config-connector-extensions' LoggingSettings on the organization.",
       "type": [
         "object",
         "null"
-      ]
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "disable_default_sink": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "kms_key_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "storage_location": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
     },
     "logging_sinks": {
       "description": "Logging sinks to create for the organization.",

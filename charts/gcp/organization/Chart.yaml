@@ -4,12 +4,12 @@ apiVersion: v2
 name: organization
 description: >-
   A Google Cloud organization's IAM, custom roles, organization policies
-  and custom constraints, contacts, logging sinks, exclusions and data
-  access logs, PAM entitlements, tag keys and values, network tags, tag
+  and custom constraints, contacts, logging sinks, exclusions, settings
+  and data access logs, PAM entitlements, tag keys and values, network tags, tag
   bindings and firewall policy association, as Config Connector objects.
   A partial port of Cloud Foundation Fabric's organization module.
 type: application
-version: 0.6.0
+version: 0.7.0
 # The fabric release this chart was ported from (UPSTREAM.md).
 appVersion: "fabric-v60.0.0"
 kubeVersion: ">=1.27.0-0"

@@ -47,12 +47,9 @@ refused:
   - variable: factories_config
     kind: by-design
     reason: "a chart cannot read the caller's files: their entries go in the variables they feed (org_policies, pam_entitlements)"
-  - variable: logging_settings
-    kind: gap
-    reason: "Config Connector has no kind for a folder's logging settings (LoggingSettings)"
   - variable: scc_mute_configs
     kind: gap
-    reason: "Config Connector has no Security Command Center v2 mute config kind (SecurityCenterMuteConfig)"
+    reason: "Config Connector's and config-connector-extensions' SecurityCenterMuteConfig (securitycenter.gcp.hfl.dev/v1beta1) is a v1 API mute config (folders/N/muteConfigs); fabric's is a Security Command Center v2 one (folders/N/locations/global/muteConfigs), which no kind makes yet (config-connector-extensions docs/design.md, item 42)"
   - variable: scc_sha_custom_modules
     kind: alpha
     reason: "SecurityCenterManagementSecurityHealthAnalyticsCustomModule is v1alpha1; not ported yet, even with allow_alpha"

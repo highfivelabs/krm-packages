@@ -1,8 +1,8 @@
 # Every value the chart carries on a new folder: IAM in each form, contacts,
 # org policies (boolean, list, conditional, dry run), a firewall policy
-# association, Autokey, tag bindings, data access logs, exclusions, sinks of
-# each destination type, a PAM entitlement, an asset feed and service agents
-# (two OS Config agents share one service; cloudasset.googleapis.com has no
+# association, Autokey, tag bindings, data access logs, exclusions, the
+# logging settings, sinks of each destination type, a PAM entitlement, an
+# asset feed and service agents (two OS Config agents share one service; cloudasset.googleapis.com has no
 # folder-level agent and is skipped, as fabric skips it).
 parent: organizations/123456789012
 name: Full folder
@@ -51,6 +51,10 @@ logging_data_access:
     DATA_WRITE: {}
 logging_exclusions:
   no-gce-instances: resource.type=gce_instance
+logging_settings:
+  disable_default_sink: true
+  kms_key_name: projects/kms-project/locations/europe-west1/keyRings/logging/cryptoKeys/router
+  storage_location: europe-west1
 logging_sinks:
   warnings:
     destination: my-bucket

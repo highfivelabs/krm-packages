@@ -4,6 +4,15 @@ SPDX-License-Identifier: Apache-2.0
 Ported from cloud-foundation-fabric modules/organization/logging.tf (v60.0.0),
 Copyright 2025 Google LLC, Apache-2.0.
 
+google_logging_organization_settings.default (logging_settings, when not
+null): config-connector-extensions' LoggingSettings
+(logging.gcp.hfl.dev/v1beta1) on the organization, with
+disableDefaultSink, the CMEK key kms_key_name (kmsKeyRef.external) and
+storageLocation as given; a field left null is not set, so not managed, as
+fabric leaves it null. The settings always exist: the object is always
+abandoned, so deleting it leaves them, as removing fabric's variable does.
+A $context lookup in kms_key_name or storage_location is refused.
+
 google_organization_iam_audit_config.default: one IAMAuditConfig per service of
 logging_data_access, with a log config per type set.
 google_logging_organization_exclusion.logging_exclusion: one LoggingLogExclusion
@@ -172,4 +181,26 @@ spec:
     expression: {{ printf "resource.name.endsWith('locations/%s/buckets/%s')" (index $parts 3) (index $parts 5) | quote }}
   {{- end }}
 {{- end }}
+{{- end }}
+{{- with $v.logging_settings }}
+{{- include "organization.context" (list $ "logging_settings.kms_key_name" .kms_key_name) }}
+{{- include "organization.context" (list $ "logging_settings.storage_location" .storage_location) }}
+---
+apiVersion: logging.gcp.hfl.dev/v1beta1
+kind: LoggingSettings
+metadata:
+  {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "logging-settings")) "id" "logging-settings" "abandon" "true") | nindent 2 }}
+spec:
+  organizationRef:
+    {{- include "organization.ref" $ | nindent 4 }}
+  {{- if not (kindIs "invalid" .disable_default_sink) }}
+  disableDefaultSink: {{ .disable_default_sink }}
+  {{- end }}
+  {{- with .kms_key_name }}
+  kmsKeyRef:
+    external: {{ . | quote }}
+  {{- end }}
+  {{- with .storage_location }}
+  storageLocation: {{ . | quote }}
+  {{- end }}
 {{- end }}

@@ -24,6 +24,11 @@ logging_sinks:
     type: project
     intercept_children: true
     filter: logName:cloudaudit.googleapis.com
+# The folder's Log Router settings (config-connector-extensions'
+# LoggingSettings), on the new Folder object.
+logging_settings:
+  disable_default_sink: true
+  storage_location: europe-west1
 logging_exclusions:
   no-gce: resource.type=gce_instance
 iam_deny_policies:
