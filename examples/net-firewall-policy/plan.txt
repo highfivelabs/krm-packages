@@ -4,7 +4,7 @@ Layout after specs/record/plans.md R2 (one change per object); not captured from
   create  Template   net-firewall-policy 1.0.0
   create  Stack      my-team/net-firewall-policy  (Template net-firewall-policy)
   create  Instance   my-team/dev/net-firewall-policy-dev  (Stack net-firewall-policy, Template version 1.0.0)
-  create  Component  net-firewall-policy-dev-firewall-policy  (gcp-net-firewall-policy 0.2.0)
+  create  Component  net-firewall-policy-dev-firewall-policy  (gcp-net-firewall-policy 0.3.0)
             create  ComputeNetworkFirewallPolicy net-firewall-policy-dev-firewall-policy-policy  (named test-1 in the cloud)
             create  ComputeNetworkFirewallPolicyAssociation net-firewall-policy-dev-firewall-policy-association-my-vpc  (named test-1-my-vpc in the cloud)
             create  ComputeNetworkFirewallPolicyRule net-firewall-policy-dev-firewall-policy-rule-egress-sm-f022b754

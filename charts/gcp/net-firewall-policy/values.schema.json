@@ -296,7 +296,7 @@
           }
         }
       },
-      "description": "A packet mirroring rule: priority and match are required (the chart checks them once allow_alpha accepts the kind)."
+      "description": "A packet mirroring rule: priority and match are required (the chart checks them)."
     }
   },
   "properties": {
@@ -344,7 +344,7 @@
       }
     },
     "allow_alpha": {
-      "description": "Accept the v1alpha1 kind packet mirroring rules need (not a fabric variable; docs/design.md, \"Alpha kinds\").",
+      "description": "Not a fabric variable: no kind of this chart is alpha any more; kept so components that set it still render, it changes nothing.",
       "type": [
         "boolean",
         "null"

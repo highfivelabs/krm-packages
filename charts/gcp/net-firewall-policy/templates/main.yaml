@@ -14,8 +14,7 @@ One policy, by region (main.tf's use_hierarchical and use_regional):
     ComputeNetworkFirewallPolicyRule of config-connector-extensions
     (compute.gcp.hfl.dev/v1beta1; Config Connector's own is v1alpha1) per
     rule, and a ComputeNetworkFirewallPolicyPacketMirroringRule
-    (config-connector-extensions, v1alpha1: allow_alpha) per mirroring
-    rule;
+    (config-connector-extensions, v1beta1) per mirroring rule;
   - any other region, net-regional.tf: config-connector-extensions'
     ComputeRegionNetworkFirewallPolicy, its associations and rules (all
     v1beta1).
@@ -34,12 +33,6 @@ Rules are keyed and named as fabric keys them, "<direction>/<name>".
 {{- $rules := include "nfwp.rules" (list $ false) | fromJson }}
 {{- $mirroring := include "nfwp.rules" (list $ true) | fromJson }}
 {{- $sgs := $v.security_profile_group_ids | default dict }}
-{{- if not (or $hier $regional) }}
-{{- include "kcc.alpha" (list $ "ingress_mirroring_rules" $v.ingress_mirroring_rules "ComputeNetworkFirewallPolicyPacketMirroringRule (config-connector-extensions)") }}
-{{- include "kcc.alpha" (list $ "egress_mirroring_rules" $v.egress_mirroring_rules "ComputeNetworkFirewallPolicyPacketMirroringRule (config-connector-extensions)") }}
-{{- include "kcc.alpha" (list $ "ingress_mirroring_rules (factories_data)" ($v.factories_data | default dict).ingress_mirroring_rules "ComputeNetworkFirewallPolicyPacketMirroringRule (config-connector-extensions)") }}
-{{- include "kcc.alpha" (list $ "egress_mirroring_rules (factories_data)" ($v.factories_data | default dict).egress_mirroring_rules "ComputeNetworkFirewallPolicyPacketMirroringRule (config-connector-extensions)") }}
-{{- end }}
 {{- range $k, $r := $rules }}
 {{- include "kcc.unsupported" (list $ (printf "rule %s's tls_inspect" $k) $r.tls_inspect "the firewall policy rule kinds have no tlsInspect") }}
 {{- include "kcc.unsupported" (list $ (printf "rule %s's security_profile_group" $k) $r.security_profile_group "the firewall policy rule kinds have no securityProfileGroup, so action apply_security_profile_group cannot be carried") }}
@@ -210,7 +203,7 @@ spec:
 {{- $r := index $mirroring $key }}
 {{- $m := $r.match }}
 ---
-apiVersion: compute.gcp.hfl.dev/v1alpha1
+apiVersion: compute.gcp.hfl.dev/v1beta1
 kind: ComputeNetworkFirewallPolicyPacketMirroringRule
 metadata:
   {{- include "kcc.metadata" (dict "root" $ "name" (include "kcc.name" (list $.Release.Name "rule" $key)) "id" (printf "rule:%s" $key) "project" $project "abandon" $abandon) | nindent 2 }}

@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: "mock"
     app.kubernetes.io/name: net-firewall-policy
-    app.kubernetes.io/version: "0.2.0"
+    app.kubernetes.io/version: "0.3.0"
   annotations:
     hfl.dev/id: "policy"
     cnrm.cloud.google.com/project-id: "mock-project"
@@ -17,3 +17,33 @@ spec:
   projectRef:
     external: "mock-project"
   description: "catalog fake-cloud case"
+---
+# Source: net-firewall-policy/templates/main.yaml
+apiVersion: compute.gcp.hfl.dev/v1beta1
+kind: ComputeNetworkFirewallPolicyPacketMirroringRule
+metadata:
+  name: mock-rule-mirror-egress-skip-internal-6ea647e2
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: net-firewall-policy
+    app.kubernetes.io/version: "0.3.0"
+  annotations:
+    hfl.dev/id: "rule:mirror/egress/skip-internal"
+    cnrm.cloud.google.com/project-id: "mock-project"
+spec:
+  firewallPolicyRef:
+    name: mock-policy
+  projectRef:
+    external: "mock-project"
+  priority: 200
+  action: "do_not_mirror"
+  direction: EGRESS
+  ruleName: "skip-internal"
+  description: "internal traffic is not mirrored"
+  disabled: false
+  match:
+    destIPRanges:
+    - "10.0.0.0/8"
+    layer4Configs:
+    - ipProtocol: "all"

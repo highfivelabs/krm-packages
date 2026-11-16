@@ -1,7 +1,14 @@
-# The fake-cloud case (hack/mock-apply.sh): a global network policy, as
-# Config Connector's own kinds carry it (no rules: the fake cloud's pin
-# predates config-connector-extensions' ComputeNetworkFirewallPolicyRule).
+# The fake-cloud case (hack/mock-apply.sh): a global network policy (Config
+# Connector's own kind) with a packet mirroring rule of
+# config-connector-extensions (v1beta1), which skips mirroring traffic to
+# 10.0.0.0/8 and needs no security profile group.
 name: catalog-mock-nfwp
 parent_id: mock-project
 region: global
 description: catalog fake-cloud case
+egress_mirroring_rules:
+  skip-internal:
+    priority: 200
+    action: do_not_mirror
+    description: internal traffic is not mirrored
+    match: {destination_ranges: [10.0.0.0/8]}
