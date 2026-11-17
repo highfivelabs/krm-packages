@@ -1,4 +1,4 @@
-# expect: efs: mount_targets.a.ipv6_address is not supported
+# expect: efs: mount_targets.a.ipv6_address needs the alpha kind
 name: x
 attach_policy: false
 security_group_vpc_id: vpc-1

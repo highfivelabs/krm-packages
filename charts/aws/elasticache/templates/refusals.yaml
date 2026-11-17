@@ -10,18 +10,18 @@ is set (to anything but its Terraform default). Renders nothing.
 {{- if eq (toJson $v.apply_immediately) "false" }}
 {{- fail "elasticache: apply_immediately is not supported: false: ACK's elasticache-controller (v1.12.0) applies every change immediately (ApplyImmediately: true), with no field to wait for the maintenance window (docs/aws.md); leave it unset or true" }}
 {{- end }}
-{{- include "ack.unsupported" (list $ "final_snapshot_identifier" $v.final_snapshot_identifier "ACK's CacheCluster and ReplicationGroup (elasticache-controller v1.12.0) have no field for a final snapshot on delete") }}
-{{- include "ack.unsupported" (list $ "transit_encryption_mode" $v.transit_encryption_mode "ACK's ReplicationGroup (elasticache-controller v1.12.0) has no transitEncryptionMode field") }}
+{{- include "ack.alpha" (list $ "final_snapshot_identifier" $v.final_snapshot_identifier "CacheCluster and ReplicationGroup (ack-extensions)") }}
+{{- include "ack.alpha" (list $ "transit_encryption_mode" $v.transit_encryption_mode "ReplicationGroup (ack-extensions)") }}
 {{- include "ack.unsupported" (list $ "timeouts" $v.timeouts "Terraform's create, update and delete timeouts: ACK retries until the cluster is synced, and Bundt waits for it") }}
-{{- if not (has (toString ($v.auth_token_update_strategy | default "ROTATE")) (list "ROTATE")) }}
-{{- fail (printf "elasticache: auth_token_update_strategy is not supported: %s: ACK's ReplicationGroup (elasticache-controller v1.12.0) has no field for it and sends a changed token without a strategy, which ElastiCache treats as ROTATE; leave it unset or ROTATE" (toString $v.auth_token_update_strategy)) }}
+{{- if and (not $v.allow_alpha) (not (has (toString ($v.auth_token_update_strategy | default "ROTATE")) (list "ROTATE"))) }}
+{{- fail (printf "elasticache: auth_token_update_strategy needs the alpha kind ReplicationGroup (ack-extensions) for %s, outside ACK's released controllers: set allow_alpha: true to accept that its schema may change (docs/design.md, \"Alpha kinds\")" (toString $v.auth_token_update_strategy)) }}
 {{- end }}
-{{- include "ack.unsupported" (list $ "global_replication_group_id" $v.global_replication_group_id "ACK's ReplicationGroup (elasticache-controller v1.12.0) has no field to join a global replication group") }}
+{{- include "ack.alpha" (list $ "global_replication_group_id" $v.global_replication_group_id "ReplicationGroup (ack-extensions)") }}
 {{- include "ack.unsupported" (list $ "global_replication_group_id_suffix" $v.global_replication_group_id_suffix "it is used only with a global replication group, which is refused") }}
-{{- include "ack.unsupported" (list $ "cluster_mode" $v.cluster_mode "ACK's ReplicationGroup (elasticache-controller v1.12.0) has no clusterMode field; cluster_mode_enabled is carried") }}
+{{- include "ack.alpha" (list $ "cluster_mode" $v.cluster_mode "ReplicationGroup (ack-extensions)") }}
 {{- include "ack.unsupported" (list $ "create_primary_global_replication_group" $v.create_primary_global_replication_group "neither ACK (elasticache-controller pull request #237) nor ack-extensions has a GlobalReplicationGroup kind") }}
 {{- include "ack.unsupported" (list $ "create_secondary_global_replication_group" $v.create_secondary_global_replication_group "neither ACK (elasticache-controller pull request #237) nor ack-extensions has a GlobalReplicationGroup kind, and ACK's ReplicationGroup has no field to join one") }}
 {{- range $key := keys ($v.log_delivery_configuration | default dict) | sortAlpha }}
 {{- $l := index $v.log_delivery_configuration $key | default dict }}
-{{- include "ack.unsupported" (list $ (printf "log_delivery_configuration.%s.cloudwatch_log_group_class" $key) $l.cloudwatch_log_group_class "ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no logGroupClass field") }}
+{{- include "ack.alpha" (list $ (printf "log_delivery_configuration.%s.cloudwatch_log_group_class" $key) $l.cloudwatch_log_group_class "LogGroup (ack-extensions)") }}
 {{- end }}

@@ -1,0 +1,104 @@
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: elasticache.services.k8s.aws/v1alpha1
+kind: CacheSubnetGroup
+metadata:
+  name: alpha-subnet-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "alpha"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "subnet-group"
+spec:
+  cacheSubnetGroupName: "app-alpha"
+  cacheSubnetGroupDescription: "ElastiCache subnet group"
+  subnetIDs:
+    - "subnet-0123456789abcdef0"
+    - "subnet-0123456789abcdef1"
+  tags:
+    - key: "terraform-aws-modules"
+      value: "elasticache"
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: cloudwatchlogs.aws.hfl.dev/v1alpha1
+kind: LogGroup
+metadata:
+  name: alpha-log-slow-log
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "alpha"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "log-group-slow-log"
+spec:
+  name: "/aws/elasticache/app-alpha"
+  retentionDays: 14
+  logGroupClass: "INFREQUENT_ACCESS"
+  tags:
+    "terraform-aws-modules": "elasticache"
+---
+# Source: elasticache/templates/elasticache.yaml
+apiVersion: elasticache.aws.hfl.dev/v1alpha1
+kind: ReplicationGroup
+metadata:
+  name: alpha-replication-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "alpha"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "replication-group"
+spec:
+  replicationGroupID: "app-alpha"
+  description: "Replication group"
+  engine: "redis"
+  engineVersion: "7.1"
+  cacheNodeType: "cache.t4g.micro"
+  port: 6379
+  atRestEncryptionEnabled: true
+  transitEncryptionEnabled: true
+  authToken:
+    name: "redis-auth"
+    key: "token"
+  authTokenUpdateStrategy: "SET"
+  clusterMode: "enabled"
+  finalSnapshotIdentifier: "app-alpha-final"
+  globalReplicationGroupID: "global-app"
+  transitEncryptionMode: "preferred"
+  multiAZEnabled: false
+  replicasPerNodeGroup: 1
+  cacheSubnetGroupRef:
+    from:
+      name: alpha-subnet-group
+  securityGroupRefs:
+    - from:
+        name: alpha-sg
+  logDeliveryConfigurations:
+    - {"destinationDetails":{"cloudWatchLogsDetails":{"logGroup":"/aws/elasticache/app-alpha"}},"destinationType":"cloudwatch-logs","enabled":true,"logFormat":"json","logType":"slow-log"}
+  tags:
+    - key: "terraform-aws-modules"
+      value: "elasticache"
+---
+# Source: elasticache/templates/security-group.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: alpha-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "alpha"
+    app.kubernetes.io/name: elasticache
+    app.kubernetes.io/version: "0.2.0"
+  annotations:
+    hfl.dev/id: "security-group"
+spec:
+  name: "app-alpha"
+  description: "Managed by Terraform"
+  vpcID: "vpc-0123456789abcdef0"
+  tags:
+    - key: "terraform-aws-modules"
+      value: "elasticache"

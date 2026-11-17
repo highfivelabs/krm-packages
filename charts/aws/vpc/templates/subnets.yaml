@@ -15,9 +15,12 @@ aws_network_acl_rule, as NetworkACL.entries and associations).
 {{- $v := .Values }}
 {{- $vpc := include "ack.name" (list .Release.Name "vpc") }}
 {{- $igw := include "ack.name" (list .Release.Name "igw") }}
-{{- range $t := list "public" "private" "database" "elasticache" "intra" }}
+{{- range $t := list "public" "private" "database" "elasticache" "intra" "outpost" }}
 {{- $tagsT := index $v (printf "%s_subnet_tags" $t) }}
-{{- $perAZ := index $v (printf "%s_subnet_tags_per_az" $t) | default dict }}
+{{- $perAZ := dict }}
+{{- if ne $t "outpost" }}
+{{- $perAZ = index $v (printf "%s_subnet_tags_per_az" $t) | default dict }}
+{{- end }}
 {{- range $s := index $p.subnets $t }}
 ---
 apiVersion: ec2.services.k8s.aws/v1alpha1
@@ -31,6 +34,14 @@ spec:
   {{ $s.azField }}: {{ $s.az | quote }}
 {{- if eq $t "public" }}
   mapPublicIPOnLaunch: {{ $v.map_public_ip_on_launch }}
+{{- end }}
+{{- if eq $t "outpost" }}
+{{- with $v.outpost_arn }}
+  outpostARN: {{ . | quote }}
+{{- end }}
+{{- with $v.customer_owned_ipv4_pool }}
+  customerOwnedIPv4Pool: {{ . | quote }}
+{{- end }}
 {{- end }}
   enableResourceNameDNSARecord: {{ index $v (printf "%s_subnet_enable_resource_name_dns_a_record_on_launch" $t) }}
 {{- with index $v (printf "%s_subnet_private_dns_hostname_type_on_launch" $t) }}

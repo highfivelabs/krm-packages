@@ -1,4 +1,4 @@
-# expect: elasticache: log_delivery_configuration.slow-log.cloudwatch_log_group_class is not supported
+# expect: elasticache: log_delivery_configuration.slow-log.cloudwatch_log_group_class needs the alpha kind
 replication_group_id: x
 node_type: cache.t4g.micro
 subnet_ids: [subnet-1]

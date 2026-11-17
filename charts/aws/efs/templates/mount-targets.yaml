@@ -92,7 +92,7 @@ spec:
 {{- fail (printf "efs: mount_targets.%s.security_groups is not supported with create_security_group: true: ACK's MountTarget cannot take group references (the chart's group) and IDs together; set create_security_group: false and give every group's ID (docs/aws.md)" $key) }}
 {{- end }}
 ---
-apiVersion: efs.services.k8s.aws/v1alpha1
+apiVersion: {{ ternary "efs.aws.hfl.dev/v1alpha1" "efs.services.k8s.aws/v1alpha1" $v.allow_alpha }}
 kind: MountTarget
 metadata:
 {{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "mount-target" $key)) "id" (printf "mount-target-%s" $key) "region" $v.region) | nindent 2 }}
@@ -103,6 +103,14 @@ spec:
   subnetID: {{ $mt.subnet_id | quote }}
 {{- with $mt.ip_address }}
   ipAddress: {{ . | quote }}
+{{- end }}
+{{- if $v.allow_alpha }}
+{{- with $mt.ip_address_type }}
+  ipAddressType: {{ . | quote }}
+{{- end }}
+{{- with $mt.ipv6_address }}
+  ipv6Address: {{ . | quote }}
+{{- end }}
 {{- end }}
 {{- if $createSG }}
   securityGroupRefs:

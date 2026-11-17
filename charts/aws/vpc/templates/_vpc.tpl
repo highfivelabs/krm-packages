@@ -43,13 +43,21 @@ vpc.plan: the module's locals and counts, as JSON:
 {{- $p := dict "create" (and $v.create_vpc $v.putin_khuylo) "base" $base -}}
 {{- $azs := $v.azs | default list -}}
 {{- $subnets := dict -}}
-{{- range $t := list "public" "private" "database" "elasticache" "intra" -}}
+{{- range $t := list "public" "private" "database" "elasticache" "intra" "outpost" -}}
 {{- $cidrs := index $v (printf "%s_subnets" $t) | default list -}}
 {{- $names := index $v (printf "%s_subnet_names" $t) | default list -}}
 {{- $suffix := index $v (printf "%s_subnet_suffix" $t) -}}
 {{- $list := list -}}
 {{- range $i, $cidr := $cidrs -}}
-{{- $az := include "vpc.element" (list $azs $i "azs") -}}
+{{- $az := "" -}}
+{{- if eq $t "outpost" -}}
+{{- if not $v.outpost_az -}}
+{{- fail "vpc: outpost_az is required with outpost_subnets" -}}
+{{- end -}}
+{{- $az = $v.outpost_az -}}
+{{- else -}}
+{{- $az = include "vpc.element" (list $azs $i "azs") -}}
+{{- end -}}
 {{- $name := "" -}}
 {{- if lt $i (len $names) -}}
 {{- $name = include "ack.cloudName" (list $ "subnet" (index $names $i) 256) -}}
@@ -125,6 +133,7 @@ fewer public subnets than AZs, and then fails associating them. */ -}}
 {{- end -}}
 {{- end -}}
 {{- $_ := set $rts "intra" $l -}}
+{{- $_ := set $rts "outpost" list -}}
 {{- $_ := set $p "rts" $rts -}}
 {{- toJson $p -}}
 {{- end -}}

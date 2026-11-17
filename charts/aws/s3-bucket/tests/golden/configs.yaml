@@ -1,0 +1,113 @@
+---
+# Source: s3-bucket/templates/bucket.yaml
+apiVersion: s3.services.k8s.aws/v1alpha1
+kind: Bucket
+metadata:
+  name: configs-bucket
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "configs"
+    app.kubernetes.io/name: s3-bucket
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "bucket"
+    services.k8s.aws/region: "us-west-2"
+spec:
+  name: "my-app-configs-bucket"
+  createBucketConfiguration:
+    locationConstraint: "us-west-2"
+  publicAccessBlock:
+    blockPublicACLs: true
+    blockPublicPolicy: true
+    ignorePublicACLs: true
+    restrictPublicBuckets: true
+  versioning:
+    status: "Enabled"
+  lifecycle:
+    rules:
+      - status: "Enabled"
+        id: "expire-logs"
+        filter: {"and":{"objectSizeGreaterThan":1024,"prefix":"logs/"}}
+        abortIncompleteMultipartUpload:
+          daysAfterInitiation: 7
+        expiration:
+          days: 365
+        transitions:
+          - storageClass: "STANDARD_IA"
+            days: 30
+        noncurrentVersionExpiration:
+          newerNoncurrentVersions: 3
+          noncurrentDays: 90
+        noncurrentVersionTransitions:
+          - storageClass: "GLACIER"
+            noncurrentDays: 30
+  intelligentTiering:
+    - id: "archive-all"
+      status: "Enabled"
+      filter: {"prefix":"data/"}
+      tierings:
+        - accessTier: "ARCHIVE_ACCESS"
+          days: 90
+        - accessTier: "DEEP_ARCHIVE_ACCESS"
+          days: 180
+  metrics:
+    - id: "entire-bucket"
+      filter: {"prefix":"metrics/"}
+  inventory:
+    - id: "daily"
+      includedObjectVersions: "All"
+      isEnabled: true
+      optionalFields: ["Size","LastModifiedDate"]
+      schedule:
+        frequency: "Daily"
+      filter:
+        prefix: "data/"
+      destination:
+        s3BucketDestination:
+          bucket: "arn:aws:s3:::my-app-configs-bucket"
+          format: "Parquet"
+          accountID: "111122223333"
+          prefix: "inventory/"
+          encryption:
+            sseKMS:
+              keyID: "arn:aws:kms:us-west-2:111122223333:key/1234"
+  analytics:
+    - id: "data-analysis"
+      filter: {"and":{"prefix":"data/","tags":[{"key":"env","value":"prod"}]}}
+      storageClassAnalysis:
+        dataExport:
+          outputSchemaVersion: "V_1"
+          destination:
+            s3BucketDestination:
+              bucket: "arn:aws:s3:::my-app-configs-bucket"
+              bucketAccountID: "111122223333"
+              format: "CSV"
+              prefix: "analytics/"
+  replication:
+    role: "arn:aws:iam::111122223333:role/s3-replication"
+    rules:
+      - status: "Enabled"
+        id: "replicate-all"
+        priority: 1
+        filter: {"prefix":"important/"}
+        deleteMarkerReplication:
+          status: "Enabled"
+        destination:
+          bucket: "arn:aws:s3:::my-app-replica-bucket"
+          storageClass: "STANDARD_IA"
+          account: "444455556666"
+          accessControlTranslation:
+            owner: "Destination"
+          encryptionConfiguration:
+            replicaKMSKeyID: "arn:aws:kms:us-east-1:444455556666:key/5678"
+          replicationTime:
+            status: "Enabled"
+            time:
+              minutes: 15
+          metrics:
+            status: "Enabled"
+            eventThreshold:
+              minutes: 15
+        sourceSelectionCriteria:
+          sseKMSEncryptedObjects:
+            status: "Enabled"

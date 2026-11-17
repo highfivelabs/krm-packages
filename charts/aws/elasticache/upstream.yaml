@@ -32,12 +32,15 @@ refused:
   reason: "auth_token is a reference to a Kubernetes Secret, {secretName, key}, rendered as ReplicationGroup's spec.authToken (ACK's SecretKeyReference; docs/secrets.md); the token itself, a string, is refused: it would be in the rendered manifest"
   partial: true
 - variable: auth_token_update_strategy
-  kind: gap
-  reason: "accepted unset or ROTATE; SET and DELETE are refused: ACK's ReplicationGroup (elasticache-controller v1.12.0) has no field for the strategy and sends a changed token without one, which ElastiCache treats as ROTATE"
+  kind: alpha
+  reason: "ACK's ReplicationGroup (elasticache-controller v1.12.0) has no authTokenUpdateStrategy field; ack-extensions' ReplicationGroup carries it (needs allow_alpha: true)"
   partial: true
+  needs_allow_alpha: true
 - variable: cluster_mode
-  kind: gap
-  reason: "ACK's ReplicationGroup (elasticache-controller v1.12.0) has no clusterMode field; cluster_mode_enabled is carried"
+  kind: alpha
+  reason: "ACK's ReplicationGroup (elasticache-controller v1.12.0) has no clusterMode field; ack-extensions' ReplicationGroup carries it (needs allow_alpha: true)"
+  partial: true
+  needs_allow_alpha: true
 - variable: create_primary_global_replication_group
   kind: gap
   reason: "no GlobalReplicationGroup kind in ACK (elasticache-controller pull request #237) or ack-extensions (its Cloud Control generator excludes AWS::ElastiCache::GlobalReplicationGroup for that pull request)"
@@ -45,17 +48,21 @@ refused:
   kind: gap
   reason: "no GlobalReplicationGroup kind, and ACK's ReplicationGroup has no field to join one"
 - variable: final_snapshot_identifier
-  kind: gap
-  reason: "ACK's CacheCluster and ReplicationGroup have no field for a final snapshot on delete"
+  kind: alpha
+  reason: "ACK's CacheCluster and ReplicationGroup (elasticache-controller v1.12.0) have no finalSnapshotIdentifier field; ack-extensions' kinds carry it (needs allow_alpha: true)"
+  partial: true
+  needs_allow_alpha: true
 - variable: global_replication_group_id
-  kind: gap
-  reason: "ACK's ReplicationGroup has no field to join a global replication group"
+  kind: alpha
+  reason: "ACK's ReplicationGroup (elasticache-controller v1.12.0) has no globalReplicationGroupID field; ack-extensions' ReplicationGroup carries it (needs allow_alpha: true)"
+  partial: true
+  needs_allow_alpha: true
 - variable: global_replication_group_id_suffix
   kind: gap
   reason: "used only with a global replication group, which is refused"
 - variable: log_delivery_configuration
-  kind: gap
-  reason: "accepted, but each entry's cloudwatch_log_group_class is refused: ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no logGroupClass field"
+  kind: alpha
+  reason: "accepted, with cloudwatch_log_group_class via ack-extensions' LogGroup (needs allow_alpha: true)"
   partial: true
   fields:
   - cloudwatch_log_group_class
@@ -81,8 +88,10 @@ refused:
   kind: by-design
   reason: "Terraform's create, update and delete timeouts: ACK retries until the cluster is synced, and Bundt waits for it"
 - variable: transit_encryption_mode
-  kind: gap
-  reason: "ACK's ReplicationGroup (elasticache-controller v1.12.0) has no transitEncryptionMode field"
+  kind: alpha
+  reason: "ACK's ReplicationGroup (elasticache-controller v1.12.0) has no transitEncryptionMode field; ack-extensions' ReplicationGroup carries it (needs allow_alpha: true)"
+  partial: true
+  needs_allow_alpha: true
 - variable: vpc_id
   kind: gap
   reason: "accepted when set; unset with create_security_group: true (Terraform's default VPC) is refused: ACK's SecurityGroup needs its VPC's ID"

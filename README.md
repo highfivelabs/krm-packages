@@ -135,9 +135,9 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | Source | Modules | Bar | Variables covered |
 | --- | ---: | --- | ---: |
 | Google Cloud: Cloud Foundation Fabric and terraform-google-modules | 98 | ![gcp](docs/coverage/gcp.svg) | 1220 of 1478 (82.5%) |
-| AWS: terraform-aws-modules | 42 | ![aws](docs/coverage/aws.svg) | 1297 of 2348 (55.2%) |
+| AWS: terraform-aws-modules | 42 | ![aws](docs/coverage/aws.svg) | 1344 of 2348 (57.2%) |
 | Azure: Azure Verified Modules | 37 | ![azure](docs/coverage/azure.svg) | 1066 of 1170 (91.1%) |
-| **All** | **177** | | **3583 of 4996 (71.7%)** |
+| **All** | **177** | | **3630 of 4996 (72.7%)** |
 
 ### Google Cloud: Cloud Foundation Fabric and terraform-google-modules
 
@@ -264,8 +264,8 @@ How much of the Terraform modules people use today the catalog carries, counted 
 
 | Module | Variables covered | Outputs | Resource types with a stable kind | Status |
 | --- | --- | ---: | ---: | --- |
-| [`s3-bucket`](https://github.com/terraform-aws-modules/terraform-aws-s3-bucket/tree/v5.17.0) ([chart](charts/aws/s3-bucket)) | ![s3-bucket](docs/coverage/bars/aws-s3-bucket.svg) 27 of 78 | 8 of 21 | 38 of 45 | partial |
-| [`vpc`](https://github.com/terraform-aws-modules/terraform-aws-vpc/tree/v6.7.3) ([chart](charts/aws/vpc)) | ![vpc](docs/coverage/bars/aws-vpc.svg) 111 of 236 | 54 of 119 | 24 of 35 | partial |
+| [`s3-bucket`](https://github.com/terraform-aws-modules/terraform-aws-s3-bucket/tree/v5.17.0) ([chart](charts/aws/s3-bucket)) | ![s3-bucket](docs/coverage/bars/aws-s3-bucket.svg) 55 of 78 | 8 of 21 | 38 of 45 | partial |
+| [`vpc`](https://github.com/terraform-aws-modules/terraform-aws-vpc/tree/v6.7.3) ([chart](charts/aws/vpc)) | ![vpc](docs/coverage/bars/aws-vpc.svg) 124 of 236 | 54 of 119 | 24 of 35 | partial |
 | [`eks`](https://github.com/terraform-aws-modules/terraform-aws-eks/tree/v21.29.0) ([chart](charts/aws/eks)) | ![eks](docs/coverage/bars/aws-eks.svg) 98 of 108 | 36 of 41 | 26 of 30 | partial |
 | [`kms`](https://github.com/terraform-aws-modules/terraform-aws-kms/tree/v4.2.2) ([chart](charts/aws/kms)) | ![kms](docs/coverage/bars/aws-kms.svg) 30 of 41 | 4 of 9 | 3 of 6 | partial |
 | [`lambda`](https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/v8.13.0) ([chart](charts/aws/lambda)) | ![lambda](docs/coverage/bars/aws-lambda.svg) 101 of 141 | 9 of 36 | 21 | partial |
@@ -285,10 +285,10 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | [`eks-pod-identity`](https://github.com/terraform-aws-modules/terraform-aws-eks-pod-identity/tree/v2.10.0) ([chart](charts/aws/eks-pod-identity)) | ![eks-pod-identity](docs/coverage/bars/aws-eks-pod-identity.svg) 82 of 82 | 7 of 8 | 4 of 4 | partial |
 | [`ecr`](https://github.com/terraform-aws-modules/terraform-aws-ecr/tree/v3.2.0) ([chart](charts/aws/ecr)) | ![ecr](docs/coverage/bars/aws-ecr.svg) 27 of 30 | 4 of 4 | 10 of 13 | partial |
 | [`sns`](https://github.com/terraform-aws-modules/terraform-aws-sns/tree/v7.2.0) ([chart](charts/aws/sns)) | ![sns](docs/coverage/bars/aws-sns.svg) 27 of 29 | 4 of 6 | 4 of 4 | partial |
-| [`elasticache`](https://github.com/terraform-aws-modules/terraform-aws-elasticache/tree/v1.11.2) ([chart](charts/aws/elasticache)) | ![elasticache](docs/coverage/bars/aws-elasticache.svg) 60 of 68 | 17 of 25 | 12 of 13 | partial |
+| [`elasticache`](https://github.com/terraform-aws-modules/terraform-aws-elasticache/tree/v1.11.2) ([chart](charts/aws/elasticache)) | ![elasticache](docs/coverage/bars/aws-elasticache.svg) 64 of 68 | 17 of 25 | 12 of 13 | partial |
 | [`ssm-parameter`](https://github.com/terraform-aws-modules/terraform-aws-ssm-parameter/tree/v2.1.2) ([chart](charts/aws/ssm-parameter)) | ![ssm-parameter](docs/coverage/bars/aws-ssm-parameter.svg) 14 of 16 | 8 of 9 | 1 of 1 | partial |
 | [`step-functions`](https://github.com/terraform-aws-modules/terraform-aws-step-functions/tree/v5.1.1) ([chart](charts/aws/step-functions)) | ![step-functions](docs/coverage/bars/aws-step-functions.svg) 40 of 42 | 9 of 10 | 6 of 6 | partial |
-| [`efs`](https://github.com/terraform-aws-modules/terraform-aws-efs/tree/v2.2.1) ([chart](charts/aws/efs)) | ![efs](docs/coverage/bars/aws-efs.svg) 29 of 33 | 9 of 9 | 8 of 9 | partial |
+| [`efs`](https://github.com/terraform-aws-modules/terraform-aws-efs/tree/v2.2.1) ([chart](charts/aws/efs)) | ![efs](docs/coverage/bars/aws-efs.svg) 31 of 33 | 9 of 9 | 8 of 9 | partial |
 | [`iam-role`](https://github.com/terraform-aws-modules/terraform-aws-iam/tree/v6.8.2/modules/iam-role) ([chart](charts/aws/iam-role)) | ![iam-role](docs/coverage/bars/aws-iam-role.svg) 31 of 31 | 7 of 7 | 4 of 4 | partial |
 | [`iam-policy`](https://github.com/terraform-aws-modules/terraform-aws-iam/tree/v6.8.2/modules/iam-policy) ([chart](charts/aws/iam-policy)) | ![iam-policy](docs/coverage/bars/aws-iam-policy.svg) 6 of 7 | 4 of 4 | 1 of 1 | partial |
 

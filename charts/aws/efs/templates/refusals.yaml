@@ -7,14 +7,14 @@ The module variables this chart keeps in its values but cannot carry
 is set (to anything but its Terraform default). Renders nothing.
 */ -}}
 {{- $v := .Values -}}
-{{- include "ack.unsupported" (list $ "creation_token" $v.creation_token "ACK's FileSystem (efs-controller v1.8.0) has no creationToken field: the controller sets its own") }}
+{{- include "ack.alpha" (list $ "creation_token" $v.creation_token "FileSystem (ack-extensions)") }}
 {{- if $v.attach_policy }}
-{{- include "ack.unsupported" (list $ "bypass_policy_lockout_safety_check" $v.bypass_policy_lockout_safety_check "ACK's FileSystem takes its policy as a string, with no flag to bypass PutFileSystemPolicy's lockout safety check") }}
+{{- include "ack.alpha" (list $ "bypass_policy_lockout_safety_check" $v.bypass_policy_lockout_safety_check "FileSystem (ack-extensions)") }}
 {{- include "ack.unsupported" (list $ "deny_nonsecure_transport" $v.deny_nonsecure_transport "the module's NonSecureTransport statement names the file system's own ARN, which holds the ID AWS assigns and is only in the FileSystem's status; ACK's FileSystem takes its policy as a string, with no reference to it. Set it and deny_nonsecure_transport_via_mount_target to false (a statement in policy_statements with resources can take its place), or set attach_policy: false") }}
 {{- include "ack.unsupported" (list $ "deny_nonsecure_transport_via_mount_target" $v.deny_nonsecure_transport_via_mount_target "the module's NonSecureTransportAccessedViaMountTarget statement names the file system's own ARN, which holds the ID AWS assigns and is only in the FileSystem's status; ACK's FileSystem takes its policy as a string, with no reference to it. Set it to false, or attach_policy: false") }}
 {{- end }}
 {{- range $key := keys ($v.mount_targets | default dict) | sortAlpha }}
 {{- $mt := index $v.mount_targets $key | default dict }}
-{{- include "ack.unsupported" (list $ (printf "mount_targets.%s.ip_address_type" $key) $mt.ip_address_type "ACK's MountTarget (efs-controller v1.8.0) has no ipAddressType field") }}
-{{- include "ack.unsupported" (list $ (printf "mount_targets.%s.ipv6_address" $key) $mt.ipv6_address "ACK's MountTarget (efs-controller v1.8.0) has no ipv6Address field") }}
+{{- include "ack.alpha" (list $ (printf "mount_targets.%s.ip_address_type" $key) $mt.ip_address_type "MountTarget (ack-extensions)") }}
+{{- include "ack.alpha" (list $ (printf "mount_targets.%s.ipv6_address" $key) $mt.ipv6_address "MountTarget (ack-extensions)") }}
 {{- end }}
