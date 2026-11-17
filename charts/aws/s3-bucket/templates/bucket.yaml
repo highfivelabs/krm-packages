@@ -18,29 +18,7 @@ refused (refusals.yaml).
 {{- end }}
 {{- $name := include "ack.resourceName" (list $ "bucket" "bucket" ($v.bucket | default "") 63) }}
 {{- $arn := printf "arn:%s:s3:::%s" $v.partition $name }}
-{{- /* The bucket policy: the module's combined document, in its order. */}}
-{{- $st := list }}
-{{- range $p := list (list $v.attach_require_latest_tls_policy "denyOutdatedTLS" "NumericLessThan" "s3:TlsVersion" "1.2") (list $v.attach_deny_insecure_transport_policy "denyInsecureTransport" "Bool" "aws:SecureTransport" "false") }}
-{{- if index $p 0 }}
-{{- $st = append $st (dict "Sid" (index $p 1) "Effect" "Deny" "Action" (list "s3:*") "Resource" (list $arn (printf "%s/*" $arn)) "Principal" "*" "Condition" (dict (index $p 2) (dict (index $p 3) (list (index $p 4))))) }}
-{{- end }}
-{{- end }}
-{{- if and $v.attach_policy $v.policy }}
-{{- $doc := $v.policy | replace "_S3_BUCKET_ID_" $name | replace "_S3_BUCKET_ARN_" $arn }}
-{{- if contains "_AWS_ACCOUNT_ID_" $doc }}
-{{- if not $v.account_id }}
-{{- fail "s3-bucket: policy uses _AWS_ACCOUNT_ID_, and account_id is unset: a chart cannot look the account up (values.yaml, account_id)" }}
-{{- end }}
-{{- $doc = $doc | replace "_AWS_ACCOUNT_ID_" $v.account_id }}
-{{- end }}
-{{- $parsed := $doc | fromJson }}
-{{- if hasKey $parsed "Error" }}
-{{- fail (printf "s3-bucket: policy is not a JSON policy document: %s" $parsed.Error) }}
-{{- end }}
-{{- $ps := $parsed.Statement }}
-{{- if kindIs "map" $ps }}{{ $ps = list $ps }}{{ end }}
-{{- $st = concat $st ($ps | default list) }}
-{{- end }}
+{{- $st := include "s3.policyStatements" (list $ $name $arn) | fromJsonArray }}
 ---
 apiVersion: s3.services.k8s.aws/v1alpha1
 kind: Bucket
@@ -198,6 +176,267 @@ spec:
 {{- end }}
 {{- if $st }}
   policy: {{ toJson (dict "Version" "2012-10-17" "Statement" $st) | quote }}
+{{- end }}
+{{- with $v.lifecycle_rule }}
+  lifecycle:
+    rules:
+{{- range $r := . }}
+{{- $status := "Enabled" }}
+{{- if not (kindIs "invalid" $r.enabled) }}{{ $status = include "s3.status" $r.enabled }}
+{{- else if not (kindIs "invalid" $r.status) }}{{ $status = include "s3.status" $r.status }}{{ end }}
+      - status: {{ $status | quote }}
+{{- with $r.id }}
+        id: {{ . | quote }}
+{{- end }}
+{{- with $r.prefix }}
+        prefix: {{ . | quote }}
+{{- end }}
+{{- with $r.filter }}
+{{- $f := include "s3.filter" . | fromJson }}
+{{- if $f }}
+        filter: {{ toJson $f }}
+{{- end }}
+{{- end }}
+{{- if not (kindIs "invalid" $r.abort_incomplete_multipart_upload_days) }}
+        abortIncompleteMultipartUpload:
+          daysAfterInitiation: {{ int64 $r.abort_incomplete_multipart_upload_days }}
+{{- end }}
+{{- with $r.expiration }}
+        expiration:
+{{- with .date }}
+          date: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .days) }}
+          days: {{ int64 .days }}
+{{- end }}
+{{- if not (kindIs "invalid" .expired_object_delete_marker) }}
+          expiredObjectDeleteMarker: {{ .expired_object_delete_marker }}
+{{- end }}
+{{- end }}
+{{- with $r.transition }}
+        transitions:
+{{- range $t := . }}
+          - storageClass: {{ $t.storage_class | quote }}
+{{- with $t.date }}
+            date: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $t.days) }}
+            days: {{ int64 $t.days }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with $r.noncurrent_version_expiration }}
+        noncurrentVersionExpiration:
+{{- if not (kindIs "invalid" .newer_noncurrent_versions) }}
+          newerNoncurrentVersions: {{ int64 .newer_noncurrent_versions }}
+{{- end }}
+{{- $days := ternary .days .noncurrent_days (not (kindIs "invalid" .days)) }}
+{{- if not (kindIs "invalid" $days) }}
+          noncurrentDays: {{ int64 $days }}
+{{- end }}
+{{- end }}
+{{- with $r.noncurrent_version_transition }}
+        noncurrentVersionTransitions:
+{{- range $t := . }}
+          - storageClass: {{ $t.storage_class | quote }}
+{{- if not (kindIs "invalid" $t.newer_noncurrent_versions) }}
+            newerNoncurrentVersions: {{ int64 $t.newer_noncurrent_versions }}
+{{- end }}
+{{- $days := ternary $t.days $t.noncurrent_days (not (kindIs "invalid" $t.days)) }}
+{{- if not (kindIs "invalid" $days) }}
+            noncurrentDays: {{ int64 $days }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with $v.intelligent_tiering }}
+  intelligentTiering:
+{{- range $k := keys . | sortAlpha }}
+{{- $it := index $v.intelligent_tiering $k }}
+    - id: {{ $k | quote }}
+{{- if not (kindIs "invalid" $it.status) }}
+      status: {{ include "s3.status" $it.status | quote }}
+{{- end }}
+{{- with $it.filter }}
+{{- $f := include "s3.filter" . | fromJson }}
+{{- if $f }}
+      filter: {{ toJson $f }}
+{{- end }}
+{{- end }}
+{{- with $it.tiering }}
+      tierings:
+{{- range $tk := keys . | sortAlpha }}
+{{- $tv := index $it.tiering $tk }}
+        - accessTier: {{ $tk | quote }}
+          days: {{ int64 $tv.days }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with $v.metric_configuration }}
+  metrics:
+{{- range $m := . }}
+    - id: {{ $m.name | quote }}
+{{- with $m.filter }}
+{{- $f := include "s3.filter" . | fromJson }}
+{{- if $f }}
+      filter: {{ toJson $f }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with $v.inventory_configuration }}
+  inventory:
+{{- range $k := keys . | sortAlpha }}
+{{- $inv := index $v.inventory_configuration $k }}
+    - id: {{ $k | quote }}
+      includedObjectVersions: {{ $inv.included_object_versions | quote }}
+      isEnabled: {{ $inv.enabled }}
+{{- with $inv.optional_fields }}
+      optionalFields: {{ toJson . }}
+{{- end }}
+      schedule:
+        frequency: {{ $inv.frequency | quote }}
+{{- with $inv.filter }}
+      filter:
+        prefix: {{ .prefix | quote }}
+{{- end }}
+{{- with $inv.destination }}
+      destination:
+        s3BucketDestination:
+          bucket: {{ .bucket_arn | default $arn | quote }}
+          format: {{ .format | quote }}
+{{- with .account_id }}
+          accountID: {{ toString . | quote }}
+{{- end }}
+{{- with .prefix }}
+          prefix: {{ . | quote }}
+{{- end }}
+{{- with .encryption }}
+{{- if eq .encryption_type "sse_kms" }}
+          encryption:
+            sseKMS:
+              keyID: {{ .kms_key_id | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with $v.analytics_configuration }}
+  analytics:
+{{- range $k := keys . | sortAlpha }}
+{{- $ac := index $v.analytics_configuration $k }}
+    - id: {{ $k | quote }}
+{{- with $ac.filter }}
+{{- $f := include "s3.filter" . | fromJson }}
+{{- if $f }}
+      filter: {{ toJson $f }}
+{{- end }}
+{{- end }}
+{{- with $ac.storage_class_analysis }}
+      storageClassAnalysis:
+        dataExport:
+          outputSchemaVersion: {{ .output_schema_version | quote }}
+          destination:
+            s3BucketDestination:
+              bucket: {{ .destination_bucket_arn | default $arn | quote }}
+{{- $acct := .destination_account_id | default $v.account_id }}
+{{- if not $acct }}
+{{- fail (printf "s3-bucket: analytics_configuration.%s needs destination_account_id or account_id" $k) }}
+{{- end }}
+              bucketAccountID: {{ toString $acct | quote }}
+              format: {{ .export_format | default "CSV" | quote }}
+{{- with .export_prefix }}
+              prefix: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- $rep := $v.replication_configuration | default dict }}
+{{- $repRules := $rep.rule | default $rep.rules | default list }}
+{{- if $repRules }}
+  replication:
+    role: {{ $rep.role | quote }}
+    rules:
+{{- range $r := $repRules }}
+{{- $status := ternary "Enabled" (include "s3.status" $r.status) (kindIs "invalid" $r.status) }}
+      - status: {{ $status | quote }}
+{{- with $r.id }}
+        id: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $r.priority) }}
+        priority: {{ int64 $r.priority }}
+{{- end }}
+{{- with $r.prefix }}
+        prefix: {{ . | quote }}
+{{- end }}
+{{- with $r.filter }}
+{{- $f := include "s3.filter" . | fromJson }}
+{{- if $f }}
+        filter: {{ toJson $f }}
+{{- end }}
+{{- end }}
+{{- $dmr := ternary $r.delete_marker_replication_status $r.delete_marker_replication (not (kindIs "invalid" $r.delete_marker_replication_status)) }}
+{{- if not (kindIs "invalid" $dmr) }}
+        deleteMarkerReplication:
+          status: {{ include "s3.status" $dmr | quote }}
+{{- end }}
+{{- $eor := ternary $r.existing_object_replication_status $r.existing_object_replication (not (kindIs "invalid" $r.existing_object_replication_status)) }}
+{{- if not (kindIs "invalid" $eor) }}
+        existingObjectReplication:
+          status: {{ include "s3.status" $eor | quote }}
+{{- end }}
+{{- with $r.destination }}
+        destination:
+          bucket: {{ .bucket | quote }}
+{{- with .storage_class }}
+          storageClass: {{ . | quote }}
+{{- end }}
+{{- $acct := .account_id | default .account }}
+{{- with $acct }}
+          account: {{ toString . | quote }}
+{{- end }}
+{{- with .access_control_translation }}
+          accessControlTranslation:
+            owner: {{ title (lower .owner) | quote }}
+{{- end }}
+{{- $kms := ((.encryption_configuration | default dict).replica_kms_key_id) | default .replica_kms_key_id }}
+{{- with $kms }}
+          encryptionConfiguration:
+            replicaKMSKeyID: {{ . | quote }}
+{{- end }}
+{{- with .replication_time }}
+          replicationTime:
+            status: {{ ternary "Disabled" (include "s3.status" .status) (kindIs "invalid" .status) | quote }}
+{{- if not (kindIs "invalid" .minutes) }}
+            time:
+              minutes: {{ int64 .minutes }}
+{{- end }}
+{{- end }}
+{{- with .metrics }}
+          metrics:
+            status: {{ ternary "Disabled" (include "s3.status" .status) (kindIs "invalid" .status) | quote }}
+{{- if not (kindIs "invalid" .minutes) }}
+            eventThreshold:
+              minutes: {{ int64 .minutes }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with $r.source_selection_criteria }}
+        sourceSelectionCriteria:
+{{- with .replica_modifications }}
+{{- $rm := ternary .enabled .status (not (kindIs "invalid" .enabled)) }}
+          replicaModifications:
+            status: {{ ternary "Disabled" (include "s3.status" $rm) (kindIs "invalid" $rm) | quote }}
+{{- end }}
+{{- with .sse_kms_encrypted_objects }}
+{{- $sk := ternary .enabled .status (not (kindIs "invalid" .enabled)) }}
+          sseKMSEncryptedObjects:
+            status: {{ ternary "Disabled" (include "s3.status" $sk) (kindIs "invalid" $sk) | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
 {{- end }}
 {{- with include "ack.tags" (list $ $v.tags) | fromJson }}
   tagging:

@@ -103,13 +103,18 @@ spec:
 {{- $ann := dict }}
 {{- if $l.cloudwatch_log_group_skip_destroy }}{{ $ann = dict "services.k8s.aws/deletion-policy" "retain" }}{{ end }}
 ---
-apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+apiVersion: {{ ternary "cloudwatchlogs.aws.hfl.dev/v1alpha1" "cloudwatchlogs.services.k8s.aws/v1alpha1" $v.allow_alpha }}
 kind: LogGroup
 metadata:
 {{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "log" $key)) "id" (printf "log-group-%s" $key) "region" "" "annotations" $ann) | nindent 2 }}
 spec:
   name: {{ index $groups $key | quote }}
   retentionDays: {{ int64 (ternary 14 $l.cloudwatch_log_group_retention_in_days (kindIs "invalid" $l.cloudwatch_log_group_retention_in_days)) }}
+{{- if $v.allow_alpha }}
+{{- with $l.cloudwatch_log_group_class }}
+  logGroupClass: {{ . | quote }}
+{{- end }}
+{{- end }}
 {{- with $l.cloudwatch_log_group_kms_key_id }}
   kmsKeyID: {{ . | quote }}
 {{- end }}
@@ -134,7 +139,7 @@ spec:
 {{- end }}
 {{- $rgID := include "ack.resourceName" (list $ "replicationGroup" "replication group ID" (lower $v.replication_group_id) 40 "letter") }}
 ---
-apiVersion: elasticache.services.k8s.aws/v1alpha1
+apiVersion: {{ ternary "elasticache.aws.hfl.dev/v1alpha1" "elasticache.services.k8s.aws/v1alpha1" $v.allow_alpha }}
 kind: ReplicationGroup
 metadata:
 {{- include "ack.metadata" (dict "root" $ "name" $rgObj "id" "replication-group" "region" "") | nindent 2 }}
@@ -160,6 +165,23 @@ spec:
   authToken:
     name: {{ $ref.name | quote }}
     key: {{ $ref.key | quote }}
+{{- end }}
+{{- if $v.allow_alpha }}
+{{- with $v.auth_token_update_strategy }}
+  authTokenUpdateStrategy: {{ . | quote }}
+{{- end }}
+{{- with $v.cluster_mode }}
+  clusterMode: {{ . | quote }}
+{{- end }}
+{{- with $v.final_snapshot_identifier }}
+  finalSnapshotIdentifier: {{ . | quote }}
+{{- end }}
+{{- with $v.global_replication_group_id }}
+  globalReplicationGroupID: {{ . | quote }}
+{{- end }}
+{{- with $v.transit_encryption_mode }}
+  transitEncryptionMode: {{ . | quote }}
+{{- end }}
 {{- end }}
 {{- if not (kindIs "invalid" $v.auto_minor_version_upgrade) }}
   autoMinorVersionUpgrade: {{ $v.auto_minor_version_upgrade }}
@@ -280,12 +302,17 @@ spec:
 {{- fail "elasticache: node_type is required: the cache cluster's node type (cache.t4g.micro, ...)" }}
 {{- end }}
 ---
-apiVersion: elasticache.services.k8s.aws/v1alpha1
+apiVersion: {{ ternary "elasticache.aws.hfl.dev/v1alpha1" "elasticache.services.k8s.aws/v1alpha1" $v.allow_alpha }}
 kind: CacheCluster
 metadata:
 {{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $rel "cluster")) "id" "cluster" "region" "") | nindent 2 }}
 spec:
   cacheClusterID: {{ $cid | quote }}
+{{- if $v.allow_alpha }}
+{{- with $v.final_snapshot_identifier }}
+  finalSnapshotIdentifier: {{ . | quote }}
+{{- end }}
+{{- end }}
 {{- if not (kindIs "invalid" $v.auto_minor_version_upgrade) }}
   autoMinorVersionUpgrade: {{ $v.auto_minor_version_upgrade }}
 {{- end }}

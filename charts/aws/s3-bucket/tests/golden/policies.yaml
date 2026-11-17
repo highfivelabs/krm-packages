@@ -1,0 +1,30 @@
+---
+# Source: s3-bucket/templates/bucket.yaml
+apiVersion: s3.services.k8s.aws/v1alpha1
+kind: Bucket
+metadata:
+  name: policies-bucket
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "policies"
+    app.kubernetes.io/name: s3-bucket
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "bucket"
+    services.k8s.aws/region: "us-west-2"
+spec:
+  name: "my-app-logs-bucket"
+  createBucketConfiguration:
+    locationConstraint: "us-west-2"
+  publicAccessBlock:
+    blockPublicACLs: true
+    blockPublicPolicy: true
+    ignorePublicACLs: true
+    restrictPublicBuckets: true
+  encryption:
+    rules:
+      -
+        applyServerSideEncryptionByDefault:
+          sseAlgorithm: "aws:kms"
+          kmsMasterKeyID: "arn:aws:kms:us-west-2:111122223333:key/1234"
+  policy: "{\"Statement\":[{\"Action\":[\"s3:PutObject\"],\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::797873946194:root\"},\"Resource\":[\"arn:aws:s3:::my-app-logs-bucket/*\"],\"Sid\":\"ELBRegionUs-West-2\"},{\"Action\":[\"s3:PutObject\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"logdelivery.elasticloadbalancing.amazonaws.com\"},\"Resource\":[\"arn:aws:s3:::my-app-logs-bucket/*\"],\"Sid\":\"\"},{\"Action\":[\"s3:PutObject\"],\"Condition\":{\"StringEquals\":{\"aws:ResourceOrgID\":[\"o-1234567890\"],\"s3:x-amz-acl\":\"bucket-owner-full-control\"}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"delivery.logs.amazonaws.com\"},\"Resource\":[\"arn:aws:s3:::my-app-logs-bucket/*\"],\"Sid\":\"AlbNlbLogDeliveryWrite\"},{\"Action\":[\"s3:GetBucketAcl\",\"s3:ListBucket\"],\"Condition\":{\"StringEquals\":{\"aws:ResourceOrgID\":[\"o-1234567890\"]}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"delivery.logs.amazonaws.com\"},\"Resource\":[\"arn:aws:s3:::my-app-logs-bucket\"],\"Sid\":\"AlbNlbLogDeliveryAclCheck\"},{\"Action\":[\"s3:PutObject\"],\"Condition\":{\"ForAnyValue:ArnLike\":{\"aws:SourceArn\":[\"arn:aws:s3:::source-bucket\"]},\"ForAnyValue:StringEquals\":{\"aws:SourceAccount\":[\"111122223333\"]},\"StringEquals\":{\"aws:ResourceOrgID\":[\"o-1234567890\"]}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"logging.s3.amazonaws.com\"},\"Resource\":[\"arn:aws:s3:::my-app-logs-bucket/*\"],\"Sid\":\"AWSAccessLogDeliveryWrite\"},{\"Action\":[\"s3:GetBucketAcl\"],\"Condition\":{\"StringEquals\":{\"aws:ResourceOrgID\":[\"o-1234567890\"]}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"logging.s3.amazonaws.com\"},\"Resource\":[\"arn:aws:s3:::my-app-logs-bucket\"],\"Sid\":\"AWSAccessLogDeliveryAclCheck\"},{\"Action\":[\"s3:PutObject\"],\"Condition\":{\"ArnLike\":{\"aws:SourceArn\":\"arn:aws:logs:*:111122223333:*\"},\"StringEquals\":{\"aws:SourceAccount\":\"111122223333\",\"s3:x-amz-acl\":\"bucket-owner-full-control\"}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"delivery.logs.amazonaws.com\"},\"Resource\":[\"arn:aws:s3:::my-app-logs-bucket/AWSLogs/111122223333/*\"],\"Sid\":\"WafLogDeliveryWrite\"},{\"Action\":[\"s3:GetBucketAcl\"],\"Condition\":{\"ArnLike\":{\"aws:SourceArn\":\"arn:aws:logs:*:111122223333:*\"},\"StringEquals\":{\"aws:SourceAccount\":\"111122223333\"}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"delivery.logs.amazonaws.com\"},\"Resource\":[\"arn:aws:s3:::my-app-logs-bucket\"],\"Sid\":\"WafLogDeliveryAclCheck\"},{\"Action\":[\"s3:GetBucketAcl\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"cloudtrail.amazonaws.com\"},\"Resource\":[\"arn:aws:s3:::my-app-logs-bucket\"],\"Sid\":\"AWSCloudTrailAclCheck\"},{\"Action\":[\"s3:PutObject\"],\"Condition\":{\"StringEquals\":{\"s3:x-amz-acl\":\"bucket-owner-full-control\"}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"cloudtrail.amazonaws.com\"},\"Resource\":[\"arn:aws:s3:::my-app-logs-bucket/AWSLogs/*\"],\"Sid\":\"AWSCloudTrailWrite\"},{\"Action\":[\"s3:PutObject\"],\"Condition\":{\"ArnLike\":{\"aws:SourceArn\":[\"arn:aws:s3:::my-app-logs-bucket\",\"arn:aws:s3:::analytics-source\"]},\"StringEquals\":{\"aws:SourceAccount\":[\"111122223333\",\"444455556666\"],\"s3:x-amz-acl\":\"bucket-owner-full-control\"}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"s3.amazonaws.com\"},\"Resource\":[\"arn:aws:s3:::my-app-logs-bucket/*\"],\"Sid\":\"destinationInventoryAndAnalyticsPolicy\"},{\"Action\":[\"s3:PutObject\"],\"Condition\":{\"StringNotEquals\":{\"s3:x-amz-server-side-encryption\":[\"aws:kms\"]}},\"Effect\":\"Deny\",\"Principal\":\"*\",\"Resource\":[\"arn:aws:s3:::my-app-logs-bucket/*\"],\"Sid\":\"denyIncorrectEncryptionHeaders\"},{\"Action\":[\"s3:PutObject\"],\"Condition\":{\"StringNotEquals\":{\"s3:x-amz-server-side-encryption-aws-kms-key-id\":[\"arn:aws:kms:us-west-2:111122223333:key/1234\"]}},\"Effect\":\"Deny\",\"Principal\":\"*\",\"Resource\":[\"arn:aws:s3:::my-app-logs-bucket/*\"],\"Sid\":\"denyIncorrectKmsKeySse\"},{\"Action\":[\"s3:PutObject\"],\"Condition\":{\"Null\":{\"s3:x-amz-server-side-encryption\":[true]}},\"Effect\":\"Deny\",\"Principal\":\"*\",\"Resource\":[\"arn:aws:s3:::my-app-logs-bucket/*\"],\"Sid\":\"denyUnencryptedObjectUploads\"},{\"Action\":[\"s3:PutObject\"],\"Condition\":{\"Null\":{\"s3:x-amz-server-side-encryption-customer-algorithm\":[false]}},\"Effect\":\"Deny\",\"Principal\":\"*\",\"Resource\":[\"arn:aws:s3:::my-app-logs-bucket/*\"],\"Sid\":\"denySSECEncryptedObjectUploads\"}],\"Version\":\"2012-10-17\"}"

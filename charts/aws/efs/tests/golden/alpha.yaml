@@ -1,0 +1,72 @@
+---
+# Source: efs/templates/file-system.yaml
+apiVersion: efs.aws.hfl.dev/v1alpha1
+kind: FileSystem
+metadata:
+  name: alpha-fs
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "alpha"
+    app.kubernetes.io/name: efs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "file-system"
+spec:
+  creationToken: "shared-alpha-token"
+  bypassPolicyLockoutSafetyCheck: true
+  encrypted: true
+  policy: "{\"Statement\":[{\"Action\":[\"elasticfilesystem:ClientMount\"],\"Condition\":{\"Bool\":{\"aws:SecureTransport\":[\"true\"]}},\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam::111122223333:role/app\"]},\"Resource\":[\"*\"],\"Sid\":\"mount\"}],\"Version\":\"2012-10-17\"}"
+  backupPolicy:
+    status: ENABLED
+  tags:
+    - key: "Name"
+      value: "shared-alpha"
+---
+# Source: efs/templates/mount-targets.yaml
+apiVersion: efs.aws.hfl.dev/v1alpha1
+kind: MountTarget
+metadata:
+  name: alpha-mount-target-a
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "alpha"
+    app.kubernetes.io/name: efs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "mount-target-a"
+spec:
+  fileSystemRef:
+    from:
+      name: alpha-fs
+  subnetID: "subnet-0123456789abcdef0"
+  ipAddressType: "DUAL_STACK"
+  ipv6Address: "2001:db8::10"
+  securityGroupRefs:
+    - from:
+        name: alpha-sg
+---
+# Source: efs/templates/mount-targets.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: alpha-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "alpha"
+    app.kubernetes.io/name: efs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "security-group"
+spec:
+  name: "shared-alpha"
+  description: "Managed by Terraform"
+  vpcID: "vpc-0123456789abcdef0"
+  ingressRules:
+    - ipProtocol: "tcp"
+      fromPort: 2049
+      toPort: 2049
+      ipRanges:
+        - {"cidrIP":"10.0.0.0/16","description":"NFS from the VPC"}
+  tags:
+    - key: "Name"
+      value: "shared-alpha"

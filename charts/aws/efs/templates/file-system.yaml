@@ -15,11 +15,18 @@ policy (aws_efs_backup_policy.this) and the replication configuration
 {{- $name := $v.name | default "" }}
 {{- if $name }}{{ $name = include "ack.cloudName" (list $ "file system" $name 256) }}{{ end }}
 ---
-apiVersion: efs.services.k8s.aws/v1alpha1
+apiVersion: {{ ternary "efs.aws.hfl.dev/v1alpha1" "efs.services.k8s.aws/v1alpha1" $v.allow_alpha }}
 kind: FileSystem
 metadata:
 {{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "fs")) "id" "file-system" "region" $v.region) | nindent 2 }}
 spec:
+{{- if $v.allow_alpha }}
+{{- $ct := $v.creation_token | default $name | default (include "ack.name" (list .Release.Name "fs")) }}
+  creationToken: {{ trunc 64 $ct | quote }}
+{{- if not (kindIs "invalid" $v.bypass_policy_lockout_safety_check) }}
+  bypassPolicyLockoutSafetyCheck: {{ $v.bypass_policy_lockout_safety_check }}
+{{- end }}
+{{- end }}
 {{- with $v.availability_zone_name }}
   availabilityZoneName: {{ . | quote }}
 {{- end }}

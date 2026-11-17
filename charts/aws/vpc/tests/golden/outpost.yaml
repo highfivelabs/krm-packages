@@ -1,0 +1,127 @@
+---
+# Source: vpc/templates/subnets.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: NetworkACL
+metadata:
+  name: outpost-outpost-acl
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "outpost"
+    app.kubernetes.io/name: vpc
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "outpost-network-acl"
+spec:
+  vpcRef:
+    from:
+      name: outpost-vpc
+  associations:
+    - subnetRef:
+        from:
+          name: outpost-outpost-0
+    - subnetRef:
+        from:
+          name: outpost-outpost-1
+  entries:
+    - cidrBlock: 10.0.0.0/16
+      egress: false
+      portRange:
+        from: 443
+        to: 443
+      protocol: "6"
+      ruleAction: allow
+      ruleNumber: 100
+    - cidrBlock: 0.0.0.0/0
+      egress: true
+      portRange:
+        from: 0
+        to: 0
+      protocol: "-1"
+      ruleAction: allow
+      ruleNumber: 100
+  tags:
+    - key: "Name"
+      value: "outpost-vpc-outpost-net"
+    - key: "Zone"
+      value: "outpost"
+---
+# Source: vpc/templates/subnets.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: Subnet
+metadata:
+  name: outpost-outpost-0
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "outpost"
+    app.kubernetes.io/name: vpc
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "outpost-subnet-0"
+spec:
+  vpcRef:
+    from:
+      name: outpost-vpc
+  cidrBlock: "10.0.10.0/24"
+  availabilityZone: "us-west-2a"
+  outpostARN: "arn:aws:outposts:us-west-2:111122223333:outpost/op-0123456789abcdef0"
+  customerOwnedIPv4Pool: "ipv4pool-coip-0123456789abcdef0"
+  enableResourceNameDNSARecord: true
+  hostnameType: "resource-name"
+  tags:
+    - key: "Name"
+      value: "outpost-a"
+    - key: "Rack"
+      value: "rack-1"
+---
+# Source: vpc/templates/subnets.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: Subnet
+metadata:
+  name: outpost-outpost-1
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "outpost"
+    app.kubernetes.io/name: vpc
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "outpost-subnet-1"
+spec:
+  vpcRef:
+    from:
+      name: outpost-vpc
+  cidrBlock: "10.0.11.0/24"
+  availabilityZone: "us-west-2a"
+  outpostARN: "arn:aws:outposts:us-west-2:111122223333:outpost/op-0123456789abcdef0"
+  customerOwnedIPv4Pool: "ipv4pool-coip-0123456789abcdef0"
+  enableResourceNameDNSARecord: true
+  hostnameType: "resource-name"
+  tags:
+    - key: "Name"
+      value: "outpost-b"
+    - key: "Rack"
+      value: "rack-1"
+---
+# Source: vpc/templates/vpc.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: VPC
+metadata:
+  name: outpost-vpc
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "outpost"
+    app.kubernetes.io/name: vpc
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "vpc"
+spec:
+  cidrBlocks:
+    - "10.0.0.0/16"
+  instanceTenancy: "default"
+  enableDNSHostnames: true
+  enableDNSSupport: true
+  # manage_default_security_group: the default security group without its
+  # rules, as the module's aws_default_security_group with none leaves it.
+  disallowSecurityGroupDefaultRules: true
+  tags:
+    - key: "Name"
+      value: "outpost-vpc"

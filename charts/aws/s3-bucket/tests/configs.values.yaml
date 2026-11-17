@@ -1,0 +1,88 @@
+# Lifecycle, intelligent tiering, metrics, inventory, analytics, and replication.
+bucket: my-app-configs-bucket
+region: us-west-2
+account_id: "111122223333"
+versioning:
+  status: Enabled
+lifecycle_rule:
+  - id: expire-logs
+    enabled: true
+    filter:
+      prefix: logs/
+      object_size_greater_than: 1024
+    abort_incomplete_multipart_upload_days: 7
+    transition:
+      - days: 30
+        storage_class: STANDARD_IA
+    expiration:
+      days: 365
+    noncurrent_version_transition:
+      - noncurrent_days: 30
+        storage_class: GLACIER
+    noncurrent_version_expiration:
+      noncurrent_days: 90
+      newer_noncurrent_versions: 3
+intelligent_tiering:
+  archive-all:
+    status: true
+    filter:
+      prefix: data/
+    tiering:
+      ARCHIVE_ACCESS:
+        days: 90
+      DEEP_ARCHIVE_ACCESS:
+        days: 180
+metric_configuration:
+  - name: entire-bucket
+    filter:
+      prefix: metrics/
+inventory_configuration:
+  daily:
+    included_object_versions: All
+    enabled: true
+    frequency: Daily
+    optional_fields: [Size, LastModifiedDate]
+    filter:
+      prefix: data/
+    destination:
+      format: Parquet
+      account_id: "111122223333"
+      prefix: inventory/
+      encryption:
+        encryption_type: sse_kms
+        kms_key_id: arn:aws:kms:us-west-2:111122223333:key/1234
+analytics_configuration:
+  data-analysis:
+    filter:
+      prefix: data/
+      tag: {env: prod}
+    storage_class_analysis:
+      output_schema_version: V_1
+      export_format: CSV
+      export_prefix: analytics/
+replication_configuration:
+  role: arn:aws:iam::111122223333:role/s3-replication
+  rules:
+    - id: replicate-all
+      priority: 1
+      status: Enabled
+      delete_marker_replication: true
+      filter:
+        prefix: important/
+      destination:
+        bucket: arn:aws:s3:::my-app-replica-bucket
+        storage_class: STANDARD_IA
+        account_id: "444455556666"
+        access_control_translation:
+          owner: destination
+        encryption_configuration:
+          replica_kms_key_id: arn:aws:kms:us-east-1:444455556666:key/5678
+        replication_time:
+          status: Enabled
+          minutes: 15
+        metrics:
+          status: Enabled
+          minutes: 15
+      source_selection_criteria:
+        sse_kms_encrypted_objects:
+          enabled: true

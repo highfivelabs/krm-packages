@@ -1478,30 +1478,30 @@ gcp,org-policy-v2,policy_root_id,string,yes,,
 gcp,org-policy-v2,policy_type,string,yes,,
 gcp,org-policy-v2,rules,"list(object({allow, conditions, deny, dry_run, enforcement, parameters}))",partial,"accepted; a rule's parameters are refused when they name a parameter OrgPolicyPolicy v1.160.0 does not have (its rule parameters are a closed set of 23 known managed-constraint parameters, not free JSON)",gap
 aws,s3-bucket,acceleration_status,string,yes,,
-aws,s3-bucket,access_log_delivery_policy_source_accounts,list(string),no,"the log-delivery and destination bucket policies are not ported yet: they need the account, the Region's Elastic Load Balancing account and the source buckets; write them in policy (attach_policy)",not-ported
-aws,s3-bucket,access_log_delivery_policy_source_buckets,list(string),no,"the log-delivery and destination bucket policies are not ported yet: they need the account, the Region's Elastic Load Balancing account and the source buckets; write them in policy (attach_policy)",not-ported
-aws,s3-bucket,access_log_delivery_policy_source_organizations,list(string),no,"the log-delivery and destination bucket policies are not ported yet: they need the account, the Region's Elastic Load Balancing account and the source buckets; write them in policy (attach_policy)",not-ported
+aws,s3-bucket,access_log_delivery_policy_source_accounts,list(string),yes,,
+aws,s3-bucket,access_log_delivery_policy_source_buckets,list(string),yes,,
+aws,s3-bucket,access_log_delivery_policy_source_organizations,list(string),yes,,
 aws,s3-bucket,acl,string,yes,,
-aws,s3-bucket,allowed_kms_key_arn,string,no,the encryption-header deny policies are not ported yet; write them in policy (attach_policy),not-ported
-aws,s3-bucket,analytics_configuration,"map(object({filter, storage_class_analysis}))",no,analytics configurations are not ported yet (Bucket.analytics),not-ported
-aws,s3-bucket,analytics_self_source_destination,bool,no,analytics configurations are not ported yet (Bucket.analytics),not-ported
-aws,s3-bucket,analytics_source_account_id,string,no,analytics configurations are not ported yet (Bucket.analytics),not-ported
-aws,s3-bucket,analytics_source_bucket_arn,string,no,analytics configurations are not ported yet (Bucket.analytics),not-ported
-aws,s3-bucket,attach_access_log_delivery_policy,bool,no,"the log-delivery and destination bucket policies are not ported yet: they need the account, the Region's Elastic Load Balancing account and the source buckets; write them in policy (attach_policy)",not-ported
-aws,s3-bucket,attach_analytics_destination_policy,bool,no,"the log-delivery and destination bucket policies are not ported yet: they need the account, the Region's Elastic Load Balancing account and the source buckets; write them in policy (attach_policy)",not-ported
-aws,s3-bucket,attach_cloudtrail_log_delivery_policy,bool,no,"the log-delivery and destination bucket policies are not ported yet: they need the account, the Region's Elastic Load Balancing account and the source buckets; write them in policy (attach_policy)",not-ported
-aws,s3-bucket,attach_deny_incorrect_encryption_headers,bool,no,the encryption-header deny policies are not ported yet; write them in policy (attach_policy),not-ported
-aws,s3-bucket,attach_deny_incorrect_kms_key_sse,bool,no,the encryption-header deny policies are not ported yet; write them in policy (attach_policy),not-ported
+aws,s3-bucket,allowed_kms_key_arn,string,yes,,
+aws,s3-bucket,analytics_configuration,"map(object({filter, storage_class_analysis}))",yes,,
+aws,s3-bucket,analytics_self_source_destination,bool,yes,,
+aws,s3-bucket,analytics_source_account_id,string,yes,,
+aws,s3-bucket,analytics_source_bucket_arn,string,yes,,
+aws,s3-bucket,attach_access_log_delivery_policy,bool,yes,,
+aws,s3-bucket,attach_analytics_destination_policy,bool,yes,,
+aws,s3-bucket,attach_cloudtrail_log_delivery_policy,bool,yes,,
+aws,s3-bucket,attach_deny_incorrect_encryption_headers,bool,yes,,
+aws,s3-bucket,attach_deny_incorrect_kms_key_sse,bool,yes,,
 aws,s3-bucket,attach_deny_insecure_transport_policy,bool,yes,,
-aws,s3-bucket,attach_deny_ssec_encrypted_object_uploads,bool,no,the encryption-header deny policies are not ported yet; write them in policy (attach_policy),not-ported
-aws,s3-bucket,attach_deny_unencrypted_object_uploads,bool,no,the encryption-header deny policies are not ported yet; write them in policy (attach_policy),not-ported
-aws,s3-bucket,attach_elb_log_delivery_policy,bool,no,"the log-delivery and destination bucket policies are not ported yet: they need the account, the Region's Elastic Load Balancing account and the source buckets; write them in policy (attach_policy)",not-ported
-aws,s3-bucket,attach_inventory_destination_policy,bool,no,"the log-delivery and destination bucket policies are not ported yet: they need the account, the Region's Elastic Load Balancing account and the source buckets; write them in policy (attach_policy)",not-ported
-aws,s3-bucket,attach_lb_log_delivery_policy,bool,no,"the log-delivery and destination bucket policies are not ported yet: they need the account, the Region's Elastic Load Balancing account and the source buckets; write them in policy (attach_policy)",not-ported
+aws,s3-bucket,attach_deny_ssec_encrypted_object_uploads,bool,yes,,
+aws,s3-bucket,attach_deny_unencrypted_object_uploads,bool,yes,,
+aws,s3-bucket,attach_elb_log_delivery_policy,bool,yes,,
+aws,s3-bucket,attach_inventory_destination_policy,bool,yes,,
+aws,s3-bucket,attach_lb_log_delivery_policy,bool,yes,,
 aws,s3-bucket,attach_policy,bool,yes,,
 aws,s3-bucket,attach_public_policy,bool,yes,,
 aws,s3-bucket,attach_require_latest_tls_policy,bool,yes,,
-aws,s3-bucket,attach_waf_log_delivery_policy,bool,no,"the log-delivery and destination bucket policies are not ported yet: they need the account, the Region's Elastic Load Balancing account and the source buckets; write them in policy (attach_policy)",not-ported
+aws,s3-bucket,attach_waf_log_delivery_policy,bool,yes,,
 aws,s3-bucket,availability_zone_id,string,no,"directory buckets (S3 Express One Zone, aws_s3_directory_bucket) have no kind",gap
 aws,s3-bucket,block_public_acls,bool,yes,,
 aws,s3-bucket,block_public_policy,bool,yes,,
@@ -1523,21 +1523,21 @@ aws,s3-bucket,file_systems,"map(object({accept_bucket_warning, access_points, cr
 aws,s3-bucket,force_destroy,bool,no,ACK's Bucket has no field to delete a bucket's objects with it: deleting a bucket that holds objects fails,gap
 aws,s3-bucket,grant,"list(object({email, id, permission, type, uri}))",no,ACL grants are not ported yet (Bucket.grant*); a canned acl is,not-ported
 aws,s3-bucket,ignore_public_acls,bool,yes,,
-aws,s3-bucket,intelligent_tiering,"map(object({filter, status, tiering}))",no,Intelligent-Tiering configurations are not ported yet (Bucket.intelligentTiering),not-ported
-aws,s3-bucket,inventory_configuration,"map(object({bucket, destination, enabled, filter, frequency, included_object_versions, +1}))",no,inventory configurations are not ported yet (Bucket.inventory),not-ported
-aws,s3-bucket,inventory_self_source_destination,bool,no,inventory configurations are not ported yet (Bucket.inventory),not-ported
-aws,s3-bucket,inventory_source_account_id,string,no,inventory configurations are not ported yet (Bucket.inventory),not-ported
-aws,s3-bucket,inventory_source_bucket_arn,string,no,inventory configurations are not ported yet (Bucket.inventory),not-ported
+aws,s3-bucket,intelligent_tiering,"map(object({filter, status, tiering}))",yes,,
+aws,s3-bucket,inventory_configuration,"map(object({bucket, destination, enabled, filter, frequency, included_object_versions, +1}))",yes,,
+aws,s3-bucket,inventory_self_source_destination,bool,yes,,
+aws,s3-bucket,inventory_source_account_id,string,yes,,
+aws,s3-bucket,inventory_source_bucket_arn,string,yes,,
 aws,s3-bucket,is_directory_bucket,bool,no,"directory buckets (S3 Express One Zone, aws_s3_directory_bucket) have no kind",gap
-aws,s3-bucket,lb_log_delivery_policy_source_organizations,list(string),no,"the log-delivery and destination bucket policies are not ported yet: they need the account, the Region's Elastic Load Balancing account and the source buckets; write them in policy (attach_policy)",not-ported
-aws,s3-bucket,lifecycle_rule,"list(object({abort_incomplete_multipart_upload_days, enabled, expiration, filter, id, noncurrent_version_expiration, +4}))",no,lifecycle rules are not ported yet (Bucket.lifecycle),not-ported
+aws,s3-bucket,lb_log_delivery_policy_source_organizations,list(string),yes,,
+aws,s3-bucket,lifecycle_rule,"list(object({abort_incomplete_multipart_upload_days, enabled, expiration, filter, id, noncurrent_version_expiration, +4}))",yes,,
 aws,s3-bucket,location_type,string,no,"directory buckets (S3 Express One Zone, aws_s3_directory_bucket) have no kind",gap
 aws,s3-bucket,logging,"object({target_bucket, target_object_key_format, target_prefix})",yes,,
 aws,s3-bucket,metadata_encryption_configuration,"object({kms_key_arn, sse_algorithm})",no,aws_s3_bucket_metadata_configuration has no kind,gap
 aws,s3-bucket,metadata_inventory_table_configuration_state,string,no,aws_s3_bucket_metadata_configuration has no kind,gap
 aws,s3-bucket,metadata_journal_table_record_expiration,string,no,aws_s3_bucket_metadata_configuration has no kind,gap
 aws,s3-bucket,metadata_journal_table_record_expiration_days,number,no,aws_s3_bucket_metadata_configuration has no kind,gap
-aws,s3-bucket,metric_configuration,"list(object({filter, name}))",no,metrics configurations are not ported yet (Bucket.metrics),not-ported
+aws,s3-bucket,metric_configuration,"list(object({filter, name}))",yes,,
 aws,s3-bucket,object_lock_configuration,"object({rule, token})",partial,"accepted, except token (Terraform's, for an existing bucket's lock)",gap
 aws,s3-bucket,object_lock_enabled,bool,yes,,
 aws,s3-bucket,object_ownership,string,yes,,
@@ -1545,7 +1545,7 @@ aws,s3-bucket,owner,map(string),no,ACL grants are not ported yet (Bucket.grant*)
 aws,s3-bucket,policy,string,yes,,
 aws,s3-bucket,putin_khuylo,bool,yes,,
 aws,s3-bucket,region,string,yes,,
-aws,s3-bucket,replication_configuration,"object({role, rule, rules})",no,replication is not ported yet (Bucket.replication),not-ported
+aws,s3-bucket,replication_configuration,"object({role, rule, rules})",yes,,
 aws,s3-bucket,request_payer,string,yes,,
 aws,s3-bucket,restrict_public_buckets,bool,yes,,
 aws,s3-bucket,server_side_encryption_configuration,object({rule}),partial,"accepted, except blocked_encryption_types: ACK's encryption rule has no such field",gap
@@ -1576,7 +1576,7 @@ aws,vpc,create_redshift_subnet_route_table,bool,no,Redshift subnets are not port
 aws,vpc,create_vpc,bool,yes,,
 aws,vpc,customer_gateway_tags,map(string),yes,,
 aws,vpc,customer_gateways,map(map(any)),partial,CustomerGateway is an ack-extensions kind (outside ACK's releases): needs allow_alpha: true,alpha
-aws,vpc,customer_owned_ipv4_pool,string,no,"Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them",not-ported
+aws,vpc,customer_owned_ipv4_pool,string,yes,,
 aws,vpc,database_acl_tags,map(string),yes,,
 aws,vpc,database_dedicated_network_acl,bool,yes,,
 aws,vpc,database_inbound_acl_rules,list(map(string)),yes,,
@@ -1692,30 +1692,30 @@ aws,vpc,manage_default_network_acl,bool,partial,"accepted: the default network A
 aws,vpc,manage_default_route_table,bool,partial,accepted: the main route table keeps its local route and gets no Name tag or tags (aws_default_route_table has no kind),gap
 aws,vpc,manage_default_security_group,bool,partial,"accepted: true removes the default security group's rules (VPC.disallowSecurityGroupDefaultRules), as Terraform's aws_default_security_group with no rules does; its Name tag and tags are not set (aws_default_security_group has no kind)",gap
 aws,vpc,manage_default_vpc,bool,no,the account's default VPC is not managed: aws_default_vpc has no kind,gap
-aws,vpc,map_customer_owned_ip_on_launch,bool,no,"Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them",not-ported
+aws,vpc,map_customer_owned_ip_on_launch,bool,no,ACK's Subnet (ec2-controller v1.23.1) has no mapCustomerOwnedIPOnLaunch field,gap
 aws,vpc,map_public_ip_on_launch,bool,yes,,
 aws,vpc,name,string,yes,,
 aws,vpc,nat_eip_tags,map(string),yes,,
 aws,vpc,nat_gateway_destination_cidr_block,string,yes,,
 aws,vpc,nat_gateway_tags,map(string),yes,,
 aws,vpc,one_nat_gateway_per_az,bool,yes,,
-aws,vpc,outpost_acl_tags,map(string),no,"Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them",not-ported
-aws,vpc,outpost_arn,string,no,"Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them",not-ported
-aws,vpc,outpost_az,string,no,"Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them",not-ported
-aws,vpc,outpost_dedicated_network_acl,bool,no,"Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them",not-ported
-aws,vpc,outpost_inbound_acl_rules,list(map(string)),no,"Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them",not-ported
-aws,vpc,outpost_outbound_acl_rules,list(map(string)),no,"Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them",not-ported
-aws,vpc,outpost_subnet_assign_ipv6_address_on_creation,bool,no,"Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them",not-ported
-aws,vpc,outpost_subnet_enable_dns64,bool,no,"Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them",not-ported
-aws,vpc,outpost_subnet_enable_resource_name_dns_a_record_on_launch,bool,no,"Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them",not-ported
-aws,vpc,outpost_subnet_enable_resource_name_dns_aaaa_record_on_launch,bool,no,"Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them",not-ported
-aws,vpc,outpost_subnet_ipv6_native,bool,no,"Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them",not-ported
-aws,vpc,outpost_subnet_ipv6_prefixes,list(string),no,"Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them",not-ported
-aws,vpc,outpost_subnet_names,list(string),no,"Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them",not-ported
-aws,vpc,outpost_subnet_private_dns_hostname_type_on_launch,string,no,"Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them",not-ported
-aws,vpc,outpost_subnet_suffix,string,no,"Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them",not-ported
-aws,vpc,outpost_subnet_tags,map(string),no,"Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them",not-ported
-aws,vpc,outpost_subnets,list(string),no,"Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them",not-ported
+aws,vpc,outpost_acl_tags,map(string),yes,,
+aws,vpc,outpost_arn,string,yes,,
+aws,vpc,outpost_az,string,yes,,
+aws,vpc,outpost_dedicated_network_acl,bool,yes,,
+aws,vpc,outpost_inbound_acl_rules,list(map(string)),yes,,
+aws,vpc,outpost_outbound_acl_rules,list(map(string)),yes,,
+aws,vpc,outpost_subnet_assign_ipv6_address_on_creation,bool,no,"IPv6 is not ported: a subnet's IPv6 block is cut from the VPC's Amazon-assigned block (cidrsubnet), known only after apply, and Subnet has no field that references it",gap
+aws,vpc,outpost_subnet_enable_dns64,bool,no,"IPv6 is not ported: a subnet's IPv6 block is cut from the VPC's Amazon-assigned block (cidrsubnet), known only after apply, and Subnet has no field that references it",gap
+aws,vpc,outpost_subnet_enable_resource_name_dns_a_record_on_launch,bool,yes,,
+aws,vpc,outpost_subnet_enable_resource_name_dns_aaaa_record_on_launch,bool,no,"IPv6 is not ported: a subnet's IPv6 block is cut from the VPC's Amazon-assigned block (cidrsubnet), known only after apply, and Subnet has no field that references it",gap
+aws,vpc,outpost_subnet_ipv6_native,bool,no,"IPv6 is not ported: a subnet's IPv6 block is cut from the VPC's Amazon-assigned block (cidrsubnet), known only after apply, and Subnet has no field that references it",gap
+aws,vpc,outpost_subnet_ipv6_prefixes,list(string),no,"IPv6 is not ported: a subnet's IPv6 block is cut from the VPC's Amazon-assigned block (cidrsubnet), known only after apply, and Subnet has no field that references it",gap
+aws,vpc,outpost_subnet_names,list(string),yes,,
+aws,vpc,outpost_subnet_private_dns_hostname_type_on_launch,string,yes,,
+aws,vpc,outpost_subnet_suffix,string,yes,,
+aws,vpc,outpost_subnet_tags,map(string),yes,,
+aws,vpc,outpost_subnets,list(string),yes,,
 aws,vpc,private_acl_tags,map(string),yes,,
 aws,vpc,private_dedicated_network_acl,bool,yes,,
 aws,vpc,private_inbound_acl_rules,list(map(string)),yes,,
@@ -3033,13 +3033,13 @@ aws,sns,use_name_prefix,bool,no,a topic name with Terraform's random suffix (nam
 aws,elasticache,apply_immediately,bool,partial,"accepted unset or true; false is refused: ACK's elasticache-controller v1.12.0 applies every change immediately, with no field to wait for the maintenance window",gap
 aws,elasticache,at_rest_encryption_enabled,bool,yes,,
 aws,elasticache,auth_token,string,partial,"auth_token is a reference to a Kubernetes Secret, {secretName, key}, rendered as ReplicationGroup's spec.authToken (ACK's SecretKeyReference; docs/secrets.md); the token itself, a string, is refused: it would be in the rendered manifest",by-design
-aws,elasticache,auth_token_update_strategy,string,partial,"accepted unset or ROTATE; SET and DELETE are refused: ACK's ReplicationGroup (elasticache-controller v1.12.0) has no field for the strategy and sends a changed token without one, which ElastiCache treats as ROTATE",gap
+aws,elasticache,auth_token_update_strategy,string,partial,ACK's ReplicationGroup (elasticache-controller v1.12.0) has no authTokenUpdateStrategy field; ack-extensions' ReplicationGroup carries it (needs allow_alpha: true),alpha
 aws,elasticache,auto_minor_version_upgrade,bool,yes,,
 aws,elasticache,automatic_failover_enabled,bool,yes,,
 aws,elasticache,availability_zone,string,yes,,
 aws,elasticache,az_mode,string,yes,,
 aws,elasticache,cluster_id,string,yes,,
-aws,elasticache,cluster_mode,string,no,ACK's ReplicationGroup (elasticache-controller v1.12.0) has no clusterMode field; cluster_mode_enabled is carried,gap
+aws,elasticache,cluster_mode,string,partial,ACK's ReplicationGroup (elasticache-controller v1.12.0) has no clusterMode field; ack-extensions' ReplicationGroup carries it (needs allow_alpha: true),alpha
 aws,elasticache,cluster_mode_enabled,bool,yes,,
 aws,elasticache,create,bool,yes,,
 aws,elasticache,create_cluster,bool,yes,,
@@ -3053,12 +3053,12 @@ aws,elasticache,data_tiering_enabled,bool,yes,,
 aws,elasticache,description,string,yes,,
 aws,elasticache,engine,string,yes,,
 aws,elasticache,engine_version,string,yes,,
-aws,elasticache,final_snapshot_identifier,string,no,ACK's CacheCluster and ReplicationGroup have no field for a final snapshot on delete,gap
-aws,elasticache,global_replication_group_id,string,no,ACK's ReplicationGroup has no field to join a global replication group,gap
+aws,elasticache,final_snapshot_identifier,string,partial,ACK's CacheCluster and ReplicationGroup (elasticache-controller v1.12.0) have no finalSnapshotIdentifier field; ack-extensions' kinds carry it (needs allow_alpha: true),alpha
+aws,elasticache,global_replication_group_id,string,partial,ACK's ReplicationGroup (elasticache-controller v1.12.0) has no globalReplicationGroupID field; ack-extensions' ReplicationGroup carries it (needs allow_alpha: true),alpha
 aws,elasticache,global_replication_group_id_suffix,string,no,"used only with a global replication group, which is refused",gap
 aws,elasticache,ip_discovery,string,yes,,
 aws,elasticache,kms_key_arn,string,yes,,
-aws,elasticache,log_delivery_configuration,any,partial,"accepted, but each entry's cloudwatch_log_group_class is refused: ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no logGroupClass field",gap
+aws,elasticache,log_delivery_configuration,any,partial,"accepted, with cloudwatch_log_group_class via ack-extensions' LogGroup (needs allow_alpha: true)",alpha
 aws,elasticache,maintenance_window,string,yes,,
 aws,elasticache,multi_az_enabled,bool,yes,,
 aws,elasticache,network_type,string,yes,,
@@ -3095,7 +3095,7 @@ aws,elasticache,subnet_ids,list(string),yes,,
 aws,elasticache,tags,map(string),yes,,
 aws,elasticache,timeouts,map(string),no,"Terraform's create, update and delete timeouts: ACK retries until the cluster is synced, and Bundt waits for it",by-design
 aws,elasticache,transit_encryption_enabled,bool,yes,,
-aws,elasticache,transit_encryption_mode,string,no,ACK's ReplicationGroup (elasticache-controller v1.12.0) has no transitEncryptionMode field,gap
+aws,elasticache,transit_encryption_mode,string,partial,ACK's ReplicationGroup (elasticache-controller v1.12.0) has no transitEncryptionMode field; ack-extensions' ReplicationGroup carries it (needs allow_alpha: true),alpha
 aws,elasticache,user_group_ids,list(string),yes,,
 aws,elasticache,vpc_id,string,partial,accepted when set; unset with create_security_group: true (Terraform's default VPC) is refused: ACK's SecurityGroup needs its VPC's ID,gap
 aws,key-pair,create,bool,no,,no-chart
@@ -3169,19 +3169,19 @@ aws,step-functions,use_existing_role,bool,yes,,
 aws,efs,access_points,"map(object({name, posix_user, root_directory, tags}))",yes,,
 aws,efs,attach_policy,bool,yes,,
 aws,efs,availability_zone_name,string,yes,,
-aws,efs,bypass_policy_lockout_safety_check,bool,no,"ACK's FileSystem (efs-controller v1.8.0) takes its policy as a string, with no flag to bypass PutFileSystemPolicy's lockout safety check",gap
+aws,efs,bypass_policy_lockout_safety_check,bool,partial,ACK's FileSystem (efs-controller v1.8.0) has no bypassPolicyLockoutSafetyCheck field; ack-extensions' FileSystem carries it (needs allow_alpha: true),alpha
 aws,efs,create,bool,yes,,
 aws,efs,create_backup_policy,bool,yes,,
 aws,efs,create_replication_configuration,bool,yes,,
 aws,efs,create_security_group,bool,yes,,
-aws,efs,creation_token,string,no,ACK's FileSystem has no creationToken field: the controller sets its own,gap
+aws,efs,creation_token,string,partial,ACK's FileSystem (efs-controller v1.8.0) has no creationToken field; ack-extensions' FileSystem carries it (needs allow_alpha: true),alpha
 aws,efs,deny_nonsecure_transport,bool,no,"the module's NonSecureTransport statement names the file system's own ARN, which holds the ID AWS assigns and is only in the FileSystem's status, and ACK's FileSystem takes its policy as a string with no reference to it; refused when true (the default) with attach_policy: true",gap
 aws,efs,deny_nonsecure_transport_via_mount_target,bool,no,the module's NonSecureTransportAccessedViaMountTarget statement names the file system's own ARN (as deny_nonsecure_transport); refused when true (the default) with attach_policy: true,gap
 aws,efs,enable_backup_policy,bool,yes,,
 aws,efs,encrypted,bool,yes,,
 aws,efs,kms_key_arn,string,yes,,
 aws,efs,lifecycle_policy,"object({transition_to_archive, transition_to_ia, transition_to_primary_storage_class})",yes,,
-aws,efs,mount_targets,"map(object({ip_address, ip_address_type, ipv6_address, region, security_groups, subnet_id}))",partial,"accepted, but ip_address_type and ipv6_address are refused (ACK's MountTarget has no field for them), and security_groups is refused with create_security_group: true (ACK's MountTarget cannot take group references and IDs together); region is not used, as in the module",gap
+aws,efs,mount_targets,"map(object({ip_address, ip_address_type, ipv6_address, region, security_groups, subnet_id}))",partial,"accepted, with ip_address_type and ipv6_address via ack-extensions' MountTarget (needs allow_alpha: true); security_groups is refused with create_security_group: true (ACK's MountTarget cannot take group references and IDs together); region is not used, as in the module",gap
 aws,efs,name,string,yes,,
 aws,efs,override_policy_documents,list(string),yes,,
 aws,efs,performance_mode,string,yes,,

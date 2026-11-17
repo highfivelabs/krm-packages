@@ -1,0 +1,28 @@
+# Log delivery, destination, and encryption-header deny policies.
+bucket: my-app-logs-bucket
+region: us-west-2
+account_id: "111122223333"
+server_side_encryption_configuration:
+  rule:
+    apply_server_side_encryption_by_default:
+      sse_algorithm: aws:kms
+      kms_master_key_id: arn:aws:kms:us-west-2:111122223333:key/1234
+allowed_kms_key_arn: arn:aws:kms:us-west-2:111122223333:key/1234
+attach_deny_incorrect_encryption_headers: true
+attach_deny_incorrect_kms_key_sse: true
+attach_deny_unencrypted_object_uploads: true
+attach_deny_ssec_encrypted_object_uploads: true
+attach_elb_log_delivery_policy: true
+attach_lb_log_delivery_policy: true
+lb_log_delivery_policy_source_organizations: [o-1234567890]
+attach_access_log_delivery_policy: true
+access_log_delivery_policy_source_accounts: ["111122223333"]
+access_log_delivery_policy_source_buckets: [arn:aws:s3:::source-bucket]
+access_log_delivery_policy_source_organizations: [o-1234567890]
+attach_waf_log_delivery_policy: true
+attach_cloudtrail_log_delivery_policy: true
+attach_inventory_destination_policy: true
+inventory_self_source_destination: true
+attach_analytics_destination_policy: true
+analytics_source_account_id: "444455556666"
+analytics_source_bucket_arn: arn:aws:s3:::analytics-source

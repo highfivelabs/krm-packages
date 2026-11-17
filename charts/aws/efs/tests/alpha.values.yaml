@@ -1,0 +1,21 @@
+# Alpha ack-extensions fields on FileSystem and MountTarget.
+allow_alpha: true
+name: shared-alpha
+creation_token: shared-alpha-token
+bypass_policy_lockout_safety_check: true
+security_group_vpc_id: vpc-0123456789abcdef0
+deny_nonsecure_transport: false
+deny_nonsecure_transport_via_mount_target: false
+policy_statements:
+  mount:
+    actions: [elasticfilesystem:ClientMount]
+    resources: ["*"]
+    principals: [{type: AWS, identifiers: [arn:aws:iam::111122223333:role/app]}]
+    condition: [{test: Bool, variable: aws:SecureTransport, values: ["true"]}]
+mount_targets:
+  a:
+    subnet_id: subnet-0123456789abcdef0
+    ip_address_type: DUAL_STACK
+    ipv6_address: 2001:db8::10
+security_group_ingress_rules:
+  vpc: {cidr_ipv4: 10.0.0.0/16, description: NFS from the VPC}

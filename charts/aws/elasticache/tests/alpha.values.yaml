@@ -1,0 +1,24 @@
+# Alpha ack-extensions fields on ReplicationGroup, CacheCluster, and LogGroup.
+allow_alpha: true
+replication_group_id: app-alpha
+node_type: cache.t4g.micro
+engine: redis
+engine_version: "7.1"
+parameter_group_family: redis7
+vpc_id: vpc-0123456789abcdef0
+subnet_ids: [subnet-0123456789abcdef0, subnet-0123456789abcdef1]
+transit_encryption_enabled: true
+transit_encryption_mode: preferred
+auth_token: {secretName: redis-auth, key: token}
+auth_token_update_strategy: SET
+cluster_mode: enabled
+num_node_groups: 2
+replicas_per_node_group: 1
+final_snapshot_identifier: app-alpha-final
+global_replication_group_id: global-app
+log_delivery_configuration:
+  slow-log:
+    destination_type: cloudwatch-logs
+    log_format: json
+    log_type: slow-log
+    cloudwatch_log_group_class: INFREQUENT_ACCESS

@@ -47,9 +47,6 @@ refused:
   reason: "CustomerGateway is an ack-extensions kind (outside ACK's releases): needs allow_alpha: true"
   partial: true
   needs_allow_alpha: true
-- variable: customer_owned_ipv4_pool
-  kind: not-ported
-  reason: "Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them"
 - variable: database_subnet_assign_ipv6_address_on_creation
   kind: gap
   reason: "IPv6 is not ported: a subnet's IPv6 block is cut from the VPC's Amazon-assigned block (cidrsubnet), known only after apply, and Subnet has no field that references it; a route to an egress-only internet gateway has no reference either (RouteTable.routes takes egressOnlyInternetGatewayID only)"
@@ -237,59 +234,23 @@ refused:
   kind: gap
   reason: "the account's default VPC is not managed: aws_default_vpc has no kind"
 - variable: map_customer_owned_ip_on_launch
-  kind: not-ported
-  reason: "Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them"
-- variable: outpost_acl_tags
-  kind: not-ported
-  reason: "Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them"
-- variable: outpost_arn
-  kind: not-ported
-  reason: "Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them"
-- variable: outpost_az
-  kind: not-ported
-  reason: "Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them"
-- variable: outpost_dedicated_network_acl
-  kind: not-ported
-  reason: "Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them"
-- variable: outpost_inbound_acl_rules
-  kind: not-ported
-  reason: "Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them"
-- variable: outpost_outbound_acl_rules
-  kind: not-ported
-  reason: "Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them"
+  kind: gap
+  reason: "ACK's Subnet (ec2-controller v1.23.1) has no mapCustomerOwnedIPOnLaunch field"
 - variable: outpost_subnet_assign_ipv6_address_on_creation
-  kind: not-ported
-  reason: "Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them"
+  kind: gap
+  reason: "IPv6 is not ported: a subnet's IPv6 block is cut from the VPC's Amazon-assigned block (cidrsubnet), known only after apply, and Subnet has no field that references it"
 - variable: outpost_subnet_enable_dns64
-  kind: not-ported
-  reason: "Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them"
-- variable: outpost_subnet_enable_resource_name_dns_a_record_on_launch
-  kind: not-ported
-  reason: "Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them"
+  kind: gap
+  reason: "IPv6 is not ported: a subnet's IPv6 block is cut from the VPC's Amazon-assigned block (cidrsubnet), known only after apply, and Subnet has no field that references it"
 - variable: outpost_subnet_enable_resource_name_dns_aaaa_record_on_launch
-  kind: not-ported
-  reason: "Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them"
+  kind: gap
+  reason: "IPv6 is not ported: a subnet's IPv6 block is cut from the VPC's Amazon-assigned block (cidrsubnet), known only after apply, and Subnet has no field that references it"
 - variable: outpost_subnet_ipv6_native
-  kind: not-ported
-  reason: "Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them"
+  kind: gap
+  reason: "IPv6 is not ported: a subnet's IPv6 block is cut from the VPC's Amazon-assigned block (cidrsubnet), known only after apply, and Subnet has no field that references it"
 - variable: outpost_subnet_ipv6_prefixes
-  kind: not-ported
-  reason: "Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them"
-- variable: outpost_subnet_names
-  kind: not-ported
-  reason: "Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them"
-- variable: outpost_subnet_private_dns_hostname_type_on_launch
-  kind: not-ported
-  reason: "Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them"
-- variable: outpost_subnet_suffix
-  kind: not-ported
-  reason: "Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them"
-- variable: outpost_subnet_tags
-  kind: not-ported
-  reason: "Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them"
-- variable: outpost_subnets
-  kind: not-ported
-  reason: "Outpost subnets are not ported yet: Subnet has outpostARN and customerOwnedIPv4Pool, the chart does not map them"
+  kind: gap
+  reason: "IPv6 is not ported: a subnet's IPv6 block is cut from the VPC's Amazon-assigned block (cidrsubnet), known only after apply, and Subnet has no field that references it"
 - variable: private_subnet_assign_ipv6_address_on_creation
   kind: gap
   reason: "IPv6 is not ported: a subnet's IPv6 block is cut from the VPC's Amazon-assigned block (cidrsubnet), known only after apply, and Subnet has no field that references it; a route to an egress-only internet gateway has no reference either (RouteTable.routes takes egressOnlyInternetGatewayID only)"

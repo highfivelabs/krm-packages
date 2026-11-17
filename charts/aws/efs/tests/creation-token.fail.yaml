@@ -1,4 +1,4 @@
-# expect: efs: creation_token is not supported
+# expect: efs: creation_token needs the alpha kind
 name: x
 attach_policy: false
 creation_token: my-token

@@ -39,3 +39,8 @@ only with `allow_alpha: true` (`docs/design.md`, "Alpha kinds";
 | `route53.cloudcontrol.aws.hfl.dev_dnssecs.yaml` | `DNSSEC` (`route53.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `7117ca5a` (2026-11-17) |
 | `ecs.cloudcontrol.aws.hfl.dev_tasksets.yaml` | `TaskSet` (`ecs.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `7117ca5a` (2026-11-17) |
 | `ecs.cloudcontrol.aws.hfl.dev_expressgatewayservices.yaml` | `ExpressGatewayService` (`ecs.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `7117ca5a` (2026-11-17) |
+| `cloudwatchlogs.aws.hfl.dev_loggroups.yaml` | `LogGroup` (`cloudwatchlogs.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `6cb80e7c` (2026-11-17) |
+| `efs.aws.hfl.dev_filesystems.yaml` | `FileSystem` (`efs.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `6cb80e7c` (2026-11-17) |
+| `efs.aws.hfl.dev_mounttargets.yaml` | `MountTarget` (`efs.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `6cb80e7c` (2026-11-17) |
+| `elasticache.aws.hfl.dev_cacheclusters.yaml` | `CacheCluster` (`elasticache.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `6cb80e7c` (2026-11-17) |
+| `elasticache.aws.hfl.dev_replicationgroups.yaml` | `ReplicationGroup` (`elasticache.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `6cb80e7c` (2026-11-17) |

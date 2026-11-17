@@ -24,11 +24,15 @@ synced: 2026-11-16
 # accepted, the reason says what is not carried.
 refused:
 - variable: bypass_policy_lockout_safety_check
-  kind: gap
-  reason: "ACK's FileSystem (efs-controller v1.8.0) takes its policy as a string, with no flag to bypass PutFileSystemPolicy's lockout safety check"
+  kind: alpha
+  reason: "ACK's FileSystem (efs-controller v1.8.0) has no bypassPolicyLockoutSafetyCheck field; ack-extensions' FileSystem carries it (needs allow_alpha: true)"
+  partial: true
+  needs_allow_alpha: true
 - variable: creation_token
-  kind: gap
-  reason: "ACK's FileSystem has no creationToken field: the controller sets its own"
+  kind: alpha
+  reason: "ACK's FileSystem (efs-controller v1.8.0) has no creationToken field; ack-extensions' FileSystem carries it (needs allow_alpha: true)"
+  partial: true
+  needs_allow_alpha: true
 - variable: deny_nonsecure_transport
   kind: gap
   reason: "the module's NonSecureTransport statement names the file system's own ARN, which holds the ID AWS assigns and is only in the FileSystem's status, and ACK's FileSystem takes its policy as a string with no reference to it; refused when true (the default) with attach_policy: true"
@@ -37,7 +41,7 @@ refused:
   reason: "the module's NonSecureTransportAccessedViaMountTarget statement names the file system's own ARN (as deny_nonsecure_transport); refused when true (the default) with attach_policy: true"
 - variable: mount_targets
   kind: gap
-  reason: "accepted, but ip_address_type and ipv6_address are refused (ACK's MountTarget has no field for them), and security_groups is refused with create_security_group: true (ACK's MountTarget cannot take group references and IDs together); region is not used, as in the module"
+  reason: "accepted, with ip_address_type and ipv6_address via ack-extensions' MountTarget (needs allow_alpha: true); security_groups is refused with create_security_group: true (ACK's MountTarget cannot take group references and IDs together); region is not used, as in the module"
   partial: true
   fields:
   - ip_address_type

@@ -1,4 +1,4 @@
-# expect: efs: bypass_policy_lockout_safety_check is not supported
+# expect: efs: bypass_policy_lockout_safety_check needs the alpha kind
 name: x
 deny_nonsecure_transport: false
 deny_nonsecure_transport_via_mount_target: false
