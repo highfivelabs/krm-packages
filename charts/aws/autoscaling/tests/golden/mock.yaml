@@ -20,7 +20,7 @@ spec:
       value: "true"
 ---
 # Source: autoscaling/templates/autoscaling-group.yaml
-apiVersion: autoscaling.services.k8s.aws/v1alpha1
+apiVersion: autoscaling.aws.hfl.dev/v1alpha1
 kind: AutoScalingGroup
 metadata:
   name: mock-autoscaling-group
@@ -44,14 +44,18 @@ spec:
       defaultResult: "CONTINUE"
       heartbeatTimeout: 60
   launchTemplate:
-    launchTemplateName: catalog-asg
+    launchTemplateRef:
+      from:
+        name: mock-launch-template
     version: $Latest
   newInstancesProtectedFromScaleIn: false
   tags:
     - key: "Name"
       value: "catalog-asg"
+      propagateAtLaunch: true
     - key: "catalog-test"
       value: "true"
+      propagateAtLaunch: true
 ---
 # Source: autoscaling/templates/iam.yaml
 apiVersion: iam.services.k8s.aws/v1alpha1
@@ -76,7 +80,7 @@ spec:
       value: "true"
 ---
 # Source: autoscaling/templates/launch-template.yaml
-apiVersion: ec2.services.k8s.aws/v1alpha1
+apiVersion: ec2.aws.hfl.dev/v1alpha1
 kind: LaunchTemplate
 metadata:
   name: mock-launch-template

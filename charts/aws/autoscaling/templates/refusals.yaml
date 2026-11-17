@@ -7,7 +7,7 @@ The module variables this chart keeps in its values but cannot carry
 is set (to anything but its Terraform default). Renders nothing.
 */ -}}
 {{- $v := .Values -}}
-{{- include "ack.unsupported" (list $ "context" $v.context "ACK's AutoScalingGroup (autoscaling-controller v1.6.0) has no context field") }}
+{{- include "ack.alpha" (list $ "context" $v.context "AutoScalingGroup (ack-extensions)") }}
 {{- include "ack.unsupported" (list $ "enabled_metrics" $v.enabled_metrics "group metrics collection has no field: ACK's AutoScalingGroup (autoscaling-controller v1.6.0) reports enabledMetrics in its status only, and ack-extensions has no kind for EnableMetricsCollection") }}
 {{- include "ack.unsupported" (list $ "metrics_granularity" $v.metrics_granularity "it is used only with enabled_metrics, which is refused") }}
 {{- include "ack.unsupported" (list $ "force_delete_warm_pool" $v.force_delete_warm_pool "ack-extensions' WarmPool (Cloud Control) has no force delete field") }}

@@ -9,7 +9,8 @@ at v9.3.2 (`f90a581b`), Apache-2.0; modified (a translation of the
 module's variables into a Helm chart). Bundt Package `aws-autoscaling`
 (`package.yaml`). Checked against ACK's autoscaling-controller v1.6.0,
 ec2-controller v1.23.1 and iam-controller v1.11.3 (`UPSTREAM.md`, "ACK
-controllers"), and ack-extensions' `ScalingPolicy`, `ScheduledAction` and
+controllers"), and ack-extensions' `AutoScalingGroup`, `LaunchTemplate` (both
+with `allow_alpha: true`), `ScalingPolicy`, `ScheduledAction` and
 `WarmPool` (`crds/ack-extensions`).
 
 ## Example
@@ -93,18 +94,20 @@ the role is named `iam_instance_profile_name` else `iam_role_name`, and
 the profile `iam_role_name` (else the role's name, where Terraform would
 generate one).
 
-**Ordering on the first apply.** Nothing orders the group after the
-instance profile: the launch template names it, and the group names the
-template. EC2 Auto Scaling validates the template's profile when the group
-is created, and ACK treats that `ValidationError` as terminal. On AWS
-Emulator (`off-catalog-1116145851-10925`) the group was created before the
-profile was visible and stayed failed ("Invalid IAM Instance Profile
-name"); on moto it passed. With `create_iam_instance_profile`, if the
-group reports that error, delete the `AutoScalingGroup` object once the
-profile is synced and let Bundt apply it again, or make the role and
-profile their own component (`charts/aws/iam-role`) and pass
-`iam_instance_profile_name`. A `launchTemplateRef` on ACK's group would fix
-the order (`docs/aws.md`, gaps).
+**Ordering on the first apply.** With `allow_alpha: true`, the chart uses
+ack-extensions' `AutoScalingGroup` (`autoscaling.aws.hfl.dev/v1alpha1`)
+and `LaunchTemplate` (`ec2.aws.hfl.dev/v1alpha1`) with `launchTemplateRef`
+to the chart's `LaunchTemplate` (plus `context` and per-tag
+`propagateAtLaunch`), which orders the group after its launch template.
+Without `allow_alpha: true`, ACK's `AutoScalingGroup` names its template
+by string (`launchTemplate.launchTemplateName`) and has no ordering
+against the template or instance profile. In either mode,
+`LaunchTemplate.data.iamInstanceProfile` names the profile by string (no
+reference to `InstanceProfile`), so if the group is created before the
+profile is visible and reports "Invalid IAM Instance Profile name",
+delete the `AutoScalingGroup` object once the profile is synced and let
+Bundt apply it again, or make the role and profile their own component
+(`charts/aws/iam-role`) and pass `iam_instance_profile_name`.
 
 **Set once at creation**: `initial_lifecycle_hooks` and
 `traffic_source_attachments` are fields of `CreateAutoScalingGroup` only,
@@ -126,8 +129,9 @@ Refused (`upstream.yaml`):
   `launch_template_specification.launch_template_id`: ACK names launch
   templates; set `launch_template_name`.
 - `enabled_metrics`, `metrics_granularity`, `suspended_processes`,
-  `instance_refresh`, `context`: no field on ACK's `AutoScalingGroup` and
-  no ack-extensions kind (`docs/aws.md`, gaps).
+  `instance_refresh`: no field on ACK's `AutoScalingGroup` and
+  no ack-extensions kind (`docs/aws.md`, gaps). `context` needs
+  `allow_alpha: true` (ack-extensions' `AutoScalingGroup`).
 - `force_delete_warm_pool`: no field on ack-extensions' `WarmPool`.
 - `wait_for_capacity_timeout`, `wait_for_elb_capacity`,
   `min_elb_capacity`, `ignore_failed_scaling_activities`, `timeouts`:

@@ -1,4 +1,4 @@
-# expect: autoscaling: context is not supported
+# expect: autoscaling: context needs the alpha kind AutoScalingGroup (ack-extensions)
 name: x
 min_size: 0
 max_size: 1

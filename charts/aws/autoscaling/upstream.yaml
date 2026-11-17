@@ -25,8 +25,10 @@ synced: 2026-11-16
 # the reason says what is not carried.
 refused:
 - variable: context
-  kind: gap
-  reason: "ACK's AutoScalingGroup (autoscaling-controller v1.6.0) has no context field"
+  kind: alpha
+  reason: "ACK's AutoScalingGroup (autoscaling-controller v1.6.0) has no context field; ack-extensions' AutoScalingGroup carries it (needs allow_alpha: true)"
+  partial: true
+  needs_allow_alpha: true
 - variable: enabled_metrics
   kind: gap
   reason: "group metrics collection (EnableMetricsCollection) has no field: ACK's AutoScalingGroup reports enabledMetrics in its status only, and ack-extensions has no kind for it"
@@ -86,7 +88,7 @@ refused:
   partial: true
 - variable: autoscaling_group_tags_not_propagate_at_launch
   kind: gap
-  reason: "accepted: ACK's AutoScalingGroup tags never propagate at launch, so the chart propagates the other tags through its launch template's instance tag specification (with create_launch_template: true)"
+  reason: "accepted: ACK's AutoScalingGroup tags never propagate at launch, so the chart propagates the other tags through its launch template's instance tag specification (with create_launch_template: true); with allow_alpha: true ack-extensions' AutoScalingGroup also sets propagateAtLaunch per tag"
   partial: true
 - variable: traffic_source_attachments
   kind: gap
