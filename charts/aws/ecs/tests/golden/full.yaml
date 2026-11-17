@@ -1,0 +1,210 @@
+---
+# Source: ecs/templates/cluster.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: full-task-exec-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: ecs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "task-exec-role"
+spec:
+  name: "full-ecs-task-exec"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ecs-tasks.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+  inlinePolicies:
+    task-exec-policy: '{"Statement":[{"Action":["ssm:GetParameters"],"Effect":"Allow","Resource":["arn:aws:ssm:us-east-1:123456789012:parameter/app/*"],"Sid":"GetSSMParams"},{"Action":["secretsmanager:GetSecretValue"],"Effect":"Allow","Resource":["arn:aws:secretsmanager:us-east-1:123456789012:secret:app/*"],"Sid":"GetSecrets"}],"Version":"2012-10-17"}'
+---
+# Source: ecs/templates/services.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: full-svc-api-exec-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: ecs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "service/api/task-exec-role"
+spec:
+  name: "api-exec"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ecs-tasks.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+---
+# Source: ecs/templates/services.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: full-svc-api-task-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: ecs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "service/api/task-role"
+spec:
+  name: "api-task"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ecs-tasks.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+---
+# Source: ecs/templates/services.yaml
+apiVersion: ecs.services.k8s.aws/v1alpha1
+kind: Service
+metadata:
+  name: full-svc-api
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: ecs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "service/api"
+spec:
+  name: "api"
+  clusterRef:
+    from:
+      name: "full-cluster"
+  taskDefinitionRef:
+    from:
+      name: "full-td-api"
+  launchType: "FARGATE"
+  desiredCount: 2
+---
+# Source: ecs/templates/cluster.yaml
+apiVersion: ecs.services.k8s.aws/v1alpha1
+kind: Cluster
+metadata:
+  name: full-cluster
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: ecs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster"
+spec:
+  name: "full-ecs"
+  capacityProviders:
+    - FARGATE
+  settings:
+    - name: containerInsights
+      value: enabled
+---
+# Source: ecs/templates/cluster.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: full-log-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: ecs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group"
+spec:
+  name: "/aws/ecs/containerinsights/full-ecs/performance"
+  retentionDays: 90
+---
+# Source: ecs/templates/services.yaml
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalableTarget
+metadata:
+  name: full-svc-api-target
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: ecs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "service/api/scalable-target"
+spec:
+  serviceNamespace: ecs
+  scalableDimension: ecs:service:DesiredCount
+  resourceID: "service/full-ecs/api"
+  minCapacity: 1
+  maxCapacity: 4
+---
+# Source: ecs/templates/services.yaml
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalingPolicy
+metadata:
+  name: full-svc-api-policy-cpu
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: ecs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "service/api/scaling-policy/cpu"
+spec:
+  policyName: "cpu"
+  policyType: "TargetTrackingScaling"
+  serviceNamespace: ecs
+  scalableDimension: ecs:service:DesiredCount
+  resourceID: "service/full-ecs/api"
+  targetTrackingScalingPolicyConfiguration:
+    predefinedMetricSpecification:
+      predefinedMetricType: ECSServiceAverageCPUUtilization
+    targetValue: 70
+---
+# Source: ecs/templates/services.yaml
+apiVersion: applicationautoscaling.aws.hfl.dev/v1alpha1
+kind: ScheduledAction
+metadata:
+  name: full-svc-api-sched-scale-up-4761e2ab
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: ecs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "service/api/scheduled-action/scale_up"
+spec:
+  scheduledActionName: "scale_up"
+  serviceNamespace: ecs
+  scalableDimension: ecs:service:DesiredCount
+  resourceID: "service/full-ecs/api"
+  schedule: "cron(0 8 * * ? *)"
+  scalableTargetAction:
+    minCapacity: 2
+    maxCapacity: 4
+---
+# Source: ecs/templates/services.yaml
+apiVersion: ecs.services.k8s.aws/v1alpha1
+kind: TaskDefinition
+metadata:
+  name: full-td-api
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: ecs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "service/api/task-definition"
+spec:
+  family: "api"
+  cpu: "512"
+  memory: "1024"
+  networkMode: "awsvpc"
+  requiresCompatibilities:
+    - FARGATE
+  executionRoleRef:
+    from:
+      name: "full-svc-api-exec-role"
+  taskRoleRef:
+    from:
+      name: "full-svc-api-task-role"
+  containerDefinitions:
+    - name: "api"
+      image: "public.ecr.aws/nginx/nginx:alpine"
+      essential: true
+      portMappings:
+        - containerPort: 8080
+          protocol: tcp

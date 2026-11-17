@@ -1,0 +1,3 @@
+cluster_name: basic-ecs
+tags:
+  env: test

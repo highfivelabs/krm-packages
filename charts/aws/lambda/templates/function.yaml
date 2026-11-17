@@ -1,0 +1,418 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf: Lambda Function, LayerVersion, IAM Role, CloudWatch LogGroup,
+FunctionURLConfig, EventSourceMapping, and Permission (ack-extensions,
+lambda.aws.hfl.dev/v1alpha1, gated on allow_alpha: true).
+*/ -}}
+{{- include "ack.names" (list $ (list "function" "layer" "role" "logGroup")) -}}
+{{- $v := .Values -}}
+{{- if and $v.create $v.putin_khuylo }}
+{{- $fnK8s := include "ack.name" (list .Release.Name "fn") -}}
+{{- $roleK8s := include "ack.name" (list .Release.Name "role") -}}
+{{- $layerK8s := include "ack.name" (list .Release.Name "layer") -}}
+{{- $part := $v.partition | default "aws" -}}
+
+{{- /* CloudWatch LogGroup */ -}}
+{{- if and $v.create_function (not $v.use_existing_cloudwatch_log_group) }}
+{{- $fnName := include "ack.resourceName" (list $ "function" "Lambda function" ($v.function_name | default "") 64) }}
+{{- if not $fnName }}
+{{- fail "lambda: function_name is required when create_function is true (or names.function)" }}
+{{- end }}
+{{- $lgName := include "ack.resourceName" (list $ "logGroup" "CloudWatch log group" ($v.logging_log_group | default (printf "/aws/lambda/%s" $fnName)) 512) }}
+{{- $lgTags := include "ack.tags" (list $ (merge (dict) ($v.cloudwatch_logs_tags | default dict) ($v.tags | default dict))) | fromJson }}
+---
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "log-group")) "id" "log-group" "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ $lgName | quote }}
+{{- if not (kindIs "invalid" $v.cloudwatch_logs_retention_in_days) }}
+  retentionDays: {{ int64 $v.cloudwatch_logs_retention_in_days }}
+{{- end }}
+{{- with $v.cloudwatch_logs_kms_key_id }}
+  kmsKeyID: {{ . | quote }}
+{{- end }}
+{{- with $lgTags }}
+  tags:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* IAM Role */ -}}
+{{- if and $v.create_function $v.create_role }}
+{{- $fnName := include "ack.resourceName" (list $ "function" "Lambda function" ($v.function_name | default "") 64) }}
+{{- $roleName := include "ack.resourceName" (list $ "role" "IAM role" ($v.role_name | default $fnName) 64) }}
+{{- $principals := list "lambda.amazonaws.com" -}}
+{{- if $v.lambda_at_edge }}{{- $principals = append $principals "edgelambda.amazonaws.com" -}}{{- end }}
+{{- range $te := ($v.trusted_entities | default list) }}
+{{- if kindIs "string" $te }}{{- $principals = append $principals $te -}}{{- end }}
+{{- end }}
+{{- $assumeStmts := list (dict "Effect" "Allow" "Principal" (dict "Service" $principals) "Action" "sts:AssumeRole") -}}
+{{- $managedPolicies := list -}}
+{{- if $v.attach_cloudwatch_logs_policy }}
+{{- $managedPolicies = append $managedPolicies (printf "arn:%s:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole" $part) }}
+{{- end }}
+{{- if $v.attach_network_policy }}
+{{- $managedPolicies = append $managedPolicies (printf "arn:%s:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole" $part) }}
+{{- end }}
+{{- if $v.attach_tracing_policy }}
+{{- $managedPolicies = append $managedPolicies (printf "arn:%s:iam::aws:policy/AWSXRayDaemonWriteAccess" $part) }}
+{{- end }}
+{{- if and $v.attach_policy $v.policy }}
+{{- $managedPolicies = append $managedPolicies $v.policy }}
+{{- end }}
+{{- if $v.attach_policies }}
+{{- range $p := ($v.policies | default list) }}
+{{- $managedPolicies = append $managedPolicies $p }}
+{{- end }}
+{{- end }}
+{{- $inline := dict }}
+{{- if and $v.attach_policy_json $v.policy_json }}
+{{- $_ := set $inline ($v.policy_name | default "inline-policy") $v.policy_json }}
+{{- end }}
+{{- if $v.attach_policy_jsons }}
+{{- range $idx, $pj := ($v.policy_jsons | default list) }}
+{{- $_ := set $inline (printf "policy-%d" $idx) $pj }}
+{{- end }}
+{{- end }}
+{{- if and $v.attach_policy_statements $v.policy_statements }}
+{{- $stmts := list }}
+{{- range $sk := keys $v.policy_statements | sortAlpha }}
+{{- $s := index $v.policy_statements $sk }}
+{{- $stmts = append $stmts (dict "Sid" $sk "Effect" ($s.effect | default "Allow") "Action" $s.actions "Resource" $s.resources) }}
+{{- end }}
+{{- $_ := set $inline "statements" (toJson (dict "Version" "2012-10-17" "Statement" $stmts)) }}
+{{- end }}
+{{- $roleTags := include "ack.tags" (list $ (merge (dict) ($v.role_tags | default dict) ($v.tags | default dict))) | fromJson }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $roleK8s "id" "role" "region" "") | nindent 2 }}
+spec:
+  name: {{ $roleName | quote }}
+  assumeRolePolicyDocument: {{ toJson (dict "Version" "2012-10-17" "Statement" $assumeStmts) | quote }}
+{{- with $v.role_description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with $v.role_path }}
+  path: {{ . | quote }}
+{{- end }}
+{{- with $v.role_permissions_boundary }}
+  permissionsBoundary: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.role_maximum_session_duration) }}
+  maxSessionDuration: {{ int64 $v.role_maximum_session_duration }}
+{{- end }}
+{{- with $managedPolicies }}
+  policies:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $inline }}
+  inlinePolicies:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $roleTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* Lambda LayerVersion */ -}}
+{{- if $v.create_layer }}
+{{- $layerName := include "ack.resourceName" (list $ "layer" "Lambda layer" ($v.layer_name | default "") 140) }}
+{{- if not $layerName }}
+{{- fail "lambda: layer_name is required when create_layer is true (or names.layer)" }}
+{{- end }}
+{{- if not $v.s3_existing_package }}
+{{- fail "lambda: s3_existing_package is required when create_layer is true" }}
+{{- end }}
+---
+apiVersion: lambda.services.k8s.aws/v1alpha1
+kind: LayerVersion
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $layerK8s "id" "layer" "region" $v.region) | nindent 2 }}
+spec:
+  layerName: {{ $layerName | quote }}
+  content:
+    s3Bucket: {{ $v.s3_existing_package.bucket | quote }}
+    s3Key: {{ $v.s3_existing_package.key | quote }}
+{{- with $v.s3_existing_package.version_id }}
+    s3ObjectVersion: {{ . | quote }}
+{{- end }}
+{{- with $v.description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with $v.license_info }}
+  licenseInfo: {{ . | quote }}
+{{- end }}
+{{- with $v.compatible_runtimes }}
+  compatibleRuntimes:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $v.compatible_architectures }}
+  compatibleArchitectures:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* Lambda Function */ -}}
+{{- if $v.create_function }}
+{{- $fnName := include "ack.resourceName" (list $ "function" "Lambda function" ($v.function_name | default "") 64) }}
+{{- if and (not $v.image_uri) (not $v.s3_existing_package) }}
+{{- fail "lambda: image_uri or s3_existing_package is required when create_function is true" }}
+{{- end }}
+{{- $fnTags := include "ack.tags" (list $ (merge (dict) ($v.function_tags | default dict) ($v.tags | default dict))) | fromJson }}
+---
+apiVersion: lambda.services.k8s.aws/v1alpha1
+kind: Function
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $fnK8s "id" "function" "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ $fnName | quote }}
+{{- if $v.create_role }}
+  roleRef:
+    from:
+      name: {{ $roleK8s | quote }}
+{{- else if $v.lambda_role }}
+  role: {{ $v.lambda_role | quote }}
+{{- else }}
+{{- fail "lambda: lambda_role is required when create_role is false" }}
+{{- end }}
+  code:
+{{- if $v.image_uri }}
+    imageURI: {{ $v.image_uri | quote }}
+{{- else }}
+    s3Bucket: {{ $v.s3_existing_package.bucket | quote }}
+    s3Key: {{ $v.s3_existing_package.key | quote }}
+{{- with $v.s3_existing_package.version_id }}
+    s3ObjectVersion: {{ . | quote }}
+{{- end }}
+{{- end }}
+  packageType: {{ $v.package_type | default "Zip" | quote }}
+{{- with $v.handler }}
+  handler: {{ . | quote }}
+{{- end }}
+{{- with $v.runtime }}
+  runtime: {{ . | quote }}
+{{- end }}
+{{- with $v.description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with $v.architectures }}
+  architectures:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $v.layers }}
+  layers:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $v.kms_key_arn }}
+  kmsKeyARN: {{ . | quote }}
+{{- end }}
+{{- with $v.code_signing_config_arn }}
+  codeSigningConfigARN: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.memory_size) }}
+  memorySize: {{ int64 $v.memory_size }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.timeout) }}
+  timeout: {{ int64 $v.timeout }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.ephemeral_storage_size) }}
+  ephemeralStorage:
+    size: {{ int64 $v.ephemeral_storage_size }}
+{{- end }}
+{{- if $v.publish }}
+  publish: true
+{{- end }}
+{{- if and (not (kindIs "invalid" $v.reserved_concurrent_executions)) (ge (int64 $v.reserved_concurrent_executions) 0) }}
+  reservedConcurrentExecutions: {{ int64 $v.reserved_concurrent_executions }}
+{{- end }}
+{{- with $v.dead_letter_target_arn }}
+  deadLetterConfig:
+    targetARN: {{ . | quote }}
+{{- end }}
+{{- with $v.environment_variables }}
+  environment:
+    variables:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- with $v.tracing_mode }}
+  tracingConfig:
+    mode: {{ . | quote }}
+{{- end }}
+{{- if or $v.vpc_subnet_ids $v.vpc_security_group_ids (not (kindIs "invalid" $v.ipv6_allowed_for_dual_stack)) }}
+  vpcConfig:
+{{- with $v.vpc_subnet_ids }}
+    subnetIDs:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- with $v.vpc_security_group_ids }}
+    securityGroupIDs:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.ipv6_allowed_for_dual_stack) }}
+    ipv6AllowedForDualStack: {{ $v.ipv6_allowed_for_dual_stack }}
+{{- end }}
+{{- end }}
+{{- if or $v.image_config_entry_point $v.image_config_command $v.image_config_working_directory }}
+  imageConfig:
+{{- with $v.image_config_entry_point }}
+    entryPoint:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- with $v.image_config_command }}
+    command:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- with $v.image_config_working_directory }}
+    workingDirectory: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- if $v.snap_start }}
+  snapStart:
+    applyOn: PublishedVersions
+{{- end }}
+{{- if and $v.file_system_arn $v.file_system_local_mount_path }}
+  fileSystemConfigs:
+    - arn: {{ $v.file_system_arn | quote }}
+      localMountPath: {{ $v.file_system_local_mount_path | quote }}
+{{- end }}
+{{- if or $v.logging_log_format $v.logging_log_group }}
+  loggingConfig:
+{{- with $v.logging_log_format }}
+    logFormat: {{ . | quote }}
+{{- end }}
+{{- if eq ($v.logging_log_format | default "Text") "JSON" }}
+{{- with $v.logging_application_log_level }}
+    applicationLogLevel: {{ . | quote }}
+{{- end }}
+{{- with $v.logging_system_log_level }}
+    systemLogLevel: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with $v.logging_log_group }}
+    logGroup: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- if $v.create_async_event_config }}
+  functionEventInvokeConfig:
+{{- if not (kindIs "invalid" $v.maximum_event_age_in_seconds) }}
+    maximumEventAgeInSeconds: {{ int64 $v.maximum_event_age_in_seconds }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.maximum_retry_attempts) }}
+    maximumRetryAttempts: {{ int64 $v.maximum_retry_attempts }}
+{{- end }}
+{{- if or $v.destination_on_failure $v.destination_on_success }}
+    destinationConfig:
+{{- with $v.destination_on_failure }}
+      onFailure:
+        destination: {{ . | quote }}
+{{- end }}
+{{- with $v.destination_on_success }}
+      onSuccess:
+        destination: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if or (not (kindIs "invalid" $v.durable_config_execution_timeout)) (not (kindIs "invalid" $v.durable_config_retention_period)) }}
+  durableConfig:
+{{- if not (kindIs "invalid" $v.durable_config_execution_timeout) }}
+    executionTimeout: {{ int64 $v.durable_config_execution_timeout }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.durable_config_retention_period) }}
+    retentionPeriodInDays: {{ int64 $v.durable_config_retention_period }}
+{{- end }}
+{{- end }}
+{{- if $v.tenant_isolation_mode }}
+  tenancyConfig:
+    tenantIsolationMode: {{ kindIs "string" $v.tenant_isolation_mode | ternary $v.tenant_isolation_mode "PER_TENANT" | quote }}
+{{- end }}
+{{- with $fnTags }}
+  tags:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+
+{{- /* FunctionURLConfig */ -}}
+{{- if $v.create_lambda_function_url }}
+---
+apiVersion: lambda.services.k8s.aws/v1alpha1
+kind: FunctionURLConfig
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "url")) "id" "function-url" "region" $v.region) | nindent 2 }}
+spec:
+  functionRef:
+    from:
+      name: {{ $fnK8s | quote }}
+  authType: {{ $v.authorization_type | default "NONE" | quote }}
+{{- with $v.invoke_mode }}
+  invokeMode: {{ . | quote }}
+{{- end }}
+{{- with $v.cors }}
+  cors:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* EventSourceMapping */ -}}
+{{- range $ek := keys ($v.event_source_mapping | default dict) | sortAlpha }}
+{{- $esm := index $v.event_source_mapping $ek }}
+---
+apiVersion: lambda.services.k8s.aws/v1alpha1
+kind: EventSourceMapping
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name (printf "esm-%s" $ek))) "id" (printf "event-source-mapping/%s" $ek) "region" $v.region) | nindent 2 }}
+spec:
+  functionRef:
+    from:
+      name: {{ $fnK8s | quote }}
+{{- with $esm.event_source_arn }}
+  eventSourceARN: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $esm.enabled) }}
+  enabled: {{ $esm.enabled }}
+{{- end }}
+{{- if not (kindIs "invalid" $esm.batch_size) }}
+  batchSize: {{ int64 $esm.batch_size }}
+{{- end }}
+{{- with $esm.starting_position }}
+  startingPosition: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $esm.maximum_batching_window_in_seconds) }}
+  maximumBatchingWindowInSeconds: {{ int64 $esm.maximum_batching_window_in_seconds }}
+{{- end }}
+{{- with $esm.filter_criteria }}
+  filterCriteria:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* Permission (ack-extensions, allow_alpha: true) */ -}}
+{{- range $pk := keys ($v.allowed_triggers | default dict) | sortAlpha }}
+{{- $perm := index $v.allowed_triggers $pk }}
+{{- include "ack.alpha" (list $ (printf "allowed_triggers.%s" $pk) $perm "Permission (lambda.aws.hfl.dev)") }}
+---
+apiVersion: lambda.aws.hfl.dev/v1alpha1
+kind: Permission
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name (printf "perm-%s" $pk))) "id" (printf "permission/%s" $pk) "region" $v.region) | nindent 2 }}
+spec:
+  functionRef:
+    from:
+      name: {{ $fnK8s | quote }}
+  statementID: {{ ($perm.statement_id | default $pk) | quote }}
+  action: {{ ($perm.action | default "lambda:InvokeFunction") | quote }}
+  principal: {{ ($perm.principal | default (printf "%s.amazonaws.com" ($perm.service | default "events"))) | quote }}
+{{- with $perm.source_arn }}
+  sourceARN: {{ . | quote }}
+{{- end }}
+{{- with $perm.source_account }}
+  sourceAccount: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

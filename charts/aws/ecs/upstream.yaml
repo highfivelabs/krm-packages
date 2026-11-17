@@ -1,0 +1,56 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Where this chart came from: the Terraform module it ports and the release
+# it was ported from. Machine-readable; `task upstream-check` keeps it equal
+# to upstream/modules.yaml and Chart.yaml. To take a newer release, see
+# UPSTREAM.md ("Moving the pins").
+module: aws/ecs
+repo: https://github.com/terraform-aws-modules/terraform-aws-ecs
+path: .
+version: v7.6.1
+commit: 60b428812ddcffe48abc6af0988fe826c89da961
+license: Apache-2.0
+copyright: null
+module_url: https://github.com/terraform-aws-modules/terraform-aws-ecs/tree/v7.6.1
+registry_url: https://registry.terraform.io/modules/terraform-aws-modules/ecs/aws
+synced: 2026-11-17
+# Module variables the chart keeps in values.yaml (so tfvars convert one to
+# one) but refuses when set (to anything but the module's default), or
+# accepts only in part. Read by `task coverage`; `task coverage-verify`
+# renders the chart to check that each one is refused. kind: gap (no ACK or
+# ack-extensions kind or field), alpha (only an ack-extensions kind, behind
+# allow_alpha) or by-design (Bundt replaces it). partial: the variable is
+# accepted, the reason says what is not carried.
+refused:
+- variable: cloudwatch_log_group_class
+  kind: gap
+  reason: "ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no log group class field"
+- variable: infrastructure_iam_role_override_policy_documents
+  kind: gap
+  reason: "merging arbitrary IAM policy documents by sid is not ported; set infrastructure_iam_role_statements"
+- variable: infrastructure_iam_role_source_policy_documents
+  kind: gap
+  reason: "merging arbitrary IAM policy documents by sid is not ported; set infrastructure_iam_role_statements"
+- variable: infrastructure_iam_role_use_name_prefix
+  kind: gap
+  reason: "accepted: true (the default) names the role as given, without Terraform's random suffix, since a render must not change between plans; namePrefix keeps two Instances' roles apart"
+  partial: true
+- variable: node_iam_role_override_policy_documents
+  kind: gap
+  reason: "merging arbitrary IAM policy documents by sid is not ported; set node_iam_role_statements"
+- variable: node_iam_role_source_policy_documents
+  kind: gap
+  reason: "merging arbitrary IAM policy documents by sid is not ported; set node_iam_role_statements"
+- variable: node_iam_role_use_name_prefix
+  kind: gap
+  reason: "accepted: true (the default) names the role as given, without Terraform's random suffix, since a render must not change between plans; namePrefix keeps two Instances' roles apart"
+  partial: true
+- variable: security_group_use_name_prefix
+  kind: gap
+  reason: "accepted: true (the default) names the security group as given, without Terraform's random suffix, since a render must not change between plans; namePrefix keeps two Instances' groups apart"
+  partial: true
+- variable: task_exec_iam_role_use_name_prefix
+  kind: gap
+  reason: "accepted: true (the default) names the role as given, without Terraform's random suffix, since a render must not change between plans; namePrefix keeps two Instances' roles apart"
+  partial: true

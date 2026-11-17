@@ -23,33 +23,12 @@ synced: 2026-11-16
 # map it yet) or by-design (Bundt replaces it). partial: the variable is
 # accepted, the reason says what is not carried.
 refused:
-- variable: create_dnssec_kms_key
-  kind: gap
-  reason: "used only with enable_dnssec, which is refused"
 - variable: create_zone
   kind: by-design
   reason: "false looks an existing zone up by name (data.aws_route53_zone); a render cannot look anything up: the zone is another component's, and its records belong in that component"
-- variable: dnssec_key_signing_key_name
-  kind: gap
-  reason: "used only with enable_dnssec, which is refused"
-- variable: dnssec_kms_key_aliases
-  kind: gap
-  reason: "used only with enable_dnssec, which is refused"
-- variable: dnssec_kms_key_arn
-  kind: gap
-  reason: "used only with enable_dnssec, which is refused"
-- variable: dnssec_kms_key_description
-  kind: gap
-  reason: "used only with enable_dnssec, which is refused"
-- variable: dnssec_kms_key_tags
-  kind: gap
-  reason: "used only with enable_dnssec, which is refused"
 - variable: enable_accelerated_recovery
   kind: gap
   reason: ACK's HostedZone (route53-controller v1.8.0) has no field for Route 53 Accelerated Recovery
-- variable: enable_dnssec
-  kind: gap
-  reason: "ack-extensions' KeySigningKey and DNSSEC (Cloud Control) take the zone's ID only as a string, with no reference to a HostedZone, so they cannot be wired to the zone this render makes"
 - variable: force_destroy
   kind: gap
   reason: "ACK's HostedZone has no field to delete records made elsewhere before the zone; Route 53 refuses to delete a zone that still has them"

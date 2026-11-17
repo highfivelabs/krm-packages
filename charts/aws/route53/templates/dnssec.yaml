@@ -1,0 +1,86 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "DNSSEC": the KMS key (in us-east-1) and aliases when
+create_dnssec_kms_key is true, KeySigningKey, and HostedZoneDNSSEC.
+KeySigningKey and DNSSEC are ack-extensions kinds
+(route53.cloudcontrol.aws.hfl.dev/v1alpha1), gated on allow_alpha: true.
+*/ -}}
+{{- $v := .Values -}}
+{{- if and $v.create $v.enable_dnssec }}
+{{- include "ack.alpha" (list $ "enable_dnssec" $v.enable_dnssec "KeySigningKey and DNSSEC (route53.cloudcontrol.aws.hfl.dev)") }}
+{{- if not $v.name }}
+{{- fail "route53: name is required when enable_dnssec is true" }}
+{{- end }}
+{{- $zoneName := include "ack.name" (list .Release.Name "zone") -}}
+{{- $kmsName := include "ack.name" (list .Release.Name "dnssec-kms") -}}
+{{- if $v.create_dnssec_kms_key }}
+{{- $stmts := list -}}
+{{- if $v.account_id }}
+{{- $stmts = append $stmts (dict "Sid" "Default" "Effect" "Allow" "Principal" (dict "AWS" (printf "arn:aws:iam::%s:root" $v.account_id)) "Action" "kms:*" "Resource" "*") -}}
+{{- end }}
+{{- $stmts = append $stmts (dict "Sid" "Allow Route 53 DNSSEC Service" "Effect" "Allow" "Principal" (dict "Service" "dnssec-route53.amazonaws.com") "Action" (list "kms:DescribeKey" "kms:GetPublicKey" "kms:Sign") "Resource" "*") -}}
+{{- $stmts = append $stmts (dict "Sid" "Allow Route 53 DNSSEC to CreateGrant" "Effect" "Allow" "Principal" (dict "Service" "dnssec-route53.amazonaws.com") "Action" "kms:CreateGrant" "Resource" "*" "Condition" (dict "Bool" (dict "kms:GrantIsForAWSResource" "true"))) -}}
+{{- $kmsTags := include "ack.tags" (list $ (merge (dict) ($v.dnssec_kms_key_tags | default dict) ($v.tags | default dict))) | fromJson }}
+---
+apiVersion: kms.services.k8s.aws/v1alpha1
+kind: Key
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $kmsName "id" "dnssec-kms" "region" "us-east-1") | nindent 2 }}
+spec:
+  keySpec: ECC_NIST_P256
+  keyUsage: SIGN_VERIFY
+  enableKeyRotation: false
+{{- with $v.dnssec_kms_key_description }}
+  description: {{ . | quote }}
+{{- end }}
+  policy: {{ toJson (dict "Version" "2012-10-17" "Statement" $stmts) | quote }}
+{{- with $kmsTags }}
+  tags:
+{{- include "ack.tagList" (list . "tagKey" "tagValue") | nindent 4 }}
+{{- end }}
+{{- range $alias := $v.dnssec_kms_key_aliases | default list }}
+{{- $aliasName := include "ack.name" (list $.Release.Name (printf "dnssec-alias-%s" (trimPrefix "alias/" $alias | lower | replace "/" "-" | replace "_" "-"))) }}
+---
+apiVersion: kms.services.k8s.aws/v1alpha1
+kind: Alias
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $aliasName "id" (printf "dnssec-alias/%s" $alias) "region" "us-east-1") | nindent 2 }}
+spec:
+  name: {{ (hasPrefix "alias/" $alias | ternary $alias (printf "alias/%s" $alias)) | quote }}
+  targetKeyRef:
+    from:
+      name: {{ $kmsName | quote }}
+{{- end }}
+{{- else if not $v.dnssec_kms_key_arn }}
+{{- fail "route53: dnssec_kms_key_arn is required when enable_dnssec is true and create_dnssec_kms_key is false" }}
+{{- end }}
+---
+apiVersion: route53.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: KeySigningKey
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "ksk")) "id" "ksk" "region" "") | nindent 2 }}
+spec:
+  name: {{ include "ack.cloudName" (list $ "ksk" ($v.dnssec_key_signing_key_name | default $v.name) 128) | quote }}
+  status: ACTIVE
+  hostedZoneRef:
+    from:
+      name: {{ $zoneName | quote }}
+{{- if $v.create_dnssec_kms_key }}
+  keyManagementServiceRef:
+    from:
+      name: {{ $kmsName | quote }}
+{{- else }}
+  keyManagementServiceArn: {{ $v.dnssec_kms_key_arn | quote }}
+{{- end }}
+---
+apiVersion: route53.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: DNSSEC
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "dnssec")) "id" "dnssec" "region" "") | nindent 2 }}
+spec:
+  hostedZoneRef:
+    from:
+      name: {{ $zoneName | quote }}
+{{- end }}

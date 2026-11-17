@@ -1,0 +1,12 @@
+function_name: mock-fn
+handler: index.handler
+runtime: python3.12
+s3_existing_package:
+  bucket: mock-lambda-bucket
+  key: mock-fn.zip
+memory_size: 256
+timeout: 10
+environment_variables:
+  LOG_LEVEL: INFO
+tags:
+  env: mock

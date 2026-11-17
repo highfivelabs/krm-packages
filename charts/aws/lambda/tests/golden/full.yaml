@@ -1,0 +1,136 @@
+---
+# Source: lambda/templates/function.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: full-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: lambda
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "role"
+spec:
+  name: "full-fn"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"lambda.amazonaws.com\"]}}],\"Version\":\"2012-10-17\"}"
+  maxSessionDuration: 3600
+  policies:
+    - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+  tags:
+    - key: "env"
+      value: "full"
+---
+# Source: lambda/templates/function.yaml
+apiVersion: lambda.services.k8s.aws/v1alpha1
+kind: EventSourceMapping
+metadata:
+  name: full-esm-sqs
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: lambda
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "event-source-mapping/sqs"
+spec:
+  functionRef:
+    from:
+      name: "full-fn"
+  eventSourceARN: "arn:aws:sqs:us-east-1:123456789012:jobs"
+  enabled: true
+  batchSize: 10
+---
+# Source: lambda/templates/function.yaml
+apiVersion: lambda.services.k8s.aws/v1alpha1
+kind: Function
+metadata:
+  name: full-fn
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: lambda
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "function"
+spec:
+  name: "full-fn"
+  roleRef:
+    from:
+      name: "full-role"
+  code:
+    imageURI: "123456789012.dkr.ecr.us-east-1.amazonaws.com/my-fn:v1"
+  packageType: "Image"
+  description: "Full lambda test"
+  memorySize: 512
+  timeout: 30
+  ephemeralStorage:
+    size: 512
+  publish: true
+  reservedConcurrentExecutions: 5
+  tracingConfig:
+    mode: "Active"
+  loggingConfig:
+    logFormat: "Text"
+  functionEventInvokeConfig:
+    maximumEventAgeInSeconds: 300
+    maximumRetryAttempts: 1
+  tags:
+    env: full
+---
+# Source: lambda/templates/function.yaml
+apiVersion: lambda.services.k8s.aws/v1alpha1
+kind: FunctionURLConfig
+metadata:
+  name: full-url
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: lambda
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "function-url"
+spec:
+  functionRef:
+    from:
+      name: "full-fn"
+  authType: "AWS_IAM"
+---
+# Source: lambda/templates/function.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: full-log-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: lambda
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group"
+spec:
+  name: "/aws/lambda/full-fn"
+  tags:
+    env: full
+---
+# Source: lambda/templates/function.yaml
+apiVersion: lambda.aws.hfl.dev/v1alpha1
+kind: Permission
+metadata:
+  name: full-perm-events
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: lambda
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "permission/events"
+spec:
+  functionRef:
+    from:
+      name: "full-fn"
+  statementID: "events"
+  action: "lambda:InvokeFunction"
+  principal: "events.amazonaws.com"
+  sourceARN: "arn:aws:events:us-east-1:123456789012:rule/daily"

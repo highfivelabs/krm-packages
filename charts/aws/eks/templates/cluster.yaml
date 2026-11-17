@@ -53,11 +53,20 @@ bootstrap_self_managed_addons is false, as the module sets it.
 {{- if and $v.kms_key_enable_default_policy (not $v.account_id) }}
 {{- fail "eks: account_id is required for the KMS key policy's Default statement (create_kms_key, kms_key_enable_default_policy): it names the account's root, and the chart cannot look the account up (values.yaml, account_id)" }}
 {{- end }}
+{{- if $v.kms_key_rotation_period_in_days }}
+{{- include "ack.alpha" (list $ "kms_key_rotation_period_in_days" $v.kms_key_rotation_period_in_days "kms.aws.hfl.dev/rotation-period-in-days") }}
+{{- end }}
 ---
 apiVersion: kms.services.k8s.aws/v1alpha1
 kind: Key
 metadata:
 {{- include "ack.metadata" (dict "root" $ "name" $keyK8s "id" "kms-key" "region" $v.region) | nindent 2 }}
+{{- with $v.kms_key_deletion_window_in_days }}
+    kms.services.k8s.aws/pending-window-in-days: {{ . | quote }}
+{{- end }}
+{{- with $v.kms_key_rotation_period_in_days }}
+    kms.aws.hfl.dev/rotation-period-in-days: {{ . | quote }}
+{{- end }}
 spec:
   description: {{ $v.kms_key_description | default (printf "%s cluster encryption key" $v.name) | quote }}
   keyUsage: ENCRYPT_DECRYPT

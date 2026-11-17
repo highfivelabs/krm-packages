@@ -1,0 +1,26 @@
+cluster_name: mock-ecs
+cluster_capacity_providers:
+  - FARGATE
+  - FARGATE_SPOT
+create_task_exec_iam_role: true
+services:
+  web:
+    cpu: "256"
+    memory: "512"
+    network_mode: awsvpc
+    requires_compatibilities:
+      - FARGATE
+    launch_type: FARGATE
+    desired_count: 1
+    subnet_ids:
+      - subnet-01111111111111111
+    assign_public_ip: false
+    container_definitions:
+      app:
+        image: public.ecr.aws/nginx/nginx:alpine
+        essential: true
+        port_mappings:
+          - containerPort: 80
+            protocol: tcp
+tags:
+  env: mock

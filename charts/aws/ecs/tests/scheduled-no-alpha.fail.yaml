@@ -1,0 +1,13 @@
+# expect: allow_alpha: true
+cluster_name: test-ecs
+services:
+  api:
+    enable_autoscaling: true
+    autoscaling_scheduled_actions:
+      scale_up:
+        schedule: "cron(0 8 * * ? *)"
+        min_capacity: 2
+        max_capacity: 4
+    container_definitions:
+      api:
+        image: public.ecr.aws/nginx/nginx:alpine

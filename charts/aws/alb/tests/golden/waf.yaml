@@ -1,0 +1,62 @@
+---
+# Source: alb/templates/load-balancer.yaml
+apiVersion: elbv2.services.k8s.aws/v1alpha1
+kind: LoadBalancer
+metadata:
+  name: waf-lb
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "waf"
+    app.kubernetes.io/name: alb
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "load-balancer"
+spec:
+  name: "waf-alb"
+  type: "application"
+  subnets:
+    - "subnet-01111111111111111"
+    - "subnet-02222222222222222"
+  securityGroupRefs:
+    - from:
+        name: waf-sg
+  attributes:
+    - key: "deletion_protection.enabled"
+      value: "true"
+    - key: "routing.http.drop_invalid_header_fields.enabled"
+      value: "true"
+---
+# Source: alb/templates/security-group.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: waf-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "waf"
+    app.kubernetes.io/name: alb
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "security-group"
+spec:
+  name: "waf-alb"
+  description: "Security group for waf-alb application load balancer"
+  vpcID: "vpc-0123456789abcdef0"
+---
+# Source: alb/templates/waf.yaml
+apiVersion: wafv2.aws.hfl.dev/v1alpha1
+kind: WebACLAssociation
+metadata:
+  name: waf-waf
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "waf"
+    app.kubernetes.io/name: alb
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "web-acl-association"
+spec:
+  webACLARN: "arn:aws:wafv2:us-east-1:123456789012:regional/webacl/example/00000000-0000-0000-0000-000000000000"
+  resourceRef:
+    from:
+      name: "waf-lb"

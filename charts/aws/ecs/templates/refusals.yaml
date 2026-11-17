@@ -1,0 +1,14 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+The module variables this chart keeps in values.yaml but cannot carry
+(upstream.yaml, "refused"): each stops the render when set to anything
+but its Terraform default. Renders nothing.
+*/ -}}
+{{- $v := .Values -}}
+{{- include "ack.unsupported" (list $ "cloudwatch_log_group_class" $v.cloudwatch_log_group_class "ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no log group class field") }}
+{{- include "ack.unsupported" (list $ "infrastructure_iam_role_source_policy_documents" $v.infrastructure_iam_role_source_policy_documents "merging arbitrary IAM policy documents by sid is not ported; set infrastructure_iam_role_statements") }}
+{{- include "ack.unsupported" (list $ "infrastructure_iam_role_override_policy_documents" $v.infrastructure_iam_role_override_policy_documents "merging arbitrary IAM policy documents by sid is not ported; set infrastructure_iam_role_statements") }}
+{{- include "ack.unsupported" (list $ "node_iam_role_source_policy_documents" $v.node_iam_role_source_policy_documents "merging arbitrary IAM policy documents by sid is not ported; set node_iam_role_statements") }}
+{{- include "ack.unsupported" (list $ "node_iam_role_override_policy_documents" $v.node_iam_role_override_policy_documents "merging arbitrary IAM policy documents by sid is not ported; set node_iam_role_statements") }}

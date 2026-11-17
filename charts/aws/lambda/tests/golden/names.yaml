@@ -1,0 +1,62 @@
+---
+# Source: lambda/templates/function.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: names-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: lambda
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "role"
+spec:
+  name: "custom-fn-role"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"lambda.amazonaws.com\"]}}],\"Version\":\"2012-10-17\"}"
+  maxSessionDuration: 3600
+  policies:
+    - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+---
+# Source: lambda/templates/function.yaml
+apiVersion: lambda.services.k8s.aws/v1alpha1
+kind: Function
+metadata:
+  name: names-fn
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: lambda
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "function"
+spec:
+  name: "custom-fn"
+  roleRef:
+    from:
+      name: "names-role"
+  code:
+    s3Bucket: "my-lambda-artifacts"
+    s3Key: "custom-fn.zip"
+  packageType: "Zip"
+  memorySize: 128
+  timeout: 3
+  ephemeralStorage:
+    size: 512
+  loggingConfig:
+    logFormat: "Text"
+---
+# Source: lambda/templates/function.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: names-log-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "names"
+    app.kubernetes.io/name: lambda
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group"
+spec:
+  name: "/aws/lambda/custom-fn"

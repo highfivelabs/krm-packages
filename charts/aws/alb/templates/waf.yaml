@@ -1,0 +1,25 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "WebACLAssociation": associates a WAFv2 WebACL with the load balancer
+when associate_web_acl is true (ack-extensions WebACLAssociation,
+wafv2.aws.hfl.dev/v1alpha1, gated on allow_alpha: true).
+*/ -}}
+{{- $v := .Values -}}
+{{- if and $v.create $v.putin_khuylo $v.associate_web_acl }}
+{{- include "ack.alpha" (list $ "associate_web_acl" $v.associate_web_acl "WebACLAssociation (wafv2.aws.hfl.dev)") }}
+{{- if not $v.web_acl_arn }}
+{{- fail "alb: web_acl_arn is required when associate_web_acl is true" }}
+{{- end }}
+---
+apiVersion: wafv2.aws.hfl.dev/v1alpha1
+kind: WebACLAssociation
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "waf")) "id" "web-acl-association" "region" $v.region) | nindent 2 }}
+spec:
+  webACLARN: {{ $v.web_acl_arn | quote }}
+  resourceRef:
+    from:
+      name: {{ include "ack.name" (list .Release.Name "lb") | quote }}
+{{- end }}

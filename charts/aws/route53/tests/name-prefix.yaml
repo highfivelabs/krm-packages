@@ -1,10 +1,14 @@
 # Copyright 2026 High Five Labs
 # SPDX-License-Identifier: Apache-2.0
 #
-# The namePrefix convention (docs/design.md, "Names, labels and tags"): no
-# kind here has a name that can collide.
+# The namePrefix convention (docs/design.md, "Names, labels and tags"):
+# KeySigningKey's spec.name carries the namePrefix; the other kinds have
+# no cloud name that can collide.
 exempt:
   HostedZone: "a zone's name is its domain, which Route 53 lets two zones share (each gets its own ID)"
   RecordSet: "a record's name is a name in its zone's domain"
-nameFields: {}
-noCloudNames: "a zone is named by its domain and a record by a name in it; the chart names nothing"
+  Key: "a KMS key has no cloud name (identified by key ID / ARN)"
+  Alias: "a KMS alias name is user-supplied in dnssec_kms_key_aliases"
+  DNSSEC: "identified by its hostedZoneRef; it has no name"
+nameFields:
+  KeySigningKey: name

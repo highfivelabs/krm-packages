@@ -1,0 +1,41 @@
+allow_alpha: true
+cluster_name: full-ecs
+cluster_capacity_providers:
+  - FARGATE
+create_task_exec_iam_role: true
+task_exec_ssm_param_arns:
+  - arn:aws:ssm:us-east-1:123456789012:parameter/app/*
+task_exec_secret_arns:
+  - arn:aws:secretsmanager:us-east-1:123456789012:secret:app/*
+services:
+  api:
+    cpu: "512"
+    memory: "1024"
+    network_mode: awsvpc
+    requires_compatibilities:
+      - FARGATE
+    launch_type: FARGATE
+    desired_count: 2
+    create_task_exec_iam_role: true
+    create_tasks_iam_role: true
+    enable_autoscaling: true
+    autoscaling_min_capacity: 1
+    autoscaling_max_capacity: 4
+    autoscaling_policies:
+      cpu:
+        target_tracking_scaling_policy_configuration:
+          targetValue: 70
+          predefinedMetricSpecification:
+            predefinedMetricType: ECSServiceAverageCPUUtilization
+    autoscaling_scheduled_actions:
+      scale_up:
+        schedule: "cron(0 8 * * ? *)"
+        min_capacity: 2
+        max_capacity: 4
+    container_definitions:
+      api:
+        image: public.ecr.aws/nginx/nginx:alpine
+        essential: true
+        port_mappings:
+          - containerPort: 8080
+            protocol: tcp

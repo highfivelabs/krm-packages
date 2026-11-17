@@ -1494,7 +1494,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/lambda/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/v8.13.0
-    chart: null
+    chart: charts/aws/lambda
   - id: aws/security-group
     cloud: aws
     module: security-group
@@ -1606,7 +1606,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/ecs/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-ecs/tree/v7.6.1
-    chart: null
+    chart: charts/aws/ecs
   - id: aws/alb
     cloud: aws
     module: alb

@@ -1850,12 +1850,12 @@ aws,eks,include_oidc_root_ca_thumbprint,bool,no,"used only with enable_irsa, whi
 aws,eks,ip_family,string,yes,,
 aws,eks,kms_key_administrators,list(string),yes,,
 aws,eks,kms_key_aliases,list(string),yes,,
-aws,eks,kms_key_deletion_window_in_days,number,no,"ACK's Key (kms-controller v1.7.0) has no field for the waiting period before deletion (KMS's default, 30 days, applies)",gap
+aws,eks,kms_key_deletion_window_in_days,number,yes,,
 aws,eks,kms_key_description,string,yes,,
 aws,eks,kms_key_enable_default_policy,bool,yes,,
 aws,eks,kms_key_override_policy_documents,list(string),yes,,
 aws,eks,kms_key_owners,list(string),yes,,
-aws,eks,kms_key_rotation_period_in_days,number,no,"ACK's Key has no rotation period field (enable_kms_key_rotation is supported, with KMS's default period, 365 days)",gap
+aws,eks,kms_key_rotation_period_in_days,number,yes,,
 aws,eks,kms_key_service_users,list(string),yes,,
 aws,eks,kms_key_source_policy_documents,list(string),yes,,
 aws,eks,kms_key_users,list(string),yes,,
@@ -1940,147 +1940,147 @@ aws,kms,route53_dnssec_sources,"list(object({account_ids, hosted_zone_arn}))",ye
 aws,kms,source_policy_documents,list(string),no,"merging other policy documents into the key policy by statement sid is not ported yet; write the whole policy in policy, or the statements in key_statements",not-ported
 aws,kms,tags,map(string),yes,,
 aws,kms,valid_to,string,no,"imported key material (aws_kms_external_key, aws_kms_replica_external_key) has no kind: ACK's Key takes origin EXTERNAL, but nothing imports the material",gap
-aws,lambda,allowed_triggers,map(any),no,,no-chart
-aws,lambda,architectures,list(string),no,,no-chart
-aws,lambda,artifacts_dir,string,no,,no-chart
-aws,lambda,assume_role_policy_statements,any,no,,no-chart
-aws,lambda,attach_async_event_policy,bool,no,,no-chart
-aws,lambda,attach_cloudwatch_logs_policy,bool,no,,no-chart
-aws,lambda,attach_create_log_group_permission,bool,no,,no-chart
-aws,lambda,attach_dead_letter_policy,bool,no,,no-chart
-aws,lambda,attach_network_policy,bool,no,,no-chart
-aws,lambda,attach_policies,bool,no,,no-chart
-aws,lambda,attach_policy,bool,no,,no-chart
-aws,lambda,attach_policy_json,bool,no,,no-chart
-aws,lambda,attach_policy_jsons,bool,no,,no-chart
-aws,lambda,attach_policy_statements,bool,no,,no-chart
-aws,lambda,attach_tracing_policy,bool,no,,no-chart
-aws,lambda,authorization_type,string,no,,no-chart
-aws,lambda,build_in_docker,bool,no,,no-chart
-aws,lambda,cloudwatch_logs_deletion_protection_enabled,bool,no,,no-chart
-aws,lambda,cloudwatch_logs_kms_key_id,string,no,,no-chart
-aws,lambda,cloudwatch_logs_log_group_class,string,no,,no-chart
-aws,lambda,cloudwatch_logs_retention_in_days,number,no,,no-chart
-aws,lambda,cloudwatch_logs_skip_destroy,bool,no,,no-chart
-aws,lambda,cloudwatch_logs_tags,map(string),no,,no-chart
-aws,lambda,code_signing_config_arn,string,no,,no-chart
-aws,lambda,compatible_architectures,list(string),no,,no-chart
-aws,lambda,compatible_runtimes,list(string),no,,no-chart
-aws,lambda,cors,any,no,,no-chart
-aws,lambda,create,bool,no,,no-chart
-aws,lambda,create_async_event_config,bool,no,,no-chart
-aws,lambda,create_current_version_allowed_triggers,bool,no,,no-chart
-aws,lambda,create_current_version_async_event_config,bool,no,,no-chart
-aws,lambda,create_function,bool,no,,no-chart
-aws,lambda,create_lambda_function_url,bool,no,,no-chart
-aws,lambda,create_layer,bool,no,,no-chart
-aws,lambda,create_package,bool,no,,no-chart
-aws,lambda,create_role,bool,no,,no-chart
-aws,lambda,create_sam_metadata,bool,no,,no-chart
-aws,lambda,create_unqualified_alias_allowed_triggers,bool,no,,no-chart
-aws,lambda,create_unqualified_alias_async_event_config,bool,no,,no-chart
-aws,lambda,create_unqualified_alias_lambda_function_url,bool,no,,no-chart
-aws,lambda,dead_letter_target_arn,string,no,,no-chart
-aws,lambda,description,string,no,,no-chart
-aws,lambda,destination_on_failure,string,no,,no-chart
-aws,lambda,destination_on_success,string,no,,no-chart
-aws,lambda,docker_additional_options,list(string),no,,no-chart
-aws,lambda,docker_build_root,string,no,,no-chart
-aws,lambda,docker_entrypoint,string,no,,no-chart
-aws,lambda,docker_file,string,no,,no-chart
-aws,lambda,docker_image,string,no,,no-chart
-aws,lambda,docker_pip_cache,any,no,,no-chart
-aws,lambda,docker_with_ssh_agent,bool,no,,no-chart
-aws,lambda,durable_config_execution_timeout,number,no,,no-chart
-aws,lambda,durable_config_retention_period,number,no,,no-chart
-aws,lambda,environment_variables,map(string),no,,no-chart
-aws,lambda,ephemeral_storage_size,number,no,,no-chart
-aws,lambda,event_source_mapping,any,no,,no-chart
-aws,lambda,file_system_arn,string,no,,no-chart
-aws,lambda,file_system_local_mount_path,string,no,,no-chart
-aws,lambda,function_name,string,no,,no-chart
-aws,lambda,function_tags,map(string),no,,no-chart
-aws,lambda,handler,string,no,,no-chart
-aws,lambda,hash_extra,string,no,,no-chart
-aws,lambda,ignore_source_code_hash,bool,no,,no-chart
-aws,lambda,image_config_command,list(string),no,,no-chart
-aws,lambda,image_config_entry_point,list(string),no,,no-chart
-aws,lambda,image_config_working_directory,string,no,,no-chart
-aws,lambda,image_uri,string,no,,no-chart
-aws,lambda,include_default_tag,bool,no,,no-chart
-aws,lambda,invoke_mode,string,no,,no-chart
-aws,lambda,ipv6_allowed_for_dual_stack,bool,no,,no-chart
-aws,lambda,kms_key_arn,string,no,,no-chart
-aws,lambda,lambda_at_edge,bool,no,,no-chart
-aws,lambda,lambda_at_edge_logs_all_regions,bool,no,,no-chart
-aws,lambda,lambda_role,string,no,,no-chart
-aws,lambda,layer_name,string,no,,no-chart
-aws,lambda,layer_skip_destroy,bool,no,,no-chart
-aws,lambda,layers,list(string),no,,no-chart
-aws,lambda,license_info,string,no,,no-chart
-aws,lambda,local_existing_package,string,no,,no-chart
-aws,lambda,logging_application_log_level,string,no,,no-chart
-aws,lambda,logging_log_format,string,no,,no-chart
-aws,lambda,logging_log_group,string,no,,no-chart
-aws,lambda,logging_system_log_level,string,no,,no-chart
-aws,lambda,managed_instances_capacity_provider_arn,string,no,,no-chart
-aws,lambda,managed_instances_execution_environment_memory_gib_per_vcpu,number,no,,no-chart
-aws,lambda,managed_instances_max_concurrency_per_execution_environment,number,no,,no-chart
-aws,lambda,maximum_event_age_in_seconds,number,no,,no-chart
-aws,lambda,maximum_retry_attempts,number,no,,no-chart
-aws,lambda,memory_size,number,no,,no-chart
-aws,lambda,number_of_policies,number,no,,no-chart
-aws,lambda,number_of_policy_jsons,number,no,,no-chart
-aws,lambda,package_type,string,no,,no-chart
-aws,lambda,policies,list(string),no,,no-chart
-aws,lambda,policy,string,no,,no-chart
-aws,lambda,policy_json,string,no,,no-chart
-aws,lambda,policy_jsons,list(string),no,,no-chart
-aws,lambda,policy_name,string,no,,no-chart
-aws,lambda,policy_statements,any,no,,no-chart
-aws,lambda,provisioned_concurrent_executions,number,no,,no-chart
-aws,lambda,publish,bool,no,,no-chart
-aws,lambda,publish_to,string,no,,no-chart
-aws,lambda,putin_khuylo,bool,no,,no-chart
-aws,lambda,quiet_archive_local_exec,bool,no,,no-chart
-aws,lambda,recreate_missing_package,bool,no,,no-chart
-aws,lambda,recursive_loop,string,no,,no-chart
-aws,lambda,region,string,no,,no-chart
-aws,lambda,replace_security_groups_on_destroy,bool,no,,no-chart
-aws,lambda,replacement_security_group_ids,list(string),no,,no-chart
-aws,lambda,reserved_concurrent_executions,number,no,,no-chart
-aws,lambda,role_description,string,no,,no-chart
-aws,lambda,role_force_detach_policies,bool,no,,no-chart
-aws,lambda,role_maximum_session_duration,number,no,,no-chart
-aws,lambda,role_name,string,no,,no-chart
-aws,lambda,role_path,string,no,,no-chart
-aws,lambda,role_permissions_boundary,string,no,,no-chart
-aws,lambda,role_tags,map(string),no,,no-chart
-aws,lambda,runtime,string,no,,no-chart
-aws,lambda,s3_acl,string,no,,no-chart
-aws,lambda,s3_bucket,string,no,,no-chart
-aws,lambda,s3_existing_package,map(string),no,,no-chart
-aws,lambda,s3_kms_key_id,string,no,,no-chart
-aws,lambda,s3_object_override_default_tags,bool,no,,no-chart
-aws,lambda,s3_object_storage_class,string,no,,no-chart
-aws,lambda,s3_object_tags,map(string),no,,no-chart
-aws,lambda,s3_object_tags_only,bool,no,,no-chart
-aws,lambda,s3_prefix,string,no,,no-chart
-aws,lambda,s3_server_side_encryption,string,no,,no-chart
-aws,lambda,skip_destroy,bool,no,,no-chart
-aws,lambda,snap_start,bool,no,,no-chart
-aws,lambda,source_path,any,no,,no-chart
-aws,lambda,store_on_s3,bool,no,,no-chart
-aws,lambda,tags,map(string),no,,no-chart
-aws,lambda,tenant_isolation_mode,bool,no,,no-chart
-aws,lambda,timeout,number,no,,no-chart
-aws,lambda,timeouts,map(string),no,,no-chart
-aws,lambda,tracing_mode,string,no,,no-chart
-aws,lambda,trigger_on_package_timestamp,bool,no,,no-chart
-aws,lambda,trusted_entities,any,no,,no-chart
-aws,lambda,use_existing_cloudwatch_log_group,bool,no,,no-chart
-aws,lambda,vpc_security_group_ids,list(string),no,,no-chart
-aws,lambda,vpc_subnet_ids,list(string),no,,no-chart
+aws,lambda,allowed_triggers,map(any),yes,,
+aws,lambda,architectures,list(string),yes,,
+aws,lambda,artifacts_dir,string,no,local deployment package building is not portable; pass image_uri or s3_existing_package,by-design
+aws,lambda,assume_role_policy_statements,any,yes,,
+aws,lambda,attach_async_event_policy,bool,yes,,
+aws,lambda,attach_cloudwatch_logs_policy,bool,yes,,
+aws,lambda,attach_create_log_group_permission,bool,yes,,
+aws,lambda,attach_dead_letter_policy,bool,yes,,
+aws,lambda,attach_network_policy,bool,yes,,
+aws,lambda,attach_policies,bool,yes,,
+aws,lambda,attach_policy,bool,yes,,
+aws,lambda,attach_policy_json,bool,yes,,
+aws,lambda,attach_policy_jsons,bool,yes,,
+aws,lambda,attach_policy_statements,bool,yes,,
+aws,lambda,attach_tracing_policy,bool,yes,,
+aws,lambda,authorization_type,string,yes,,
+aws,lambda,build_in_docker,bool,no,building Docker images during render is not portable; pass image_uri,by-design
+aws,lambda,cloudwatch_logs_deletion_protection_enabled,bool,no,ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no deletion protection field,gap
+aws,lambda,cloudwatch_logs_kms_key_id,string,yes,,
+aws,lambda,cloudwatch_logs_log_group_class,string,no,ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no log group class field,gap
+aws,lambda,cloudwatch_logs_retention_in_days,number,yes,,
+aws,lambda,cloudwatch_logs_skip_destroy,bool,no,use deletion_policy: ABANDON to keep the log group on delete,by-design
+aws,lambda,cloudwatch_logs_tags,map(string),yes,,
+aws,lambda,code_signing_config_arn,string,yes,,
+aws,lambda,compatible_architectures,list(string),yes,,
+aws,lambda,compatible_runtimes,list(string),yes,,
+aws,lambda,cors,any,yes,,
+aws,lambda,create,bool,yes,,
+aws,lambda,create_async_event_config,bool,yes,,
+aws,lambda,create_current_version_allowed_triggers,bool,yes,,
+aws,lambda,create_current_version_async_event_config,bool,yes,,
+aws,lambda,create_function,bool,yes,,
+aws,lambda,create_lambda_function_url,bool,yes,,
+aws,lambda,create_layer,bool,yes,,
+aws,lambda,create_package,bool,partial,accepted: pass image_uri or s3_existing_package instead of building a local zip,by-design
+aws,lambda,create_role,bool,yes,,
+aws,lambda,create_sam_metadata,bool,no,SAM CLI local metadata null_resource has no Kubernetes equivalent,by-design
+aws,lambda,create_unqualified_alias_allowed_triggers,bool,yes,,
+aws,lambda,create_unqualified_alias_async_event_config,bool,yes,,
+aws,lambda,create_unqualified_alias_lambda_function_url,bool,yes,,
+aws,lambda,dead_letter_target_arn,string,yes,,
+aws,lambda,description,string,yes,,
+aws,lambda,destination_on_failure,string,yes,,
+aws,lambda,destination_on_success,string,yes,,
+aws,lambda,docker_additional_options,list(string),no,"used only with build_in_docker, which is refused",by-design
+aws,lambda,docker_build_root,string,no,"used only with build_in_docker, which is refused",by-design
+aws,lambda,docker_entrypoint,string,no,"used only with build_in_docker, which is refused",by-design
+aws,lambda,docker_file,string,no,"used only with build_in_docker, which is refused",by-design
+aws,lambda,docker_image,string,no,"used only with build_in_docker, which is refused",by-design
+aws,lambda,docker_pip_cache,any,no,"used only with build_in_docker, which is refused",by-design
+aws,lambda,docker_with_ssh_agent,bool,no,"used only with build_in_docker, which is refused",by-design
+aws,lambda,durable_config_execution_timeout,number,yes,,
+aws,lambda,durable_config_retention_period,number,yes,,
+aws,lambda,environment_variables,map(string),yes,,
+aws,lambda,ephemeral_storage_size,number,yes,,
+aws,lambda,event_source_mapping,any,yes,,
+aws,lambda,file_system_arn,string,yes,,
+aws,lambda,file_system_local_mount_path,string,yes,,
+aws,lambda,function_name,string,yes,,
+aws,lambda,function_tags,map(string),yes,,
+aws,lambda,handler,string,yes,,
+aws,lambda,hash_extra,string,no,local deployment package hashing is not portable,by-design
+aws,lambda,ignore_source_code_hash,bool,no,local deployment package hashing is not portable,by-design
+aws,lambda,image_config_command,list(string),yes,,
+aws,lambda,image_config_entry_point,list(string),yes,,
+aws,lambda,image_config_working_directory,string,yes,,
+aws,lambda,image_uri,string,yes,,
+aws,lambda,include_default_tag,bool,yes,,
+aws,lambda,invoke_mode,string,yes,,
+aws,lambda,ipv6_allowed_for_dual_stack,bool,yes,,
+aws,lambda,kms_key_arn,string,yes,,
+aws,lambda,lambda_at_edge,bool,yes,,
+aws,lambda,lambda_at_edge_logs_all_regions,bool,no,multi-region Lambda@Edge log group permissions require account/region wildcard policies; configure attach_cloudwatch_logs_policy or policy_statements,gap
+aws,lambda,lambda_role,string,yes,,
+aws,lambda,layer_name,string,yes,,
+aws,lambda,layer_skip_destroy,bool,no,use deletion_policy: ABANDON to keep the layer on delete,by-design
+aws,lambda,layers,list(string),yes,,
+aws,lambda,license_info,string,yes,,
+aws,lambda,local_existing_package,string,no,local zip file paths are not portable to Kubernetes; upload to S3 and set s3_existing_package,by-design
+aws,lambda,logging_application_log_level,string,yes,,
+aws,lambda,logging_log_format,string,yes,,
+aws,lambda,logging_log_group,string,yes,,
+aws,lambda,logging_system_log_level,string,yes,,
+aws,lambda,managed_instances_capacity_provider_arn,string,no,ACK's Function (lambda-controller v1.19.0) has no capacityProviderConfig field,gap
+aws,lambda,managed_instances_execution_environment_memory_gib_per_vcpu,number,no,ACK's Function (lambda-controller v1.19.0) has no capacityProviderConfig field,gap
+aws,lambda,managed_instances_max_concurrency_per_execution_environment,number,no,ACK's Function (lambda-controller v1.19.0) has no capacityProviderConfig field,gap
+aws,lambda,maximum_event_age_in_seconds,number,yes,,
+aws,lambda,maximum_retry_attempts,number,yes,,
+aws,lambda,memory_size,number,yes,,
+aws,lambda,number_of_policies,number,yes,,
+aws,lambda,number_of_policy_jsons,number,yes,,
+aws,lambda,package_type,string,yes,,
+aws,lambda,policies,list(string),yes,,
+aws,lambda,policy,string,yes,,
+aws,lambda,policy_json,string,yes,,
+aws,lambda,policy_jsons,list(string),yes,,
+aws,lambda,policy_name,string,yes,,
+aws,lambda,policy_statements,any,yes,,
+aws,lambda,provisioned_concurrent_executions,number,yes,,
+aws,lambda,publish,bool,yes,,
+aws,lambda,publish_to,string,yes,,
+aws,lambda,putin_khuylo,bool,yes,,
+aws,lambda,quiet_archive_local_exec,bool,no,local deployment package building is not portable,by-design
+aws,lambda,recreate_missing_package,bool,no,local deployment package building is not portable,by-design
+aws,lambda,recursive_loop,string,no,ACK's Function (lambda-controller v1.19.0) has no recursiveLoop field,gap
+aws,lambda,region,string,yes,,
+aws,lambda,replace_security_groups_on_destroy,bool,no,ACK's Function has no Terraform destroy-time ENI replacement flag,gap
+aws,lambda,replacement_security_group_ids,list(string),no,ACK's Function has no Terraform destroy-time ENI replacement flag,gap
+aws,lambda,reserved_concurrent_executions,number,yes,,
+aws,lambda,role_description,string,yes,,
+aws,lambda,role_force_detach_policies,bool,yes,,
+aws,lambda,role_maximum_session_duration,number,yes,,
+aws,lambda,role_name,string,yes,,
+aws,lambda,role_path,string,yes,,
+aws,lambda,role_permissions_boundary,string,yes,,
+aws,lambda,role_tags,map(string),yes,,
+aws,lambda,runtime,string,yes,,
+aws,lambda,s3_acl,string,no,uploading local zip packages to S3 is not portable; use s3_existing_package,by-design
+aws,lambda,s3_bucket,string,no,uploading local zip packages to S3 is not portable; use s3_existing_package,by-design
+aws,lambda,s3_existing_package,map(string),yes,,
+aws,lambda,s3_kms_key_id,string,no,uploading local zip packages to S3 is not portable; use s3_existing_package,by-design
+aws,lambda,s3_object_override_default_tags,bool,no,uploading local zip packages to S3 is not portable; use s3_existing_package,by-design
+aws,lambda,s3_object_storage_class,string,no,uploading local zip packages to S3 is not portable; use s3_existing_package,by-design
+aws,lambda,s3_object_tags,map(string),no,uploading local zip packages to S3 is not portable; use s3_existing_package,by-design
+aws,lambda,s3_object_tags_only,bool,no,uploading local zip packages to S3 is not portable; use s3_existing_package,by-design
+aws,lambda,s3_prefix,string,no,uploading local zip packages to S3 is not portable; use s3_existing_package,by-design
+aws,lambda,s3_server_side_encryption,string,no,uploading local zip packages to S3 is not portable; use s3_existing_package,by-design
+aws,lambda,skip_destroy,bool,no,use deletion_policy: ABANDON to keep the function on delete,by-design
+aws,lambda,snap_start,bool,yes,,
+aws,lambda,source_path,any,no,local deployment package building is not portable; pass image_uri or s3_existing_package,by-design
+aws,lambda,store_on_s3,bool,no,uploading local zip packages to S3 is not portable; use s3_existing_package,by-design
+aws,lambda,tags,map(string),yes,,
+aws,lambda,tenant_isolation_mode,bool,yes,,
+aws,lambda,timeout,number,yes,,
+aws,lambda,timeouts,map(string),no,"Terraform's create, update and delete timeouts: ACK retries until the function is synced, and Bundt waits for it",by-design
+aws,lambda,tracing_mode,string,yes,,
+aws,lambda,trigger_on_package_timestamp,bool,no,local deployment package building is not portable,by-design
+aws,lambda,trusted_entities,any,yes,,
+aws,lambda,use_existing_cloudwatch_log_group,bool,yes,,
+aws,lambda,vpc_security_group_ids,list(string),yes,,
+aws,lambda,vpc_subnet_ids,list(string),yes,,
 aws,security-group,create,bool,yes,,
 aws,security-group,description,string,yes,,
 aws,security-group,egress_rules,"map(object({cidr_ipv4, cidr_ipv6, description, from_port, ip_protocol, name, +4}))",partial,"accepted, but each rule's name and tags (the Name tag of an aws_vpc_security_group_*_rule) are not carried: ACK keeps a group's rules inline in SecurityGroup, which has no per-rule tags",gap
@@ -2471,16 +2471,16 @@ aws,sqs,use_name_prefix,bool,no,a queue name with Terraform's random suffix (nam
 aws,sqs,visibility_timeout_seconds,number,yes,,
 aws,route53,comment,string,yes,,
 aws,route53,create,bool,yes,,
-aws,route53,create_dnssec_kms_key,bool,no,"used only with enable_dnssec, which is refused",gap
+aws,route53,create_dnssec_kms_key,bool,yes,,
 aws,route53,create_zone,bool,no,"false looks an existing zone up by name (data.aws_route53_zone); a render cannot look anything up: the zone is another component's, and its records belong in that component",by-design
 aws,route53,delegation_set_id,string,yes,,
-aws,route53,dnssec_key_signing_key_name,string,no,"used only with enable_dnssec, which is refused",gap
-aws,route53,dnssec_kms_key_aliases,list(string),no,"used only with enable_dnssec, which is refused",gap
-aws,route53,dnssec_kms_key_arn,string,no,"used only with enable_dnssec, which is refused",gap
-aws,route53,dnssec_kms_key_description,string,no,"used only with enable_dnssec, which is refused",gap
-aws,route53,dnssec_kms_key_tags,map(string),no,"used only with enable_dnssec, which is refused",gap
+aws,route53,dnssec_key_signing_key_name,string,yes,,
+aws,route53,dnssec_kms_key_aliases,list(string),yes,,
+aws,route53,dnssec_kms_key_arn,string,yes,,
+aws,route53,dnssec_kms_key_description,string,yes,,
+aws,route53,dnssec_kms_key_tags,map(string),yes,,
 aws,route53,enable_accelerated_recovery,bool,no,ACK's HostedZone (route53-controller v1.8.0) has no field for Route 53 Accelerated Recovery,gap
-aws,route53,enable_dnssec,bool,no,"ack-extensions' KeySigningKey and DNSSEC (Cloud Control) take the zone's ID only as a string, with no reference to a HostedZone, so they cannot be wired to the zone this render makes",gap
+aws,route53,enable_dnssec,bool,yes,,
 aws,route53,force_destroy,bool,no,ACK's HostedZone has no field to delete records made elsewhere before the zone; Route 53 refuses to delete a zone that still has them,gap
 aws,route53,ignore_vpc,bool,no,ACK's HostedZone owns the zone's VPC associations (spec.vpcs) and removes ones made elsewhere; leaving them alone after creation has no ACK equivalent,gap
 aws,route53,name,string,yes,,
@@ -2491,69 +2491,69 @@ aws,route53,timeouts,"object({create, delete, update})",no,"Terraform's create, 
 aws,route53,vpc,"map(object({vpc_id, vpc_region}))",partial,"accepted, but each entry needs vpc_region: ACK's HostedZone requires it, and the chart cannot know the provider's region Terraform defaults to",gap
 aws,route53,vpc_association_authorizations,"map(object({vpc_id, vpc_region}))",no,aws_route53_vpc_association_authorization has no ACK or ack-extensions kind (no Cloud Control type),gap
 aws,route53,vpc_id,string,no,"used only to look up an existing zone (create_zone: false), which is refused",by-design
-aws,ecs,capacity_providers,"map(object({auto_scaling_group_provider, managed_instances_provider, name, tags}))",no,,no-chart
-aws,ecs,cloudwatch_log_group_class,string,no,,no-chart
-aws,ecs,cloudwatch_log_group_kms_key_id,string,no,,no-chart
-aws,ecs,cloudwatch_log_group_name,string,no,,no-chart
-aws,ecs,cloudwatch_log_group_retention_in_days,number,no,,no-chart
-aws,ecs,cloudwatch_log_group_tags,map(string),no,,no-chart
-aws,ecs,cluster_capacity_providers,list(string),no,,no-chart
-aws,ecs,cluster_configuration,"object({execute_command_configuration, managed_storage_configuration})",no,,no-chart
-aws,ecs,cluster_name,string,no,,no-chart
-aws,ecs,cluster_service_connect_defaults,object({namespace}),no,,no-chart
-aws,ecs,cluster_setting,"list(object({name, value}))",no,,no-chart
-aws,ecs,cluster_tags,map(string),no,,no-chart
-aws,ecs,create,bool,no,,no-chart
-aws,ecs,create_cloudwatch_log_group,bool,no,,no-chart
-aws,ecs,create_infrastructure_iam_role,bool,no,,no-chart
-aws,ecs,create_node_iam_instance_profile,bool,no,,no-chart
-aws,ecs,create_security_group,bool,no,,no-chart
-aws,ecs,create_task_exec_iam_role,bool,no,,no-chart
-aws,ecs,create_task_exec_policy,bool,no,,no-chart
-aws,ecs,default_capacity_provider_strategy,"map(object({base, name, weight}))",no,,no-chart
-aws,ecs,disable_v7_default_name_description,bool,no,,no-chart
-aws,ecs,infrastructure_iam_role_description,string,no,,no-chart
-aws,ecs,infrastructure_iam_role_name,string,no,,no-chart
-aws,ecs,infrastructure_iam_role_override_policy_documents,list(string),no,,no-chart
-aws,ecs,infrastructure_iam_role_path,string,no,,no-chart
-aws,ecs,infrastructure_iam_role_permissions_boundary,string,no,,no-chart
-aws,ecs,infrastructure_iam_role_source_policy_documents,list(string),no,,no-chart
-aws,ecs,infrastructure_iam_role_statements,"map(object({actions, condition, effect, not_actions, not_principals, not_resources, +3}))",no,,no-chart
-aws,ecs,infrastructure_iam_role_tags,map(string),no,,no-chart
-aws,ecs,infrastructure_iam_role_use_name_prefix,bool,no,,no-chart
-aws,ecs,node_iam_role_additional_policies,map(string),no,,no-chart
-aws,ecs,node_iam_role_description,string,no,,no-chart
-aws,ecs,node_iam_role_name,string,no,,no-chart
-aws,ecs,node_iam_role_override_policy_documents,list(string),no,,no-chart
-aws,ecs,node_iam_role_path,string,no,,no-chart
-aws,ecs,node_iam_role_permissions_boundary,string,no,,no-chart
-aws,ecs,node_iam_role_source_policy_documents,list(string),no,,no-chart
-aws,ecs,node_iam_role_statements,"map(object({actions, condition, effect, not_actions, not_principals, not_resources, +3}))",no,,no-chart
-aws,ecs,node_iam_role_tags,map(string),no,,no-chart
-aws,ecs,node_iam_role_use_name_prefix,bool,no,,no-chart
-aws,ecs,region,string,no,,no-chart
-aws,ecs,security_group_description,string,no,,no-chart
-aws,ecs,security_group_egress_rules,"map(object({cidr_ipv4, cidr_ipv6, description, from_port, ip_protocol, name, +4}))",no,,no-chart
-aws,ecs,security_group_ingress_rules,"map(object({cidr_ipv4, cidr_ipv6, description, from_port, ip_protocol, name, +4}))",no,,no-chart
-aws,ecs,security_group_name,string,no,,no-chart
-aws,ecs,security_group_tags,map(string),no,,no-chart
-aws,ecs,security_group_use_name_prefix,bool,no,,no-chart
-aws,ecs,services,"map(object({alarms, assign_public_ip, autoscaling_max_capacity, autoscaling_min_capacity, autoscaling_policies, autoscaling_scheduled_actions, +112}))",no,,no-chart
-aws,ecs,tags,map(string),no,,no-chart
-aws,ecs,task_exec_iam_role_description,string,no,,no-chart
-aws,ecs,task_exec_iam_role_name,string,no,,no-chart
-aws,ecs,task_exec_iam_role_path,string,no,,no-chart
-aws,ecs,task_exec_iam_role_permissions_boundary,string,no,,no-chart
-aws,ecs,task_exec_iam_role_policies,map(string),no,,no-chart
-aws,ecs,task_exec_iam_role_tags,map(string),no,,no-chart
-aws,ecs,task_exec_iam_role_use_name_prefix,bool,no,,no-chart
-aws,ecs,task_exec_iam_statements,"map(object({actions, condition, effect, not_actions, not_principals, not_resources, +3}))",no,,no-chart
-aws,ecs,task_exec_secret_arns,list(string),no,,no-chart
-aws,ecs,task_exec_ssm_param_arns,list(string),no,,no-chart
-aws,ecs,vpc_id,string,no,,no-chart
+aws,ecs,capacity_providers,"map(object({auto_scaling_group_provider, managed_instances_provider, name, tags}))",yes,,
+aws,ecs,cloudwatch_log_group_class,string,no,ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no log group class field,gap
+aws,ecs,cloudwatch_log_group_kms_key_id,string,yes,,
+aws,ecs,cloudwatch_log_group_name,string,yes,,
+aws,ecs,cloudwatch_log_group_retention_in_days,number,yes,,
+aws,ecs,cloudwatch_log_group_tags,map(string),yes,,
+aws,ecs,cluster_capacity_providers,list(string),yes,,
+aws,ecs,cluster_configuration,"object({execute_command_configuration, managed_storage_configuration})",yes,,
+aws,ecs,cluster_name,string,yes,,
+aws,ecs,cluster_service_connect_defaults,object({namespace}),yes,,
+aws,ecs,cluster_setting,"list(object({name, value}))",yes,,
+aws,ecs,cluster_tags,map(string),yes,,
+aws,ecs,create,bool,yes,,
+aws,ecs,create_cloudwatch_log_group,bool,yes,,
+aws,ecs,create_infrastructure_iam_role,bool,yes,,
+aws,ecs,create_node_iam_instance_profile,bool,yes,,
+aws,ecs,create_security_group,bool,yes,,
+aws,ecs,create_task_exec_iam_role,bool,yes,,
+aws,ecs,create_task_exec_policy,bool,yes,,
+aws,ecs,default_capacity_provider_strategy,"map(object({base, name, weight}))",yes,,
+aws,ecs,disable_v7_default_name_description,bool,yes,,
+aws,ecs,infrastructure_iam_role_description,string,yes,,
+aws,ecs,infrastructure_iam_role_name,string,yes,,
+aws,ecs,infrastructure_iam_role_override_policy_documents,list(string),no,merging arbitrary IAM policy documents by sid is not ported; set infrastructure_iam_role_statements,gap
+aws,ecs,infrastructure_iam_role_path,string,yes,,
+aws,ecs,infrastructure_iam_role_permissions_boundary,string,yes,,
+aws,ecs,infrastructure_iam_role_source_policy_documents,list(string),no,merging arbitrary IAM policy documents by sid is not ported; set infrastructure_iam_role_statements,gap
+aws,ecs,infrastructure_iam_role_statements,"map(object({actions, condition, effect, not_actions, not_principals, not_resources, +3}))",yes,,
+aws,ecs,infrastructure_iam_role_tags,map(string),yes,,
+aws,ecs,infrastructure_iam_role_use_name_prefix,bool,partial,"accepted: true (the default) names the role as given, without Terraform's random suffix, since a render must not change between plans; namePrefix keeps two Instances' roles apart",gap
+aws,ecs,node_iam_role_additional_policies,map(string),yes,,
+aws,ecs,node_iam_role_description,string,yes,,
+aws,ecs,node_iam_role_name,string,yes,,
+aws,ecs,node_iam_role_override_policy_documents,list(string),no,merging arbitrary IAM policy documents by sid is not ported; set node_iam_role_statements,gap
+aws,ecs,node_iam_role_path,string,yes,,
+aws,ecs,node_iam_role_permissions_boundary,string,yes,,
+aws,ecs,node_iam_role_source_policy_documents,list(string),no,merging arbitrary IAM policy documents by sid is not ported; set node_iam_role_statements,gap
+aws,ecs,node_iam_role_statements,"map(object({actions, condition, effect, not_actions, not_principals, not_resources, +3}))",yes,,
+aws,ecs,node_iam_role_tags,map(string),yes,,
+aws,ecs,node_iam_role_use_name_prefix,bool,partial,"accepted: true (the default) names the role as given, without Terraform's random suffix, since a render must not change between plans; namePrefix keeps two Instances' roles apart",gap
+aws,ecs,region,string,yes,,
+aws,ecs,security_group_description,string,yes,,
+aws,ecs,security_group_egress_rules,"map(object({cidr_ipv4, cidr_ipv6, description, from_port, ip_protocol, name, +4}))",yes,,
+aws,ecs,security_group_ingress_rules,"map(object({cidr_ipv4, cidr_ipv6, description, from_port, ip_protocol, name, +4}))",yes,,
+aws,ecs,security_group_name,string,yes,,
+aws,ecs,security_group_tags,map(string),yes,,
+aws,ecs,security_group_use_name_prefix,bool,partial,"accepted: true (the default) names the security group as given, without Terraform's random suffix, since a render must not change between plans; namePrefix keeps two Instances' groups apart",gap
+aws,ecs,services,"map(object({alarms, assign_public_ip, autoscaling_max_capacity, autoscaling_min_capacity, autoscaling_policies, autoscaling_scheduled_actions, +112}))",yes,,
+aws,ecs,tags,map(string),yes,,
+aws,ecs,task_exec_iam_role_description,string,yes,,
+aws,ecs,task_exec_iam_role_name,string,yes,,
+aws,ecs,task_exec_iam_role_path,string,yes,,
+aws,ecs,task_exec_iam_role_permissions_boundary,string,yes,,
+aws,ecs,task_exec_iam_role_policies,map(string),yes,,
+aws,ecs,task_exec_iam_role_tags,map(string),yes,,
+aws,ecs,task_exec_iam_role_use_name_prefix,bool,partial,"accepted: true (the default) names the role as given, without Terraform's random suffix, since a render must not change between plans; namePrefix keeps two Instances' roles apart",gap
+aws,ecs,task_exec_iam_statements,"map(object({actions, condition, effect, not_actions, not_principals, not_resources, +3}))",yes,,
+aws,ecs,task_exec_secret_arns,list(string),yes,,
+aws,ecs,task_exec_ssm_param_arns,list(string),yes,,
+aws,ecs,vpc_id,string,yes,,
 aws,alb,access_logs,"object({bucket, enabled, prefix})",yes,,
 aws,alb,additional_target_group_attachments,"map(object({availability_zone, port, target_group_key, target_id, target_type}))",yes,,
-aws,alb,associate_web_acl,bool,no,"ack-extensions' WebACLAssociation takes the load balancer's ARN only as a string, with no reference to the LoadBalancer this render makes",gap
+aws,alb,associate_web_acl,bool,yes,,
 aws,alb,client_keep_alive,number,yes,,
 aws,alb,connection_logs,"object({bucket, enabled, prefix})",yes,,
 aws,alb,create,bool,yes,,
@@ -2599,7 +2599,7 @@ aws,alb,tags,map(string),yes,,
 aws,alb,target_groups,"map(object({attach_lambda_permission, availability_zone, connection_termination, create_attachment, deregistration_delay, health_check, +27}))",partial,"accepted, but each group needs name (name_prefix, a random suffix, is refused), and attach_lambda_permission is refused: ack-extensions' Lambda Permission cannot reference the target group this render makes (the lambda_* fields go with it)",gap
 aws,alb,timeouts,"object({create, delete, update})",no,"Terraform's create, update and delete timeouts: ACK retries until the load balancer is synced, and Bundt waits for it",by-design
 aws,alb,vpc_id,string,partial,accepted when set; unset with create_security_group: true (Terraform's default VPC) is refused: ACK's SecurityGroup needs its VPC's ID,gap
-aws,alb,web_acl_arn,string,no,"used only with associate_web_acl, which is refused",gap
+aws,alb,web_acl_arn,string,yes,,
 aws,alb,xff_header_processing_mode,string,yes,,
 aws,dynamodb-table,attributes,list(map(string)),yes,,
 aws,dynamodb-table,autoscaling_defaults,map(string),yes,,

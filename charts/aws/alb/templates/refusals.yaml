@@ -13,5 +13,3 @@ is set to anything but its Terraform default. Renders nothing.
 {{- include "ack.unsupported" (list $ "name_prefix" $v.name_prefix "Terraform appends a random suffix, and a render must not change between plans; give name (namePrefix keeps two Instances' load balancers apart)") }}
 {{- include "ack.unsupported" (list $ "timeouts" $v.timeouts "Terraform's create, update and delete timeouts: ACK retries until the load balancer is synced, and Bundt waits for it") }}
 {{- include "ack.unsupported" (list $ "route53_records" $v.route53_records "an alias record needs the load balancer's DNS name and zone ID, which exist only in its status, and ACK's RecordSet has no reference to a LoadBalancer; make the records in a route53 component from this one's dns_name and zone_id outputs") }}
-{{- include "ack.unsupported" (list $ "associate_web_acl" $v.associate_web_acl "ack-extensions' WebACLAssociation takes the load balancer's ARN only as a string, with no reference to the LoadBalancer this render makes") }}
-{{- include "ack.unsupported" (list $ "web_acl_arn" $v.web_acl_arn "it is used only with associate_web_acl, which is refused") }}

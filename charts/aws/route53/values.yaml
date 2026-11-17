@@ -17,9 +17,13 @@ namePrefix: ""
 # Kubernetes labels on every object. They stay in Kubernetes: ACK does not
 # copy labels to AWS (AWS tags are the module's tags variable).
 labels: {}
-# No kind here is outside ACK's released controllers; kept for the common
-# values (docs/design.md, "Alpha kinds").
+# No kind here is outside ACK's released controllers except DNSSEC
+# (KeySigningKey and DNSSEC, route53.cloudcontrol.aws.hfl.dev/v1alpha1),
+# which renders only with allow_alpha: true (docs/design.md, "Alpha kinds").
 allow_alpha: false
+# Optional AWS account ID for the Default statement in the DNSSEC KMS key
+# policy when create_dnssec_kms_key is true.
+account_id: null
 # DELETE (default): deleting the component deletes the zone and its records.
 # ABANDON keeps them (services.k8s.aws/deletion-policy: retain).
 deletion_policy: DELETE
@@ -73,27 +77,19 @@ timeouts: null
 # A map of VPC association authorizations to create for the Route53 zone
 # Not supported (gap): no ACK or ack-extensions kind.
 vpc_association_authorizations: null
-# Whether to enable DNSSEC for the Route53 zone
-# Not supported (gap): ack-extensions' KeySigningKey and DNSSEC cannot
-# reference the zone this render makes.
+# Whether to enable DNSSEC for the Route53 zone (needs allow_alpha: true)
 enable_dnssec: false
-# Whether to create a KMS key for DNSSEC signing
-# Not supported (gap): used only with enable_dnssec.
+# Whether to create a KMS key for DNSSEC signing (in us-east-1)
 create_dnssec_kms_key: true
-# The ARN of the KMS key to use for DNSSEC signing
-# Not supported (gap): used only with enable_dnssec.
+# The ARN of the KMS key to use for DNSSEC signing (when create_dnssec_kms_key is false)
 dnssec_kms_key_arn: null
 # The description of the key as viewed in AWS console
-# Not supported (gap): used only with enable_dnssec.
 dnssec_kms_key_description: Route53 DNSSEC KMS Key
 # A list of aliases to create
-# Not supported (gap): used only with enable_dnssec.
 dnssec_kms_key_aliases: []
 # Additional tags to apply to the KMS key created for DNSSEC signing
-# Not supported (gap): used only with enable_dnssec.
 dnssec_kms_key_tags: {}
-# Name of the Route 53 key signing key (KSK)
-# Not supported (gap): used only with enable_dnssec.
+# Name of the Route 53 key signing key (KSK); defaults to the zone name
 dnssec_key_signing_key_name: null
 # A map of Route53 records to create in the zone. The key can be used as the
 # subdomain name, or `name` can be used to specify the full name

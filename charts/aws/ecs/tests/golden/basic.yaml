@@ -1,0 +1,39 @@
+---
+# Source: ecs/templates/cluster.yaml
+apiVersion: ecs.services.k8s.aws/v1alpha1
+kind: Cluster
+metadata:
+  name: basic-cluster
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: ecs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster"
+spec:
+  name: "basic-ecs"
+  settings:
+    - name: containerInsights
+      value: enabled
+  tags:
+    - key: "env"
+      value: "test"
+---
+# Source: ecs/templates/cluster.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: basic-log-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: ecs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group"
+spec:
+  name: "/aws/ecs/containerinsights/basic-ecs/performance"
+  retentionDays: 90
+  tags:
+    env: test
