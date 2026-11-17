@@ -1,0 +1,9 @@
+account_id: "123456789012"
+region: us-east-1
+sns_topic_name: alerts
+lambda_function_name: notify-slack
+s3_existing_package:
+  bucket: my-artifacts
+  key: notify-slack.zip
+slack_channel: "#alerts"
+slack_username: aws-bot

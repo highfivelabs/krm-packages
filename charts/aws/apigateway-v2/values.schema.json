@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "names": { "type": "object", "additionalProperties": { "type": "string" } },
+    "namePrefix": { "type": "string" },
+    "labels": { "type": "object", "additionalProperties": { "type": "string" } },
+    "deletion_policy": { "type": "string", "enum": ["DELETE", "ABANDON"] },
+    "partition": { "type": "string" },
+    "account_id": { "type": ["string", "null"] },
+    "create": { "type": "boolean" },
+    "region": { "type": ["string", "null"] },
+    "tags": { "type": "object", "additionalProperties": { "type": "string" } },
+    "api_key_selection_expression": { "type": ["string", "null"] },
+    "cors_configuration": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "allow_credentials": { "type": ["boolean", "null"] },
+        "allow_headers": { "type": ["array", "null"], "items": { "type": "string" } },
+        "allow_methods": { "type": ["array", "null"], "items": { "type": "string" } },
+        "allow_origins": { "type": ["array", "null"], "items": { "type": "string" } },
+        "expose_headers": { "type": ["array", "null"], "items": { "type": "string" } },
+        "max_age": { "type": ["integer", "null"] }
+      }
+    },
+    "credentials_arn": { "type": ["string", "null"] },
+    "description": { "type": ["string", "null"] },
+    "disable_execute_api_endpoint": { "type": ["boolean", "null"] },
+    "fail_on_warnings": { "type": ["boolean", "null"] },
+    "ip_address_type": { "type": ["string", "null"] },
+    "name": { "type": "string" },
+    "body": { "type": ["string", "null"] },
+    "protocol_type": { "type": "string" },
+    "route_key": { "type": ["string", "null"] },
+    "route_selection_expression": { "type": ["string", "null"] },
+    "target": { "type": ["string", "null"] },
+    "api_version": { "type": ["string", "null"] },
+    "api_mapping_key": { "type": ["string", "null"] },
+    "authorizers": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "authorizer_credentials_arn": { "type": ["string", "null"] },
+          "authorizer_payload_format_version": { "type": ["string", "null"] },
+          "authorizer_result_ttl_in_seconds": { "type": ["integer", "null"] },
+          "authorizer_type": { "type": ["string", "null"] },
+          "authorizer_uri": { "type": ["string", "null"] },
+          "enable_simple_responses": { "type": ["boolean", "null"] },
+          "identity_sources": { "type": ["array", "null"], "items": { "type": "string" } },
+          "jwt_configuration": {
+            "type": ["object", "null"],
+            "additionalProperties": false,
+            "properties": {
+              "audience": { "type": ["array", "null"], "items": { "type": "string" } },
+              "issuer": { "type": ["string", "null"] }
+            }
+          },
+          "name": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "create_domain_name": { "type": "boolean" },
+    "domain_name": { "type": "string" },
+    "hosted_zone_name": { "type": ["string", "null"] },
+    "private_zone": { "type": "boolean" },
+    "domain_name_certificate_arn": { "type": ["string", "null"] },
+    "domain_name_ownership_verification_certificate_arn": { "type": ["string", "null"] },
+    "mutual_tls_authentication": { "type": "object", "additionalProperties": { "type": "string" } },
+    "create_domain_records": { "type": "boolean" },
+    "subdomains": { "type": "array", "items": { "type": "string" } },
+    "subdomain_record_types": { "type": "array", "items": { "type": "string" } },
+    "create_certificate": { "type": "boolean" },
+    "create_routes_and_integrations": { "type": "boolean" },
+    "routes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "authorizer_key": { "type": ["string", "null"] },
+          "api_key_required": { "type": ["boolean", "null"] },
+          "authorization_scopes": { "type": ["array", "null"], "items": { "type": "string" } },
+          "authorization_type": { "type": ["string", "null"] },
+          "authorizer_id": { "type": ["string", "null"] },
+          "model_selection_expression": { "type": ["string", "null"] },
+          "operation_name": { "type": ["string", "null"] },
+          "request_models": { "type": ["object", "null"], "additionalProperties": { "type": "string" } },
+          "request_parameter": {
+            "type": ["object", "null"],
+            "additionalProperties": false,
+            "properties": {
+              "request_parameter_key": { "type": ["string", "null"] },
+              "required": { "type": ["boolean", "null"] }
+            }
+          },
+          "route_response_selection_expression": { "type": ["string", "null"] },
+          "data_trace_enabled": { "type": ["boolean", "null"] },
+          "detailed_metrics_enabled": { "type": ["boolean", "null"] },
+          "logging_level": { "type": ["string", "null"] },
+          "throttling_burst_limit": { "type": ["integer", "null"] },
+          "throttling_rate_limit": { "type": ["number", "null"] },
+          "route_response": {
+            "type": ["object", "null"],
+            "additionalProperties": false,
+            "properties": {
+              "create": { "type": ["boolean", "null"] },
+              "model_selection_expression": { "type": ["string", "null"] },
+              "response_models": { "type": ["object", "null"], "additionalProperties": { "type": "string" } },
+              "route_response_key": { "type": ["string", "null"] }
+            }
+          },
+          "integration": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "connection_id": { "type": ["string", "null"] },
+              "vpc_link_key": { "type": ["string", "null"] },
+              "connection_type": { "type": ["string", "null"] },
+              "content_handling_strategy": { "type": ["string", "null"] },
+              "credentials_arn": { "type": ["string", "null"] },
+              "description": { "type": ["string", "null"] },
+              "method": { "type": ["string", "null"] },
+              "subtype": { "type": ["string", "null"] },
+              "type": { "type": ["string", "null"] },
+              "uri": { "type": ["string", "null"] },
+              "passthrough_behavior": { "type": ["string", "null"] },
+              "payload_format_version": { "type": ["string", "null"] },
+              "request_parameters": { "type": ["object", "null"], "additionalProperties": { "type": "string" } },
+              "request_templates": { "type": ["object", "null"], "additionalProperties": { "type": "string" } },
+              "response_parameters": {
+                "type": ["array", "null"],
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "mappings": { "type": "object", "additionalProperties": { "type": "string" } },
+                    "status_code": { "type": "string" }
+                  }
+                }
+              },
+              "template_selection_expression": { "type": ["string", "null"] },
+              "timeout_milliseconds": { "type": ["integer", "null"] },
+              "tls_config": {
+                "type": ["object", "null"],
+                "additionalProperties": false,
+                "properties": {
+                  "server_name_to_verify": { "type": ["string", "null"] }
+                }
+              },
+              "response": {
+                "type": ["object", "null"],
+                "additionalProperties": false,
+                "properties": {
+                  "content_handling_strategy": { "type": ["string", "null"] },
+                  "integration_response_key": { "type": ["string", "null"] },
+                  "response_templates": { "type": ["object", "null"], "additionalProperties": { "type": "string" } },
+                  "template_selection_expression": { "type": ["string", "null"] }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "create_stage": { "type": "boolean" },
+    "stage_access_log_settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create_log_group": { "type": ["boolean", "null"] },
+        "destination_arn": { "type": ["string", "null"] },
+        "format": { "type": ["string", "null"] },
+        "log_group_name": { "type": ["string", "null"] },
+        "log_group_retention_in_days": { "type": ["integer", "null"] },
+        "log_group_kms_key_id": { "type": ["string", "null"] },
+        "log_group_skip_destroy": { "type": ["boolean", "null"] },
+        "log_group_class": { "type": ["string", "null"] },
+        "log_group_tags": { "type": ["object", "null"], "additionalProperties": { "type": "string" } }
+      }
+    },
+    "stage_client_certificate_id": { "type": ["string", "null"] },
+    "stage_default_route_settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "data_trace_enabled": { "type": ["boolean", "null"] },
+        "detailed_metrics_enabled": { "type": ["boolean", "null"] },
+        "logging_level": { "type": ["string", "null"] },
+        "throttling_burst_limit": { "type": ["integer", "null"] },
+        "throttling_rate_limit": { "type": ["number", "null"] }
+      }
+    },
+    "stage_description": { "type": ["string", "null"] },
+    "stage_name": { "type": "string" },
+    "stage_variables": { "type": "object", "additionalProperties": { "type": "string" } },
+    "stage_tags": { "type": "object", "additionalProperties": { "type": "string" } },
+    "deploy_stage": { "type": "boolean" },
+    "vpc_links": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": ["string", "null"] },
+          "security_group_ids": { "type": ["array", "null"], "items": { "type": "string" } },
+          "subnet_ids": { "type": ["array", "null"], "items": { "type": "string" } },
+          "tags": { "type": ["object", "null"], "additionalProperties": { "type": "string" } }
+        }
+      }
+    },
+    "vpc_link_tags": { "type": "object", "additionalProperties": { "type": "string" } }
+  }
+}

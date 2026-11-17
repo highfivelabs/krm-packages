@@ -1,0 +1,24 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: v2
+name: apigateway-v2
+description: >-
+  An API Gateway v2 HTTP or WebSocket API with its authorizers, custom domain
+  name, integrations, routes, stage, access log group and VPC links, as AWS
+  Controllers for Kubernetes (ACK) objects. A port of terraform-aws-modules'
+  apigateway-v2 module.
+type: application
+version: 0.1.0
+# The module release this chart was ported from (UPSTREAM.md).
+appVersion: "terraform-aws-apigateway-v2-v6.1.1"
+kubeVersion: ">=1.27.0-0"
+keywords: [aws, ack, apigateway, apigatewayv2, http-api, websocket, terraform-aws-modules]
+home: https://github.com/highfivelabs/catalog
+sources:
+  - https://github.com/terraform-aws-modules/terraform-aws-apigateway-v2/tree/95e6a1d56d6d761ec12c89b36b29aad03a421b2f
+annotations:
+  hfl.dev/source: terraform-aws-apigateway-v2
+  hfl.dev/source-version: v6.1.1
+  hfl.dev/source-commit: 95e6a1d56d6d761ec12c89b36b29aad03a421b2f
+  hfl.dev/ack-apigatewayv2-controller: "v1.9.0"
+  hfl.dev/ack-cloudwatchlogs-controller: "v1.10.0"

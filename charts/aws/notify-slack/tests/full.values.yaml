@@ -1,0 +1,28 @@
+allow_alpha: true
+account_id: "123456789012"
+region: us-east-1
+labels:
+  team: platform
+sns_topic_name: alerts
+sns_topic_kms_key_id: alias/sns-key
+enable_sns_topic_delivery_status_logs: true
+sns_topic_lambda_feedback_sample_rate: 50
+lambda_function_name: notify-slack
+lambda_description: Forward SNS alerts to Slack
+s3_existing_package:
+  bucket: my-artifacts
+  key: notify-slack.zip
+  version_id: v1
+kms_key_arn: arn:aws:kms:us-east-1:123456789012:key/1234
+slack_webhook_url: AQICAHhEncryptedCiphertext==
+slack_channel: "#alerts"
+slack_username: aws-bot
+slack_emoji: ":bell:"
+log_events: true
+log_level: DEBUG
+reserved_concurrent_executions: 5
+cloudwatch_log_group_retention_in_days: 30
+subscription_filter_policy: '{"severity":["high"]}'
+subscription_filter_policy_scope: MessageAttributes
+tags:
+  env: prod

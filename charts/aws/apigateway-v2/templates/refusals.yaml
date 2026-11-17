@@ -1,0 +1,23 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+The module variables this chart keeps in its values but cannot carry
+(upstream.yaml, "refused"): each stops the render, naming the gap, when it
+is set to anything but its Terraform default. Renders nothing.
+*/ -}}
+{{- include "ack.unsupported" (list $ "ip_address_type" .Values.ip_address_type "ACK's API (apigatewayv2-controller v1.9.0) has no ipAddressType field") }}
+{{- include "ack.unsupported" (list $ "hosted_zone_name" .Values.hosted_zone_name "Route 53 alias records for DomainName are not created because ACK RecordSet has no reference to DomainName.status") }}
+{{- include "ack.unsupported" (list $ "private_zone" .Values.private_zone "Route 53 alias records for DomainName are not created because ACK RecordSet has no reference to DomainName.status") }}
+{{- include "ack.unsupported" (list $ "subdomains" .Values.subdomains "Route 53 alias records for DomainName are not created because ACK RecordSet has no reference to DomainName.status") }}
+{{- range $rk, $r := (.Values.routes | default dict) }}
+{{- if and $r.route_response $r.route_response.create }}
+{{- include "ack.unsupported" (list $ (printf "routes.%s.route_response.create" $rk) true "ACK apigatewayv2-controller v1.9.0 has no RouteResponse kind") }}
+{{- end }}
+{{- if and $r.integration $r.integration.response }}
+{{- include "ack.unsupported" (list $ (printf "routes.%s.integration.response" $rk) $r.integration.response "ACK apigatewayv2-controller v1.9.0 has no IntegrationResponse kind") }}
+{{- end }}
+{{- end }}
+{{- $als := .Values.stage_access_log_settings | default dict }}
+{{- include "ack.unsupported" (list $ "stage_access_log_settings.log_group_skip_destroy" $als.log_group_skip_destroy "use deletion_policy: ABANDON to keep the log group on delete") }}
+{{- include "ack.unsupported" (list $ "stage_access_log_settings.log_group_class" $als.log_group_class "ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no logGroupClass field") }}

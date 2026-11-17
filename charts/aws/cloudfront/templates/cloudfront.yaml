@@ -1,0 +1,411 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf: OriginAccessControl, VPCOrigin, CachePolicy, OriginRequestPolicy,
+ResponseHeadersPolicy, Function, and Distribution.
+*/ -}}
+{{- include "ack.names" (list $ (list "distribution")) -}}
+{{- $v := .Values -}}
+{{- if $v.create }}
+
+{{- /* Origin Access Controls */ -}}
+{{- range $ok := keys ($v.origin_access_control | default dict) | sortAlpha }}
+{{- $oac := index $v.origin_access_control $ok }}
+{{- $oacName := include "ack.cloudName" (list $ "originAccessControl" ($oac.name | default $ok) 64) }}
+
+---
+apiVersion: cloudfront.services.k8s.aws/v1alpha1
+kind: OriginAccessControl
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name (printf "oac-%s" $ok))) "id" (printf "origin-access-control/%s" $ok) "region" "") | nindent 2 }}
+spec:
+  originAccessControlConfig:
+    name: {{ $oacName | quote }}
+    originAccessControlOriginType: {{ $oac.origin_type | quote }}
+    signingBehavior: {{ $oac.signing_behavior | quote }}
+    signingProtocol: {{ $oac.signing_protocol | quote }}
+{{- with $oac.description }}
+    description: {{ . | quote }}
+{{- end }}
+{{- end }}
+
+{{- /* VPC Origins */ -}}
+{{- range $vk := keys ($v.vpc_origin | default dict) | sortAlpha }}
+{{- $vo := index $v.vpc_origin $vk }}
+{{- $voName := include "ack.cloudName" (list $ "vpcOrigin" ($vo.name | default $vk) 64) }}
+{{- $voTags := include "ack.tags" (list $ (merge (dict) ($vo.tags | default dict) ($v.tags | default dict))) | fromJson }}
+
+---
+apiVersion: cloudfront.services.k8s.aws/v1alpha1
+kind: VPCOrigin
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name (printf "vpcorigin-%s" $vk))) "id" (printf "vpc-origin/%s" $vk) "region" "") | nindent 2 }}
+spec:
+  vpcOriginEndpointConfig:
+    name: {{ $voName | quote }}
+    arn: {{ $vo.arn | quote }}
+    httpPort: {{ int64 $vo.http_port }}
+    httpsPort: {{ int64 $vo.https_port }}
+    originProtocolPolicy: {{ $vo.origin_protocol_policy | quote }}
+    originSSLProtocols:
+      items:
+{{- toYaml $vo.origin_ssl_protocols.items | nindent 8 }}
+{{- with $voTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* Cache Policies */ -}}
+{{- range $ck := keys ($v.cache_policies | default dict) | sortAlpha }}
+{{- $cp := index $v.cache_policies $ck }}
+{{- $cpName := include "ack.cloudName" (list $ "cachePolicy" ($cp.name | default $ck) 128) }}
+{{- $p := $cp.parameters_in_cache_key_and_forwarded_to_origin }}
+
+---
+apiVersion: cloudfront.services.k8s.aws/v1alpha1
+kind: CachePolicy
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name (printf "cp-%s" $ck))) "id" (printf "cache-policy/%s" $ck) "region" "") | nindent 2 }}
+spec:
+  cachePolicyConfig:
+    name: {{ $cpName | quote }}
+{{- with $cp.comment }}
+    comment: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $cp.default_ttl) }}
+    defaultTTL: {{ int64 $cp.default_ttl }}
+{{- end }}
+{{- if not (kindIs "invalid" $cp.max_ttl) }}
+    maxTTL: {{ int64 $cp.max_ttl }}
+{{- end }}
+    minTTL: {{ int64 $cp.min_ttl }}
+    parametersInCacheKeyAndForwardedToOrigin:
+{{- if not (kindIs "invalid" $p.enable_accept_encoding_brotli) }}
+      enableAcceptEncodingBrotli: {{ $p.enable_accept_encoding_brotli }}
+{{- end }}
+{{- if not (kindIs "invalid" $p.enable_accept_encoding_gzip) }}
+      enableAcceptEncodingGzip: {{ $p.enable_accept_encoding_gzip }}
+{{- end }}
+      cookiesConfig:
+        cookieBehavior: {{ $p.cookies_config.cookie_behavior | quote }}
+{{- if and $p.cookies_config.cookies $p.cookies_config.cookies.items }}
+        cookies:
+          items:
+{{- toYaml $p.cookies_config.cookies.items | nindent 12 }}
+{{- end }}
+      headersConfig:
+        headerBehavior: {{ $p.headers_config.header_behavior | quote }}
+{{- if and $p.headers_config.headers $p.headers_config.headers.items }}
+        headers:
+          items:
+{{- toYaml $p.headers_config.headers.items | nindent 12 }}
+{{- end }}
+      queryStringsConfig:
+        queryStringBehavior: {{ $p.query_strings_config.query_string_behavior | quote }}
+{{- if and $p.query_strings_config.query_strings $p.query_strings_config.query_strings.items }}
+        queryStrings:
+          items:
+{{- toYaml $p.query_strings_config.query_strings.items | nindent 12 }}
+{{- end }}
+{{- end }}
+
+{{- /* Origin Request Policies */ -}}
+{{- range $rk := keys ($v.origin_request_policies | default dict) | sortAlpha }}
+{{- $orp := index $v.origin_request_policies $rk }}
+{{- $orpName := include "ack.cloudName" (list $ "originRequestPolicy" ($orp.name | default $rk) 128) }}
+
+---
+apiVersion: cloudfront.services.k8s.aws/v1alpha1
+kind: OriginRequestPolicy
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name (printf "orp-%s" $rk))) "id" (printf "origin-request-policy/%s" $rk) "region" "") | nindent 2 }}
+spec:
+  originRequestPolicyConfig:
+    name: {{ $orpName | quote }}
+{{- with $orp.comment }}
+    comment: {{ . | quote }}
+{{- end }}
+    cookiesConfig:
+      cookieBehavior: {{ $orp.cookies_config.cookie_behavior | quote }}
+{{- if and $orp.cookies_config.cookies $orp.cookies_config.cookies.items }}
+      cookies:
+        items:
+{{- toYaml $orp.cookies_config.cookies.items | nindent 10 }}
+{{- end }}
+    headersConfig:
+      headerBehavior: {{ $orp.headers_config.header_behavior | quote }}
+{{- if and $orp.headers_config.headers $orp.headers_config.headers.items }}
+      headers:
+        items:
+{{- toYaml $orp.headers_config.headers.items | nindent 10 }}
+{{- end }}
+    queryStringsConfig:
+      queryStringBehavior: {{ $orp.query_strings_config.query_string_behavior | quote }}
+{{- if and $orp.query_strings_config.query_strings $orp.query_strings_config.query_strings.items }}
+      queryStrings:
+        items:
+{{- toYaml $orp.query_strings_config.query_strings.items | nindent 10 }}
+{{- end }}
+{{- end }}
+
+{{- /* Response Headers Policies */ -}}
+{{- range $rhk := keys ($v.response_headers_policies | default dict) | sortAlpha }}
+{{- $rhp := index $v.response_headers_policies $rhk }}
+{{- $rhpName := include "ack.cloudName" (list $ "responseHeadersPolicy" ($rhp.name | default $rhk) 128) }}
+
+---
+apiVersion: cloudfront.services.k8s.aws/v1alpha1
+kind: ResponseHeadersPolicy
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name (printf "rhp-%s" $rhk))) "id" (printf "response-headers-policy/%s" $rhk) "region" "") | nindent 2 }}
+spec:
+  responseHeadersPolicyConfig:
+    name: {{ $rhpName | quote }}
+{{- with $rhp.comment }}
+    comment: {{ . | quote }}
+{{- end }}
+{{- end }}
+
+{{- /* CloudFront Functions */ -}}
+{{- range $fk := keys ($v.cloudfront_functions | default dict) | sortAlpha }}
+{{- $fn := index $v.cloudfront_functions $fk }}
+{{- $fnName := include "ack.cloudName" (list $ "function" ($fn.name | default $fk) 64) }}
+
+---
+apiVersion: cloudfront.services.k8s.aws/v1alpha1
+kind: Function
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name (printf "fn-%s" $fk))) "id" (printf "function/%s" $fk) "region" "") | nindent 2 }}
+spec:
+  name: {{ $fnName | quote }}
+  functionCode: {{ $fn.code | b64enc | quote }}
+  functionConfig:
+    runtime: {{ $fn.runtime | default "cloudfront-js-2.0" | quote }}
+{{- with $fn.comment }}
+    comment: {{ . | quote }}
+{{- end }}
+{{- end }}
+
+{{- /* Distribution */ -}}
+{{- if and (gt (len ($v.origin | default dict)) 0) (gt (len ($v.default_cache_behavior | default dict)) 0) }}
+{{- $distTags := include "ack.tags" (list $ ($v.tags | default dict)) | fromJson }}
+{{- $dcb := $v.default_cache_behavior }}
+
+---
+apiVersion: cloudfront.services.k8s.aws/v1alpha1
+kind: Distribution
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "distribution")) "id" "distribution" "region" "") | nindent 2 }}
+spec:
+  distributionConfig:
+    enabled: {{ $v.enabled }}
+{{- with $v.comment }}
+    comment: {{ . | quote }}
+{{- end }}
+{{- with $v.default_root_object }}
+    defaultRootObject: {{ . | quote }}
+{{- end }}
+{{- with $v.http_version }}
+    httpVersion: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.is_ipv6_enabled) }}
+    isIPV6Enabled: {{ $v.is_ipv6_enabled }}
+{{- end }}
+{{- with $v.price_class }}
+    priceClass: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.staging) }}
+    staging: {{ $v.staging }}
+{{- end }}
+{{- with $v.web_acl_id }}
+    webACLID: {{ . | quote }}
+{{- end }}
+{{- with $v.anycast_ip_list_id }}
+    anycastIPListID: {{ . | quote }}
+{{- end }}
+{{- with $v.continuous_deployment_policy_id }}
+    continuousDeploymentPolicyID: {{ . | quote }}
+{{- end }}
+{{- with $v.connection_function_association_id }}
+    connectionFunctionAssociation:
+      id: {{ . | quote }}
+{{- end }}
+{{- with $v.cache_tag_config }}
+    cacheTagConfig:
+      headerName: {{ .header_name | quote }}
+{{- end }}
+{{- with $v.aliases }}
+    aliases:
+      items:
+{{- toYaml . | nindent 8 }}
+{{- end }}
+{{- with $v.logging_config }}
+    logging:
+      enabled: true
+{{- with .bucket }}
+      bucket: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .include_cookies) }}
+      includeCookies: {{ .include_cookies }}
+{{- end }}
+{{- with .prefix }}
+      prefix: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with $v.custom_error_response }}
+    customErrorResponses:
+      items:
+{{- range $cer := . }}
+        - errorCode: {{ int64 $cer.error_code }}
+{{- if not (kindIs "invalid" $cer.error_caching_min_ttl) }}
+          errorCachingMinTTL: {{ int64 $cer.error_caching_min_ttl }}
+{{- end }}
+{{- if not (kindIs "invalid" $cer.response_code) }}
+          responseCode: {{ $cer.response_code | int64 | toString | quote }}
+{{- end }}
+{{- with $cer.response_page_path }}
+          responsePagePath: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+    origins:
+      items:
+{{- range $ok := keys ($v.origin | default dict) | sortAlpha }}
+{{- $o := index $v.origin $ok }}
+        - id: {{ ($o.origin_id | default $ok) | quote }}
+          domainName: {{ $o.domain_name | quote }}
+{{- with $o.origin_path }}
+          originPath: {{ . | quote }}
+{{- end }}
+{{- with $o.origin_access_control_id }}
+          originAccessControlID: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $o.connection_attempts) }}
+          connectionAttempts: {{ int64 $o.connection_attempts }}
+{{- end }}
+{{- if not (kindIs "invalid" $o.connection_timeout) }}
+          connectionTimeout: {{ int64 $o.connection_timeout }}
+{{- end }}
+{{- if not (kindIs "invalid" $o.response_completion_timeout) }}
+          responseCompletionTimeout: {{ int64 $o.response_completion_timeout }}
+{{- end }}
+{{- with $o.custom_header }}
+          customHeaders:
+            items:
+{{- range $hk := keys . | sortAlpha }}
+              - headerName: {{ $hk | quote }}
+                headerValue: {{ index $o.custom_header $hk | quote }}
+{{- end }}
+{{- end }}
+{{- with $o.custom_origin_config }}
+          customOriginConfig:
+            httpPort: {{ int64 .http_port }}
+            httpsPort: {{ int64 .https_port }}
+            originProtocolPolicy: {{ .origin_protocol_policy | quote }}
+{{- if not (kindIs "invalid" .origin_keepalive_timeout) }}
+            originKeepaliveTimeout: {{ int64 .origin_keepalive_timeout }}
+{{- end }}
+{{- if not (kindIs "invalid" .origin_read_timeout) }}
+            originReadTimeout: {{ int64 .origin_read_timeout }}
+{{- end }}
+{{- with .origin_ssl_protocols }}
+            originSSLProtocols:
+              items:
+{{- toYaml . | nindent 16 }}
+{{- end }}
+{{- else }}
+          s3OriginConfig:
+            originAccessIdentity: ""
+{{- end }}
+{{- with $o.origin_shield }}
+          originShield:
+            enabled: {{ .enabled }}
+{{- with .origin_shield_region }}
+            originShieldRegion: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with $o.vpc_origin_config }}
+          vpcOriginConfig:
+{{- with .vpc_origin_id }}
+            vpcOriginID: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .origin_keepalive_timeout) }}
+            originKeepaliveTimeout: {{ int64 .origin_keepalive_timeout }}
+{{- end }}
+{{- if not (kindIs "invalid" .origin_read_timeout) }}
+            originReadTimeout: {{ int64 .origin_read_timeout }}
+{{- end }}
+{{- end }}
+{{- end }}
+    defaultCacheBehavior:
+      targetOriginID: {{ $dcb.target_origin_id | quote }}
+      viewerProtocolPolicy: {{ ($dcb.viewer_protocol_policy | default "https-only") | quote }}
+      allowedMethods:
+        items:
+{{- toYaml ($dcb.allowed_methods | default (list "GET" "HEAD" "OPTIONS")) | nindent 10 }}
+        cachedMethods:
+          items:
+{{- toYaml ($dcb.cached_methods | default (list "GET" "HEAD")) | nindent 12 }}
+{{- if not (kindIs "invalid" $dcb.compress) }}
+      compress: {{ $dcb.compress }}
+{{- end }}
+{{- with $dcb.cache_policy_id }}
+      cachePolicyID: {{ . | quote }}
+{{- end }}
+{{- with $dcb.origin_request_policy_id }}
+      originRequestPolicyID: {{ . | quote }}
+{{- end }}
+{{- with $dcb.response_headers_policy_id }}
+      responseHeadersPolicyID: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $dcb.min_ttl) }}
+      minTTL: {{ int64 $dcb.min_ttl }}
+{{- end }}
+{{- if not (kindIs "invalid" $dcb.default_ttl) }}
+      defaultTTL: {{ int64 $dcb.default_ttl }}
+{{- end }}
+{{- if not (kindIs "invalid" $dcb.max_ttl) }}
+      maxTTL: {{ int64 $dcb.max_ttl }}
+{{- end }}
+{{- if not $dcb.cache_policy_id }}
+{{- $fv := $dcb.forwarded_values | default (dict "query_string" false "cookies" (dict "forward" "none")) }}
+      forwardedValues:
+        queryString: {{ $fv.query_string | default false }}
+        cookies:
+          forward: {{ ($fv.cookies.forward | default "none") | quote }}
+{{- end }}
+    restrictions:
+      geoRestriction:
+        restrictionType: {{ ($v.restrictions.geo_restriction.restriction_type | default "none") | quote }}
+{{- with $v.restrictions.geo_restriction.locations }}
+        items:
+{{- toYaml . | nindent 10 }}
+{{- end }}
+    viewerCertificate:
+{{- if $v.viewer_certificate.acm_certificate_arn }}
+      acmCertificateARN: {{ $v.viewer_certificate.acm_certificate_arn | quote }}
+{{- with $v.viewer_certificate.ssl_support_method }}
+      sslSupportMethod: {{ . | quote }}
+{{- end }}
+{{- with $v.viewer_certificate.minimum_protocol_version }}
+      minimumProtocolVersion: {{ . | quote }}
+{{- end }}
+{{- else if $v.viewer_certificate.iam_certificate_id }}
+      iamCertificateID: {{ $v.viewer_certificate.iam_certificate_id | quote }}
+{{- with $v.viewer_certificate.ssl_support_method }}
+      sslSupportMethod: {{ . | quote }}
+{{- end }}
+{{- with $v.viewer_certificate.minimum_protocol_version }}
+      minimumProtocolVersion: {{ . | quote }}
+{{- end }}
+{{- else }}
+      cloudFrontDefaultCertificate: true
+{{- end }}
+{{- with $distTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}

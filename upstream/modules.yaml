@@ -1704,7 +1704,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/cloudfront/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-cloudfront/tree/v6.7.1
-    chart: null
+    chart: charts/aws/cloudfront
   - id: aws/eks-pod-identity
     cloud: aws
     module: eks-pod-identity
@@ -1872,7 +1872,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/apigateway-v2/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-apigateway-v2/tree/v6.1.1
-    chart: null
+    chart: charts/aws/apigateway-v2
   - id: aws/notify-slack
     cloud: aws
     module: notify-slack
@@ -1886,7 +1886,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/notify-slack/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-notify-slack/tree/v7.5.2
-    chart: null
+    chart: charts/aws/notify-slack
   - id: aws/opensearch
     cloud: aws
     module: opensearch

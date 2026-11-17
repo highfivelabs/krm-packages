@@ -1,0 +1,39 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package manifest for apigateway-v2.
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: aws-apigateway-v2
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [ack]
+  outputs:
+    api_id: >-
+      'api' in resources && has(resources.api.status.apiID) ? resources.api.status.apiID : ""
+    api_endpoint: >-
+      'api' in resources && has(resources.api.status.apiEndpoint) ? resources.api.status.apiEndpoint : ""
+    api_arn: >-
+      'api' in resources && has(resources.api.status.ackResourceMetadata.arn) ? resources.api.status.ackResourceMetadata.arn : ""
+    domain_name_id: >-
+      'domain-name' in resources ? resources['domain-name'].spec.domainName : ""
+    domain_name_arn: >-
+      'domain-name' in resources && has(resources['domain-name'].status.ackResourceMetadata.arn) ? resources['domain-name'].status.ackResourceMetadata.arn : ""
+    domain_name_api_mapping_selection_expression: >-
+      'domain-name' in resources && has(resources['domain-name'].status.apiMappingSelectionExpression) ? resources['domain-name'].status.apiMappingSelectionExpression : ""
+    domain_name_configuration: >-
+      'domain-name' in resources && has(resources['domain-name'].status.domainNameConfigurations) ? resources['domain-name'].status.domainNameConfigurations : []
+    domain_name_target_domain_name: >-
+      'domain-name' in resources && has(resources['domain-name'].status.domainNameConfigurations) && size(resources['domain-name'].status.domainNameConfigurations) > 0 ? resources['domain-name'].status.domainNameConfigurations[0].targetDomainName : ""
+    domain_name_hosted_zone_id: >-
+      'domain-name' in resources && has(resources['domain-name'].status.domainNameConfigurations) && size(resources['domain-name'].status.domainNameConfigurations) > 0 ? resources['domain-name'].status.domainNameConfigurations[0].hostedZoneID : ""
+    stage_id: >-
+      'stage' in resources ? resources.stage.spec.stageName : ""
+    stage_invoke_url: >-
+      'api' in resources && has(resources.api.status.apiEndpoint) ? resources.api.status.apiEndpoint : ""
+    stage_access_logs_cloudwatch_log_group_name: >-
+      'access-logs' in resources ? resources['access-logs'].spec.name : ""
+    stage_access_logs_cloudwatch_log_group_arn: >-
+      'access-logs' in resources && has(resources['access-logs'].status.ackResourceMetadata.arn) ? resources['access-logs'].status.ackResourceMetadata.arn : ""

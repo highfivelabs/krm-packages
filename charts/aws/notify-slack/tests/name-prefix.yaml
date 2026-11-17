@@ -1,0 +1,10 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+exempt:
+  Subscription: AWS names a subscription by the ARN it assigns
+  Permission: Lambda Permission is scoped by statementID on its Function
+nameFields:
+  LogGroup: name
+  Topic: name
+  Role: name
+  Function: name

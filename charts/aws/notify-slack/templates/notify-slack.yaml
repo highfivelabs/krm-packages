@@ -1,0 +1,298 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf: CloudWatch LogGroup, SNS Topic (and optional feedback IAM Role),
+Lambda IAM Role, Lambda Function, SNS Subscription, and optional
+ack-extensions Lambda Permission (allow_alpha: true).
+*/ -}}
+{{- include "ack.names" (list $ (list "topic" "function" "role" "logGroup" "feedbackRole")) -}}
+{{- $v := .Values -}}
+{{- if and $v.create $v.putin_khuylo }}
+{{- $region := $v.region | default "" -}}
+{{- $part := $v.partition | default "aws" -}}
+{{- $fnName := include "ack.resourceName" (list $ "function" "Lambda function" ($v.lambda_function_name | default "") 64) -}}
+{{- if not $fnName }}
+{{- fail "notify-slack: lambda_function_name is required (or names.function)" }}
+{{- end }}
+{{- $topicName := include "ack.resourceName" (list $ "topic" "SNS topic" ($v.sns_topic_name | default "") 256) -}}
+{{- if not $topicName }}
+{{- fail "notify-slack: sns_topic_name is required (or names.topic)" }}
+{{- end }}
+{{- $lgName := printf "/aws/lambda/%s" $fnName -}}
+{{- with index ($v.names | default dict) "logGroup" }}
+{{- $lgName = include "ack.resourceName" (list $ "logGroup" "CloudWatch log group" "" 512) }}
+{{- end }}
+{{- $fnK8s := include "ack.name" (list .Release.Name "function") -}}
+{{- $topicK8s := include "ack.name" (list .Release.Name "topic") -}}
+{{- $roleK8s := include "ack.name" (list .Release.Name "role") -}}
+{{- $feedbackRoleK8s := include "ack.name" (list .Release.Name "sns-feedback-role") -}}
+
+{{- /* CloudWatch LogGroup */ -}}
+{{- $lgTags := include "ack.tags" (list $ (merge (dict) ($v.cloudwatch_log_group_tags | default dict) ($v.tags | default dict))) | fromJson }}
+---
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "log-group")) "id" "log-group" "region" $region) | nindent 2 }}
+spec:
+  name: {{ $lgName | quote }}
+{{- if and (not (kindIs "invalid" $v.cloudwatch_log_group_retention_in_days)) (gt (int64 $v.cloudwatch_log_group_retention_in_days) 0) }}
+  retentionDays: {{ int64 $v.cloudwatch_log_group_retention_in_days }}
+{{- end }}
+{{- with $v.cloudwatch_log_group_kms_key_id }}
+  kmsKeyID: {{ . | quote }}
+{{- end }}
+{{- with $lgTags }}
+  tags:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+
+{{- /* SNS Feedback IAM Role */ -}}
+{{- $createFeedbackRole := and $v.create_sns_topic $v.enable_sns_topic_delivery_status_logs (not $v.sns_topic_lambda_feedback_role_arn) -}}
+{{- $feedbackRoleARN := $v.sns_topic_lambda_feedback_role_arn | default "" -}}
+{{- if $createFeedbackRole }}
+{{- $fbName := include "ack.resourceName" (list $ "feedbackRole" "SNS feedback IAM role" ($v.sns_topic_feedback_role_name | default (printf "%s-sns-feedback" $topicName)) 64) -}}
+{{- if not $v.account_id }}
+{{- fail "notify-slack: account_id is required when enable_sns_topic_delivery_status_logs is true without sns_topic_lambda_feedback_role_arn" }}
+{{- end }}
+{{- $fbPath := $v.sns_topic_feedback_role_path | default "/" -}}
+{{- if not (hasPrefix "/" $fbPath) }}{{- $fbPath = printf "/%s" $fbPath -}}{{- end }}
+{{- if not (hasSuffix "/" $fbPath) }}{{- $fbPath = printf "%s/" $fbPath -}}{{- end }}
+{{- $feedbackRoleARN = printf "arn:%s:iam::%s:role%s%s" $part $v.account_id $fbPath $fbName -}}
+{{- $fbTags := include "ack.tags" (list $ (merge (dict) ($v.sns_topic_feedback_role_tags | default dict) ($v.tags | default dict))) | fromJson }}
+
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $feedbackRoleK8s "id" "sns-feedback-role" "region" "") | nindent 2 }}
+spec:
+  name: {{ $fbName | quote }}
+  assumeRolePolicyDocument: {{ toJson (dict "Version" "2012-10-17" "Statement" (list (dict "Effect" "Allow" "Principal" (dict "Service" "sns.amazonaws.com") "Action" "sts:AssumeRole"))) | quote }}
+{{- with $v.sns_topic_feedback_role_description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with $v.sns_topic_feedback_role_path }}
+  path: {{ . | quote }}
+{{- end }}
+{{- with $v.sns_topic_feedback_role_permissions_boundary }}
+  permissionsBoundary: {{ . | quote }}
+{{- end }}
+  inlinePolicies:
+    sns-delivery-logs: {{ toJson (dict "Version" "2012-10-17" "Statement" (list (dict "Effect" "Allow" "Action" (list "logs:CreateLogGroup" "logs:CreateLogStream" "logs:PutLogEvents" "logs:PutMetricFilter" "logs:PutRetentionPolicy") "Resource" "*"))) | quote }}
+{{- with $fbTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* SNS Topic */ -}}
+{{- if $v.create_sns_topic }}
+{{- $topicTags := include "ack.tags" (list $ (merge (dict) ($v.sns_topic_tags | default dict) ($v.tags | default dict))) | fromJson }}
+---
+apiVersion: sns.services.k8s.aws/v1alpha1
+kind: Topic
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $topicK8s "id" "topic" "region" $region) | nindent 2 }}
+spec:
+  name: {{ $topicName | quote }}
+{{- with $v.sns_topic_kms_key_id }}
+  kmsMasterKeyID: {{ . | quote }}
+{{- end }}
+{{- with $v.sns_topic_policy }}
+  policy: {{ . | quote }}
+{{- end }}
+{{- if $v.enable_sns_topic_delivery_status_logs }}
+  lambdaFailureFeedbackRoleARN: {{ $feedbackRoleARN | quote }}
+  lambdaSuccessFeedbackRoleARN: {{ $feedbackRoleARN | quote }}
+{{- if not (kindIs "invalid" $v.sns_topic_lambda_feedback_sample_rate) }}
+  lambdaSuccessFeedbackSampleRate: {{ $v.sns_topic_lambda_feedback_sample_rate | int64 | toString | quote }}
+{{- end }}
+{{- end }}
+{{- with $topicTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* Lambda IAM Role */ -}}
+{{- $createRole := eq ($v.lambda_role | default "") "" -}}
+{{- if $createRole }}
+{{- $roleDefault := printf "%s-%s" ($v.iam_role_name_prefix | default "lambda") $fnName -}}
+{{- $roleName := include "ack.resourceName" (list $ "role" "Lambda IAM role" $roleDefault 64) -}}
+{{- $logArn := "*" -}}
+{{- if and $v.account_id $region -}}
+{{- $logArn = printf "arn:%s:logs:%s:%s:log-group:%s:*" $part $region $v.account_id $lgName -}}
+{{- end -}}
+{{- $stmts := list
+  (dict "Sid" "AllowWriteToCloudwatchLogs" "Effect" "Allow" "Action" (list "logs:CreateLogStream" "logs:PutLogEvents") "Resource" (list $logArn))
+  (dict "Sid" "AllowSecurityHub" "Effect" "Allow" "Action" (list "securityhub:BatchUpdateFindings") "Resource" (list "*"))
+-}}
+{{- if $v.kms_key_arn }}
+{{- $stmts = append $stmts (dict "Sid" "AllowKMSDecrypt" "Effect" "Allow" "Action" (list "kms:Decrypt") "Resource" (list $v.kms_key_arn)) }}
+{{- end }}
+{{- if and $v.lambda_attach_dead_letter_policy $v.lambda_dead_letter_target_arn }}
+{{- $stmts = append $stmts (dict "Sid" "AllowDeadLetter" "Effect" "Allow" "Action" (list "sqs:SendMessage" "sns:Publish") "Resource" (list $v.lambda_dead_letter_target_arn)) }}
+{{- end }}
+{{- $managed := list -}}
+{{- if $v.lambda_function_vpc_subnet_ids }}
+{{- $managed = append $managed (printf "arn:%s:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole" $part) }}
+{{- end }}
+{{- $roleTags := include "ack.tags" (list $ (merge (dict) ($v.iam_role_tags | default dict) ($v.tags | default dict))) | fromJson }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $roleK8s "id" "role" "region" "") | nindent 2 }}
+spec:
+  name: {{ $roleName | quote }}
+  assumeRolePolicyDocument: {{ toJson (dict "Version" "2012-10-17" "Statement" (list (dict "Effect" "Allow" "Principal" (dict "Service" "lambda.amazonaws.com") "Action" "sts:AssumeRole"))) | quote }}
+{{- with $v.iam_role_path }}
+  path: {{ . | quote }}
+{{- end }}
+{{- with $v.iam_role_boundary_policy_arn }}
+  permissionsBoundary: {{ . | quote }}
+{{- end }}
+{{- with $managed }}
+  policies:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+  inlinePolicies:
+    lambda: {{ toJson (dict "Version" "2012-10-17" "Statement" $stmts) | quote }}
+{{- with $roleTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{/* Lambda Function */}}
+{{- if and (not $v.image_uri) (not $v.s3_existing_package) }}
+{{- fail "notify-slack: image_uri or s3_existing_package is required (local zip packaging is not portable)" }}
+{{- end }}
+{{- $fnTags := include "ack.tags" (list $ (merge (dict) ($v.lambda_function_tags | default dict) ($v.tags | default dict))) | fromJson }}
+{{- $env := dict "SLACK_CHANNEL" ($v.slack_channel | default "") "SLACK_USERNAME" ($v.slack_username | default "") "SLACK_EMOJI" ($v.slack_emoji | default ":aws:") "LOG_EVENTS" (ternary "True" "False" $v.log_events) "LOG_LEVEL" ($v.log_level | default "INFO") }}
+{{- if $v.slack_webhook_url }}
+{{- $_ := set $env "SLACK_WEBHOOK_URL" $v.slack_webhook_url }}
+{{- end }}
+
+---
+apiVersion: lambda.services.k8s.aws/v1alpha1
+kind: Function
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $fnK8s "id" "function" "region" $region) | nindent 2 }}
+spec:
+  name: {{ $fnName | quote }}
+{{- if $createRole }}
+  roleRef:
+    from:
+      name: {{ $roleK8s | quote }}
+{{- else }}
+  role: {{ $v.lambda_role | quote }}
+{{- end }}
+  code:
+{{- if $v.image_uri }}
+    imageURI: {{ $v.image_uri | quote }}
+{{- else }}
+    s3Bucket: {{ ($v.s3_existing_package.bucket | default $v.lambda_function_s3_bucket) | quote }}
+    s3Key: {{ $v.s3_existing_package.key | quote }}
+{{- with $v.s3_existing_package.version_id }}
+    s3ObjectVersion: {{ . | quote }}
+{{- end }}
+{{- end }}
+  packageType: {{ ternary "Image" "Zip" (not (not $v.image_uri)) | quote }}
+{{- if not $v.image_uri }}
+  handler: "notify_slack.lambda_handler"
+{{- with $v.runtime }}
+  runtime: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with $v.lambda_description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with $v.architectures }}
+  architectures:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+  timeout: 30
+{{- with $v.kms_key_arn }}
+  kmsKeyARN: {{ . | quote }}
+{{- end }}
+{{- if and (not (kindIs "invalid" $v.reserved_concurrent_executions)) (ge (int64 $v.reserved_concurrent_executions) 0) }}
+  reservedConcurrentExecutions: {{ int64 $v.reserved_concurrent_executions }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.lambda_function_ephemeral_storage_size) }}
+  ephemeralStorage:
+    size: {{ int64 $v.lambda_function_ephemeral_storage_size }}
+{{- end }}
+{{- with $v.lambda_dead_letter_target_arn }}
+  deadLetterConfig:
+    targetARN: {{ . | quote }}
+{{- end }}
+  publish: true
+  environment:
+    variables:
+{{- toYaml $env | nindent 6 }}
+{{- if or $v.lambda_function_vpc_subnet_ids $v.lambda_function_vpc_security_group_ids }}
+  vpcConfig:
+{{- with $v.lambda_function_vpc_subnet_ids }}
+    subnetIDs:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- with $v.lambda_function_vpc_security_group_ids }}
+    securityGroupIDs:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- end }}
+{{- with $fnTags }}
+  tags:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+
+{{/* SNS Topic Subscription */}}
+{{- if or (not $v.account_id) (not $region) }}
+{{- fail "notify-slack: account_id and region are required to build the Lambda endpoint ARN (and topic ARN when create_sns_topic is false) for SNS Subscription" }}
+{{- end }}
+{{- $fnArn := printf "arn:%s:lambda:%s:%s:function:%s" $part $region $v.account_id $fnName }}
+
+---
+apiVersion: sns.services.k8s.aws/v1alpha1
+kind: Subscription
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "subscription")) "id" "subscription" "region" $region) | nindent 2 }}
+spec:
+{{- if $v.create_sns_topic }}
+  topicRef:
+    from:
+      name: {{ $topicK8s | quote }}
+{{- else }}
+  topicARN: {{ printf "arn:%s:sns:%s:%s:%s" $part $region $v.account_id $topicName | quote }}
+{{- end }}
+  protocol: "lambda"
+  endpoint: {{ $fnArn | quote }}
+{{- with $v.subscription_filter_policy }}
+  filterPolicy: {{ . | quote }}
+{{- end }}
+{{- with $v.subscription_filter_policy_scope }}
+  filterPolicyScope: {{ . | quote }}
+{{- end }}
+
+{{/* Lambda Permission for SNS (ack-extensions, allow_alpha: true) */}}
+{{- if $v.allow_alpha }}
+{{- $topicArn := printf "arn:%s:sns:%s:%s:%s" $part $region $v.account_id $topicName }}
+
+---
+apiVersion: lambda.aws.hfl.dev/v1alpha1
+kind: Permission
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "permission")) "id" "permission" "region" $region) | nindent 2 }}
+spec:
+  functionRef:
+    from:
+      name: {{ $fnK8s | quote }}
+  statementID: "AllowExecutionFromSNS"
+  action: "lambda:InvokeFunction"
+  principal: "sns.amazonaws.com"
+  sourceARN: {{ $topicArn | quote }}
+{{- end }}
+{{- end }}

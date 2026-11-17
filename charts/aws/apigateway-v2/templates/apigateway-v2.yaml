@@ -1,0 +1,459 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf: API, Authorizers, DomainName, APIMapping, VPCLinks, Integrations,
+Routes, Stage, and Stage Access Logs LogGroup.
+*/ -}}
+{{- include "ack.names" (list $ (list "api" "domainName" "stage" "logGroup")) -}}
+{{- $v := .Values -}}
+{{- if $v.create }}
+{{- $region := $v.region | default "" -}}
+{{- $part := $v.partition | default "aws" -}}
+{{- $apiName := include "ack.resourceName" (list $ "api" "API Gateway v2 API" ($v.name | default "") 128) -}}
+{{- if not $apiName }}
+{{- fail "apigateway-v2: name is required (or names.api)" }}
+{{- end }}
+{{- $apiK8s := include "ack.name" (list .Release.Name "api") -}}
+{{- $stageK8s := include "ack.name" (list .Release.Name "stage") -}}
+{{- $domainK8s := include "ack.name" (list .Release.Name "domain-name") -}}
+
+{{- /* API */ -}}
+{{- $apiTags := include "ack.tags" (list $ ($v.tags | default dict)) | fromJson }}
+
+---
+apiVersion: apigatewayv2.services.k8s.aws/v1alpha1
+kind: API
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $apiK8s "id" "api" "region" $region) | nindent 2 }}
+spec:
+  name: {{ $apiName | quote }}
+  protocolType: {{ $v.protocol_type | default "HTTP" | quote }}
+{{- with $v.api_key_selection_expression }}
+  apiKeySelectionExpression: {{ . | quote }}
+{{- end }}
+{{- with $v.body }}
+  body: {{ . | quote }}
+{{- end }}
+{{- with $v.cors_configuration }}
+  corsConfiguration:
+{{- if not (kindIs "invalid" .allow_credentials) }}
+    allowCredentials: {{ .allow_credentials }}
+{{- end }}
+{{- with .allow_headers }}
+    allowHeaders:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- with .allow_methods }}
+    allowMethods:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- with .allow_origins }}
+    allowOrigins:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- with .expose_headers }}
+    exposeHeaders:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- if not (kindIs "invalid" .max_age) }}
+    maxAge: {{ int64 .max_age }}
+{{- end }}
+{{- end }}
+{{- with $v.credentials_arn }}
+  credentialsARN: {{ . | quote }}
+{{- end }}
+{{- with $v.description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.disable_execute_api_endpoint) }}
+  disableExecuteAPIEndpoint: {{ $v.disable_execute_api_endpoint }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.fail_on_warnings) }}
+  failOnWarnings: {{ $v.fail_on_warnings }}
+{{- end }}
+{{- with $v.route_key }}
+  routeKey: {{ . | quote }}
+{{- end }}
+{{- with $v.route_selection_expression }}
+  routeSelectionExpression: {{ . | quote }}
+{{- end }}
+{{- with $v.target }}
+  target: {{ . | quote }}
+{{- end }}
+{{- with $v.api_version }}
+  version: {{ . | quote }}
+{{- end }}
+{{- with $apiTags }}
+  tags:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+
+{{- /* Authorizers */ -}}
+{{- range $ak := keys ($v.authorizers | default dict) | sortAlpha }}
+{{- $a := index $v.authorizers $ak }}
+{{- $authName := include "ack.cloudName" (list $ "authorizer" ($a.name | default $ak) 128) }}
+
+---
+apiVersion: apigatewayv2.services.k8s.aws/v1alpha1
+kind: Authorizer
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name (printf "auth-%s" $ak))) "id" (printf "authorizers/%s" $ak) "region" $region) | nindent 2 }}
+spec:
+  apiRef:
+    from:
+      name: {{ $apiK8s | quote }}
+  name: {{ $authName | quote }}
+  authorizerType: {{ $a.authorizer_type | default "REQUEST" | quote }}
+  identitySource:
+{{- toYaml ($a.identity_sources | default (list "$request.header.Authorization")) | nindent 4 }}
+{{- with $a.authorizer_credentials_arn }}
+  authorizerCredentialsARN: {{ . | quote }}
+{{- end }}
+{{- with $a.authorizer_payload_format_version }}
+  authorizerPayloadFormatVersion: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $a.authorizer_result_ttl_in_seconds) }}
+  authorizerResultTTLInSeconds: {{ int64 $a.authorizer_result_ttl_in_seconds }}
+{{- end }}
+{{- with $a.authorizer_uri }}
+  authorizerURI: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $a.enable_simple_responses) }}
+  enableSimpleResponses: {{ $a.enable_simple_responses }}
+{{- end }}
+{{- with $a.jwt_configuration }}
+  jwtConfiguration:
+{{- with .audience }}
+    audience:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+{{- with .issuer }}
+    issuer: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- /* VPC Links */ -}}
+{{- range $vk := keys ($v.vpc_links | default dict) | sortAlpha }}
+{{- $vl := index $v.vpc_links $vk }}
+{{- $vlName := include "ack.cloudName" (list $ "vpcLink" ($vl.name | default $vk) 128) }}
+{{- $vlTags := include "ack.tags" (list $ (merge (dict) ($vl.tags | default dict) ($v.vpc_link_tags | default dict) ($v.tags | default dict))) | fromJson }}
+
+---
+apiVersion: apigatewayv2.services.k8s.aws/v1alpha1
+kind: VPCLink
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name (printf "vpclink-%s" $vk))) "id" (printf "vpc-links/%s" $vk) "region" $region) | nindent 2 }}
+spec:
+  name: {{ $vlName | quote }}
+{{- with $vl.security_group_ids }}
+  securityGroupIDs:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $vl.subnet_ids }}
+  subnetIDs:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $vlTags }}
+  tags:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* Integrations and Routes */ -}}
+{{- if $v.create_routes_and_integrations }}
+{{- range $rk := keys ($v.routes | default dict) | sortAlpha }}
+{{- $r := index $v.routes $rk }}
+{{- $int := $r.integration | default dict }}
+{{- $intK8s := include "ack.name" (list $.Release.Name (printf "int-%s" $rk)) }}
+
+---
+apiVersion: apigatewayv2.services.k8s.aws/v1alpha1
+kind: Integration
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $intK8s "id" (printf "integrations/%s" $rk) "region" $region) | nindent 2 }}
+spec:
+  apiRef:
+    from:
+      name: {{ $apiK8s | quote }}
+  integrationType: {{ $int.type | default "AWS_PROXY" | quote }}
+{{- if $int.vpc_link_key }}
+  connectionRef:
+    from:
+      name: {{ include "ack.name" (list $.Release.Name (printf "vpclink-%s" $int.vpc_link_key)) | quote }}
+{{- else if $int.connection_id }}
+  connectionID: {{ $int.connection_id | quote }}
+{{- end }}
+{{- with $int.connection_type }}
+  connectionType: {{ . | quote }}
+{{- end }}
+{{- with $int.content_handling_strategy }}
+  contentHandlingStrategy: {{ . | quote }}
+{{- end }}
+{{- with $int.credentials_arn }}
+  credentialsARN: {{ . | quote }}
+{{- end }}
+{{- with $int.description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with $int.method }}
+  integrationMethod: {{ . | quote }}
+{{- end }}
+{{- with $int.subtype }}
+  integrationSubtype: {{ . | quote }}
+{{- end }}
+{{- with $int.uri }}
+  integrationURI: {{ . | quote }}
+{{- end }}
+{{- with $int.passthrough_behavior }}
+  passthroughBehavior: {{ . | quote }}
+{{- end }}
+{{- with $int.payload_format_version }}
+  payloadFormatVersion: {{ . | quote }}
+{{- end }}
+{{- with $int.request_parameters }}
+  requestParameters:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $int.request_templates }}
+  requestTemplates:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $int.response_parameters }}
+  responseParameters:
+{{- range $rp := . }}
+    {{ $rp.status_code | quote }}:
+{{- toYaml $rp.mappings | nindent 6 }}
+{{- end }}
+{{- end }}
+{{- with $int.template_selection_expression }}
+  templateSelectionExpression: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $int.timeout_milliseconds) }}
+  timeoutInMillis: {{ int64 $int.timeout_milliseconds }}
+{{- end }}
+{{- with $int.tls_config }}
+  tlsConfig:
+{{- with .server_name_to_verify }}
+    serverNameToVerify: {{ . | quote }}
+{{- end }}
+{{- end }}
+
+---
+apiVersion: apigatewayv2.services.k8s.aws/v1alpha1
+kind: Route
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name (printf "route-%s" $rk))) "id" (printf "routes/%s" $rk) "region" $region) | nindent 2 }}
+spec:
+  apiRef:
+    from:
+      name: {{ $apiK8s | quote }}
+  routeKey: {{ $rk | quote }}
+  targetRef:
+    from:
+      name: {{ $intK8s | quote }}
+{{- if $r.authorizer_key }}
+  authorizerRef:
+    from:
+      name: {{ include "ack.name" (list $.Release.Name (printf "auth-%s" $r.authorizer_key)) | quote }}
+{{- else if $r.authorizer_id }}
+  authorizerID: {{ $r.authorizer_id | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $r.api_key_required) }}
+  apiKeyRequired: {{ $r.api_key_required }}
+{{- end }}
+{{- with $r.authorization_scopes }}
+  authorizationScopes:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $r.authorization_type }}
+  authorizationType: {{ . | quote }}
+{{- end }}
+{{- with $r.model_selection_expression }}
+  modelSelectionExpression: {{ . | quote }}
+{{- end }}
+{{- with $r.operation_name }}
+  operationName: {{ . | quote }}
+{{- end }}
+{{- with $r.request_models }}
+  requestModels:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- if and $r.request_parameter $r.request_parameter.request_parameter_key }}
+  requestParameters:
+    {{ $r.request_parameter.request_parameter_key | quote }}:
+      required: {{ $r.request_parameter.required | default false }}
+{{- end }}
+{{- with $r.route_response_selection_expression }}
+  routeResponseSelectionExpression: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- /* Stage Access Logs LogGroup */ -}}
+{{- $als := $v.stage_access_log_settings | default dict -}}
+{{- $createLogGroup := and $v.create_stage (gt (len $als) 0) (ne (toString $als.create_log_group) "false") (not $als.destination_arn) -}}
+{{- $destArn := $als.destination_arn | default "" -}}
+{{- if $createLogGroup }}
+{{- $lgName := include "ack.resourceName" (list $ "logGroup" "API Gateway access log group" ($als.log_group_name | default (printf "/aws/apigateway/%s/%s" $apiName ($v.stage_name | default "$default"))) 512) -}}
+{{- if or (not $v.account_id) (not $region) }}
+{{- fail "apigateway-v2: account_id and region are required when stage_access_log_settings creates a CloudWatch LogGroup" }}
+{{- end }}
+{{- $destArn = printf "arn:%s:logs:%s:%s:log-group:%s" $part $region $v.account_id $lgName -}}
+{{- $lgTags := include "ack.tags" (list $ (merge (dict) ($als.log_group_tags | default dict) ($v.tags | default dict))) | fromJson }}
+
+---
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "access-logs")) "id" "access-logs" "region" $region) | nindent 2 }}
+spec:
+  name: {{ $lgName | quote }}
+{{- if not (kindIs "invalid" $als.log_group_retention_in_days) }}
+  retentionDays: {{ int64 $als.log_group_retention_in_days }}
+{{- end }}
+{{- with $als.log_group_kms_key_id }}
+  kmsKeyID: {{ . | quote }}
+{{- end }}
+{{- with $lgTags }}
+  tags:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* Stage */ -}}
+{{- if $v.create_stage }}
+{{- $stageName := include "ack.resourceName" (list $ "stage" "API Gateway stage" ($v.stage_name | default "$default") 128) -}}
+{{- $stageTags := include "ack.tags" (list $ (merge (dict) ($v.stage_tags | default dict) ($v.tags | default dict))) | fromJson -}}
+{{- $routeSettings := dict -}}
+{{- range $rk := keys ($v.routes | default dict) | sortAlpha }}
+{{- $r := index $v.routes $rk }}
+{{- $rs := dict -}}
+{{- if not (kindIs "invalid" $r.data_trace_enabled) }}{{- $_ := set $rs "dataTraceEnabled" $r.data_trace_enabled -}}{{- end }}
+{{- if not (kindIs "invalid" $r.detailed_metrics_enabled) }}{{- $_ := set $rs "detailedMetricsEnabled" $r.detailed_metrics_enabled -}}{{- end }}
+{{- with $r.logging_level }}{{- $_ := set $rs "loggingLevel" . -}}{{- end }}
+{{- if not (kindIs "invalid" $r.throttling_burst_limit) }}{{- $_ := set $rs "throttlingBurstLimit" (int64 $r.throttling_burst_limit) -}}{{- end }}
+{{- if not (kindIs "invalid" $r.throttling_rate_limit) }}{{- $_ := set $rs "throttlingRateLimit" $r.throttling_rate_limit -}}{{- end }}
+{{- if gt (len $rs) 0 }}{{- $_ := set $routeSettings $rk $rs -}}{{- end }}
+{{- end }}
+
+---
+apiVersion: apigatewayv2.services.k8s.aws/v1alpha1
+kind: Stage
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $stageK8s "id" "stage" "region" $region) | nindent 2 }}
+spec:
+  apiRef:
+    from:
+      name: {{ $apiK8s | quote }}
+  stageName: {{ $stageName | quote }}
+  autoDeploy: {{ $v.deploy_stage }}
+{{- if or $destArn $als.format }}
+  accessLogSettings:
+{{- with $destArn }}
+    destinationARN: {{ . | quote }}
+{{- end }}
+{{- with $als.format }}
+    format: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with $v.stage_client_certificate_id }}
+  clientCertificateID: {{ . | quote }}
+{{- end }}
+{{- with $v.stage_default_route_settings }}
+  defaultRouteSettings:
+{{- if not (kindIs "invalid" .data_trace_enabled) }}
+    dataTraceEnabled: {{ .data_trace_enabled }}
+{{- end }}
+{{- if not (kindIs "invalid" .detailed_metrics_enabled) }}
+    detailedMetricsEnabled: {{ .detailed_metrics_enabled }}
+{{- end }}
+{{- with .logging_level }}
+    loggingLevel: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .throttling_burst_limit) }}
+    throttlingBurstLimit: {{ int64 .throttling_burst_limit }}
+{{- end }}
+{{- if not (kindIs "invalid" .throttling_rate_limit) }}
+    throttlingRateLimit: {{ .throttling_rate_limit }}
+{{- end }}
+{{- end }}
+{{- with $v.stage_description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with $routeSettings }}
+  routeSettings:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $v.stage_variables }}
+  stageVariables:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $stageTags }}
+  tags:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* Domain Name and API Mapping */ -}}
+{{- if and $v.create_domain_name $v.domain_name }}
+{{- $domName := include "ack.resourceName" (list $ "domainName" "API Gateway domain name" $v.domain_name 512) -}}
+{{- $domTags := include "ack.tags" (list $ ($v.tags | default dict)) | fromJson }}
+
+---
+apiVersion: apigatewayv2.services.k8s.aws/v1alpha1
+kind: DomainName
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $domainK8s "id" "domain-name" "region" $region) | nindent 2 }}
+spec:
+  domainName: {{ $domName | quote }}
+{{- if or $v.domain_name_certificate_arn $v.domain_name_ownership_verification_certificate_arn }}
+  domainNameConfigurations:
+    - endpointType: REGIONAL
+      securityPolicy: TLS_1_2
+{{- with $v.domain_name_certificate_arn }}
+      certificateARN: {{ . | quote }}
+{{- end }}
+{{- with $v.domain_name_ownership_verification_certificate_arn }}
+      ownershipVerificationCertificateARN: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with $v.mutual_tls_authentication }}
+  mutualTLSAuthentication:
+{{- with .truststore_uri }}
+    truststoreURI: {{ . | quote }}
+{{- end }}
+{{- with .truststore_version }}
+    truststoreVersion: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with $domTags }}
+  tags:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+
+---
+apiVersion: apigatewayv2.services.k8s.aws/v1alpha1
+kind: APIMapping
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "api-mapping")) "id" "api-mapping" "region" $region) | nindent 2 }}
+spec:
+  apiRef:
+    from:
+      name: {{ $apiK8s | quote }}
+  domainRef:
+    from:
+      name: {{ $domainK8s | quote }}
+{{- if $v.create_stage }}
+  stageRef:
+    from:
+      name: {{ $stageK8s | quote }}
+{{- else }}
+  stage: {{ $v.stage_name | default "$default" | quote }}
+{{- end }}
+{{- with $v.api_mapping_key }}
+  apiMappingKey: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}

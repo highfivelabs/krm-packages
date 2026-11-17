@@ -1,0 +1,80 @@
+---
+# Source: apigateway-v2/templates/apigateway-v2.yaml
+apiVersion: apigatewayv2.services.k8s.aws/v1alpha1
+kind: API
+metadata:
+  name: mock-api
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: apigateway-v2
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "api"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "my-http-api"
+  protocolType: "HTTP"
+---
+# Source: apigateway-v2/templates/apigateway-v2.yaml
+apiVersion: apigatewayv2.services.k8s.aws/v1alpha1
+kind: Integration
+metadata:
+  name: mock-int-get-health-58bf5702
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: apigateway-v2
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "integrations/GET /health"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  apiRef:
+    from:
+      name: "mock-api"
+  integrationType: "HTTP_PROXY"
+  integrationMethod: "GET"
+  integrationURI: "https://example.com/health"
+---
+# Source: apigateway-v2/templates/apigateway-v2.yaml
+apiVersion: apigatewayv2.services.k8s.aws/v1alpha1
+kind: Route
+metadata:
+  name: mock-route-get-health-347322a6
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: apigateway-v2
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "routes/GET /health"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  apiRef:
+    from:
+      name: "mock-api"
+  routeKey: "GET /health"
+  targetRef:
+    from:
+      name: "mock-int-get-health-58bf5702"
+---
+# Source: apigateway-v2/templates/apigateway-v2.yaml
+apiVersion: apigatewayv2.services.k8s.aws/v1alpha1
+kind: Stage
+metadata:
+  name: mock-stage
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: apigateway-v2
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "stage"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  apiRef:
+    from:
+      name: "mock-api"
+  stageName: "$default"
+  autoDeploy: true

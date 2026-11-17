@@ -1,0 +1,23 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: v2
+name: cloudfront
+description: >-
+  A CloudFront distribution with its cache policies, origin request policies,
+  response headers policies, functions, origin access controls and VPC origins,
+  as AWS Controllers for Kubernetes (ACK) objects. A port of
+  terraform-aws-modules' cloudfront module.
+type: application
+version: 0.1.0
+# The module release this chart was ported from (UPSTREAM.md).
+appVersion: "terraform-aws-cloudfront-v6.7.1"
+kubeVersion: ">=1.27.0-0"
+keywords: [aws, ack, cloudfront, cdn, terraform-aws-modules]
+home: https://github.com/highfivelabs/catalog
+sources:
+  - https://github.com/terraform-aws-modules/terraform-aws-cloudfront/tree/5b9a0a480220b84f29f02d84ff71dd5340953f68
+annotations:
+  hfl.dev/source: terraform-aws-cloudfront
+  hfl.dev/source-version: v6.7.1
+  hfl.dev/source-commit: 5b9a0a480220b84f29f02d84ff71dd5340953f68
+  hfl.dev/ack-cloudfront-controller: "v1.11.0"

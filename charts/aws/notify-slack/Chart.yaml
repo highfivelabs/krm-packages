@@ -1,0 +1,25 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: v2
+name: notify-slack
+description: >-
+  An SNS topic, subscription, CloudWatch log group, IAM roles and Lambda
+  function to send AWS notifications to Slack, as AWS Controllers for
+  Kubernetes (ACK) objects. A port of terraform-aws-modules' notify-slack module.
+type: application
+version: 0.1.0
+# The module release this chart was ported from (UPSTREAM.md).
+appVersion: "terraform-aws-notify-slack-v7.5.2"
+kubeVersion: ">=1.27.0-0"
+keywords: [aws, ack, sns, lambda, slack, terraform-aws-modules]
+home: https://github.com/highfivelabs/catalog
+sources:
+  - https://github.com/terraform-aws-modules/terraform-aws-notify-slack/tree/a7765ac0a547f95c8aa48459f84077be8562c0f7
+annotations:
+  hfl.dev/source: terraform-aws-notify-slack
+  hfl.dev/source-version: v7.5.2
+  hfl.dev/source-commit: a7765ac0a547f95c8aa48459f84077be8562c0f7
+  hfl.dev/ack-sns-controller: "v1.13.0"
+  hfl.dev/ack-lambda-controller: "v1.19.0"
+  hfl.dev/ack-iam-controller: "v1.11.3"
+  hfl.dev/ack-cloudwatchlogs-controller: "v1.10.0"

@@ -1,0 +1,237 @@
+---
+# Source: apigateway-v2/templates/apigateway-v2.yaml
+apiVersion: apigatewayv2.services.k8s.aws/v1alpha1
+kind: API
+metadata:
+  name: full-api
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: apigateway-v2
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "api"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "orders-api"
+  protocolType: "HTTP"
+  corsConfiguration:
+    allowHeaders:
+      - Authorization
+    allowMethods:
+      - GET
+      - POST
+    allowOrigins:
+      - https://app.example.com
+    maxAge: 300
+  description: "Orders HTTP API"
+  disableExecuteAPIEndpoint: true
+  tags:
+    env: prod
+---
+# Source: apigateway-v2/templates/apigateway-v2.yaml
+apiVersion: apigatewayv2.services.k8s.aws/v1alpha1
+kind: APIMapping
+metadata:
+  name: full-api-mapping
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: apigateway-v2
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "api-mapping"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  apiRef:
+    from:
+      name: "full-api"
+  domainRef:
+    from:
+      name: "full-domain-name"
+  stageRef:
+    from:
+      name: "full-stage"
+  apiMappingKey: "v1"
+---
+# Source: apigateway-v2/templates/apigateway-v2.yaml
+apiVersion: apigatewayv2.services.k8s.aws/v1alpha1
+kind: Authorizer
+metadata:
+  name: full-auth-jwt
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: apigateway-v2
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "authorizers/jwt"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  apiRef:
+    from:
+      name: "full-api"
+  name: "jwt"
+  authorizerType: "JWT"
+  identitySource:
+    - $request.header.Authorization
+  jwtConfiguration:
+    audience:
+      - orders
+    issuer: "https://auth.example.com/"
+---
+# Source: apigateway-v2/templates/apigateway-v2.yaml
+apiVersion: apigatewayv2.services.k8s.aws/v1alpha1
+kind: DomainName
+metadata:
+  name: full-domain-name
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: apigateway-v2
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "domain-name"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  domainName: "api.example.com"
+  domainNameConfigurations:
+    - endpointType: REGIONAL
+      securityPolicy: TLS_1_2
+      certificateARN: "arn:aws:acm:us-east-1:123456789012:certificate/abc"
+  tags:
+    env: prod
+---
+# Source: apigateway-v2/templates/apigateway-v2.yaml
+apiVersion: apigatewayv2.services.k8s.aws/v1alpha1
+kind: Integration
+metadata:
+  name: full-int-get-orders-f70680d9
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: apigateway-v2
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "integrations/GET /orders"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  apiRef:
+    from:
+      name: "full-api"
+  integrationType: "HTTP_PROXY"
+  connectionRef:
+    from:
+      name: "full-vpclink-private"
+  connectionType: "VPC_LINK"
+  integrationMethod: "GET"
+  integrationURI: "http://internal-alb.example.com/orders"
+  payloadFormatVersion: "1.0"
+---
+# Source: apigateway-v2/templates/apigateway-v2.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: full-access-logs
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: apigateway-v2
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "access-logs"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "/aws/apigateway/orders-api/$default"
+  retentionDays: 14
+  tags:
+    env: prod
+---
+# Source: apigateway-v2/templates/apigateway-v2.yaml
+apiVersion: apigatewayv2.services.k8s.aws/v1alpha1
+kind: Route
+metadata:
+  name: full-route-get-orders-7f3398a1
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: apigateway-v2
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "routes/GET /orders"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  apiRef:
+    from:
+      name: "full-api"
+  routeKey: "GET /orders"
+  targetRef:
+    from:
+      name: "full-int-get-orders-f70680d9"
+  authorizerRef:
+    from:
+      name: "full-auth-jwt"
+  authorizationType: "JWT"
+---
+# Source: apigateway-v2/templates/apigateway-v2.yaml
+apiVersion: apigatewayv2.services.k8s.aws/v1alpha1
+kind: Stage
+metadata:
+  name: full-stage
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: apigateway-v2
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "stage"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  apiRef:
+    from:
+      name: "full-api"
+  stageName: "$default"
+  autoDeploy: true
+  accessLogSettings:
+    destinationARN: "arn:aws:logs:us-east-1:123456789012:log-group:/aws/apigateway/orders-api/$default"
+    format: "{\"requestId\":\"$context.requestId\"}"
+  routeSettings:
+    GET /orders:
+      throttlingBurstLimit: 100
+      throttlingRateLimit: 50
+  stageVariables:
+    env: prod
+  tags:
+    env: prod
+---
+# Source: apigateway-v2/templates/apigateway-v2.yaml
+apiVersion: apigatewayv2.services.k8s.aws/v1alpha1
+kind: VPCLink
+metadata:
+  name: full-vpclink-private
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: apigateway-v2
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "vpc-links/private"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "private"
+  securityGroupIDs:
+    - sg-1111
+  subnetIDs:
+    - subnet-1111
+    - subnet-2222
+  tags:
+    env: prod
