@@ -1,0 +1,11 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+exempt:
+  Distribution: CloudFront assigns the distribution ID and domain name
+  OriginAccessControl: cloud name is nested at spec.originAccessControlConfig.name (carries namePrefix)
+  VPCOrigin: cloud name is nested at spec.vpcOriginEndpointConfig.name (carries namePrefix)
+  CachePolicy: cloud name is nested at spec.cachePolicyConfig.name (carries namePrefix)
+  OriginRequestPolicy: cloud name is nested at spec.originRequestPolicyConfig.name (carries namePrefix)
+  ResponseHeadersPolicy: cloud name is nested at spec.responseHeadersPolicyConfig.name (carries namePrefix)
+nameFields:
+  Function: name

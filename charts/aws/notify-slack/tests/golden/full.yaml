@@ -1,0 +1,178 @@
+---
+# Source: notify-slack/templates/notify-slack.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: full-sns-feedback-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: notify-slack
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "sns-feedback-role"
+spec:
+  name: "alerts-sns-feedback"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"sns.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+  inlinePolicies:
+    sns-delivery-logs: "{\"Statement\":[{\"Action\":[\"logs:CreateLogGroup\",\"logs:CreateLogStream\",\"logs:PutLogEvents\",\"logs:PutMetricFilter\",\"logs:PutRetentionPolicy\"],\"Effect\":\"Allow\",\"Resource\":\"*\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "env"
+      value: "prod"
+---
+# Source: notify-slack/templates/notify-slack.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: full-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: notify-slack
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "role"
+spec:
+  name: "lambda-notify-slack"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+  inlinePolicies:
+    lambda: "{\"Statement\":[{\"Action\":[\"logs:CreateLogStream\",\"logs:PutLogEvents\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:logs:us-east-1:123456789012:log-group:/aws/lambda/notify-slack:*\"],\"Sid\":\"AllowWriteToCloudwatchLogs\"},{\"Action\":[\"securityhub:BatchUpdateFindings\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"AllowSecurityHub\"},{\"Action\":[\"kms:Decrypt\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:kms:us-east-1:123456789012:key/1234\"],\"Sid\":\"AllowKMSDecrypt\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "env"
+      value: "prod"
+---
+# Source: notify-slack/templates/notify-slack.yaml
+apiVersion: lambda.services.k8s.aws/v1alpha1
+kind: Function
+metadata:
+  name: full-function
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: notify-slack
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "function"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "notify-slack"
+  roleRef:
+    from:
+      name: "full-role"
+  code:
+    s3Bucket: "my-artifacts"
+    s3Key: "notify-slack.zip"
+    s3ObjectVersion: "v1"
+  packageType: "Zip"
+  handler: "notify_slack.lambda_handler"
+  runtime: "python3.13"
+  description: "Forward SNS alerts to Slack"
+  timeout: 30
+  kmsKeyARN: "arn:aws:kms:us-east-1:123456789012:key/1234"
+  reservedConcurrentExecutions: 5
+  ephemeralStorage:
+    size: 512
+  publish: true
+  environment:
+    variables:
+      LOG_EVENTS: "True"
+      LOG_LEVEL: DEBUG
+      SLACK_CHANNEL: '#alerts'
+      SLACK_EMOJI: ':bell:'
+      SLACK_USERNAME: aws-bot
+      SLACK_WEBHOOK_URL: AQICAHhEncryptedCiphertext==
+  tags:
+    env: prod
+---
+# Source: notify-slack/templates/notify-slack.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: full-log-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: notify-slack
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "log-group"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "/aws/lambda/notify-slack"
+  retentionDays: 30
+  tags:
+    env: prod
+---
+# Source: notify-slack/templates/notify-slack.yaml
+apiVersion: lambda.aws.hfl.dev/v1alpha1
+kind: Permission
+metadata:
+  name: full-permission
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: notify-slack
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "permission"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  functionRef:
+    from:
+      name: "full-function"
+  statementID: "AllowExecutionFromSNS"
+  action: "lambda:InvokeFunction"
+  principal: "sns.amazonaws.com"
+  sourceARN: "arn:aws:sns:us-east-1:123456789012:alerts"
+---
+# Source: notify-slack/templates/notify-slack.yaml
+apiVersion: sns.services.k8s.aws/v1alpha1
+kind: Subscription
+metadata:
+  name: full-subscription
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: notify-slack
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "subscription"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  topicRef:
+    from:
+      name: "full-topic"
+  protocol: "lambda"
+  endpoint: "arn:aws:lambda:us-east-1:123456789012:function:notify-slack"
+  filterPolicy: "{\"severity\":[\"high\"]}"
+  filterPolicyScope: "MessageAttributes"
+---
+# Source: notify-slack/templates/notify-slack.yaml
+apiVersion: sns.services.k8s.aws/v1alpha1
+kind: Topic
+metadata:
+  name: full-topic
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: notify-slack
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "topic"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "alerts"
+  kmsMasterKeyID: "alias/sns-key"
+  lambdaFailureFeedbackRoleARN: "arn:aws:iam::123456789012:role/alerts-sns-feedback"
+  lambdaSuccessFeedbackRoleARN: "arn:aws:iam::123456789012:role/alerts-sns-feedback"
+  lambdaSuccessFeedbackSampleRate: "50"
+  tags:
+    - key: "env"
+      value: "prod"

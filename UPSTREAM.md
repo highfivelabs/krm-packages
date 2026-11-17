@@ -62,6 +62,8 @@ charts use are copied in `crds/ack-extensions`.
 | `pipes-controller` | `v1.8.0` | `08b598079c257477d9e332353a78a01290454852` | Pipe |
 | `ecs-controller` | `v1.9.2` | `92029ad47285b5a1dd20bd184c2b525708cf21e7` | Cluster, CapacityProvider, Service, TaskDefinition |
 | `lambda-controller` | `v1.19.0` | `86905357482d01538cb00ab28d59c6af5c46e6f4` | Function, LayerVersion, EventSourceMapping, FunctionURLConfig, Version, Alias, CodeSigningConfig |
+| `apigatewayv2-controller` | `v1.9.0` | `4e95251285d92491095760729ec61695cd434ead` | API, APIMapping, Authorizer, Deployment, DomainName, Integration, Route, Stage, VPCLink |
+| `cloudfront-controller` | `v1.11.0` | `753248487a022254c571746f88180603e5c4c63f` | CachePolicy, Distribution, Function, OriginAccessControl, OriginRequestPolicy, ResponseHeadersPolicy, VPCOrigin |
 
 To move a controller: change its row, run `task test` (it re-fetches the
 CRDs and re-validates every AWS render), and re-read the gaps in

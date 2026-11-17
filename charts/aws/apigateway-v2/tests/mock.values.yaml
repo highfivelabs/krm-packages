@@ -1,0 +1,8 @@
+name: my-http-api
+region: us-east-1
+routes:
+  "GET /health":
+    integration:
+      type: HTTP_PROXY
+      uri: https://example.com/health
+      method: GET

@@ -1,0 +1,31 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package manifest for notify-slack.
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: aws-notify-slack
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [ack]
+  outputs:
+    slack_topic_arn: >-
+      'topic' in resources ? resources.topic.status.ackResourceMetadata.arn : ""
+    this_slack_topic_arn: >-
+      'topic' in resources ? resources.topic.status.ackResourceMetadata.arn : ""
+    lambda_iam_role_arn: >-
+      'role' in resources ? resources.role.status.ackResourceMetadata.arn : ""
+    lambda_iam_role_name: >-
+      'role' in resources ? resources.role.spec.name : ""
+    notify_slack_lambda_function_arn: >-
+      'function' in resources ? resources.function.status.ackResourceMetadata.arn : ""
+    notify_slack_lambda_function_name: >-
+      'function' in resources ? resources.function.spec.name : inputs.lambda_function_name
+    notify_slack_lambda_function_version: >-
+      'function' in resources ? resources.function.status.version : ""
+    lambda_cloudwatch_log_group_arn: >-
+      'log-group' in resources ? resources['log-group'].status.ackResourceMetadata.arn : ""
+    sns_topic_feedback_role_arn: >-
+      'sns-feedback-role' in resources ? resources['sns-feedback-role'].status.ackResourceMetadata.arn : ""

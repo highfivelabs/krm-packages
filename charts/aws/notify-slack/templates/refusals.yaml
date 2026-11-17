@@ -1,0 +1,17 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+The module variables this chart keeps in its values but cannot carry
+(upstream.yaml, "refused"): each stops the render, naming the gap, when it
+is set to anything but its Terraform default. Renders nothing.
+*/ -}}
+{{- include "ack.unsupported" (list $ "hash_extra" .Values.hash_extra "local deployment package building is not portable; pass s3_existing_package or image_uri") }}
+{{- include "ack.unsupported" (list $ "lambda_function_store_on_s3" .Values.lambda_function_store_on_s3 "local deployment package building and S3 upload is not portable; pass s3_existing_package or image_uri") }}
+{{- include "ack.unsupported" (list $ "lambda_source_path" .Values.lambda_source_path "local deployment package building is not portable; pass s3_existing_package or image_uri") }}
+{{- include "ack.unsupported" (list $ "recreate_missing_package" (not .Values.recreate_missing_package) "local deployment package building is not portable; pass s3_existing_package or image_uri") }}
+{{- include "ack.unsupported" (list $ "sns_topic_feedback_role_force_detach_policies" (not .Values.sns_topic_feedback_role_force_detach_policies) "ACK's Role (iam-controller v1.11.3) has no forceDetachPolicies field; inline policies are deleted with the Role") }}
+{{- include "ack.unsupported" (list $ "trigger_on_package_timestamp" .Values.trigger_on_package_timestamp "local deployment package building is not portable; pass s3_existing_package or image_uri") }}
+{{- if and .Values.slack_webhook_url (not .Values.kms_key_arn) }}
+{{- fail "notify-slack: slack_webhook_url is plaintext secret material when kms_key_arn is empty; pass a KMS-encrypted ciphertext with kms_key_arn (docs/secrets.md)" }}
+{{- end }}

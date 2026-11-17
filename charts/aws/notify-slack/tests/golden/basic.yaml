@@ -1,0 +1,106 @@
+---
+# Source: notify-slack/templates/notify-slack.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: basic-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: notify-slack
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "role"
+spec:
+  name: "lambda-notify-slack"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+  inlinePolicies:
+    lambda: "{\"Statement\":[{\"Action\":[\"logs:CreateLogStream\",\"logs:PutLogEvents\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:logs:us-east-1:123456789012:log-group:/aws/lambda/notify-slack:*\"],\"Sid\":\"AllowWriteToCloudwatchLogs\"},{\"Action\":[\"securityhub:BatchUpdateFindings\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"AllowSecurityHub\"}],\"Version\":\"2012-10-17\"}"
+---
+# Source: notify-slack/templates/notify-slack.yaml
+apiVersion: lambda.services.k8s.aws/v1alpha1
+kind: Function
+metadata:
+  name: basic-function
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: notify-slack
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "function"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "notify-slack"
+  roleRef:
+    from:
+      name: "basic-role"
+  code:
+    s3Bucket: "my-artifacts"
+    s3Key: "notify-slack.zip"
+  packageType: "Zip"
+  handler: "notify_slack.lambda_handler"
+  runtime: "python3.13"
+  timeout: 30
+  ephemeralStorage:
+    size: 512
+  publish: true
+  environment:
+    variables:
+      LOG_EVENTS: "False"
+      LOG_LEVEL: INFO
+      SLACK_CHANNEL: '#alerts'
+      SLACK_EMOJI: ':aws:'
+      SLACK_USERNAME: aws-bot
+---
+# Source: notify-slack/templates/notify-slack.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: basic-log-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: notify-slack
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "/aws/lambda/notify-slack"
+---
+# Source: notify-slack/templates/notify-slack.yaml
+apiVersion: sns.services.k8s.aws/v1alpha1
+kind: Subscription
+metadata:
+  name: basic-subscription
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: notify-slack
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "subscription"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  topicRef:
+    from:
+      name: "basic-topic"
+  protocol: "lambda"
+  endpoint: "arn:aws:lambda:us-east-1:123456789012:function:notify-slack"
+---
+# Source: notify-slack/templates/notify-slack.yaml
+apiVersion: sns.services.k8s.aws/v1alpha1
+kind: Topic
+metadata:
+  name: basic-topic
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: notify-slack
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "topic"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "alerts"

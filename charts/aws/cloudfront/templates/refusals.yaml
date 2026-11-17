@@ -1,0 +1,37 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+The module variables this chart keeps in its values but cannot carry
+(upstream.yaml, "refused"): each stops the render, naming the gap, when it
+is set to anything but its Terraform default. Renders nothing.
+*/ -}}
+{{- include "ack.unsupported" (list $ "retain_on_delete" .Values.retain_on_delete "use deletion_policy: ABANDON to keep the distribution on delete") }}
+{{- include "ack.unsupported" (list $ "create_monitoring_subscription" .Values.create_monitoring_subscription "ACK cloudfront-controller v1.11.0 has no MonitoringSubscription kind") }}
+{{- include "ack.unsupported" (list $ "create_connection_function" .Values.create_connection_function "ACK cloudfront-controller v1.11.0 has no ConnectionFunction kind") }}
+{{- include "ack.unsupported" (list $ "connection_function_code" .Values.connection_function_code "ACK cloudfront-controller v1.11.0 has no ConnectionFunction kind") }}
+{{- include "ack.unsupported" (list $ "connection_function_config" .Values.connection_function_config "ACK cloudfront-controller v1.11.0 has no ConnectionFunction kind") }}
+{{- include "ack.unsupported" (list $ "connection_function_name" .Values.connection_function_name "ACK cloudfront-controller v1.11.0 has no ConnectionFunction kind") }}
+{{- include "ack.unsupported" (list $ "connection_function_publish" .Values.connection_function_publish "ACK cloudfront-controller v1.11.0 has no ConnectionFunction kind") }}
+{{- include "ack.unsupported" (list $ "enable_v2_logging" .Values.enable_v2_logging "ACK DeliverySource requires the distribution's ARN, which is only in Distribution.status") }}
+{{- include "ack.unsupported" (list $ "v2_logging" .Values.v2_logging "ACK DeliverySource requires the distribution's ARN, which is only in Distribution.status") }}
+{{- $dcb := .Values.default_cache_behavior | default dict }}
+{{- include "ack.unsupported" (list $ "default_cache_behavior.cache_policy_key" $dcb.cache_policy_key "ACK Distribution has no *Ref fields; pass cache_policy_id") }}
+{{- include "ack.unsupported" (list $ "default_cache_behavior.origin_request_policy_key" $dcb.origin_request_policy_key "ACK Distribution has no *Ref fields; pass origin_request_policy_id") }}
+{{- include "ack.unsupported" (list $ "default_cache_behavior.response_headers_policy_key" $dcb.response_headers_policy_key "ACK Distribution has no *Ref fields; pass response_headers_policy_id") }}
+{{- range $fk, $fa := ($dcb.function_association | default dict) }}
+{{- include "ack.unsupported" (list $ (printf "default_cache_behavior.function_association.%s.function_key" $fk) $fa.function_key "ACK Distribution has no *Ref fields; pass function_arn") }}
+{{- end }}
+{{- range $ok, $o := (.Values.origin | default dict) }}
+{{- include "ack.unsupported" (list $ (printf "origin.%s.origin_access_control_key" $ok) $o.origin_access_control_key "ACK Distribution has no *Ref fields; pass origin_access_control_id") }}
+{{- if and $o.vpc_origin_config $o.vpc_origin_config.vpc_origin_key }}
+{{- include "ack.unsupported" (list $ (printf "origin.%s.vpc_origin_config.vpc_origin_key" $ok) $o.vpc_origin_config.vpc_origin_key "ACK Distribution has no *Ref fields; pass vpc_origin_id") }}
+{{- end }}
+{{- end }}
+{{- range $fk, $fn := (.Values.cloudfront_functions | default dict) }}
+{{- include "ack.unsupported" (list $ (printf "cloudfront_functions.%s.publish" $fk) $fn.publish "ACK Function (cloudfront-controller v1.11.0) has no publish field") }}
+{{- include "ack.unsupported" (list $ (printf "cloudfront_functions.%s.key_value_store_associations" $fk) $fn.key_value_store_associations "ACK Function (cloudfront-controller v1.11.0) has no keyValueStoreAssociations field") }}
+{{- end }}
+{{- range $vk, $vo := (.Values.vpc_origin | default dict) }}
+{{- include "ack.unsupported" (list $ (printf "vpc_origin.%s.timeouts" $vk) $vo.timeouts "ACK reconciles asynchronously; Terraform timeouts are not supported") }}
+{{- end }}

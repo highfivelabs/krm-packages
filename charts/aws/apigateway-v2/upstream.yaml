@@ -1,0 +1,60 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Where this chart came from: the Terraform module it ports and the release
+# it was ported from. Machine-readable; `task upstream-check` keeps it equal
+# to upstream/modules.yaml and Chart.yaml. To take a newer release, see
+# UPSTREAM.md ("Moving the pins").
+module: aws/apigateway-v2
+repo: https://github.com/terraform-aws-modules/terraform-aws-apigateway-v2
+path: .
+version: v6.1.1
+commit: 95e6a1d56d6d761ec12c89b36b29aad03a421b2f
+license: Apache-2.0
+copyright: null
+module_url: https://github.com/terraform-aws-modules/terraform-aws-apigateway-v2/tree/v6.1.1
+registry_url: https://registry.terraform.io/modules/terraform-aws-modules/apigateway-v2/aws
+synced: 2026-11-17
+# Module variables the chart keeps in values.yaml (so tfvars convert one to
+# one) but refuses when set (to anything but the module's default), or
+# accepts only in part. Read by `task coverage`; `task coverage-verify`
+# renders the chart to check that each one is refused.
+refused:
+- variable: create_certificate
+  kind: by-design
+  reason: "accepted as a no-op; pass domain_name_certificate_arn instead of creating an ACM certificate inside this chart"
+  partial: true
+- variable: create_domain_records
+  kind: gap
+  reason: "accepted as a no-op; Route 53 alias records for DomainName are not created because ACK RecordSet has no reference to DomainName.status"
+  partial: true
+- variable: hosted_zone_name
+  kind: gap
+  reason: "Route 53 alias records for DomainName are not created because ACK RecordSet has no reference to DomainName.status"
+- variable: ip_address_type
+  kind: gap
+  reason: "ACK's API (apigatewayv2-controller v1.9.0) has no ipAddressType field"
+- variable: private_zone
+  kind: gap
+  reason: "Route 53 alias records for DomainName are not created because ACK RecordSet has no reference to DomainName.status"
+- variable: routes
+  kind: gap
+  reason: "accepted, except route_response.create (no ACK RouteResponse kind) and integration.response (no ACK IntegrationResponse kind)"
+  partial: true
+  fields:
+  - route_response
+  - integration.response
+- variable: stage_access_log_settings
+  kind: gap
+  reason: "accepted, except log_group_skip_destroy (use deletion_policy: ABANDON) and log_group_class (ACK LogGroup has no logGroupClass field)"
+  partial: true
+  fields:
+  - log_group_skip_destroy
+  - log_group_class
+- variable: subdomain_record_types
+  kind: gap
+  reason: "Route 53 alias records for DomainName are not created because ACK RecordSet has no reference to DomainName.status"
+  partial: true
+- variable: subdomains
+  kind: gap
+  reason: "Route 53 alias records for DomainName are not created because ACK RecordSet has no reference to DomainName.status"

@@ -1,0 +1,87 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Where this chart came from: the Terraform module it ports and the release
+# it was ported from. Machine-readable; `task upstream-check` keeps it equal
+# to upstream/modules.yaml and Chart.yaml. To take a newer release, see
+# UPSTREAM.md ("Moving the pins").
+module: aws/cloudfront
+repo: https://github.com/terraform-aws-modules/terraform-aws-cloudfront
+path: .
+version: v6.7.1
+commit: 5b9a0a480220b84f29f02d84ff71dd5340953f68
+license: Apache-2.0
+copyright: null
+module_url: https://github.com/terraform-aws-modules/terraform-aws-cloudfront/tree/v6.7.1
+registry_url: https://registry.terraform.io/modules/terraform-aws-modules/cloudfront/aws
+synced: 2026-11-17
+# Module variables the chart keeps in values.yaml (so tfvars convert one to
+# one) but refuses when set (to anything but the module's default), or
+# accepts only in part. Read by `task coverage`; `task coverage-verify`
+# renders the chart to check that each one is refused.
+refused:
+- variable: cloudfront_functions
+  kind: gap
+  reason: "accepted, except publish and key_value_store_associations (ACK's Function in cloudfront-controller v1.11.0 has no publish or keyValueStoreAssociations fields)"
+  partial: true
+  fields:
+  - publish
+  - key_value_store_associations
+- variable: connection_function_code
+  kind: gap
+  reason: "ACK cloudfront-controller v1.11.0 has no ConnectionFunction kind"
+- variable: connection_function_config
+  kind: gap
+  reason: "ACK cloudfront-controller v1.11.0 has no ConnectionFunction kind"
+- variable: connection_function_name
+  kind: gap
+  reason: "ACK cloudfront-controller v1.11.0 has no ConnectionFunction kind"
+- variable: connection_function_publish
+  kind: gap
+  reason: "ACK cloudfront-controller v1.11.0 has no ConnectionFunction kind"
+- variable: create_connection_function
+  kind: gap
+  reason: "ACK cloudfront-controller v1.11.0 has no ConnectionFunction kind"
+- variable: create_monitoring_subscription
+  kind: gap
+  reason: "ACK cloudfront-controller v1.11.0 has no MonitoringSubscription kind"
+- variable: default_cache_behavior
+  kind: gap
+  reason: "accepted, except cache_policy_key, origin_request_policy_key, response_headers_policy_key, and function_association.*.function_key (ACK Distribution has no *Ref fields; pass *_id or function_arn)"
+  partial: true
+  fields:
+  - cache_policy_key
+  - origin_request_policy_key
+  - response_headers_policy_key
+  - function_association
+- variable: enable_v2_logging
+  kind: gap
+  reason: "ACK DeliverySource requires the distribution's ARN, which is only in Distribution.status"
+- variable: ordered_cache_behavior
+  kind: gap
+  reason: "accepted, except *_key references (ACK Distribution has no *Ref fields; pass *_id or function_arn)"
+  partial: true
+- variable: origin
+  kind: gap
+  reason: "accepted, except origin_access_control_key and vpc_origin_config.vpc_origin_key (ACK Distribution has no *Ref fields; pass origin_access_control_id or vpc_origin_id)"
+  partial: true
+- variable: realtime_metrics_subscription_status
+  kind: gap
+  reason: "accepted at its default; ACK cloudfront-controller v1.11.0 has no MonitoringSubscription kind"
+  partial: true
+- variable: retain_on_delete
+  kind: by-design
+  reason: "use deletion_policy: ABANDON to keep the distribution on delete"
+- variable: v2_logging
+  kind: gap
+  reason: "ACK DeliverySource requires the distribution's ARN, which is only in Distribution.status"
+- variable: vpc_origin
+  kind: by-design
+  reason: "accepted, except timeouts (ACK reconciles asynchronously)"
+  partial: true
+  fields:
+  - timeouts
+- variable: wait_for_deployment
+  kind: by-design
+  reason: "accepted as a no-op; ACK reconciles asynchronously"
+  partial: true

@@ -1,0 +1,65 @@
+---
+# Source: cloudfront/templates/cloudfront.yaml
+apiVersion: cloudfront.services.k8s.aws/v1alpha1
+kind: Distribution
+metadata:
+  name: basic-distribution
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: cloudfront
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "distribution"
+spec:
+  distributionConfig:
+    enabled: true
+    comment: "Static site CDN"
+    httpVersion: "http2"
+    isIPV6Enabled: true
+    origins:
+      items:
+        - id: "s3"
+          domainName: "my-bucket.s3.us-east-1.amazonaws.com"
+          s3OriginConfig:
+            originAccessIdentity: ""
+    defaultCacheBehavior:
+      targetOriginID: "s3"
+      viewerProtocolPolicy: "redirect-to-https"
+      allowedMethods:
+        items:
+          - GET
+          - HEAD
+          - OPTIONS
+        cachedMethods:
+          items:
+            - GET
+            - HEAD
+      forwardedValues:
+        queryString: false
+        cookies:
+          forward: "none"
+    restrictions:
+      geoRestriction:
+        restrictionType: "none"
+    viewerCertificate:
+      cloudFrontDefaultCertificate: true
+---
+# Source: cloudfront/templates/cloudfront.yaml
+apiVersion: cloudfront.services.k8s.aws/v1alpha1
+kind: OriginAccessControl
+metadata:
+  name: basic-oac-s3
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: cloudfront
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "origin-access-control/s3"
+spec:
+  originAccessControlConfig:
+    name: "s3"
+    originAccessControlOriginType: "s3"
+    signingBehavior: "always"
+    signingProtocol: "sigv4"

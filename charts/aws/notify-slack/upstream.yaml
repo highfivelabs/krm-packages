@@ -1,0 +1,46 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Where this chart came from: the Terraform module it ports and the release
+# it was ported from. Machine-readable; `task upstream-check` keeps it equal
+# to upstream/modules.yaml and Chart.yaml. To take a newer release, see
+# UPSTREAM.md ("Moving the pins").
+module: aws/notify-slack
+repo: https://github.com/terraform-aws-modules/terraform-aws-notify-slack
+path: .
+version: v7.5.2
+commit: a7765ac0a547f95c8aa48459f84077be8562c0f7
+license: Apache-2.0
+copyright: null
+module_url: https://github.com/terraform-aws-modules/terraform-aws-notify-slack/tree/v7.5.2
+registry_url: https://registry.terraform.io/modules/terraform-aws-modules/notify-slack/aws
+synced: 2026-11-17
+# Module variables the chart keeps in values.yaml (so tfvars convert one to
+# one) but refuses when set (to anything but the module's default), or
+# accepts only in part. Read by `task coverage`; `task coverage-verify`
+# renders the chart to check that each one is refused.
+refused:
+- variable: hash_extra
+  kind: by-design
+  reason: "local deployment package building is not portable; pass s3_existing_package or image_uri"
+- variable: lambda_function_store_on_s3
+  kind: by-design
+  reason: "local deployment package building and S3 upload is not portable; pass s3_existing_package or image_uri"
+- variable: lambda_source_path
+  kind: by-design
+  reason: "local deployment package building is not portable; pass s3_existing_package or image_uri"
+- variable: recreate_missing_package
+  kind: by-design
+  reason: "accepted at its default (true); local deployment package building is not portable, pass s3_existing_package or image_uri; false is refused"
+  partial: true
+- variable: slack_webhook_url
+  kind: gap
+  reason: "accepted only as KMS-encrypted ciphertext when kms_key_arn is set; plaintext secret values in values are refused (ACK's Function has no SecretKeyRef for environment variables)"
+  partial: true
+- variable: sns_topic_feedback_role_force_detach_policies
+  kind: gap
+  reason: "accepted at its default (true); ACK's Role (iam-controller v1.11.3) has no forceDetachPolicies field and always deletes inline policies with the Role; false is refused"
+  partial: true
+- variable: trigger_on_package_timestamp
+  kind: by-design
+  reason: "local deployment package building is not portable; pass s3_existing_package or image_uri"

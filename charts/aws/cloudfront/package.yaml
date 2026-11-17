@@ -1,0 +1,27 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package manifest for cloudfront.
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: aws-cloudfront
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [ack]
+  outputs:
+    cloudfront_distribution_id: >-
+      'distribution' in resources && has(resources.distribution.status.id) ? resources.distribution.status.id : ""
+    cloudfront_distribution_arn: >-
+      'distribution' in resources && has(resources.distribution.status.ackResourceMetadata.arn) ? resources.distribution.status.ackResourceMetadata.arn : ""
+    cloudfront_distribution_caller_reference: >-
+      'distribution' in resources && has(resources.distribution.status.distributionConfig.callerReference) ? resources.distribution.status.distributionConfig.callerReference : ""
+    cloudfront_distribution_status: >-
+      'distribution' in resources && has(resources.distribution.status.status) ? resources.distribution.status.status : ""
+    cloudfront_distribution_domain_name: >-
+      'distribution' in resources && has(resources.distribution.status.domainName) ? resources.distribution.status.domainName : ""
+    cloudfront_distribution_etag: >-
+      'distribution' in resources && has(resources.distribution.status.eTag) ? resources.distribution.status.eTag : ""
+    cloudfront_distribution_hosted_zone_id: >-
+      "Z2FDTNDATAQYW2"

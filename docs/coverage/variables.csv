@@ -2848,47 +2848,47 @@ aws,secrets-manager,secret_string_wo_version,string,no,"it triggers an update of
 aws,secrets-manager,source_policy_documents,list(string),yes,,
 aws,secrets-manager,tags,map(string),yes,,
 aws,secrets-manager,version_stages,list(string),no,ACK's Secret has no field for a version's staging labels (secretsmanager-controller v1.8.2); its value always gets AWSCURRENT,gap
-aws,cloudfront,aliases,list(string),no,,no-chart
-aws,cloudfront,anycast_ip_list_id,string,no,,no-chart
-aws,cloudfront,cache_policies,"map(object({comment, default_ttl, max_ttl, min_ttl, name, parameters_in_cache_key_and_forwarded_to_origin}))",no,,no-chart
-aws,cloudfront,cache_tag_config,object({header_name}),no,,no-chart
-aws,cloudfront,cloudfront_functions,"map(object({code, comment, key_value_store_associations, name, publish, runtime}))",no,,no-chart
-aws,cloudfront,comment,string,no,,no-chart
-aws,cloudfront,connection_function_association_id,string,no,,no-chart
-aws,cloudfront,connection_function_code,string,no,,no-chart
-aws,cloudfront,connection_function_config,"object({comment, key_value_store_association, runtime})",no,,no-chart
-aws,cloudfront,connection_function_name,string,no,,no-chart
-aws,cloudfront,connection_function_publish,bool,no,,no-chart
-aws,cloudfront,continuous_deployment_policy_id,string,no,,no-chart
-aws,cloudfront,create,bool,no,,no-chart
-aws,cloudfront,create_connection_function,bool,no,,no-chart
-aws,cloudfront,create_monitoring_subscription,bool,no,,no-chart
-aws,cloudfront,custom_error_response,"list(object({error_caching_min_ttl, error_code, response_code, response_page_path}))",no,,no-chart
-aws,cloudfront,default_cache_behavior,"object({allowed_methods, cache_policy_id, cache_policy_key, cache_policy_name, cached_methods, compress, +20})",no,,no-chart
-aws,cloudfront,default_root_object,string,no,,no-chart
-aws,cloudfront,enable_v2_logging,bool,no,,no-chart
-aws,cloudfront,enabled,bool,no,,no-chart
-aws,cloudfront,http_version,string,no,,no-chart
-aws,cloudfront,is_ipv6_enabled,bool,no,,no-chart
-aws,cloudfront,logging_config,"object({bucket, include_cookies, prefix})",no,,no-chart
-aws,cloudfront,ordered_cache_behavior,"list(object({allowed_methods, cache_policy_id, cache_policy_key, cache_policy_name, cached_methods, compress, +21}))",no,,no-chart
-aws,cloudfront,origin,"map(object({connection_attempts, connection_timeout, custom_header, custom_origin_config, domain_name, origin_access_control_id, +6}))",no,,no-chart
-aws,cloudfront,origin_access_control,"map(object({description, name, origin_type, signing_behavior, signing_protocol}))",no,,no-chart
-aws,cloudfront,origin_group,"map(object({failover_criteria, member, origin_id}))",no,,no-chart
-aws,cloudfront,origin_request_policies,"map(object({comment, cookies_config, headers_config, name, query_strings_config}))",no,,no-chart
-aws,cloudfront,price_class,string,no,,no-chart
-aws,cloudfront,realtime_metrics_subscription_status,string,no,,no-chart
-aws,cloudfront,response_headers_policies,"map(object({comment, cors_config, custom_headers_config, name, remove_headers_config, security_headers_config, +1}))",no,,no-chart
-aws,cloudfront,restrictions,object({geo_restriction}),no,,no-chart
-aws,cloudfront,retain_on_delete,bool,no,,no-chart
-aws,cloudfront,staging,bool,no,,no-chart
-aws,cloudfront,tags,map(string),no,,no-chart
-aws,cloudfront,v2_logging,"object({delivery_destination_configuration, delivery_destination_type, field_delimiter, name, output_format, record_fields, +1})",no,,no-chart
-aws,cloudfront,viewer_certificate,"object({acm_certificate_arn, cloudfront_default_certificate, iam_certificate_id, minimum_protocol_version, ssl_support_method})",no,,no-chart
-aws,cloudfront,viewer_mtls_config,"object({mode, trust_store_config})",no,,no-chart
-aws,cloudfront,vpc_origin,"map(object({arn, http_port, https_port, name, origin_protocol_policy, origin_ssl_protocols, +2}))",no,,no-chart
-aws,cloudfront,wait_for_deployment,bool,no,,no-chart
-aws,cloudfront,web_acl_id,string,no,,no-chart
+aws,cloudfront,aliases,list(string),yes,,
+aws,cloudfront,anycast_ip_list_id,string,yes,,
+aws,cloudfront,cache_policies,"map(object({comment, default_ttl, max_ttl, min_ttl, name, parameters_in_cache_key_and_forwarded_to_origin}))",yes,,
+aws,cloudfront,cache_tag_config,object({header_name}),yes,,
+aws,cloudfront,cloudfront_functions,"map(object({code, comment, key_value_store_associations, name, publish, runtime}))",partial,"accepted, except publish and key_value_store_associations (ACK's Function in cloudfront-controller v1.11.0 has no publish or keyValueStoreAssociations fields)",gap
+aws,cloudfront,comment,string,yes,,
+aws,cloudfront,connection_function_association_id,string,yes,,
+aws,cloudfront,connection_function_code,string,no,ACK cloudfront-controller v1.11.0 has no ConnectionFunction kind,gap
+aws,cloudfront,connection_function_config,"object({comment, key_value_store_association, runtime})",no,ACK cloudfront-controller v1.11.0 has no ConnectionFunction kind,gap
+aws,cloudfront,connection_function_name,string,no,ACK cloudfront-controller v1.11.0 has no ConnectionFunction kind,gap
+aws,cloudfront,connection_function_publish,bool,no,ACK cloudfront-controller v1.11.0 has no ConnectionFunction kind,gap
+aws,cloudfront,continuous_deployment_policy_id,string,yes,,
+aws,cloudfront,create,bool,yes,,
+aws,cloudfront,create_connection_function,bool,no,ACK cloudfront-controller v1.11.0 has no ConnectionFunction kind,gap
+aws,cloudfront,create_monitoring_subscription,bool,no,ACK cloudfront-controller v1.11.0 has no MonitoringSubscription kind,gap
+aws,cloudfront,custom_error_response,"list(object({error_caching_min_ttl, error_code, response_code, response_page_path}))",yes,,
+aws,cloudfront,default_cache_behavior,"object({allowed_methods, cache_policy_id, cache_policy_key, cache_policy_name, cached_methods, compress, +20})",partial,"accepted, except cache_policy_key, origin_request_policy_key, response_headers_policy_key, and function_association.*.function_key (ACK Distribution has no *Ref fields; pass *_id or function_arn)",gap
+aws,cloudfront,default_root_object,string,yes,,
+aws,cloudfront,enable_v2_logging,bool,no,"ACK DeliverySource requires the distribution's ARN, which is only in Distribution.status",gap
+aws,cloudfront,enabled,bool,yes,,
+aws,cloudfront,http_version,string,yes,,
+aws,cloudfront,is_ipv6_enabled,bool,yes,,
+aws,cloudfront,logging_config,"object({bucket, include_cookies, prefix})",yes,,
+aws,cloudfront,ordered_cache_behavior,"list(object({allowed_methods, cache_policy_id, cache_policy_key, cache_policy_name, cached_methods, compress, +21}))",partial,"accepted, except *_key references (ACK Distribution has no *Ref fields; pass *_id or function_arn)",gap
+aws,cloudfront,origin,"map(object({connection_attempts, connection_timeout, custom_header, custom_origin_config, domain_name, origin_access_control_id, +6}))",partial,"accepted, except origin_access_control_key and vpc_origin_config.vpc_origin_key (ACK Distribution has no *Ref fields; pass origin_access_control_id or vpc_origin_id)",gap
+aws,cloudfront,origin_access_control,"map(object({description, name, origin_type, signing_behavior, signing_protocol}))",yes,,
+aws,cloudfront,origin_group,"map(object({failover_criteria, member, origin_id}))",yes,,
+aws,cloudfront,origin_request_policies,"map(object({comment, cookies_config, headers_config, name, query_strings_config}))",yes,,
+aws,cloudfront,price_class,string,yes,,
+aws,cloudfront,realtime_metrics_subscription_status,string,partial,accepted at its default; ACK cloudfront-controller v1.11.0 has no MonitoringSubscription kind,gap
+aws,cloudfront,response_headers_policies,"map(object({comment, cors_config, custom_headers_config, name, remove_headers_config, security_headers_config, +1}))",yes,,
+aws,cloudfront,restrictions,object({geo_restriction}),yes,,
+aws,cloudfront,retain_on_delete,bool,no,use deletion_policy: ABANDON to keep the distribution on delete,by-design
+aws,cloudfront,staging,bool,yes,,
+aws,cloudfront,tags,map(string),yes,,
+aws,cloudfront,v2_logging,"object({delivery_destination_configuration, delivery_destination_type, field_delimiter, name, output_format, record_fields, +1})",no,"ACK DeliverySource requires the distribution's ARN, which is only in Distribution.status",gap
+aws,cloudfront,viewer_certificate,"object({acm_certificate_arn, cloudfront_default_certificate, iam_certificate_id, minimum_protocol_version, ssl_support_method})",yes,,
+aws,cloudfront,viewer_mtls_config,"object({mode, trust_store_config})",yes,,
+aws,cloudfront,vpc_origin,"map(object({arn, http_port, https_port, name, origin_protocol_policy, origin_ssl_protocols, +2}))",partial,"accepted, except timeouts (ACK reconciles asynchronously)",by-design
+aws,cloudfront,wait_for_deployment,bool,partial,accepted as a no-op; ACK reconciles asynchronously,by-design
+aws,cloudfront,web_acl_id,string,yes,,
 aws,eks-pod-identity,additional_policy_arns,map(string),yes,,
 aws,eks-pod-identity,amazon_managed_service_prometheus_policy_name,string,yes,,
 aws,eks-pod-identity,amazon_managed_service_prometheus_workspace_arns,list(string),yes,,
@@ -3328,100 +3328,100 @@ aws,transit-gateway,timeouts,"object({create, delete, update})",no,,no-chart
 aws,transit-gateway,transit_gateway_cidr_blocks,list(string),no,,no-chart
 aws,transit-gateway,transit_gateway_route_table_id,string,no,,no-chart
 aws,transit-gateway,vpc_attachments,any,no,,no-chart
-aws,apigateway-v2,api_key_selection_expression,string,no,,no-chart
-aws,apigateway-v2,api_mapping_key,string,no,,no-chart
-aws,apigateway-v2,api_version,string,no,,no-chart
-aws,apigateway-v2,authorizers,"map(object({authorizer_credentials_arn, authorizer_payload_format_version, authorizer_result_ttl_in_seconds, authorizer_type, authorizer_uri, enable_simple_responses, +3}))",no,,no-chart
-aws,apigateway-v2,body,string,no,,no-chart
-aws,apigateway-v2,cors_configuration,"object({allow_credentials, allow_headers, allow_methods, allow_origins, expose_headers, max_age})",no,,no-chart
-aws,apigateway-v2,create,bool,no,,no-chart
-aws,apigateway-v2,create_certificate,bool,no,,no-chart
-aws,apigateway-v2,create_domain_name,bool,no,,no-chart
-aws,apigateway-v2,create_domain_records,bool,no,,no-chart
-aws,apigateway-v2,create_routes_and_integrations,bool,no,,no-chart
-aws,apigateway-v2,create_stage,bool,no,,no-chart
-aws,apigateway-v2,credentials_arn,string,no,,no-chart
-aws,apigateway-v2,deploy_stage,bool,no,,no-chart
-aws,apigateway-v2,description,string,no,,no-chart
-aws,apigateway-v2,disable_execute_api_endpoint,bool,no,,no-chart
-aws,apigateway-v2,domain_name,string,no,,no-chart
-aws,apigateway-v2,domain_name_certificate_arn,string,no,,no-chart
-aws,apigateway-v2,domain_name_ownership_verification_certificate_arn,string,no,,no-chart
-aws,apigateway-v2,fail_on_warnings,bool,no,,no-chart
-aws,apigateway-v2,hosted_zone_name,string,no,,no-chart
-aws,apigateway-v2,ip_address_type,string,no,,no-chart
-aws,apigateway-v2,mutual_tls_authentication,map(string),no,,no-chart
-aws,apigateway-v2,name,string,no,,no-chart
-aws,apigateway-v2,private_zone,bool,no,,no-chart
-aws,apigateway-v2,protocol_type,string,no,,no-chart
-aws,apigateway-v2,region,string,no,,no-chart
-aws,apigateway-v2,route_key,string,no,,no-chart
-aws,apigateway-v2,route_selection_expression,string,no,,no-chart
-aws,apigateway-v2,routes,"map(object({api_key_required, authorization_scopes, authorization_type, authorizer_id, authorizer_key, data_trace_enabled, +11}))",no,,no-chart
-aws,apigateway-v2,stage_access_log_settings,"object({create_log_group, destination_arn, format, log_group_class, log_group_kms_key_id, log_group_name, +3})",no,,no-chart
-aws,apigateway-v2,stage_client_certificate_id,string,no,,no-chart
-aws,apigateway-v2,stage_default_route_settings,"object({data_trace_enabled, detailed_metrics_enabled, logging_level, throttling_burst_limit, throttling_rate_limit})",no,,no-chart
-aws,apigateway-v2,stage_description,string,no,,no-chart
-aws,apigateway-v2,stage_name,string,no,,no-chart
-aws,apigateway-v2,stage_tags,map(string),no,,no-chart
-aws,apigateway-v2,stage_variables,map(string),no,,no-chart
-aws,apigateway-v2,subdomain_record_types,list(string),no,,no-chart
-aws,apigateway-v2,subdomains,list(string),no,,no-chart
-aws,apigateway-v2,tags,map(string),no,,no-chart
-aws,apigateway-v2,target,string,no,,no-chart
-aws,apigateway-v2,vpc_link_tags,map(string),no,,no-chart
-aws,apigateway-v2,vpc_links,"map(object({name, security_group_ids, subnet_ids, tags}))",no,,no-chart
-aws,notify-slack,architectures,list(string),no,,no-chart
-aws,notify-slack,cloudwatch_log_group_kms_key_id,string,no,,no-chart
-aws,notify-slack,cloudwatch_log_group_retention_in_days,number,no,,no-chart
-aws,notify-slack,cloudwatch_log_group_tags,map(string),no,,no-chart
-aws,notify-slack,create,bool,no,,no-chart
-aws,notify-slack,create_sns_topic,bool,no,,no-chart
-aws,notify-slack,enable_sns_topic_delivery_status_logs,bool,no,,no-chart
-aws,notify-slack,hash_extra,string,no,,no-chart
-aws,notify-slack,iam_role_boundary_policy_arn,string,no,,no-chart
-aws,notify-slack,iam_role_name_prefix,string,no,,no-chart
-aws,notify-slack,iam_role_path,string,no,,no-chart
-aws,notify-slack,iam_role_tags,map(string),no,,no-chart
-aws,notify-slack,kms_key_arn,string,no,,no-chart
-aws,notify-slack,lambda_attach_dead_letter_policy,bool,no,,no-chart
-aws,notify-slack,lambda_dead_letter_target_arn,string,no,,no-chart
-aws,notify-slack,lambda_description,string,no,,no-chart
-aws,notify-slack,lambda_function_ephemeral_storage_size,number,no,,no-chart
-aws,notify-slack,lambda_function_name,string,no,,no-chart
-aws,notify-slack,lambda_function_s3_bucket,string,no,,no-chart
-aws,notify-slack,lambda_function_store_on_s3,bool,no,,no-chart
-aws,notify-slack,lambda_function_tags,map(string),no,,no-chart
-aws,notify-slack,lambda_function_vpc_security_group_ids,list(string),no,,no-chart
-aws,notify-slack,lambda_function_vpc_subnet_ids,list(string),no,,no-chart
-aws,notify-slack,lambda_role,string,no,,no-chart
-aws,notify-slack,lambda_source_path,string,no,,no-chart
-aws,notify-slack,log_events,bool,no,,no-chart
-aws,notify-slack,log_level,string,no,,no-chart
-aws,notify-slack,putin_khuylo,bool,no,,no-chart
-aws,notify-slack,recreate_missing_package,bool,no,,no-chart
-aws,notify-slack,reserved_concurrent_executions,number,no,,no-chart
-aws,notify-slack,runtime,string,no,,no-chart
-aws,notify-slack,slack_channel,string,no,,no-chart
-aws,notify-slack,slack_emoji,string,no,,no-chart
-aws,notify-slack,slack_username,string,no,,no-chart
-aws,notify-slack,slack_webhook_url,string,no,,no-chart
-aws,notify-slack,sns_topic_feedback_role_description,string,no,,no-chart
-aws,notify-slack,sns_topic_feedback_role_force_detach_policies,bool,no,,no-chart
-aws,notify-slack,sns_topic_feedback_role_name,string,no,,no-chart
-aws,notify-slack,sns_topic_feedback_role_path,string,no,,no-chart
-aws,notify-slack,sns_topic_feedback_role_permissions_boundary,string,no,,no-chart
-aws,notify-slack,sns_topic_feedback_role_tags,map(string),no,,no-chart
-aws,notify-slack,sns_topic_kms_key_id,string,no,,no-chart
-aws,notify-slack,sns_topic_lambda_feedback_role_arn,string,no,,no-chart
-aws,notify-slack,sns_topic_lambda_feedback_sample_rate,number,no,,no-chart
-aws,notify-slack,sns_topic_name,string,no,,no-chart
-aws,notify-slack,sns_topic_policy,string,no,,no-chart
-aws,notify-slack,sns_topic_tags,map(string),no,,no-chart
-aws,notify-slack,subscription_filter_policy,string,no,,no-chart
-aws,notify-slack,subscription_filter_policy_scope,string,no,,no-chart
-aws,notify-slack,tags,map(string),no,,no-chart
-aws,notify-slack,trigger_on_package_timestamp,bool,no,,no-chart
+aws,apigateway-v2,api_key_selection_expression,string,yes,,
+aws,apigateway-v2,api_mapping_key,string,yes,,
+aws,apigateway-v2,api_version,string,yes,,
+aws,apigateway-v2,authorizers,"map(object({authorizer_credentials_arn, authorizer_payload_format_version, authorizer_result_ttl_in_seconds, authorizer_type, authorizer_uri, enable_simple_responses, +3}))",yes,,
+aws,apigateway-v2,body,string,yes,,
+aws,apigateway-v2,cors_configuration,"object({allow_credentials, allow_headers, allow_methods, allow_origins, expose_headers, max_age})",yes,,
+aws,apigateway-v2,create,bool,yes,,
+aws,apigateway-v2,create_certificate,bool,partial,accepted as a no-op; pass domain_name_certificate_arn instead of creating an ACM certificate inside this chart,by-design
+aws,apigateway-v2,create_domain_name,bool,yes,,
+aws,apigateway-v2,create_domain_records,bool,partial,accepted as a no-op; Route 53 alias records for DomainName are not created because ACK RecordSet has no reference to DomainName.status,gap
+aws,apigateway-v2,create_routes_and_integrations,bool,yes,,
+aws,apigateway-v2,create_stage,bool,yes,,
+aws,apigateway-v2,credentials_arn,string,yes,,
+aws,apigateway-v2,deploy_stage,bool,yes,,
+aws,apigateway-v2,description,string,yes,,
+aws,apigateway-v2,disable_execute_api_endpoint,bool,yes,,
+aws,apigateway-v2,domain_name,string,yes,,
+aws,apigateway-v2,domain_name_certificate_arn,string,yes,,
+aws,apigateway-v2,domain_name_ownership_verification_certificate_arn,string,yes,,
+aws,apigateway-v2,fail_on_warnings,bool,yes,,
+aws,apigateway-v2,hosted_zone_name,string,no,Route 53 alias records for DomainName are not created because ACK RecordSet has no reference to DomainName.status,gap
+aws,apigateway-v2,ip_address_type,string,no,ACK's API (apigatewayv2-controller v1.9.0) has no ipAddressType field,gap
+aws,apigateway-v2,mutual_tls_authentication,map(string),yes,,
+aws,apigateway-v2,name,string,yes,,
+aws,apigateway-v2,private_zone,bool,no,Route 53 alias records for DomainName are not created because ACK RecordSet has no reference to DomainName.status,gap
+aws,apigateway-v2,protocol_type,string,yes,,
+aws,apigateway-v2,region,string,yes,,
+aws,apigateway-v2,route_key,string,yes,,
+aws,apigateway-v2,route_selection_expression,string,yes,,
+aws,apigateway-v2,routes,"map(object({api_key_required, authorization_scopes, authorization_type, authorizer_id, authorizer_key, data_trace_enabled, +11}))",partial,"accepted, except route_response.create (no ACK RouteResponse kind) and integration.response (no ACK IntegrationResponse kind)",gap
+aws,apigateway-v2,stage_access_log_settings,"object({create_log_group, destination_arn, format, log_group_class, log_group_kms_key_id, log_group_name, +3})",partial,"accepted, except log_group_skip_destroy (use deletion_policy: ABANDON) and log_group_class (ACK LogGroup has no logGroupClass field)",gap
+aws,apigateway-v2,stage_client_certificate_id,string,yes,,
+aws,apigateway-v2,stage_default_route_settings,"object({data_trace_enabled, detailed_metrics_enabled, logging_level, throttling_burst_limit, throttling_rate_limit})",yes,,
+aws,apigateway-v2,stage_description,string,yes,,
+aws,apigateway-v2,stage_name,string,yes,,
+aws,apigateway-v2,stage_tags,map(string),yes,,
+aws,apigateway-v2,stage_variables,map(string),yes,,
+aws,apigateway-v2,subdomain_record_types,list(string),partial,Route 53 alias records for DomainName are not created because ACK RecordSet has no reference to DomainName.status,gap
+aws,apigateway-v2,subdomains,list(string),no,Route 53 alias records for DomainName are not created because ACK RecordSet has no reference to DomainName.status,gap
+aws,apigateway-v2,tags,map(string),yes,,
+aws,apigateway-v2,target,string,yes,,
+aws,apigateway-v2,vpc_link_tags,map(string),yes,,
+aws,apigateway-v2,vpc_links,"map(object({name, security_group_ids, subnet_ids, tags}))",yes,,
+aws,notify-slack,architectures,list(string),yes,,
+aws,notify-slack,cloudwatch_log_group_kms_key_id,string,yes,,
+aws,notify-slack,cloudwatch_log_group_retention_in_days,number,yes,,
+aws,notify-slack,cloudwatch_log_group_tags,map(string),yes,,
+aws,notify-slack,create,bool,yes,,
+aws,notify-slack,create_sns_topic,bool,yes,,
+aws,notify-slack,enable_sns_topic_delivery_status_logs,bool,yes,,
+aws,notify-slack,hash_extra,string,no,local deployment package building is not portable; pass s3_existing_package or image_uri,by-design
+aws,notify-slack,iam_role_boundary_policy_arn,string,yes,,
+aws,notify-slack,iam_role_name_prefix,string,yes,,
+aws,notify-slack,iam_role_path,string,yes,,
+aws,notify-slack,iam_role_tags,map(string),yes,,
+aws,notify-slack,kms_key_arn,string,yes,,
+aws,notify-slack,lambda_attach_dead_letter_policy,bool,yes,,
+aws,notify-slack,lambda_dead_letter_target_arn,string,yes,,
+aws,notify-slack,lambda_description,string,yes,,
+aws,notify-slack,lambda_function_ephemeral_storage_size,number,yes,,
+aws,notify-slack,lambda_function_name,string,yes,,
+aws,notify-slack,lambda_function_s3_bucket,string,yes,,
+aws,notify-slack,lambda_function_store_on_s3,bool,no,local deployment package building and S3 upload is not portable; pass s3_existing_package or image_uri,by-design
+aws,notify-slack,lambda_function_tags,map(string),yes,,
+aws,notify-slack,lambda_function_vpc_security_group_ids,list(string),yes,,
+aws,notify-slack,lambda_function_vpc_subnet_ids,list(string),yes,,
+aws,notify-slack,lambda_role,string,yes,,
+aws,notify-slack,lambda_source_path,string,no,local deployment package building is not portable; pass s3_existing_package or image_uri,by-design
+aws,notify-slack,log_events,bool,yes,,
+aws,notify-slack,log_level,string,yes,,
+aws,notify-slack,putin_khuylo,bool,yes,,
+aws,notify-slack,recreate_missing_package,bool,partial,"accepted at its default (true); local deployment package building is not portable, pass s3_existing_package or image_uri; false is refused",by-design
+aws,notify-slack,reserved_concurrent_executions,number,yes,,
+aws,notify-slack,runtime,string,yes,,
+aws,notify-slack,slack_channel,string,yes,,
+aws,notify-slack,slack_emoji,string,yes,,
+aws,notify-slack,slack_username,string,yes,,
+aws,notify-slack,slack_webhook_url,string,partial,accepted only as KMS-encrypted ciphertext when kms_key_arn is set; plaintext secret values in values are refused (ACK's Function has no SecretKeyRef for environment variables),gap
+aws,notify-slack,sns_topic_feedback_role_description,string,yes,,
+aws,notify-slack,sns_topic_feedback_role_force_detach_policies,bool,partial,accepted at its default (true); ACK's Role (iam-controller v1.11.3) has no forceDetachPolicies field and always deletes inline policies with the Role; false is refused,gap
+aws,notify-slack,sns_topic_feedback_role_name,string,yes,,
+aws,notify-slack,sns_topic_feedback_role_path,string,yes,,
+aws,notify-slack,sns_topic_feedback_role_permissions_boundary,string,yes,,
+aws,notify-slack,sns_topic_feedback_role_tags,map(string),yes,,
+aws,notify-slack,sns_topic_kms_key_id,string,yes,,
+aws,notify-slack,sns_topic_lambda_feedback_role_arn,string,yes,,
+aws,notify-slack,sns_topic_lambda_feedback_sample_rate,number,yes,,
+aws,notify-slack,sns_topic_name,string,yes,,
+aws,notify-slack,sns_topic_policy,string,yes,,
+aws,notify-slack,sns_topic_tags,map(string),yes,,
+aws,notify-slack,subscription_filter_policy,string,yes,,
+aws,notify-slack,subscription_filter_policy_scope,string,yes,,
+aws,notify-slack,tags,map(string),yes,,
+aws,notify-slack,trigger_on_package_timestamp,bool,no,local deployment package building is not portable; pass s3_existing_package or image_uri,by-design
 aws,opensearch,access_policies,string,no,,no-chart
 aws,opensearch,access_policy_override_policy_documents,list(string),no,,no-chart
 aws,opensearch,access_policy_source_policy_documents,list(string),no,,no-chart

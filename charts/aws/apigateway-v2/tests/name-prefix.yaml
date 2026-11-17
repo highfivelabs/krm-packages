@@ -1,0 +1,13 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+exempt:
+  APIMapping: scoped to DomainName and API by reference
+  DomainName: DNS hostname, not a resource name
+  Integration: AWS assigns an integration ID
+  Route: routeKey is an HTTP method and path
+  Stage: stageName (for example $default) is part of the invoke URL
+nameFields:
+  API: name
+  Authorizer: name
+  VPCLink: name
+  LogGroup: name

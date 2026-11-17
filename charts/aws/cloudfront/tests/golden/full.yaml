@@ -1,0 +1,125 @@
+---
+# Source: cloudfront/templates/cloudfront.yaml
+apiVersion: cloudfront.services.k8s.aws/v1alpha1
+kind: CachePolicy
+metadata:
+  name: full-cp-custom
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloudfront
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "cache-policy/custom"
+spec:
+  cachePolicyConfig:
+    name: "custom"
+    defaultTTL: 3600
+    maxTTL: 86400
+    minTTL: 0
+    parametersInCacheKeyAndForwardedToOrigin:
+      enableAcceptEncodingBrotli: true
+      enableAcceptEncodingGzip: true
+      cookiesConfig:
+        cookieBehavior: "none"
+      headersConfig:
+        headerBehavior: "none"
+      queryStringsConfig:
+        queryStringBehavior: "none"
+---
+# Source: cloudfront/templates/cloudfront.yaml
+apiVersion: cloudfront.services.k8s.aws/v1alpha1
+kind: Distribution
+metadata:
+  name: full-distribution
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloudfront
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "distribution"
+spec:
+  distributionConfig:
+    enabled: true
+    comment: "Full CloudFront CDN"
+    defaultRootObject: "index.html"
+    httpVersion: "http2and3"
+    isIPV6Enabled: true
+    priceClass: "PriceClass_100"
+    aliases:
+      items:
+        - cdn.example.com
+    origins:
+      items:
+        - id: "s3"
+          domainName: "my-bucket.s3.us-east-1.amazonaws.com"
+          originAccessControlID: "E1234567890ABC"
+          s3OriginConfig:
+            originAccessIdentity: ""
+    defaultCacheBehavior:
+      targetOriginID: "s3"
+      viewerProtocolPolicy: "redirect-to-https"
+      allowedMethods:
+        items:
+          - GET
+          - HEAD
+          - OPTIONS
+        cachedMethods:
+          items:
+            - GET
+            - HEAD
+      compress: true
+      cachePolicyID: "658327ea-f89d-4fab-a63d-7e88639e58f6"
+    restrictions:
+      geoRestriction:
+        restrictionType: "none"
+    viewerCertificate:
+      acmCertificateARN: "arn:aws:acm:us-east-1:123456789012:certificate/abc"
+      sslSupportMethod: "sni-only"
+      minimumProtocolVersion: "TLSv1.2_2021"
+  tags:
+    - key: "env"
+      value: "prod"
+---
+# Source: cloudfront/templates/cloudfront.yaml
+apiVersion: cloudfront.services.k8s.aws/v1alpha1
+kind: Function
+metadata:
+  name: full-fn-rewrite
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloudfront
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "function/rewrite"
+spec:
+  name: "rewrite"
+  functionCode: "ZnVuY3Rpb24gaGFuZGxlcihldmVudCkgeyByZXR1cm4gZXZlbnQucmVxdWVzdDsgfQ=="
+  functionConfig:
+    runtime: "cloudfront-js-2.0"
+    comment: "Rewrite URI"
+---
+# Source: cloudfront/templates/cloudfront.yaml
+apiVersion: cloudfront.services.k8s.aws/v1alpha1
+kind: OriginAccessControl
+metadata:
+  name: full-oac-s3
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: cloudfront
+    app.kubernetes.io/version: "0.1.0"
+    team: "platform"
+  annotations:
+    hfl.dev/id: "origin-access-control/s3"
+spec:
+  originAccessControlConfig:
+    name: "s3"
+    originAccessControlOriginType: "s3"
+    signingBehavior: "always"
+    signingProtocol: "sigv4"
