@@ -135,9 +135,9 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | Source | Modules | Bar | Variables covered |
 | --- | ---: | --- | ---: |
 | Google Cloud: Cloud Foundation Fabric and terraform-google-modules | 98 | ![gcp](docs/coverage/gcp.svg) | 1220 of 1478 (82.5%) |
-| AWS: terraform-aws-modules | 42 | ![aws](docs/coverage/aws.svg) | 1230 of 2348 (52.4%) |
+| AWS: terraform-aws-modules | 42 | ![aws](docs/coverage/aws.svg) | 1297 of 2348 (55.2%) |
 | Azure: Azure Verified Modules | 37 | ![azure](docs/coverage/azure.svg) | 1066 of 1170 (91.1%) |
-| **All** | **177** | | **3516 of 4996 (70.4%)** |
+| **All** | **177** | | **3583 of 4996 (71.7%)** |
 
 ### Google Cloud: Cloud Foundation Fabric and terraform-google-modules
 
@@ -278,11 +278,11 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | [`route53`](https://github.com/terraform-aws-modules/terraform-aws-route53/tree/v6.5.1) ([chart](charts/aws/route53)) | ![route53](docs/coverage/bars/aws-route53.svg) 14 of 22 | 5 of 16 | 9 of 16 | partial |
 | [`ecs`](https://github.com/terraform-aws-modules/terraform-aws-ecs/tree/v7.6.1) ([chart](charts/aws/ecs)) | ![ecs](docs/coverage/bars/aws-ecs.svg) 55 of 60 | 6 of 20 | 15 of 18 | partial |
 | [`alb`](https://github.com/terraform-aws-modules/terraform-aws-alb/tree/v10.5.1) ([chart](charts/aws/alb)) | ![alb](docs/coverage/bars/aws-alb.svg) 44 of 50 | 10 of 11 | 10 of 14 | partial |
-| [`dynamodb-table`](https://github.com/terraform-aws-modules/terraform-aws-dynamodb-table/tree/v5.5.2) ([chart](charts/aws/dynamodb-table)) | ![dynamodb-table](docs/coverage/bars/aws-dynamodb-table.svg) 27 of 39 | 4 of 8 | 4 of 4 | partial |
+| [`dynamodb-table`](https://github.com/terraform-aws-modules/terraform-aws-dynamodb-table/tree/v5.5.2) ([chart](charts/aws/dynamodb-table)) | ![dynamodb-table](docs/coverage/bars/aws-dynamodb-table.svg) 31 of 39 | 4 of 8 | 4 of 4 | partial |
 | [`eventbridge`](https://github.com/terraform-aws-modules/terraform-aws-eventbridge/tree/v4.3.3) ([chart](charts/aws/eventbridge)) | ![eventbridge](docs/coverage/bars/aws-eventbridge.svg) 78 of 83 | 33 of 34 | 13 of 18 | partial |
 | [`autoscaling`](https://github.com/terraform-aws-modules/terraform-aws-autoscaling/tree/v9.3.2) ([chart](charts/aws/autoscaling)) | ![autoscaling](docs/coverage/bars/aws-autoscaling.svg) 83 of 96 | 27 of 27 | 6 of 8 | partial |
 | [`secrets-manager`](https://github.com/terraform-aws-modules/terraform-aws-secrets-manager/tree/v2.2.0) ([chart](charts/aws/secrets-manager)) | ![secrets-manager](docs/coverage/bars/aws-secrets-manager.svg) 15 of 29 | 5 of 7 | 3 of 4 | partial |
-| [`eks-pod-identity`](https://github.com/terraform-aws-modules/terraform-aws-eks-pod-identity/tree/v2.10.0) ([chart](charts/aws/eks-pod-identity)) | ![eks-pod-identity](docs/coverage/bars/aws-eks-pod-identity.svg) 19 of 82 | 7 of 8 | 4 of 4 | partial |
+| [`eks-pod-identity`](https://github.com/terraform-aws-modules/terraform-aws-eks-pod-identity/tree/v2.10.0) ([chart](charts/aws/eks-pod-identity)) | ![eks-pod-identity](docs/coverage/bars/aws-eks-pod-identity.svg) 82 of 82 | 7 of 8 | 4 of 4 | partial |
 | [`ecr`](https://github.com/terraform-aws-modules/terraform-aws-ecr/tree/v3.2.0) ([chart](charts/aws/ecr)) | ![ecr](docs/coverage/bars/aws-ecr.svg) 27 of 30 | 4 of 4 | 10 of 13 | partial |
 | [`sns`](https://github.com/terraform-aws-modules/terraform-aws-sns/tree/v7.2.0) ([chart](charts/aws/sns)) | ![sns](docs/coverage/bars/aws-sns.svg) 27 of 29 | 4 of 6 | 4 of 4 | partial |
 | [`elasticache`](https://github.com/terraform-aws-modules/terraform-aws-elasticache/tree/v1.11.2) ([chart](charts/aws/elasticache)) | ![elasticache](docs/coverage/bars/aws-elasticache.svg) 60 of 68 | 17 of 25 | 12 of 13 | partial |

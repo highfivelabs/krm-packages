@@ -1,0 +1,24 @@
+name: autoscaled-table
+region: us-east-1
+billing_mode: PROVISIONED
+hash_key: id
+read_capacity: 5
+write_capacity: 5
+attributes:
+  - {name: id, type: S}
+  - {name: gk, type: S}
+global_secondary_indexes:
+  - {name: ByG, hash_key: gk, projection_type: ALL, read_capacity: 5, write_capacity: 5}
+autoscaling_enabled: true
+autoscaling_read:
+  max_capacity: 20
+  scale_in_cooldown: 60
+autoscaling_write:
+  max_capacity: 20
+  target_value: 80
+autoscaling_indexes:
+  ByG:
+    read_min_capacity: 5
+    read_max_capacity: 15
+    write_min_capacity: 5
+    write_max_capacity: 15

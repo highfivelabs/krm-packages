@@ -35,6 +35,7 @@ attached by reference) and a `PodIdentityAssociation`
 | `aws_iam_role` | `create` | `iam/Role` `role`: named `name`, trusting `pods.eks.amazonaws.com` (`sts:AssumeRole`, `sts:TagSession`) with `trust_policy_conditions`, then `trust_policy_statements`; `path`, `description`, `maxSessionDuration`, `permissionsBoundary`, `tags` |
 | `aws_iam_role_policy_attachment` (`additional_policy_arns`) | given | the role's `policies` (ARNs) |
 | `aws_iam_policy`, `aws_iam_role_policy_attachment` (custom) | `attach_custom_policy` | `iam/Policy` `policy`, named as the role: `source_policy_documents`, `policy_statements` and `override_policy_documents` merged by Sid as `aws_iam_policy_document` merges them, `description` (`custom_policy_description`), `path`; in the role's `policyRefs`, or with `additional_policy_arns` beside it, by an ARN built from `account_id` (ACK's `Role` takes ARNs or references, not both) |
+| `aws_iam_policy`, `aws_iam_role_policy_attachment` (presets) | `attach_*_policy` | `iam/Policy` `policy-<preset>`, named `<policy_name_prefix><preset-name>` (and the CloudWatch Observability managed policy ARN); each preset merges `source_policy_documents`, `policy_statements`, the preset's statements, and `override_policy_documents` by Sid |
 | `aws_eks_pod_identity_association` | one per `associations` entry | `eks/PodIdentityAssociation` `association-<key>`: `clusterName`, `namespace`, `serviceAccount`, `targetRoleARN`, `disableSessionTags` (each from the entry, else `association_defaults`), `roleRef` to the role, `tags` (`tags`, the entry's, the defaults', merged in the module's order) |
 
 ## Values
@@ -45,18 +46,10 @@ chart adds `names` (`role`), `namePrefix`, `labels` (Kubernetes only),
 module's own, and `region` becomes the annotation `services.k8s.aws/region`
 on the associations.
 
-Refused or accepted in part (`upstream.yaml`):
+Accepted in part (`upstream.yaml`):
 
-- The module's preset policies, 63 variables: `policy_name_prefix` and
-  every `attach_*_policy` preset (EBS CSI, load balancer controller,
-  external-dns, Karpenter's neighbours, ...) with its name and ARN
-  variables. Not ported yet: `iam/Policy` is stable, so this is chart work
-  (each preset is an `aws_iam_policy_document` to carry as data). Until
-  then, pass a preset's document in `source_policy_documents` with
-  `attach_custom_policy`, or its ARN in `additional_policy_arns`.
-- `use_name_prefix`, in part: the role and the custom policy are named
-  `name`, without Terraform's random suffix; `namePrefix` keeps two
-  Instances' roles apart.
+- `use_name_prefix`, in part: the role and the policies are named without
+  Terraform's random suffix; `namePrefix` keeps two Instances' roles apart.
 
 ## Outputs
 

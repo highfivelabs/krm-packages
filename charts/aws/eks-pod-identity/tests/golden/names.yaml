@@ -32,7 +32,7 @@ metadata:
   annotations:
     hfl.dev/id: "policy"
 spec:
-  name: "team-a-app-pod-identity"
+  name: "x"
   path: "/"
   description: "Custom IAM Policy"
   policyDocument: "{\"Statement\":[{\"Action\":[\"s3:ListAllMyBuckets\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"]}],\"Version\":\"2012-10-17\"}"

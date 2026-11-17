@@ -1,0 +1,12 @@
+name: eks-presets
+account_id: "123456789012"
+region: us-west-2
+policy_name_prefix: "Custom_"
+attach_aws_ebs_csi_policy: true
+aws_ebs_csi_kms_arns:
+  - arn:aws:kms:us-west-2:123456789012:key/1234
+attach_aws_cloudwatch_observability_policy: true
+attach_cluster_autoscaler_policy: true
+cluster_autoscaler_cluster_names:
+  - prod-eks
+attach_pganalyze_policy: true

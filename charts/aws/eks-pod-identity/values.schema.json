@@ -58,25 +58,25 @@
         "string",
         "null"
       ],
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "amazon_managed_service_prometheus_workspace_arns": {
       "type": "array",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "appmesh_controller_policy_name": {
       "type": [
         "string",
         "null"
       ],
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "appmesh_envoy_proxy_policy_name": {
       "type": [
         "string",
         "null"
       ],
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "association_defaults": {
       "type": "object",
@@ -88,67 +88,67 @@
     },
     "attach_amazon_managed_service_prometheus_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "attach_aws_appmesh_controller_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "attach_aws_appmesh_envoy_proxy_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "attach_aws_cloudwatch_observability_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "attach_aws_ebs_csi_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "attach_aws_efs_csi_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "attach_aws_fsx_lustre_csi_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "attach_aws_gateway_controller_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "attach_aws_global_accelerator_controller_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "attach_aws_lb_controller_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "attach_aws_lb_controller_targetgroup_binding_only_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "attach_aws_node_termination_handler_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "attach_aws_privateca_issuer_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "attach_aws_vpc_cni_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "attach_cert_manager_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "attach_cluster_autoscaler_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "attach_custom_policy": {
       "type": "boolean",
@@ -156,147 +156,147 @@
     },
     "attach_external_dns_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "attach_external_secrets_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "attach_mountpoint_s3_csi_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "attach_pganalyze_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "attach_velero_policy": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "aws_ebs_csi_kms_arns": {
       "type": "array",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "aws_ebs_csi_policy_name": {
       "type": [
         "string",
         "null"
       ],
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "aws_efs_csi_policy_name": {
       "type": [
         "string",
         "null"
       ],
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "aws_fsx_lustre_csi_policy_name": {
       "type": [
         "string",
         "null"
       ],
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "aws_fsx_lustre_csi_service_role_arns": {
       "type": "array",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "aws_gateway_controller_policy_name": {
       "type": [
         "string",
         "null"
       ],
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "aws_global_accelerator_controller_policy_name": {
       "type": [
         "string",
         "null"
       ],
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "aws_lb_controller_policy_name": {
       "type": [
         "string",
         "null"
       ],
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "aws_lb_controller_targetgroup_arns": {
       "type": "array",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "aws_lb_controller_targetgroup_only_policy_name": {
       "type": [
         "string",
         "null"
       ],
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "aws_node_termination_handler_policy_name": {
       "type": [
         "string",
         "null"
       ],
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "aws_node_termination_handler_sqs_queue_arns": {
       "type": "array",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "aws_privateca_issuer_acmca_arns": {
       "type": "array",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "aws_privateca_issuer_policy_name": {
       "type": [
         "string",
         "null"
       ],
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "aws_vpc_cni_enable_cloudwatch_logs": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "aws_vpc_cni_enable_ipv4": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "aws_vpc_cni_enable_ipv6": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "aws_vpc_cni_policy_name": {
       "type": [
         "string",
         "null"
       ],
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "cert_manager_hosted_zone_arns": {
       "type": "array",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "cert_manager_policy_name": {
       "type": [
         "string",
         "null"
       ],
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "cluster_autoscaler_cluster_names": {
       "type": "array",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "cluster_autoscaler_policy_name": {
       "type": [
         "string",
         "null"
       ],
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "create": {
       "type": "boolean",
@@ -315,37 +315,37 @@
     },
     "external_dns_hosted_zone_arns": {
       "type": "array",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "external_dns_policy_name": {
       "type": [
         "string",
         "null"
       ],
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "external_secrets_create_permission": {
       "type": "boolean",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "external_secrets_kms_key_arns": {
       "type": "array",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "external_secrets_policy_name": {
       "type": [
         "string",
         "null"
       ],
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "external_secrets_secrets_manager_arns": {
       "type": "array",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "external_secrets_ssm_parameter_arns": {
       "type": "array",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "max_session_duration": {
       "type": [
@@ -356,18 +356,18 @@
     },
     "mountpoint_s3_csi_bucket_arns": {
       "type": "array",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "mountpoint_s3_csi_bucket_path_arns": {
       "type": "array",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "mountpoint_s3_csi_policy_name": {
       "type": [
         "string",
         "null"
       ],
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "name": {
       "type": "string",
@@ -393,11 +393,11 @@
         "string",
         "null"
       ],
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "policy_name_prefix": {
       "type": "string",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "policy_statements": {
       "type": [
@@ -441,22 +441,22 @@
     },
     "velero_kms_arns": {
       "type": "array",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "velero_policy_name": {
       "type": [
         "string",
         "null"
       ],
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "velero_s3_bucket_arns": {
       "type": "array",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     },
     "velero_s3_bucket_path_arns": {
       "type": "array",
-      "description": "Not supported: the module's preset policies (policy_name_prefix and the attach_*_policy presets with their names and ARNs) are not ported yet: iam/Policy is stable; pass a preset's document as source_policy_documents with attach_custom_policy, or its ARN in additional_policy_arns"
+      "description": "Preset policy setting"
     }
   }
 }

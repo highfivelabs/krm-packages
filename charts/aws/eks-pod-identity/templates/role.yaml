@@ -5,12 +5,12 @@ SPDX-License-Identifier: Apache-2.0
 main.tf: the role (aws_iam_role, iam/Role) trusting pods.eks.amazonaws.com
 (sts:AssumeRole, sts:TagSession) with trust_policy_conditions and
 trust_policy_statements, the policy ARNs it is given
-(additional_policy_arns), and with attach_custom_policy the custom policy
+(additional_policy_arns), with attach_custom_policy the custom policy
 (aws_iam_policy, iam/Policy): source_policy_documents, policy_statements
 and override_policy_documents merged by Sid, as aws_iam_policy_document
-merges them. The preset policies are refused (refusals.yaml).
+merges them, and the preset policies (_presets.tpl).
 */ -}}
-{{- include "ack.names" (list $ (list "role")) -}}
+{{- include "ack.names" (list $ (list "role" "policy" "amp-policy" "appmesh-controller-policy" "appmesh-envoy-proxy-policy" "ebs-csi-policy" "efs-csi-policy" "fsx-lustre-csi-policy" "gateway-controller-policy" "lb-controller-policy" "global-accelerator-controller-policy" "lb-controller-targetgroup-only-policy" "node-termination-handler-policy" "privateca-issuer-policy" "vpc-cni-policy" "cert-manager-policy" "cluster-autoscaler-policy" "external-dns-policy" "external-secrets-policy" "mountpoint-s3-csi-policy" "pganalyze-policy" "velero-policy")) -}}
 {{- $v := .Values -}}
 {{- if $v.create }}
 {{- $name := include "ack.resourceName" (list $ "role" "IAM role" $v.name 64) }}
@@ -20,19 +20,23 @@ merges them. The preset policies are refused (refusals.yaml).
 {{- $trustStmts := list (dict "effect" "Allow" "actions" (list "sts:AssumeRole" "sts:TagSession") "principals" (list (dict "type" "Service" "identifiers" (list "pods.eks.amazonaws.com"))) "condition" ($v.trust_policy_conditions | default list)) }}
 {{- range $s := $v.trust_policy_statements | default list }}{{ $trustStmts = append $trustStmts $s }}{{ end }}
 {{- $trust := include "epi.document" (list "trust" list $trustStmts list) }}
+{{- $createdPolicies := list }}
 {{- $custom := "" }}
 {{- if $v.attach_custom_policy }}
 {{- $custom = include "epi.document" (list "custom" $v.source_policy_documents ($v.policy_statements | default list) $v.override_policy_documents) }}
 {{- if not $custom }}
 {{- fail "eks-pod-identity: attach_custom_policy needs source_policy_documents, policy_statements or override_policy_documents: the custom policy has no statement" }}
 {{- end }}
+{{- $customName := include "ack.resourceName" (list $ "policy" "IAM policy" $v.name 128) }}
+{{- $customK8s := include "ack.name" (list .Release.Name "policy") }}
+{{- $createdPolicies = append $createdPolicies (dict "k8s" $customK8s "iam" $customName) }}
 ---
 apiVersion: iam.services.k8s.aws/v1alpha1
 kind: Policy
 metadata:
-{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "policy")) "id" "policy") | nindent 2 }}
+{{- include "ack.metadata" (dict "root" $ "name" $customK8s "id" "policy") | nindent 2 }}
 spec:
-  name: {{ $name | quote }}
+  name: {{ $customName | quote }}
   path: {{ $v.path | default "/" | quote }}
 {{- with $v.custom_policy_description }}
   description: {{ . | quote }}
@@ -43,8 +47,37 @@ spec:
 {{- include "ack.tagList" (list .) | nindent 4 }}
 {{- end }}
 {{- end }}
+{{- $presets := (include "epi.presets" $ | fromJson).p }}
+{{- if $presets }}
+{{- $baseStmts := (include "epi.baseStatements" (list $v.source_policy_documents ($v.policy_statements | default list)) | fromJson).s }}
+{{- range $p := $presets }}
+{{- $pDoc := include "epi.presetDocument" (list $baseStmts $p.statements $v.override_policy_documents) }}
+{{- $pIam := include "ack.resourceName" (list $ $p.id "IAM policy" $p.name 128) }}
+{{- $pK8s := include "ack.name" (list $.Release.Name $p.id) }}
+{{- $createdPolicies = append $createdPolicies (dict "k8s" $pK8s "iam" $pIam) }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $pK8s "id" $p.id) | nindent 2 }}
+spec:
+  name: {{ $pIam | quote }}
+  path: {{ $v.path | default "/" | quote }}
+  description: {{ $p.description | quote }}
+  policyDocument: {{ $pDoc | quote }}
+{{- with include "ack.tags" (list $ $v.tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
 {{- $arns := list }}
 {{- range $k := keys ($v.additional_policy_arns | default dict) | sortAlpha }}{{ $arns = append $arns (index $v.additional_policy_arns $k) }}{{ end }}
+{{- if $v.attach_aws_cloudwatch_observability_policy }}
+{{- $part := $v.partition | default "aws" }}
+{{- $arns = append $arns (printf "arn:%s:iam::aws:policy/AWSXrayWriteOnlyAccess" $part) }}
+{{- $arns = append $arns (printf "arn:%s:iam::aws:policy/CloudWatchAgentServerPolicy" $part) }}
+{{- end }}
 ---
 apiVersion: iam.services.k8s.aws/v1alpha1
 kind: Role
@@ -63,21 +96,25 @@ spec:
   permissionsBoundary: {{ . | quote }}
 {{- end }}
   assumeRolePolicyDocument: {{ $trust | quote }}
-{{- if and $custom $arns }}
+{{- if and $createdPolicies $arns }}
 {{- /* ACK takes a role's policies as ARNs or as references, not both: with
-ARNs given, the custom policy's ARN is built, as IAM names it. */}}
+ARNs given, each created policy's ARN is built, as IAM names it. */}}
 {{- if not $v.account_id }}
-{{- fail "eks-pod-identity: account_id is required to attach the custom policy beside additional_policy_arns (ACK's Role takes policy ARNs or references, not both): the chart cannot look it up (values.yaml)" }}
+{{- fail "eks-pod-identity: account_id is required to attach created policies beside additional_policy_arns or CloudWatch Observability (ACK's Role takes policy ARNs or references, not both): the chart cannot look it up (values.yaml)" }}
 {{- end }}
   policies:
-    - {{ printf "arn:%s:iam::%s:policy%s%s" $v.partition $v.account_id ($v.path | default "/") $name | quote }}
+{{- range $createdPolicies }}
+    - {{ printf "arn:%s:iam::%s:policy%s%s" ($v.partition | default "aws") $v.account_id ($v.path | default "/") .iam | quote }}
+{{- end }}
 {{- range $arns }}
     - {{ . | quote }}
 {{- end }}
-{{- else if $custom }}
+{{- else if $createdPolicies }}
   policyRefs:
+{{- range $createdPolicies }}
     - from:
-        name: {{ include "ack.name" (list .Release.Name "policy") }}
+        name: {{ .k8s }}
+{{- end }}
 {{- else if $arns }}
   policies:
 {{- range $arns }}

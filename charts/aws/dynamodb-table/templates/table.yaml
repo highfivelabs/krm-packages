@@ -4,20 +4,12 @@ SPDX-License-Identifier: Apache-2.0
 
 main.tf: the table (aws_dynamodb_table.this, dynamodb/Table), with the
 module's standalone resource policy (aws_dynamodb_resource_policy ->
-resourcePolicy) inline. The autoscaled variants (autoscaling_enabled) are
-not ported yet.
+resourcePolicy) inline.
 */ -}}
 {{- include "ack.names" (list $ (list "table")) -}}
 {{- $v := .Values -}}
 {{- if $v.create_table }}
-{{- $name := "" }}
-{{- if index ($v.names | default dict) "table" }}
-{{- $name = include "ack.resourceName" (list $ "table" "table" "" 255) }}
-{{- else if $v.name }}
-{{- $name = include "ack.cloudName" (list $ "table" $v.name 255) }}
-{{- else }}
-{{- fail "dynamodb-table: name is required: the table's name (or names.table)" }}
-{{- end }}
+{{- $name := include "ddb.tableName" $ }}
 {{- if not $v.hash_key }}
 {{- fail "dynamodb-table: hash_key is required: a table's partition key" }}
 {{- end }}

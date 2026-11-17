@@ -1,4 +1,4 @@
-# expect: eks-pod-identity: account_id is required to attach the custom policy
+# expect: eks-pod-identity: account_id is required to attach created policies
 name: x
 attach_custom_policy: true
 policy_statements: [{actions: ["s3:*"], resources: ["*"]}]
