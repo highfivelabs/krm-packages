@@ -1,0 +1,303 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "Service(s)": each entry in var.services renders a TaskDefinition,
+Service (referencing the cluster and task definition), and optional
+ScalableTarget, ScalingPolicy, ScheduledAction (ack-extensions,
+allow_alpha: true), TaskSet (ack-extensions, allow_alpha: true),
+ExpressGatewayService (ack-extensions, allow_alpha: true), SecurityGroup,
+and IAM Roles.
+*/ -}}
+{{- $v := .Values -}}
+{{- if $v.create }}
+{{- $clusterK8s := include "ack.name" (list .Release.Name "cluster") -}}
+{{- range $key := keys ($v.services | default dict) | sortAlpha }}
+{{- $svc := index $v.services $key }}
+{{- if kindIs "invalid" $svc.create | ternary true $svc.create }}
+{{- $svcName := include "ack.cloudName" (list $ (printf "svc-%s" $key) ($svc.name | default $key) 255) }}
+{{- $tdK8s := include "ack.name" (list $.Release.Name (printf "td-%s" $key)) }}
+{{- $svcK8s := include "ack.name" (list $.Release.Name (printf "svc-%s" $key)) }}
+{{- $svcTags := include "ack.tags" (list $ (merge (dict) ($svc.tags | default dict) ($v.tags | default dict))) | fromJson }}
+
+{{- /* Task execution IAM role (per-service, optional) */ -}}
+{{- $execRoleK8s := "" }}
+{{- if $svc.create_task_exec_iam_role }}
+{{- $execRoleK8s = include "ack.name" (list $.Release.Name (printf "svc-%s-exec-role" $key)) }}
+{{- $execRoleName := include "ack.cloudName" (list $ (printf "svc-%s-exec" $key) ($svc.task_exec_iam_role_name | default (printf "%s-exec" $svcName)) 64) }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $execRoleK8s "id" (printf "service/%s/task-exec-role" $key) "region" "") | nindent 2 }}
+spec:
+  name: {{ $execRoleName | quote }}
+  assumeRolePolicyDocument: {{ include "ecs.assumeRolePolicy" (list "ecs-tasks.amazonaws.com") | quote }}
+  policies:
+    - {{ printf "arn:%s:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy" ($v.partition | default "aws") | quote }}
+{{- with $svcTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* Task IAM role (per-service, optional) */ -}}
+{{- $taskRoleK8s := "" }}
+{{- if $svc.create_tasks_iam_role }}
+{{- $taskRoleK8s = include "ack.name" (list $.Release.Name (printf "svc-%s-task-role" $key)) }}
+{{- $taskRoleName := include "ack.cloudName" (list $ (printf "svc-%s-task" $key) ($svc.tasks_iam_role_name | default (printf "%s-task" $svcName)) 64) }}
+{{- $taskInline := dict }}
+{{- $taskStmts := list }}
+{{- range $sk := keys ($svc.tasks_iam_role_statements | default dict) | sortAlpha }}
+{{- $taskStmts = append $taskStmts (include "ecs.iamStatement" (index $svc.tasks_iam_role_statements $sk) | fromJson) }}
+{{- end }}
+{{- if $taskStmts }}
+{{- $_ := set $taskInline "tasks-policy" (toJson (dict "Version" "2012-10-17" "Statement" $taskStmts)) }}
+{{- end }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $taskRoleK8s "id" (printf "service/%s/task-role" $key) "region" "") | nindent 2 }}
+spec:
+  name: {{ $taskRoleName | quote }}
+  assumeRolePolicyDocument: {{ include "ecs.assumeRolePolicy" (list "ecs-tasks.amazonaws.com") | quote }}
+{{- with $taskInline }}
+  inlinePolicies:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $svcTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* TaskDefinition */ -}}
+{{- $createTD := kindIs "invalid" $svc.create_task_definition | ternary true $svc.create_task_definition }}
+{{- if $createTD }}
+{{- $family := include "ack.cloudName" (list $ (printf "td-%s" $key) ($svc.family | default $svcName) 255) }}
+---
+apiVersion: ecs.services.k8s.aws/v1alpha1
+kind: TaskDefinition
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $tdK8s "id" (printf "service/%s/task-definition" $key) "region" $v.region) | nindent 2 }}
+spec:
+  family: {{ $family | quote }}
+{{- with $svc.cpu }}
+  cpu: {{ . | quote }}
+{{- end }}
+{{- with $svc.memory }}
+  memory: {{ . | quote }}
+{{- end }}
+{{- with $svc.network_mode }}
+  networkMode: {{ . | quote }}
+{{- end }}
+{{- with $svc.requires_compatibilities }}
+  requiresCompatibilities:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $svc.runtime_platform }}
+  runtimePlatform:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $svc.ephemeral_storage }}
+  ephemeralStorage:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- if $execRoleK8s }}
+  executionRoleRef:
+    from:
+      name: {{ $execRoleK8s | quote }}
+{{- else if $svc.task_exec_iam_role_arn }}
+  executionRoleARN: {{ $svc.task_exec_iam_role_arn | quote }}
+{{- end }}
+{{- if $taskRoleK8s }}
+  taskRoleRef:
+    from:
+      name: {{ $taskRoleK8s | quote }}
+{{- else if $svc.tasks_iam_role_arn }}
+  taskRoleARN: {{ $svc.tasks_iam_role_arn | quote }}
+{{- end }}
+{{- with $svc.container_definitions }}
+  containerDefinitions:
+{{- range $ck := keys . | sortAlpha }}
+{{- $c := index $svc.container_definitions $ck }}
+    - name: {{ ($c.name | default $ck) | quote }}
+      image: {{ $c.image | quote }}
+{{- if not (kindIs "invalid" $c.essential) }}
+      essential: {{ $c.essential }}
+{{- end }}
+{{- with $c.cpu }}
+      cpu: {{ int64 . }}
+{{- end }}
+{{- with $c.memory }}
+      memory: {{ int64 . }}
+{{- end }}
+{{- with $c.memory_reservation }}
+      memoryReservation: {{ int64 . }}
+{{- end }}
+{{- with $c.port_mappings }}
+      portMappings:
+{{- toYaml . | nindent 8 }}
+{{- end }}
+{{- with $c.environment }}
+      environment:
+{{- toYaml . | nindent 8 }}
+{{- end }}
+{{- with $c.secrets }}
+      secrets:
+{{- toYaml . | nindent 8 }}
+{{- end }}
+{{- with $c.command }}
+      command:
+{{- toYaml . | nindent 8 }}
+{{- end }}
+{{- with $c.entry_point }}
+      entryPoint:
+{{- toYaml . | nindent 8 }}
+{{- end }}
+{{- with $c.log_configuration }}
+      logConfiguration:
+{{- toYaml . | nindent 8 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with $svc.volumes }}
+  volumes:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $svcTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+---
+apiVersion: ecs.services.k8s.aws/v1alpha1
+kind: Service
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $svcK8s "id" (printf "service/%s" $key) "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ $svcName | quote }}
+  clusterRef:
+    from:
+      name: {{ $clusterK8s | quote }}
+{{- if $createTD }}
+  taskDefinitionRef:
+    from:
+      name: {{ $tdK8s | quote }}
+{{- else if $svc.task_definition_arn }}
+  taskDefinition: {{ $svc.task_definition_arn | quote }}
+{{- end }}
+{{- with $svc.launch_type }}
+  launchType: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $svc.desired_count) }}
+  desiredCount: {{ int64 $svc.desired_count }}
+{{- end }}
+{{- with $svc.platform_version }}
+  platformVersion: {{ . | quote }}
+{{- end }}
+{{- with $svc.scheduling_strategy }}
+  schedulingStrategy: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $svc.enable_ecs_managed_tags) }}
+  enableECSManagedTags: {{ $svc.enable_ecs_managed_tags }}
+{{- end }}
+{{- if not (kindIs "invalid" $svc.enable_execute_command) }}
+  enableExecuteCommand: {{ $svc.enable_execute_command }}
+{{- end }}
+{{- if not (kindIs "invalid" $svc.health_check_grace_period_seconds) }}
+  healthCheckGracePeriodSeconds: {{ int64 $svc.health_check_grace_period_seconds }}
+{{- end }}
+{{- with $svc.propagate_tags }}
+  propagateTags: {{ . | quote }}
+{{- end }}
+{{- if or $svc.subnet_ids $svc.security_group_ids (not (kindIs "invalid" $svc.assign_public_ip)) }}
+  networkConfiguration:
+    awsVPCConfiguration:
+{{- with $svc.subnet_ids }}
+      subnets:
+{{- toYaml . | nindent 8 }}
+{{- end }}
+{{- with $svc.security_group_ids }}
+      securityGroups:
+{{- toYaml . | nindent 8 }}
+{{- end }}
+{{- if not (kindIs "invalid" $svc.assign_public_ip) }}
+      assignPublicIP: {{ ternary "ENABLED" "DISABLED" $svc.assign_public_ip | quote }}
+{{- end }}
+{{- end }}
+{{- with $svc.load_balancer }}
+  loadBalancers:
+{{- range $lk := keys . | sortAlpha }}
+{{- $lb := index $svc.load_balancer $lk }}
+    - containerName: {{ $lb.container_name | quote }}
+      containerPort: {{ int64 $lb.container_port }}
+      targetGroupARN: {{ $lb.target_group_arn | quote }}
+{{- end }}
+{{- end }}
+{{- with $svc.deployment_controller }}
+  deploymentController:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $svcTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+
+{{- /* Application Auto Scaling (optional) */ -}}
+{{- if $svc.enable_autoscaling }}
+{{- $resID := printf "service/%s/%s" (include "ack.resourceName" (list $ "cluster" "ECS cluster" ($v.cluster_name | default "") 255)) $svcName }}
+{{- $targetK8s := include "ack.name" (list $.Release.Name (printf "svc-%s-target" $key)) }}
+---
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalableTarget
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $targetK8s "id" (printf "service/%s/scalable-target" $key) "region" $v.region) | nindent 2 }}
+spec:
+  serviceNamespace: ecs
+  scalableDimension: ecs:service:DesiredCount
+  resourceID: {{ $resID | quote }}
+  minCapacity: {{ int64 ($svc.autoscaling_min_capacity | default 1) }}
+  maxCapacity: {{ int64 ($svc.autoscaling_max_capacity | default 10) }}
+{{- range $pk := keys ($svc.autoscaling_policies | default dict) | sortAlpha }}
+{{- $p := index $svc.autoscaling_policies $pk }}
+---
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalingPolicy
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name (printf "svc-%s-policy-%s" $key $pk))) "id" (printf "service/%s/scaling-policy/%s" $key $pk) "region" $v.region) | nindent 2 }}
+spec:
+  policyName: {{ include "ack.cloudName" (list $ (printf "svc-%s-policy-%s" $key $pk) ($p.name | default $pk) 256) | quote }}
+  policyType: {{ ($p.policy_type | default "TargetTrackingScaling") | quote }}
+  serviceNamespace: ecs
+  scalableDimension: ecs:service:DesiredCount
+  resourceID: {{ $resID | quote }}
+{{- with $p.target_tracking_scaling_policy_configuration }}
+  targetTrackingScalingPolicyConfiguration:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- range $sk := keys ($svc.autoscaling_scheduled_actions | default dict) | sortAlpha }}
+{{- $sa := index $svc.autoscaling_scheduled_actions $sk }}
+{{- include "ack.alpha" (list $ (printf "services.%s.autoscaling_scheduled_actions" $key) $sa "ScheduledAction (applicationautoscaling.aws.hfl.dev)") }}
+---
+apiVersion: applicationautoscaling.aws.hfl.dev/v1alpha1
+kind: ScheduledAction
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name (printf "svc-%s-sched-%s" $key $sk))) "id" (printf "service/%s/scheduled-action/%s" $key $sk) "region" $v.region) | nindent 2 }}
+spec:
+  scheduledActionName: {{ include "ack.cloudName" (list $ (printf "svc-%s-sched-%s" $key $sk) ($sa.name | default $sk) 256) | quote }}
+  serviceNamespace: ecs
+  scalableDimension: ecs:service:DesiredCount
+  resourceID: {{ $resID | quote }}
+  schedule: {{ $sa.schedule | quote }}
+  scalableTargetAction:
+    minCapacity: {{ int64 $sa.min_capacity }}
+    maxCapacity: {{ int64 $sa.max_capacity }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

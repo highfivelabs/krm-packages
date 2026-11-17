@@ -1,0 +1,8 @@
+function_name: basic-fn
+handler: index.handler
+runtime: python3.12
+s3_existing_package:
+  bucket: my-lambda-artifacts
+  key: basic-fn.zip
+tags:
+  env: test

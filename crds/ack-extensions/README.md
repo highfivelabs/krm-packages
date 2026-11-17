@@ -11,7 +11,7 @@ only with `allow_alpha: true` (`docs/design.md`, "Alpha kinds";
 | File | Kind | Copied from |
 | --- | --- | --- |
 | `ec2.aws.hfl.dev_customergateways.yaml` | `CustomerGateway` (`ec2.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `52556a276e902db1c835e2f7cd3b3d034f0465e8` (2026-11-12) |
-| `ec2.aws.hfl.dev_launchtemplates.yaml` | `LaunchTemplate` (`ec2.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `281807b6` (2026-11-16) |
+| `ec2.aws.hfl.dev_launchtemplates.yaml` | `LaunchTemplate` (`ec2.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `7117ca5a` (2026-11-17) |
 | `kms.aws.hfl.dev_replicakeys.yaml` | `ReplicaKey` (`kms.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `52556a276e902db1c835e2f7cd3b3d034f0465e8` (2026-11-12) |
 | `ec2.cloudcontrol.aws.hfl.dev_vpcblockpublicaccessoptionses.yaml` | `VPCBlockPublicAccessOptions` (`ec2.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `74d322f6` (2026-11-12) |
 | `rds.aws.hfl.dev_optiongroups.yaml` | `OptionGroup` (`rds.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `52556a276e902db1c835e2f7cd3b3d034f0465e8` (2026-11-12) |
@@ -23,7 +23,7 @@ only with `allow_alpha: true` (`docs/design.md`, "Alpha kinds";
 | `ecr.cloudcontrol.aws.hfl.dev_registrypolicies.yaml` | `RegistryPolicy` (`ecr.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `2cdca6ca` (2026-11-15) |
 | `ecr.cloudcontrol.aws.hfl.dev_registryscanningconfigurations.yaml` | `RegistryScanningConfiguration` (`ecr.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `2cdca6ca` (2026-11-15) |
 | `ecr.aws.hfl.dev_replicationconfigurations.yaml` | `ReplicationConfiguration` (`ecr.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `2cdca6ca` (2026-11-15) |
-| `autoscaling.aws.hfl.dev_autoscalinggroups.yaml` | `AutoScalingGroup` (`autoscaling.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `281807b6` (2026-11-16) |
+| `autoscaling.aws.hfl.dev_autoscalinggroups.yaml` | `AutoScalingGroup` (`autoscaling.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `7117ca5a` (2026-11-17) |
 | `autoscaling.aws.hfl.dev_scalingpolicies.yaml` | `ScalingPolicy` (`autoscaling.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `2cdca6ca` (2026-11-16) |
 | `autoscaling.aws.hfl.dev_scheduledactions.yaml` | `ScheduledAction` (`autoscaling.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `2cdca6ca` (2026-11-16) |
 | `autoscaling.cloudcontrol.aws.hfl.dev_warmpools.yaml` | `WarmPool` (`autoscaling.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `2cdca6ca` (2026-11-16) |
@@ -32,3 +32,10 @@ only with `allow_alpha: true` (`docs/design.md`, "Alpha kinds";
 | `scheduler.aws.hfl.dev_schedulegroups.yaml` | `ScheduleGroup` (`scheduler.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `2cdca6ca` (2026-11-16) |
 | `scheduler.aws.hfl.dev_schedules.yaml` | `Schedule` (`scheduler.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `2cdca6ca` (2026-11-16) |
 | `eventschemas.cloudcontrol.aws.hfl.dev_discoverers.yaml` | `Discoverer` (`eventschemas.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `2cdca6ca` (2026-11-16) |
+| `wafv2.aws.hfl.dev_webaclassociations.yaml` | `WebACLAssociation` (`wafv2.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `7117ca5a` (2026-11-17) |
+| `lambda.aws.hfl.dev_permissions.yaml` | `Permission` (`lambda.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `7117ca5a` (2026-11-17) |
+| `applicationautoscaling.aws.hfl.dev_scheduledactions.yaml` | `ScheduledAction` (`applicationautoscaling.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `7117ca5a` (2026-11-17) |
+| `route53.cloudcontrol.aws.hfl.dev_keysigningkeys.yaml` | `KeySigningKey` (`route53.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `7117ca5a` (2026-11-17) |
+| `route53.cloudcontrol.aws.hfl.dev_dnssecs.yaml` | `DNSSEC` (`route53.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `7117ca5a` (2026-11-17) |
+| `ecs.cloudcontrol.aws.hfl.dev_tasksets.yaml` | `TaskSet` (`ecs.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `7117ca5a` (2026-11-17) |
+| `ecs.cloudcontrol.aws.hfl.dev_expressgatewayservices.yaml` | `ExpressGatewayService` (`ecs.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `7117ca5a` (2026-11-17) |

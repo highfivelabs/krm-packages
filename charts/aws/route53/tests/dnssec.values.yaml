@@ -1,0 +1,9 @@
+allow_alpha: true
+account_id: "123456789012"
+name: example.com
+enable_dnssec: true
+dnssec_key_signing_key_name: example-ksk
+dnssec_kms_key_aliases:
+  - dnssec-example
+dnssec_kms_key_tags:
+  purpose: dnssec

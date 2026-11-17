@@ -42,7 +42,7 @@ vars:
   # package and moto), the no-real-AWS guard and its kinds for the AWS
   # charts' fake-AWS runs; crds/ack-extensions/README.md says which commit
   # each copied CRD comes from.
-  ACKX_COMMIT: 281807b6fddf16b3a061569fa90850fbe5d19df6
+  ACKX_COMMIT: 7117ca5aeb517e9658acbde834be0e54b21bdd0d
   ACKX_TARBALL: '{{.OFFLOAD_BUCKET}}/catalog-inputs/ackx-{{.ACKX_COMMIT | trunc 8}}.tar.gz'
   # aso-extensions at this commit supplies the Azure fake cloud (cmd/fakearm,
   # cmd/fakeentra) and the manager the fake-cloud and live runs install

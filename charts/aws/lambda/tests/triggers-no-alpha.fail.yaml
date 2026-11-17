@@ -1,0 +1,8 @@
+# expect: allow_alpha: true
+function_name: test-fn
+s3_existing_package:
+  bucket: my-bucket
+  key: fn.zip
+allowed_triggers:
+  events:
+    principal: events.amazonaws.com

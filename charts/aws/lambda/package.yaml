@@ -1,0 +1,31 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Bundt Package manifest for lambda.
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: aws-lambda
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [ack]
+  outputs:
+    lambda_function_arn: >-
+      'function' in resources ? resources.function.status.ackResourceMetadata.arn : ""
+    lambda_function_name: >-
+      'function' in resources ? resources.function.spec.name : inputs.function_name
+    lambda_function_version: >-
+      'function' in resources ? resources.function.status.version : ""
+    lambda_function_url: >-
+      'function-url' in resources ? resources['function-url'].status.functionURL : ""
+    lambda_layer_arn: >-
+      'layer' in resources ? resources.layer.status.layerVersionARN : ""
+    lambda_role_arn: >-
+      'role' in resources ? resources.role.status.ackResourceMetadata.arn : ""
+    lambda_role_name: >-
+      'role' in resources ? resources.role.spec.name : ""
+    lambda_cloudwatch_log_group_arn: >-
+      'log-group' in resources ? resources['log-group'].status.ackResourceMetadata.arn : ""
+    lambda_cloudwatch_log_group_name: >-
+      'log-group' in resources ? resources['log-group'].spec.name : ""

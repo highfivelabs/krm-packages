@@ -15,10 +15,3 @@ is set to anything but its Terraform default. Renders nothing.
 {{- include "ack.unsupported" (list $ "enable_accelerated_recovery" $v.enable_accelerated_recovery "ACK's HostedZone (route53-controller v1.8.0) has no field for Route 53 Accelerated Recovery") }}
 {{- include "ack.unsupported" (list $ "timeouts" $v.timeouts "Terraform's create, update and delete timeouts: ACK retries until the zone is synced, and Bundt waits for it") }}
 {{- include "ack.unsupported" (list $ "vpc_association_authorizations" $v.vpc_association_authorizations "aws_route53_vpc_association_authorization has no ACK or ack-extensions kind") }}
-{{- include "ack.unsupported" (list $ "enable_dnssec" $v.enable_dnssec "ack-extensions' KeySigningKey and DNSSEC take the zone's ID only as a string, with no reference to a HostedZone, so they cannot be wired to the zone this render makes") }}
-{{- include "ack.unchanged" (list $ "create_dnssec_kms_key" $v.create_dnssec_kms_key "true" "it is used only with enable_dnssec, which is refused") }}
-{{- include "ack.unsupported" (list $ "dnssec_kms_key_arn" $v.dnssec_kms_key_arn "it is used only with enable_dnssec, which is refused") }}
-{{- include "ack.unchanged" (list $ "dnssec_kms_key_description" $v.dnssec_kms_key_description "\"Route53 DNSSEC KMS Key\"" "it is used only with enable_dnssec, which is refused") }}
-{{- include "ack.unsupported" (list $ "dnssec_kms_key_aliases" $v.dnssec_kms_key_aliases "it is used only with enable_dnssec, which is refused") }}
-{{- include "ack.unsupported" (list $ "dnssec_kms_key_tags" $v.dnssec_kms_key_tags "it is used only with enable_dnssec, which is refused") }}
-{{- include "ack.unsupported" (list $ "dnssec_key_signing_key_name" $v.dnssec_key_signing_key_name "it is used only with enable_dnssec, which is refused") }}

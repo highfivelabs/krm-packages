@@ -1,0 +1,3 @@
+# expect: ecs: cloudwatch_log_group_class is not supported
+cluster_name: test-ecs
+cloudwatch_log_group_class: INFREQUENT_ACCESS

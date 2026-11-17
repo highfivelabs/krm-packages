@@ -1,0 +1,98 @@
+---
+# Source: route53/templates/dnssec.yaml
+apiVersion: kms.services.k8s.aws/v1alpha1
+kind: Alias
+metadata:
+  name: dnssec-dnssec-alias-dnssec-example
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "dnssec"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "dnssec-alias/dnssec-example"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "alias/dnssec-example"
+  targetKeyRef:
+    from:
+      name: "dnssec-dnssec-kms"
+---
+# Source: route53/templates/dnssec.yaml
+apiVersion: route53.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: DNSSEC
+metadata:
+  name: dnssec-dnssec
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "dnssec"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "dnssec"
+spec:
+  hostedZoneRef:
+    from:
+      name: "dnssec-zone"
+---
+# Source: route53/templates/zone.yaml
+apiVersion: route53.services.k8s.aws/v1alpha1
+kind: HostedZone
+metadata:
+  name: dnssec-zone
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "dnssec"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "zone"
+spec:
+  name: "example.com"
+  hostedZoneConfig:
+    comment: "Managed by Terraform"
+---
+# Source: route53/templates/dnssec.yaml
+apiVersion: kms.services.k8s.aws/v1alpha1
+kind: Key
+metadata:
+  name: dnssec-dnssec-kms
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "dnssec"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "dnssec-kms"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  keySpec: ECC_NIST_P256
+  keyUsage: SIGN_VERIFY
+  enableKeyRotation: false
+  description: "Route53 DNSSEC KMS Key"
+  policy: "{\"Statement\":[{\"Action\":\"kms:*\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::123456789012:root\"},\"Resource\":\"*\",\"Sid\":\"Default\"},{\"Action\":[\"kms:DescribeKey\",\"kms:GetPublicKey\",\"kms:Sign\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"dnssec-route53.amazonaws.com\"},\"Resource\":\"*\",\"Sid\":\"Allow Route 53 DNSSEC Service\"},{\"Action\":\"kms:CreateGrant\",\"Condition\":{\"Bool\":{\"kms:GrantIsForAWSResource\":\"true\"}},\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"dnssec-route53.amazonaws.com\"},\"Resource\":\"*\",\"Sid\":\"Allow Route 53 DNSSEC to CreateGrant\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - tagKey: "purpose"
+      tagValue: "dnssec"
+---
+# Source: route53/templates/dnssec.yaml
+apiVersion: route53.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: KeySigningKey
+metadata:
+  name: dnssec-ksk
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "dnssec"
+    app.kubernetes.io/name: route53
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "ksk"
+spec:
+  name: "example-ksk"
+  status: ACTIVE
+  hostedZoneRef:
+    from:
+      name: "dnssec-zone"
+  keyManagementServiceRef:
+    from:
+      name: "dnssec-dnssec-kms"

@@ -1,0 +1,322 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf, "Cluster": the ECS cluster, capacity providers, CloudWatch log
+group, task execution IAM role, and (when managed instances are enabled)
+infrastructure IAM role, node IAM role/instance profile, and security group.
+*/ -}}
+{{- include "ack.names" (list $ (list "cluster" "logGroup" "taskExecRole" "infrastructureRole" "nodeRole" "nodeInstanceProfile" "securityGroup")) -}}
+{{- $v := .Values -}}
+{{- if $v.create }}
+{{- $clusterName := include "ack.resourceName" (list $ "cluster" "ECS cluster" ($v.cluster_name | default "") 255) -}}
+{{- if not $clusterName }}
+{{- fail "ecs: cluster_name is required (or names.cluster)" }}
+{{- end }}
+{{- $clusterK8s := include "ack.name" (list .Release.Name "cluster") -}}
+{{- $managedInstances := false -}}
+{{- range $k, $cp := ($v.capacity_providers | default dict) -}}
+{{- if $cp.managed_instances_provider }}{{ $managedInstances = true }}{{ end -}}
+{{- end }}
+
+{{- /* Capacity providers */ -}}
+{{- $cpRefs := list -}}
+{{- range $k := keys ($v.capacity_providers | default dict) | sortAlpha }}
+{{- $cp := index $v.capacity_providers $k }}
+{{- $cpK8s := include "ack.name" (list $.Release.Name (printf "cp-%s" $k)) }}
+{{- $cpName := $cp.name | default (include "ack.cloudName" (list $ (printf "cp-%s" $k) $k 255)) }}
+{{- $cpRefs = append $cpRefs $cpK8s }}
+---
+apiVersion: ecs.services.k8s.aws/v1alpha1
+kind: CapacityProvider
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $cpK8s "id" (printf "capacity-provider/%s" $k) "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ $cpName | quote }}
+{{- with $cp.auto_scaling_group_provider }}
+  autoScalingGroupProvider:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $cp.managed_instances_provider }}
+  managedInstancesProvider:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with include "ack.tags" (list $ (merge (dict) ($cp.tags | default dict) ($v.tags | default dict))) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* ECS Cluster */ -}}
+{{- $clusterTags := include "ack.tags" (list $ (merge (dict) ($v.cluster_tags | default dict) ($v.tags | default dict))) | fromJson }}
+---
+apiVersion: ecs.services.k8s.aws/v1alpha1
+kind: Cluster
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $clusterK8s "id" "cluster" "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ $clusterName | quote }}
+{{- with $v.cluster_capacity_providers }}
+  capacityProviders:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- if $cpRefs }}
+  capacityProviderRefs:
+{{- range $r := $cpRefs }}
+    - from:
+        name: {{ $r | quote }}
+{{- end }}
+{{- end }}
+{{- with $v.default_capacity_provider_strategy }}
+  defaultCapacityProviderStrategy:
+{{- range $sk := keys . | sortAlpha }}
+{{- $s := index $v.default_capacity_provider_strategy $sk }}
+    - capacityProvider: {{ ($s.capacity_provider | default $sk) | quote }}
+{{- if not (kindIs "invalid" $s.base) }}
+      base: {{ int64 $s.base }}
+{{- end }}
+{{- if not (kindIs "invalid" $s.weight) }}
+      weight: {{ int64 $s.weight }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with $v.cluster_configuration }}
+  configuration:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $v.cluster_service_connect_defaults }}
+  serviceConnectDefaults:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $v.cluster_setting }}
+  settings:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $clusterTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+
+{{- /* Cluster CloudWatch LogGroup */ -}}
+{{- if $v.create_cloudwatch_log_group }}
+{{- $lgName := include "ack.resourceName" (list $ "logGroup" "CloudWatch log group" ($v.cloudwatch_log_group_name | default (printf "/aws/ecs/containerinsights/%s/performance" $clusterName)) 512) }}
+{{- $lgTags := include "ack.tags" (list $ (merge (dict) ($v.cloudwatch_log_group_tags | default dict) ($v.tags | default dict))) | fromJson }}
+---
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "log-group")) "id" "log-group" "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ $lgName | quote }}
+{{- if not (kindIs "invalid" $v.cloudwatch_log_group_retention_in_days) }}
+  retentionDays: {{ int64 $v.cloudwatch_log_group_retention_in_days }}
+{{- end }}
+{{- with $v.cloudwatch_log_group_kms_key_id }}
+  kmsKeyID: {{ . | quote }}
+{{- end }}
+{{- with $lgTags }}
+  tags:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* Task execution IAM role */ -}}
+{{- if $v.create_task_exec_iam_role }}
+{{- $teRoleK8s := include "ack.name" (list .Release.Name "task-exec-role") }}
+{{- $teRoleName := include "ack.resourceName" (list $ "taskExecRole" "task exec IAM role" ($v.task_exec_iam_role_name | default (printf "%s-task-exec" $clusterName)) 64) }}
+{{- $tePolicies := list }}
+{{- range $pk := keys ($v.task_exec_iam_role_policies | default dict) | sortAlpha }}
+{{- $tePolicies = append $tePolicies (index $v.task_exec_iam_role_policies $pk) }}
+{{- end }}
+{{- if $v.create_task_exec_policy }}
+{{- $tePolicies = append $tePolicies (printf "arn:%s:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy" ($v.partition | default "aws")) }}
+{{- end }}
+{{- $teInline := dict }}
+{{- $teStmts := list }}
+{{- if $v.task_exec_ssm_param_arns }}
+{{- $teStmts = append $teStmts (dict "Sid" "GetSSMParams" "Effect" "Allow" "Action" (list "ssm:GetParameters") "Resource" $v.task_exec_ssm_param_arns) }}
+{{- end }}
+{{- if $v.task_exec_secret_arns }}
+{{- $teStmts = append $teStmts (dict "Sid" "GetSecrets" "Effect" "Allow" "Action" (list "secretsmanager:GetSecretValue") "Resource" $v.task_exec_secret_arns) }}
+{{- end }}
+{{- range $sk := keys ($v.task_exec_iam_statements | default dict) | sortAlpha }}
+{{- $teStmts = append $teStmts (include "ecs.iamStatement" (index $v.task_exec_iam_statements $sk) | fromJson) }}
+{{- end }}
+{{- if $teStmts }}
+{{- $_ := set $teInline "task-exec-policy" (toJson (dict "Version" "2012-10-17" "Statement" $teStmts)) }}
+{{- end }}
+{{- $teTags := include "ack.tags" (list $ (merge (dict) ($v.task_exec_iam_role_tags | default dict) ($v.tags | default dict))) | fromJson }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $teRoleK8s "id" "task-exec-role" "region" "") | nindent 2 }}
+spec:
+  name: {{ $teRoleName | quote }}
+  assumeRolePolicyDocument: {{ include "ecs.assumeRolePolicy" (list "ecs-tasks.amazonaws.com") | quote }}
+{{- with $v.task_exec_iam_role_path }}
+  path: {{ . | quote }}
+{{- end }}
+{{- with $v.task_exec_iam_role_description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with $v.task_exec_iam_role_permissions_boundary }}
+  permissionsBoundary: {{ . | quote }}
+{{- end }}
+{{- with $tePolicies }}
+  policies:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $teInline }}
+  inlinePolicies:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $teTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* Infrastructure IAM role (when managed instances are used) */ -}}
+{{- if and $managedInstances $v.create_infrastructure_iam_role }}
+{{- $infRoleK8s := include "ack.name" (list .Release.Name "infrastructure-role") }}
+{{- $infRoleName := include "ack.resourceName" (list $ "infrastructureRole" "infrastructure IAM role" ($v.infrastructure_iam_role_name | default (printf "%s-infra" $clusterName)) 64) }}
+{{- $infInline := dict }}
+{{- $infStmts := list }}
+{{- range $sk := keys ($v.infrastructure_iam_role_statements | default dict) | sortAlpha }}
+{{- $infStmts = append $infStmts (include "ecs.iamStatement" (index $v.infrastructure_iam_role_statements $sk) | fromJson) }}
+{{- end }}
+{{- if $infStmts }}
+{{- $_ := set $infInline "infrastructure-policy" (toJson (dict "Version" "2012-10-17" "Statement" $infStmts)) }}
+{{- end }}
+{{- $infTags := include "ack.tags" (list $ (merge (dict) ($v.infrastructure_iam_role_tags | default dict) ($v.tags | default dict))) | fromJson }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $infRoleK8s "id" "infrastructure-role" "region" "") | nindent 2 }}
+spec:
+  name: {{ $infRoleName | quote }}
+  assumeRolePolicyDocument: {{ include "ecs.assumeRolePolicy" (list "ecs.amazonaws.com") | quote }}
+{{- with $v.infrastructure_iam_role_path }}
+  path: {{ . | quote }}
+{{- end }}
+{{- with $v.infrastructure_iam_role_description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with $v.infrastructure_iam_role_permissions_boundary }}
+  permissionsBoundary: {{ . | quote }}
+{{- end }}
+  policies:
+    - {{ printf "arn:%s:iam::aws:policy/AmazonECSInfrastructureRolePolicyForManagedInstances" ($v.partition | default "aws") | quote }}
+{{- with $infInline }}
+  inlinePolicies:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $infTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* Node IAM role & instance profile (when managed instances are used) */ -}}
+{{- if and $managedInstances $v.create_node_iam_instance_profile }}
+{{- $nodeRoleK8s := include "ack.name" (list .Release.Name "node-role") }}
+{{- $nodeRoleName := include "ack.resourceName" (list $ "nodeRole" "node IAM role" ($v.node_iam_role_name | default (printf "%s-node" $clusterName)) 64) }}
+{{- $nodePolicies := list (printf "arn:%s:iam::aws:policy/AmazonEC2ContainerServiceforEC2Role" ($v.partition | default "aws")) }}
+{{- range $pk := keys ($v.node_iam_role_additional_policies | default dict) | sortAlpha }}
+{{- $nodePolicies = append $nodePolicies (index $v.node_iam_role_additional_policies $pk) }}
+{{- end }}
+{{- $nodeInline := dict }}
+{{- $nodeStmts := list }}
+{{- range $sk := keys ($v.node_iam_role_statements | default dict) | sortAlpha }}
+{{- $nodeStmts = append $nodeStmts (include "ecs.iamStatement" (index $v.node_iam_role_statements $sk) | fromJson) }}
+{{- end }}
+{{- if $nodeStmts }}
+{{- $_ := set $nodeInline "node-policy" (toJson (dict "Version" "2012-10-17" "Statement" $nodeStmts)) }}
+{{- end }}
+{{- $nodeTags := include "ack.tags" (list $ (merge (dict) ($v.node_iam_role_tags | default dict) ($v.tags | default dict))) | fromJson }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $nodeRoleK8s "id" "node-role" "region" "") | nindent 2 }}
+spec:
+  name: {{ $nodeRoleName | quote }}
+  assumeRolePolicyDocument: {{ include "ecs.assumeRolePolicy" (list "ec2.amazonaws.com") | quote }}
+{{- with $v.node_iam_role_path }}
+  path: {{ . | quote }}
+{{- end }}
+{{- with $v.node_iam_role_description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with $v.node_iam_role_permissions_boundary }}
+  permissionsBoundary: {{ . | quote }}
+{{- end }}
+  policies:
+{{- toYaml $nodePolicies | nindent 4 }}
+{{- with $nodeInline }}
+  inlinePolicies:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $nodeTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: InstanceProfile
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "node-instance-profile")) "id" "node-instance-profile" "region" "") | nindent 2 }}
+spec:
+  name: {{ include "ack.resourceName" (list $ "nodeInstanceProfile" "node instance profile" ($v.node_iam_role_name | default (printf "%s-node" $clusterName)) 128) | quote }}
+{{- with $v.node_iam_role_path }}
+  path: {{ . | quote }}
+{{- end }}
+  roleRef:
+    from:
+      name: {{ $nodeRoleK8s | quote }}
+{{- with $nodeTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* Security Group (when managed instances are used) */ -}}
+{{- if and $managedInstances $v.create_security_group }}
+{{- if not $v.vpc_id }}
+{{- fail "ecs: vpc_id is required when create_security_group is true with managed instances" }}
+{{- end }}
+{{- $sgName := include "ack.resourceName" (list $ "securityGroup" "security group" ($v.security_group_name | default $clusterName) 255) }}
+{{- $sgTags := include "ack.tags" (list $ (merge (dict) ($v.security_group_tags | default dict) ($v.tags | default dict))) | fromJson }}
+{{- $ingress := list }}
+{{- range $rk := keys ($v.security_group_ingress_rules | default dict) | sortAlpha }}
+{{- $ingress = append $ingress (include "ecs.sgRule" (index $v.security_group_ingress_rules $rk) | fromJson) }}
+{{- end }}
+{{- $egress := list }}
+{{- range $rk := keys ($v.security_group_egress_rules | default dict) | sortAlpha }}
+{{- $egress = append $egress (include "ecs.sgRule" (index $v.security_group_egress_rules $rk) | fromJson) }}
+{{- end }}
+---
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "sg")) "id" "security-group" "region" $v.region) | nindent 2 }}
+spec:
+  name: {{ $sgName | quote }}
+  description: {{ ($v.security_group_description | default (printf "Security group for %s ECS cluster" $clusterName)) | quote }}
+  vpcID: {{ $v.vpc_id | quote }}
+{{- with $ingress }}
+  ingressRules:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $egress }}
+  egressRules:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $sgTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}

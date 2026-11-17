@@ -1,0 +1,2 @@
+# expect: ecs: cluster_name is required
+cluster_name: ""

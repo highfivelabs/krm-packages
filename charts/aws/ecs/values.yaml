@@ -1,0 +1,112 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values mirror the Terraform variables of terraform-aws-modules' ecs
+# module (v7.6.1): same names, types and defaults, so a module block's
+# arguments become a values file one to one. values.schema.json carries the
+# types. A variable the chart cannot carry stays here and stops the render
+# when set (upstream.yaml lists them; README.md says why).
+
+# Names, labels and tags (docs/design.md, "Names, labels and tags").
+names: {}
+namePrefix: ""
+labels: {}
+# ScheduledAction (applicationautoscaling.aws.hfl.dev), TaskSet and
+# ExpressGatewayService (ecs.cloudcontrol.aws.hfl.dev) are ack-extensions
+# kinds outside ACK's released controllers and render only with
+# allow_alpha: true (docs/design.md, "Alpha kinds").
+allow_alpha: false
+deletion_policy: DELETE
+# AWS partition used in IAM policy ARNs (aws, aws-cn, aws-us-gov).
+partition: aws
+
+# The module's variables, in its order, with its defaults.
+
+# Determines whether resources will be created (affects all resources)
+create: true
+# Region where the resource(s) will be managed. Defaults to the ACK controller's region.
+region: null
+# A map of tags to add to all resources
+tags: {}
+# Determines whether to disable the v7 default name and description for resources
+disable_v7_default_name_description: false
+
+# Cluster
+cluster_configuration: {}
+cluster_name: ""
+cluster_service_connect_defaults: {}
+cluster_setting:
+  - name: containerInsights
+    value: enabled
+cluster_tags: {}
+
+# Cluster CloudWatch log group
+create_cloudwatch_log_group: true
+cloudwatch_log_group_name: null
+cloudwatch_log_group_retention_in_days: 90
+cloudwatch_log_group_kms_key_id: null
+# Not supported (gap): ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has
+# no log group class field.
+cloudwatch_log_group_class: null
+cloudwatch_log_group_tags: {}
+
+# Cluster capacity providers
+cluster_capacity_providers: []
+capacity_providers: {}
+default_capacity_provider_strategy: {}
+
+# Task execution IAM role
+create_task_exec_iam_role: false
+task_exec_iam_role_name: null
+# Accepted in part: true (the default) names the role as given, without a
+# random suffix; namePrefix keeps two Instances' roles apart.
+task_exec_iam_role_use_name_prefix: true
+task_exec_iam_role_path: null
+task_exec_iam_role_description: null
+task_exec_iam_role_permissions_boundary: null
+task_exec_iam_role_tags: {}
+task_exec_iam_role_policies: {}
+create_task_exec_policy: true
+task_exec_ssm_param_arns: []
+task_exec_secret_arns: []
+task_exec_iam_statements: {}
+
+# Infrastructure IAM role (for ECS Managed Instances capacity providers)
+create_infrastructure_iam_role: true
+infrastructure_iam_role_name: null
+infrastructure_iam_role_use_name_prefix: true
+infrastructure_iam_role_path: null
+infrastructure_iam_role_description: null
+infrastructure_iam_role_permissions_boundary: null
+infrastructure_iam_role_tags: {}
+# Not supported (gap): merging arbitrary IAM policy documents is not ported.
+infrastructure_iam_role_source_policy_documents: []
+infrastructure_iam_role_override_policy_documents: []
+infrastructure_iam_role_statements: {}
+
+# Node IAM role & instance profile (for ECS Managed Instances)
+create_node_iam_instance_profile: true
+node_iam_role_name: null
+node_iam_role_use_name_prefix: true
+node_iam_role_path: null
+node_iam_role_description: "ECS Managed Instances node IAM role"
+node_iam_role_permissions_boundary: null
+node_iam_role_additional_policies: {}
+node_iam_role_tags: {}
+# Not supported (gap): merging arbitrary IAM policy documents is not ported.
+node_iam_role_source_policy_documents: []
+node_iam_role_override_policy_documents: []
+node_iam_role_statements: {}
+
+# Security group (for ECS Managed Instances)
+create_security_group: true
+vpc_id: null
+security_group_name: null
+security_group_use_name_prefix: true
+security_group_description: null
+security_group_ingress_rules: {}
+security_group_egress_rules: {}
+security_group_tags: {}
+
+# Services
+services: {}

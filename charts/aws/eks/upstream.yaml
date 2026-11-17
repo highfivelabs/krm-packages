@@ -159,12 +159,6 @@ refused:
 - variable: include_oidc_root_ca_thumbprint
   kind: gap
   reason: "used only with enable_irsa, which is accepted only false (the thumbprint is read from the issuer's TLS certificate, which a render cannot fetch)"
-- variable: kms_key_deletion_window_in_days
-  kind: gap
-  reason: "ACK's Key (kms-controller v1.7.0) has no field for the waiting period before deletion (KMS's default, 30 days, applies)"
-- variable: kms_key_rotation_period_in_days
-  kind: gap
-  reason: "ACK's Key has no rotation period field (enable_kms_key_rotation is supported, with KMS's default period, 365 days)"
 - variable: node_iam_role_use_name_prefix
   kind: gap
   reason: "accepted: true (the default) names the EKS Auto Mode node IAM role as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two Instances' roles apart"

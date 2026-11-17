@@ -8,6 +8,7 @@
 exempt:
   Listener: "a load balancer and a port identify it; it has no name"
   Rule: "a listener and a priority identify it; it has no name"
+  WebACLAssociation: "a web ACL ARN and load balancer reference identify it; it has no name"
 nameFields:
   LoadBalancer: name
   SecurityGroup: name

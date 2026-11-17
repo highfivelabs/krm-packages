@@ -60,6 +60,8 @@ charts use are copied in `crds/ack-extensions`.
 | `applicationautoscaling-controller` | `v1.9.0` | `009baef3a28e7d8a49a61c520eb6c537c674d52b` | ScalableTarget, ScalingPolicy |
 | `eventbridge-controller` | `v1.9.2` | `fd084a0bb4d9025f294516d6319b88293be1de8d` | EventBus, Rule, Archive |
 | `pipes-controller` | `v1.8.0` | `08b598079c257477d9e332353a78a01290454852` | Pipe |
+| `ecs-controller` | `v1.9.2` | `92029ad47285b5a1dd20bd184c2b525708cf21e7` | Cluster, CapacityProvider, Service, TaskDefinition |
+| `lambda-controller` | `v1.19.0` | `86905357482d01538cb00ab28d59c6af5c46e6f4` | Function, LayerVersion, EventSourceMapping, FunctionURLConfig, Version, Alias, CodeSigningConfig |
 
 To move a controller: change its row, run `task test` (it re-fetches the
 CRDs and re-validates every AWS render), and re-read the gaps in

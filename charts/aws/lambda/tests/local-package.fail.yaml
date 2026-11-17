@@ -1,0 +1,3 @@
+# expect: lambda: source_path is not supported
+function_name: test-fn
+source_path: ./src

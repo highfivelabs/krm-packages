@@ -1,0 +1,25 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Bundt Package manifest for ecs.
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: aws-ecs
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [ack]
+  outputs:
+    cluster_arn: >-
+      'cluster' in resources ? resources.cluster.status.ackResourceMetadata.arn : ""
+    cluster_name: >-
+      'cluster' in resources ? resources.cluster.spec.name : inputs.cluster_name
+    cloudwatch_log_group_name: >-
+      'log-group' in resources ? resources['log-group'].spec.name : ""
+    cloudwatch_log_group_arn: >-
+      'log-group' in resources ? resources['log-group'].status.ackResourceMetadata.arn : ""
+    task_exec_iam_role_name: >-
+      'task-exec-role' in resources ? resources['task-exec-role'].spec.name : ""
+    task_exec_iam_role_arn: >-
+      'task-exec-role' in resources ? resources['task-exec-role'].status.ackResourceMetadata.arn : ""

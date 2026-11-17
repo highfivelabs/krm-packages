@@ -1,0 +1,7 @@
+names:
+  function: custom-fn
+  role: custom-fn-role
+  logGroup: /aws/lambda/custom-fn
+s3_existing_package:
+  bucket: my-lambda-artifacts
+  key: custom-fn.zip

@@ -1,0 +1,5 @@
+# expect: lambda: function_name is required
+function_name: ""
+s3_existing_package:
+  bucket: my-bucket
+  key: fn.zip

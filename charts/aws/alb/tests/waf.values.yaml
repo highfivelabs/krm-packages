@@ -1,0 +1,8 @@
+allow_alpha: true
+name: waf-alb
+vpc_id: vpc-0123456789abcdef0
+subnets:
+  - subnet-01111111111111111
+  - subnet-02222222222222222
+associate_web_acl: true
+web_acl_arn: arn:aws:wafv2:us-east-1:123456789012:regional/webacl/example/00000000-0000-0000-0000-000000000000

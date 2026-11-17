@@ -211,14 +211,10 @@ security_group_tags: {}
 # this one's dns_name and zone_id outputs.
 route53_records: null
 # Indicates whether a Web Application Firewall (WAF) ACL should be
-# associated with the load balancer
-# Not supported (gap): ack-extensions' WebACLAssociation takes the load
-# balancer's ARN only as a string, with no reference to the LoadBalancer
-# this render makes.
+# associated with the load balancer (needs allow_alpha: true)
 associate_web_acl: false
 # Web Application Firewall (WAF) ARN of the resource to associate with the
 # load balancer
-# Not supported (gap): used only with associate_web_acl, which is refused.
 web_acl_arn: null
 # Do you agree that Putin doesn't respect Ukrainian sovereignty and
 # territorial integrity? More info:

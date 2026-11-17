@@ -1,0 +1,124 @@
+---
+# Source: ecs/templates/cluster.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: mock-task-exec-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: ecs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "task-exec-role"
+spec:
+  name: "mock-ecs-task-exec"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ecs-tasks.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+  tags:
+    - key: "env"
+      value: "mock"
+---
+# Source: ecs/templates/services.yaml
+apiVersion: ecs.services.k8s.aws/v1alpha1
+kind: Service
+metadata:
+  name: mock-svc-web
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: ecs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "service/web"
+spec:
+  name: "web"
+  clusterRef:
+    from:
+      name: "mock-cluster"
+  taskDefinitionRef:
+    from:
+      name: "mock-td-web"
+  launchType: "FARGATE"
+  desiredCount: 1
+  networkConfiguration:
+    awsVPCConfiguration:
+      subnets:
+        - subnet-01111111111111111
+      assignPublicIP: "DISABLED"
+  tags:
+    - key: "env"
+      value: "mock"
+---
+# Source: ecs/templates/cluster.yaml
+apiVersion: ecs.services.k8s.aws/v1alpha1
+kind: Cluster
+metadata:
+  name: mock-cluster
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: ecs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster"
+spec:
+  name: "mock-ecs"
+  capacityProviders:
+    - FARGATE
+    - FARGATE_SPOT
+  settings:
+    - name: containerInsights
+      value: enabled
+  tags:
+    - key: "env"
+      value: "mock"
+---
+# Source: ecs/templates/cluster.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: mock-log-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: ecs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group"
+spec:
+  name: "/aws/ecs/containerinsights/mock-ecs/performance"
+  retentionDays: 90
+  tags:
+    env: mock
+---
+# Source: ecs/templates/services.yaml
+apiVersion: ecs.services.k8s.aws/v1alpha1
+kind: TaskDefinition
+metadata:
+  name: mock-td-web
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: ecs
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "service/web/task-definition"
+spec:
+  family: "web"
+  cpu: "256"
+  memory: "512"
+  networkMode: "awsvpc"
+  requiresCompatibilities:
+    - FARGATE
+  containerDefinitions:
+    - name: "app"
+      image: "public.ecr.aws/nginx/nginx:alpine"
+      essential: true
+      portMappings:
+        - containerPort: 80
+          protocol: tcp
+  tags:
+    - key: "env"
+      value: "mock"

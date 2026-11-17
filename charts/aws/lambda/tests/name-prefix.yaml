@@ -1,0 +1,11 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+exempt:
+  FunctionURLConfig: "identified by functionRef; it has no name"
+  EventSourceMapping: "identified by UUID and functionRef; it has no name"
+  Permission: "identified by statementID and functionRef; it has no name"
+nameFields:
+  Function: name
+  LayerVersion: layerName
+  Role: name
+  LogGroup: name

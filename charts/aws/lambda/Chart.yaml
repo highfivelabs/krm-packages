@@ -1,0 +1,28 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Derived from terraform-aws-modules' lambda module (Apache-2.0), modified:
+# ported from Terraform to ACK objects (docs/aws.md, "Porting notes").
+apiVersion: v2
+name: lambda
+description: >-
+  An AWS Lambda function with its IAM execution role and policies, CloudWatch
+  log group, layer version, function URL, event source mappings, and
+  (alpha) resource-based permissions, as AWS Controllers for Kubernetes (ACK)
+  objects. A port of terraform-aws-modules' lambda module.
+type: application
+version: 0.1.0
+# The module release this chart was ported from (UPSTREAM.md).
+appVersion: "terraform-aws-lambda-v8.13.0"
+kubeVersion: ">=1.27.0-0"
+keywords: [aws, ack, lambda, serverless, terraform-aws-modules]
+home: https://github.com/highfivelabs/catalog
+sources:
+  - https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/e73238631a030105fc8d09789033cc0bfed83310
+annotations:
+  hfl.dev/source: terraform-aws-lambda
+  hfl.dev/source-version: v8.13.0
+  hfl.dev/source-commit: e73238631a030105fc8d09789033cc0bfed83310
+  hfl.dev/ack-lambda-controller: "v1.19.0"
+  hfl.dev/ack-iam-controller: "v1.11.3"
+  hfl.dev/ack-cloudwatchlogs-controller: "v1.10.0"

@@ -28,6 +28,13 @@
     "allow_alpha": {
       "type": "boolean"
     },
+    "account_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9]{12}$"
+    },
     "deletion_policy": {
       "type": "string",
       "enum": [

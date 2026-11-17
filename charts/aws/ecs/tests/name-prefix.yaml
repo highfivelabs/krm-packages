@@ -1,0 +1,15 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+exempt:
+  ScalableTarget: "identified by resourceID (service/<cluster>/<service>)"
+  ScalingPolicy: "identified by policyName and resourceID"
+  ScheduledAction: "identified by scheduledActionName and resourceID"
+nameFields:
+  Cluster: name
+  CapacityProvider: name
+  LogGroup: name
+  Role: name
+  InstanceProfile: name
+  SecurityGroup: name
+  TaskDefinition: family
+  Service: name

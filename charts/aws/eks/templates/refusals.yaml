@@ -12,8 +12,6 @@ accepted only in part are checked where they are rendered.
 {{- include "ack.unsupported" (list $ "force_update_version" $v.force_update_version "ACK's Cluster (eks-controller v1.26.0) has no field to force a version update past pod disruption budgets") }}
 {{- include "ack.unsupported" (list $ "service_ipv6_cidr" $v.service_ipv6_cidr "ACK's Cluster (eks-controller v1.26.0) has no serviceIPv6CIDR field (EKS assigns an IPv6 cluster's service range)") }}
 {{- include "ack.unsupported" (list $ "timeouts" $v.timeouts "Terraform's create, update and delete timeouts: ACK retries until the cluster is synced, and Bundt waits for it") }}
-{{- include "ack.unsupported" (list $ "kms_key_deletion_window_in_days" $v.kms_key_deletion_window_in_days "ACK's Key (kms-controller v1.7.0) has no field for the waiting period before deletion (KMS's default, 30 days, applies)") }}
-{{- include "ack.unsupported" (list $ "kms_key_rotation_period_in_days" $v.kms_key_rotation_period_in_days "ACK's Key has no rotation period field (enable_kms_key_rotation is supported, with KMS's default period, 365 days)") }}
 {{- include "ack.unsupported" (list $ "cloudwatch_log_group_class" $v.cloudwatch_log_group_class "ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no log group class field") }}
 {{- include "ack.unsupported" (list $ "openid_connect_audiences" $v.openid_connect_audiences $irsa) }}
 {{- include "ack.unchanged" (list $ "include_oidc_root_ca_thumbprint" $v.include_oidc_root_ca_thumbprint "true" (printf "%s (the thumbprint is read from the issuer's TLS certificate, which a render cannot fetch)" $irsa)) }}

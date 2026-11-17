@@ -1,0 +1,71 @@
+---
+# Source: lambda/templates/function.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: basic-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: lambda
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "role"
+spec:
+  name: "basic-fn"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"lambda.amazonaws.com\"]}}],\"Version\":\"2012-10-17\"}"
+  maxSessionDuration: 3600
+  policies:
+    - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+  tags:
+    - key: "env"
+      value: "test"
+---
+# Source: lambda/templates/function.yaml
+apiVersion: lambda.services.k8s.aws/v1alpha1
+kind: Function
+metadata:
+  name: basic-fn
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: lambda
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "function"
+spec:
+  name: "basic-fn"
+  roleRef:
+    from:
+      name: "basic-role"
+  code:
+    s3Bucket: "my-lambda-artifacts"
+    s3Key: "basic-fn.zip"
+  packageType: "Zip"
+  handler: "index.handler"
+  runtime: "python3.12"
+  memorySize: 128
+  timeout: 3
+  ephemeralStorage:
+    size: 512
+  loggingConfig:
+    logFormat: "Text"
+  tags:
+    env: test
+---
+# Source: lambda/templates/function.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: basic-log-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: lambda
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group"
+spec:
+  name: "/aws/lambda/basic-fn"
+  tags:
+    env: test

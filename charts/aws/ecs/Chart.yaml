@@ -1,0 +1,30 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Derived from terraform-aws-modules' ecs module (Apache-2.0), modified:
+# ported from Terraform to ACK objects (docs/aws.md, "Porting notes").
+apiVersion: v2
+name: ecs
+description: >-
+  An ECS cluster with capacity providers, CloudWatch log group, task execution
+  and managed-instance IAM roles, security group, and services with task
+  definitions and application auto scaling, as AWS Controllers for Kubernetes
+  (ACK) objects. A port of terraform-aws-modules' ecs module.
+type: application
+version: 0.1.0
+# The module release this chart was ported from (UPSTREAM.md).
+appVersion: "terraform-aws-ecs-v7.6.1"
+kubeVersion: ">=1.27.0-0"
+keywords: [aws, ack, ecs, fargate, autoscaling, terraform-aws-modules]
+home: https://github.com/highfivelabs/catalog
+sources:
+  - https://github.com/terraform-aws-modules/terraform-aws-ecs/tree/60b428812ddcffe48abc6af0988fe826c89da961
+annotations:
+  hfl.dev/source: terraform-aws-ecs
+  hfl.dev/source-version: v7.6.1
+  hfl.dev/source-commit: 60b428812ddcffe48abc6af0988fe826c89da961
+  hfl.dev/ack-ecs-controller: "v1.9.2"
+  hfl.dev/ack-applicationautoscaling-controller: "v1.9.0"
+  hfl.dev/ack-iam-controller: "v1.11.3"
+  hfl.dev/ack-ec2-controller: "v1.23.1"
+  hfl.dev/ack-cloudwatchlogs-controller: "v1.10.0"
