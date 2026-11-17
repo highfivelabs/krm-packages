@@ -96,7 +96,7 @@ secondary interfaces and update_default_version: true.
 {{- with $specs }}{{ $_ := set $data "tagSpecifications" . }}{{ end }}
 {{- $tags := include "ack.tags" (list $ $v.tags $v.launch_template_tags) | fromJson }}
 ---
-apiVersion: ec2.services.k8s.aws/v1alpha1
+apiVersion: {{ ternary "ec2.aws.hfl.dev/v1alpha1" "ec2.services.k8s.aws/v1alpha1" $v.allow_alpha }}
 kind: LaunchTemplate
 metadata:
 {{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "launch-template")) "id" "launch-template" "region" $region) | nindent 2 }}

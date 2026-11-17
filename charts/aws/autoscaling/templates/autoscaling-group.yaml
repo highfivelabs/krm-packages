@@ -33,6 +33,9 @@ at launch in ACK; launch-template.yaml carries them to the instances.
 {{- fail "autoscaling: create_launch_template: false needs launch_template_name, the existing launch template's name (ACK's AutoScalingGroup names its template; launch_template_id is not supported)" }}
 {{- end }}
 {{- $ltSpec := dict "launchTemplateName" $lt }}
+{{- if and $v.allow_alpha $v.create_launch_template }}
+{{- $ltSpec = dict "launchTemplateRef" (dict "from" (dict "name" (include "ack.name" (list .Release.Name "launch-template")))) }}
+{{- end }}
 {{- if $v.launch_template_version }}
 {{- $_ := set $ltSpec "version" (toString $v.launch_template_version) }}
 {{- else if $v.create_launch_template }}
@@ -40,7 +43,7 @@ at launch in ACK; launch-template.yaml carries them to the instances.
 {{- end }}
 {{- $tags := include "autoscaling.groupTags" $ | fromJson }}
 ---
-apiVersion: autoscaling.services.k8s.aws/v1alpha1
+apiVersion: {{ ternary "autoscaling.aws.hfl.dev/v1alpha1" "autoscaling.services.k8s.aws/v1alpha1" $v.allow_alpha }}
 kind: AutoScalingGroup
 metadata:
 {{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "autoscaling-group")) "id" "autoscaling-group" "region" $region) | nindent 2 }}
@@ -67,6 +70,11 @@ spec:
 {{- end }}
 {{- if not (kindIs "invalid" $v.capacity_rebalance) }}
   capacityRebalance: {{ $v.capacity_rebalance }}
+{{- end }}
+{{- if $v.allow_alpha }}
+{{- with $v.context }}
+  context: {{ . | quote }}
+{{- end }}
 {{- end }}
 {{- if not (kindIs "invalid" $v.default_cooldown) }}
   defaultCooldown: {{ int64 $v.default_cooldown }}
@@ -160,7 +168,16 @@ spec:
 {{- end }}
 {{- with $tags }}
   tags:
+{{- if $v.allow_alpha }}
+{{- $keep := $v.autoscaling_group_tags_not_propagate_at_launch | default list }}
+{{- range $k := keys . | sortAlpha }}
+    - key: {{ $k | quote }}
+      value: {{ index $tags $k | quote }}
+      propagateAtLaunch: {{ not (has $k $keep) }}
+{{- end }}
+{{- else }}
 {{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
 {{- end }}
 {{- /* aws_autoscaling_schedule.this: autoscaling.aws.hfl.dev/ScheduledAction, one per key. */}}
 {{- range $k := keys ($v.schedules | default dict) | sortAlpha }}

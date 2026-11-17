@@ -26,7 +26,7 @@ spec:
       value: "data"
 ---
 # Source: autoscaling/templates/autoscaling-group.yaml
-apiVersion: autoscaling.services.k8s.aws/v1alpha1
+apiVersion: autoscaling.aws.hfl.dev/v1alpha1
 kind: AutoScalingGroup
 metadata:
   name: full-autoscaling-group
@@ -71,7 +71,9 @@ spec:
       spotAllocationStrategy: price-capacity-optimized
     launchTemplate:
       launchTemplateSpecification:
-        launchTemplateName: workers-lt
+        launchTemplateRef:
+          from:
+            name: full-launch-template
         version: $Latest
       overrides:
       - instanceType: m6i.large
@@ -108,10 +110,13 @@ spec:
   tags:
     - key: "Name"
       value: "worker"
+      propagateAtLaunch: true
     - key: "team"
       value: "data"
+      propagateAtLaunch: true
     - key: "tier"
       value: "workers"
+      propagateAtLaunch: false
 ---
 # Source: autoscaling/templates/iam.yaml
 apiVersion: iam.services.k8s.aws/v1alpha1
@@ -138,7 +143,7 @@ spec:
       value: "data"
 ---
 # Source: autoscaling/templates/launch-template.yaml
-apiVersion: ec2.services.k8s.aws/v1alpha1
+apiVersion: ec2.aws.hfl.dev/v1alpha1
 kind: LaunchTemplate
 metadata:
   name: full-launch-template

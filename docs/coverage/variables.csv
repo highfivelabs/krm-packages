@@ -2724,13 +2724,13 @@ aws,eventbridge,tags,map(string),yes,,
 aws,eventbridge,targets,any,partial,"accepted, but a target's destination (an API destination this chart makes: its ARN ends in an ID AWS gives, and ACK's Rule targets take no reference), appsync_target (ACK's Rule targets have no AppSyncParameters, eventbridge-controller v1.9.2) and force_destroy are refused; target_id defaults to the target's name (Terraform: a random ID)",gap
 aws,eventbridge,trusted_entities,list(string),yes,,
 aws,autoscaling,autoscaling_group_tags,map(string),yes,,
-aws,autoscaling,autoscaling_group_tags_not_propagate_at_launch,list(string),partial,"accepted: ACK's AutoScalingGroup tags never propagate at launch, so the chart propagates the other tags through its launch template's instance tag specification (with create_launch_template: true)",gap
+aws,autoscaling,autoscaling_group_tags_not_propagate_at_launch,list(string),partial,"accepted: ACK's AutoScalingGroup tags never propagate at launch, so the chart propagates the other tags through its launch template's instance tag specification (with create_launch_template: true); with allow_alpha: true ack-extensions' AutoScalingGroup also sets propagateAtLaunch per tag",gap
 aws,autoscaling,availability_zone_distribution,object({capacity_distribution_strategy}),yes,,
 aws,autoscaling,availability_zones,list(string),yes,,
 aws,autoscaling,block_device_mappings,"list(object({device_name, ebs, no_device, virtual_name}))",partial,"accepted, but each EBS volume's volume_initialization_rate is refused: ACK's LaunchTemplate (ec2-controller v1.23.1) has no volumeInitializationRate field",gap
 aws,autoscaling,capacity_rebalance,bool,yes,,
 aws,autoscaling,capacity_reservation_specification,"object({capacity_reservation_preference, capacity_reservation_target})",yes,,
-aws,autoscaling,context,string,no,ACK's AutoScalingGroup (autoscaling-controller v1.6.0) has no context field,gap
+aws,autoscaling,context,string,partial,ACK's AutoScalingGroup (autoscaling-controller v1.6.0) has no context field; ack-extensions' AutoScalingGroup carries it (needs allow_alpha: true),alpha
 aws,autoscaling,cpu_options,"object({amd_sev_snp, core_count, nested_virtualization, threads_per_core})",yes,,
 aws,autoscaling,create,bool,yes,,
 aws,autoscaling,create_iam_instance_profile,bool,yes,,
