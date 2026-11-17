@@ -19,7 +19,7 @@ validate Config Connector's own kinds against its CRDs.
 | `dataplex.gcp.hfl.dev_dataplexaspecttypes.yaml` | `DataplexAspectType` (`dataplex.gcp.hfl.dev/v1beta1`) | `config/crds/` at `11baa460f60ad9f9345cefcb6f2b594a95ce0568` (2026-11-12) |
 | `dataplex.gcp.hfl.dev_dataplexdatascans.yaml` | `DataplexDataScan` (`dataplex.gcp.hfl.dev/v1beta1`) | `config/crds/` at `11baa460f60ad9f9345cefcb6f2b594a95ce0568` (2026-11-12) |
 | `iam.gcp.hfl.dev_iammembers.yaml` | `IAMMember` (`iam.gcp.hfl.dev/v1beta1`; `memberFrom.logSinkRef`, a log sink's writer identity) | `config/crds/` at `40da91d3fbfc7253c03669b32fbd8e5013de023f` (2026-11-16, the pin) |
-| `compute.gcp.hfl.dev_computenetworkendpoints.yaml` | `ComputeNetworkEndpoint` (`compute.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `11baa460f60ad9f9345cefcb6f2b594a95ce0568` (2026-11-12) |
+| `compute.gcp.hfl.dev_computenetworkendpoints.yaml` | `ComputeNetworkEndpoint` (`compute.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `01dc7b67fcd30e8926e6f3d43d6e82167e541d2c` (2026-11-16, the pin) |
 | `apigateway.gcp.hfl.dev_apigatewayapiconfigs.yaml` | `APIGatewayAPIConfig` (`apigateway.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `11baa460f60ad9f9345cefcb6f2b594a95ce0568` (2026-11-12) |
 | `apigateway.gcp.hfl.dev_apigatewaygateways.yaml` | `APIGatewayGateway` (`apigateway.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `11baa460f60ad9f9345cefcb6f2b594a95ce0568` (2026-11-12) |
 | `backupdr.gcp.hfl.dev_backupdrmanagementservers.yaml` | `BackupDRManagementServer` (`backupdr.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `11baa460f60ad9f9345cefcb6f2b594a95ce0568` (2026-11-12) |
@@ -37,9 +37,9 @@ validate Config Connector's own kinds against its CRDs.
 | `storage.gcp.hfl.dev_storagebucketobjects.yaml` | `StorageBucketObject` (`storage.gcp.hfl.dev/v1beta1`) | `config/crds/` at `81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15, the pin) |
 | `apigee.gcp.hfl.dev_apigeednszones.yaml` | `ApigeeDnsZone` (`apigee.gcp.hfl.dev/v1alpha1`: a chart renders it only with `allow_alpha`) | `config/crds/` at `35833eb8c7594675ea5237c11373665cd806658e` (2026-11-12) |
 | `apigee.gcp.hfl.dev_apigeenataddresses.yaml` | `ApigeeNATAddress` (`apigee.gcp.hfl.dev/v1beta1`) | `config/crds/` at `35833eb8c7594675ea5237c11373665cd806658e` (2026-11-12) |
-| `compute.gcp.hfl.dev_computeperinstanceconfigs.yaml` | `ComputePerInstanceConfig` (`compute.gcp.hfl.dev/v1beta1`) | `config/crds/` at `35833eb8c7594675ea5237c11373665cd806658e` (2026-11-12) |
+| `compute.gcp.hfl.dev_computeperinstanceconfigs.yaml` | `ComputePerInstanceConfig` (`compute.gcp.hfl.dev/v1beta1`) | `config/crds/` at `01dc7b67fcd30e8926e6f3d43d6e82167e541d2c` (2026-11-16, the pin) |
 | `compute.gcp.hfl.dev_computeregionautoscalers.yaml` | `ComputeRegionAutoscaler` (`compute.gcp.hfl.dev/v1beta1`) | `config/crds/` at `35833eb8c7594675ea5237c11373665cd806658e` (2026-11-12) |
-| `compute.gcp.hfl.dev_computeregiondiskresourcepolicyattachments.yaml` | `ComputeRegionDiskResourcePolicyAttachment` (`compute.gcp.hfl.dev/v1beta1`) | `config/crds/` at `35833eb8c7594675ea5237c11373665cd806658e` (2026-11-12) |
+| `compute.gcp.hfl.dev_computeregiondiskresourcepolicyattachments.yaml` | `ComputeRegionDiskResourcePolicyAttachment` (`compute.gcp.hfl.dev/v1beta1`) | `config/crds/` at `01dc7b67fcd30e8926e6f3d43d6e82167e541d2c` (2026-11-16, the pin) |
 | `networksecurity.gcp.hfl.dev_networksecuritygatewaysecuritypolicies.yaml` | `NetworkSecurityGatewaySecurityPolicy` (`networksecurity.gcp.hfl.dev/v1beta1`) | `config/crds/` at `35833eb8c7594675ea5237c11373665cd806658e` (2026-11-12) |
 | `networksecurity.gcp.hfl.dev_networksecuritygatewaysecuritypolicyrules.yaml` | `NetworkSecurityGatewaySecurityPolicyRule` (`networksecurity.gcp.hfl.dev/v1beta1`) | `config/crds/` at `35833eb8c7594675ea5237c11373665cd806658e` (2026-11-12) |
 | `networksecurity.gcp.hfl.dev_networksecuritytlsinspectionpolicies.yaml` | `NetworkSecurityTLSInspectionPolicy` (`networksecurity.gcp.hfl.dev/v1beta1`) | `config/crds/` at `35833eb8c7594675ea5237c11373665cd806658e` (2026-11-12) |
@@ -60,8 +60,8 @@ validate Config Connector's own kinds against its CRDs.
 | `compute.gcp.hfl.dev_computevpntunnels.yaml` | `ComputeVPNTunnel` (`compute.gcp.hfl.dev/v1beta1`, with `cipherSuite`) | `config/crds/` at `3de8de68304dd1be11757e786692db235139df7a` (2026-11-13) |
 | `networksecurity.gcp.hfl.dev_networksecurityauthzpolicies.yaml` | `NetworkSecurityAuthzPolicy` (`networksecurity.gcp.hfl.dev/v1beta1`; a target's resources by name, an agent gateway among them, and a `CUSTOM` action's authz extension) | `config/crds/` at `c2f0c7d295da38314aad8d8da674d283befcfb46` (2026-11-13, the pin) |
 | `compute.gcp.hfl.dev_computeautoscalers.yaml` | `ComputeAutoscaler` (`compute.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `35833eb8c7594675ea5237c11373665cd806658e` (2026-11-12) |
-| `compute.gcp.hfl.dev_computeregionperinstanceconfigs.yaml` | `ComputeRegionPerInstanceConfig` (`compute.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `35833eb8c7594675ea5237c11373665cd806658e` (2026-11-12) |
-| `compute.gcp.hfl.dev_computediskresourcepolicyattachments.yaml` | `ComputeDiskResourcePolicyAttachment` (`compute.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `384d07c01932defd747c17038a833ca3b591fa7a` (2026-11-14, the pin) |
+| `compute.gcp.hfl.dev_computeregionperinstanceconfigs.yaml` | `ComputeRegionPerInstanceConfig` (`compute.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `01dc7b67fcd30e8926e6f3d43d6e82167e541d2c` (2026-11-16, the pin) |
+| `compute.gcp.hfl.dev_computediskresourcepolicyattachments.yaml` | `ComputeDiskResourcePolicyAttachment` (`compute.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `01dc7b67fcd30e8926e6f3d43d6e82167e541d2c` (2026-11-16, the pin) |
 | `clouddeploy.gcp.hfl.dev_clouddeploytargets.yaml` | `CloudDeployTarget` (`clouddeploy.gcp.hfl.dev/v1beta1`; Config Connector's own is `v1alpha1`) | `config/crds/` at `384d07c01932defd747c17038a833ca3b591fa7a` (2026-11-15, the pin) |
 | `clouddeploy.gcp.hfl.dev_clouddeployautomations.yaml` | `CloudDeployAutomation` (`clouddeploy.gcp.hfl.dev/v1beta1`) | `config/crds/` at `384d07c01932defd747c17038a833ca3b591fa7a` (2026-11-15, the pin) |
 | `clouddeploy.gcp.hfl.dev_clouddeploydeploypolicies.yaml` | `CloudDeployDeployPolicy` (`clouddeploy.gcp.hfl.dev/v1beta1`) | `config/crds/` at `384d07c01932defd747c17038a833ca3b591fa7a` (2026-11-15, the pin) |
@@ -78,9 +78,9 @@ validate Config Connector's own kinds against its CRDs.
 | `serviceusage.gcp.hfl.dev_serviceidentities.yaml` | `ServiceIdentity` (`serviceusage.gcp.hfl.dev/v1beta1`: a folder's or an organization's service identity) | `config/crds/` at `81c3f9b594e1f325e8d38574ff5b79eaf289ff38` (2026-11-15, the pin) |
 
 `Taskfile.yml`'s `CCE_COMMIT`, which the fake-cloud and live runs use, is
-`31e1899c2a61d650e5abdc5fd2c31cd21dc61c08` (2026-11-16; #148, deletes that resolve no reference, changed no CRD
-after `5c223962`: #146, the node pool reference fix, and #147, the packet
-mirroring rule at `v1beta1`), at or after every
+`01dc7b67fcd30e8926e6f3d43d6e82167e541d2c` (2026-11-16; #150, `status.externalRef`
+on the 7 remaining kinds, updating 5 CRDs copied here, and #149, folder-only
+live sweeps; after `31e1899c`: #148, deletes that resolve no reference), at or after every
 copy above, so the fake cloud serves each of these kinds (each file is the
 same at the pin). config-connector-extensions #131 and #132 moved
 `ComputeRegionNetworkEndpoint`, `ComputeRegionNetworkFirewallPolicy`,

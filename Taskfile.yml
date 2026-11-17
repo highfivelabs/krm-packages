@@ -32,7 +32,7 @@ vars:
   LIVE_SA: '{{.GCP_LIVE_SA}}'
   # config-connector-extensions at this commit supplies the pinned Config
   # Connector and the fake cloud (docs/design.md, "Testing").
-  CCE_COMMIT: 31e1899c2a61d650e5abdc5fd2c31cd21dc61c08
+  CCE_COMMIT: 01dc7b67fcd30e8926e6f3d43d6e82167e541d2c
   # The offramp's root modules, one per directory, relative to this
   # repository (offramp/fixtures until they move to the
   # terraform-offramp-demo repository's layout).
