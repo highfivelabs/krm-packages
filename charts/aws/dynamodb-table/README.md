@@ -37,6 +37,7 @@ renders one `dynamodb.services.k8s.aws/v1alpha1` `Table` (`hfl.dev/id`
 | --- | --- |
 | `aws_dynamodb_table.this` | `Table`: `tableName`, `billingMode`, `attributeDefinitions`, `keySchema` (`hash_key`, `range_key`), `provisionedThroughput`, `streamSpecification`, `tableClass`, `deletionProtectionEnabled`, `timeToLive`, `continuousBackups` (point-in-time recovery), `localSecondaryIndexes`, `globalSecondaryIndexes` (with throughput and on-demand limits), `onDemandThroughput`, `tableReplicas` (region, KMS key), `sseSpecification`, `tags` (with `Name`, as the module) |
 | `aws_dynamodb_resource_policy.this` | `Table`'s `resourcePolicy`, `__DYNAMODB_TABLE_ARN__` replaced by the table's ARN as the module replaces it |
+| `aws_appautoscaling_target.*`, `aws_appautoscaling_policy.*` | `applicationautoscaling/ScalableTarget` and `ScalingPolicy` (`dynamodb:table:*` and `dynamodb:index:*`) for table and GSI read/write capacity |
 
 `region` becomes the annotation `services.k8s.aws/region`.
 
@@ -52,9 +53,6 @@ module's own. `name` (or `names.table`) and `hash_key` are required.
 
 Refused (`upstream.yaml`):
 
-- `autoscaling_enabled`, `autoscaling_read`, `autoscaling_write`,
-  `autoscaling_indexes`: the Application Auto Scaling targets and policies
-  are not ported yet (ACK's applicationautoscaling-controller has them).
 - `import_table`, `restore_*`: ACK's `Table` has no import from S3 and no
   restore.
 - `warm_throughput` (the table's and an index's), `global_table_witness`:

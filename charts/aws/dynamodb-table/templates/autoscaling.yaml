@@ -1,0 +1,77 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+autoscaling.tf: table and index Application Auto Scaling targets and target-tracking
+policies (applicationautoscaling/ScalableTarget and ScalingPolicy).
+*/ -}}
+{{- $v := .Values -}}
+{{- if and $v.create_table $v.autoscaling_enabled }}
+{{- $name := include "ddb.tableName" $ }}
+{{- $rel := .Release.Name }}
+{{- $region := $v.region | default "" }}
+{{- $defaults := merge ($v.autoscaling_defaults | default dict) (dict "scale_in_cooldown" 0 "scale_out_cooldown" 0 "target_value" 70) }}
+{{- $items := list }}
+{{- if $v.autoscaling_read }}
+{{- if or (kindIs "invalid" $v.read_capacity) (kindIs "invalid" $v.autoscaling_read.max_capacity) }}
+{{- fail "dynamodb-table: read_capacity and autoscaling_read.max_capacity are required when autoscaling_read is set" }}
+{{- end }}
+{{- $items = append $items (dict "key" "autoscaling-table-read" "resourceID" (printf "table/%s" $name) "dimension" "dynamodb:table:ReadCapacityUnits" "metric" "DynamoDBReadCapacityUtilization" "min" $v.read_capacity "max" $v.autoscaling_read.max_capacity "cfg" $v.autoscaling_read) }}
+{{- end }}
+{{- if $v.autoscaling_write }}
+{{- if or (kindIs "invalid" $v.write_capacity) (kindIs "invalid" $v.autoscaling_write.max_capacity) }}
+{{- fail "dynamodb-table: write_capacity and autoscaling_write.max_capacity are required when autoscaling_write is set" }}
+{{- end }}
+{{- $items = append $items (dict "key" "autoscaling-table-write" "resourceID" (printf "table/%s" $name) "dimension" "dynamodb:table:WriteCapacityUnits" "metric" "DynamoDBWriteCapacityUtilization" "min" $v.write_capacity "max" $v.autoscaling_write.max_capacity "cfg" $v.autoscaling_write) }}
+{{- end }}
+{{- range $idxName := keys ($v.autoscaling_indexes | default dict) | sortAlpha }}
+{{- $idx := index $v.autoscaling_indexes $idxName }}
+{{- $resID := printf "table/%s/index/%s" $name $idxName }}
+{{- if or (kindIs "invalid" $idx.read_min_capacity) (kindIs "invalid" $idx.read_max_capacity) }}
+{{- fail (printf "dynamodb-table: autoscaling_indexes.%s requires read_min_capacity and read_max_capacity" $idxName) }}
+{{- end }}
+{{- if or (kindIs "invalid" $idx.write_min_capacity) (kindIs "invalid" $idx.write_max_capacity) }}
+{{- fail (printf "dynamodb-table: autoscaling_indexes.%s requires write_min_capacity and write_max_capacity" $idxName) }}
+{{- end }}
+{{- $items = append $items (dict "key" (printf "autoscaling-index-%s-read" $idxName) "resourceID" $resID "dimension" "dynamodb:index:ReadCapacityUnits" "metric" "DynamoDBReadCapacityUtilization" "min" $idx.read_min_capacity "max" $idx.read_max_capacity "cfg" $idx) }}
+{{- $items = append $items (dict "key" (printf "autoscaling-index-%s-write" $idxName) "resourceID" $resID "dimension" "dynamodb:index:WriteCapacityUnits" "metric" "DynamoDBWriteCapacityUtilization" "min" $idx.write_min_capacity "max" $idx.write_max_capacity "cfg" $idx) }}
+{{- end }}
+{{- range $item := $items }}
+{{- $cfg := $item.cfg }}
+{{- $targetObj := include "ack.name" (list $rel (printf "%s-target" $item.key)) }}
+{{- $policyObj := include "ack.name" (list $rel (printf "%s-policy" $item.key)) }}
+{{- $scaleIn := ternary $defaults.scale_in_cooldown $cfg.scale_in_cooldown (kindIs "invalid" $cfg.scale_in_cooldown) }}
+{{- $scaleOut := ternary $defaults.scale_out_cooldown $cfg.scale_out_cooldown (kindIs "invalid" $cfg.scale_out_cooldown) }}
+{{- $targetVal := ternary $defaults.target_value $cfg.target_value (kindIs "invalid" $cfg.target_value) }}
+---
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalableTarget
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $targetObj "id" (printf "%s-target" $item.key) "region" $region) | nindent 2 }}
+spec:
+  serviceNamespace: dynamodb
+  scalableDimension: {{ $item.dimension | quote }}
+  resourceID: {{ $item.resourceID | quote }}
+  minCapacity: {{ int64 $item.min }}
+  maxCapacity: {{ int64 $item.max }}
+---
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalingPolicy
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $policyObj "id" (printf "%s-policy" $item.key) "region" $region) | nindent 2 }}
+spec:
+  policyName: {{ printf "%s:%s" $item.metric $item.resourceID | quote }}
+  policyType: TargetTrackingScaling
+  serviceNamespace: dynamodb
+  scalableDimension: {{ $item.dimension | quote }}
+  resourceRef:
+    from:
+      name: {{ $targetObj }}
+  targetTrackingScalingPolicyConfiguration:
+    predefinedMetricSpecification:
+      predefinedMetricType: {{ $item.metric | quote }}
+    scaleInCooldown: {{ int64 $scaleIn }}
+    scaleOutCooldown: {{ int64 $scaleOut }}
+    targetValue: {{ $targetVal }}
+{{- end }}
+{{- end }}

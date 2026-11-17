@@ -114,3 +114,40 @@ JSON, or "" when it has no statement.
 {{- toJson (dict "Version" "2012-10-17" "Statement" $doc) -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+epi.baseStatements: the merged statements of source_policy_documents and
+policy_statements (data.aws_iam_policy_document.base without overrides), as a
+JSON object {s: [...]}.
+*/}}
+{{- define "epi.baseStatements" -}}
+{{- $sources := index . 0 | default list -}}{{- $stmts := index . 1 | default list -}}
+{{- $doc := list -}}
+{{- range $i, $j := $sources -}}
+{{- $st := (include "epi.statements" (list (printf "source_policy_documents[%d]" $i) $j) | fromJson).s -}}
+{{- $doc = (include "epi.merge" (list $doc $st) | fromJson).s -}}
+{{- end -}}
+{{- $own := list -}}
+{{- range $s := $stmts -}}
+{{- $own = append $own (include "epi.statement" $s | fromJson) -}}
+{{- end -}}
+{{- $doc = (include "epi.merge" (list $doc $own) | fromJson).s -}}
+{{- toJson (dict "s" $doc) -}}
+{{- end -}}
+
+{{/*
+epi.presetDocument: a preset policy document built from base statements, the
+preset's own statements, and override_policy_documents, merged by Sid.
+  (list $baseStmts $presetStmts $overrides)
+*/}}
+{{- define "epi.presetDocument" -}}
+{{- $base := index . 0 | default list -}}{{- $stmts := index . 1 | default list -}}{{- $overrides := index . 2 | default list -}}
+{{- $doc := (include "epi.merge" (list $base $stmts) | fromJson).s -}}
+{{- range $i, $j := $overrides -}}
+{{- $st := (include "epi.statements" (list (printf "override_policy_documents[%d]" $i) $j) | fromJson).s -}}
+{{- $doc = (include "epi.merge" (list $doc $st) | fromJson).s -}}
+{{- end -}}
+{{- if $doc -}}
+{{- toJson (dict "Version" "2012-10-17" "Statement" $doc) -}}
+{{- end -}}
+{{- end -}}

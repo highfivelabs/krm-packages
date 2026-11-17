@@ -1,0 +1,77 @@
+---
+# Source: eks-pod-identity/templates/role.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: presets-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "presets"
+    app.kubernetes.io/name: eks-pod-identity
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "role"
+spec:
+  name: "eks-presets"
+  path: "/"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\",\"sts:TagSession\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"pods.eks.amazonaws.com\"]}}],\"Version\":\"2012-10-17\"}"
+  policies:
+    - "arn:aws:iam::123456789012:policy/Custom_EBS_CSI"
+    - "arn:aws:iam::123456789012:policy/Custom_ClusterAutoscaler"
+    - "arn:aws:iam::123456789012:policy/Custom_PGAnalyze"
+    - "arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess"
+    - "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+---
+# Source: eks-pod-identity/templates/role.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: presets-ebs-csi-policy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "presets"
+    app.kubernetes.io/name: eks-pod-identity
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "ebs-csi-policy"
+spec:
+  name: "Custom_EBS_CSI"
+  path: "/"
+  description: "Permissions to manage EBS volumes via the container storage interface (CSI) driver"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"ec2:CreateSnapshot\",\"ec2:AttachVolume\",\"ec2:DetachVolume\",\"ec2:ModifyVolume\",\"ec2:DescribeAvailabilityZones\",\"ec2:DescribeInstances\",\"ec2:DescribeInstanceTypes\",\"ec2:DescribeSnapshots\",\"ec2:DescribeTags\",\"ec2:DescribeVolumes\",\"ec2:DescribeVolumesModifications\",\"ec2:DescribeVolumeStatus\",\"ec2:EnableFastSnapshotRestores\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"]},{\"Action\":[\"ec2:CopyVolumes\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:ec2:*:*:volume/vol-*\"]},{\"Action\":[\"ec2:CreateTags\"],\"Condition\":{\"StringEquals\":{\"ec2:CreateAction\":[\"CreateVolume\",\"CreateSnapshot\",\"CopyVolumes\"]}},\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:ec2:*:*:volume/*\",\"arn:aws:ec2:*:*:snapshot/*\"]},{\"Action\":[\"ec2:DeleteTags\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:ec2:*:*:volume/*\",\"arn:aws:ec2:*:*:snapshot/*\"]},{\"Action\":[\"ec2:CreateVolume\",\"ec2:CopyVolumes\"],\"Condition\":{\"StringLike\":{\"aws:RequestTag/ebs.csi.aws.com/cluster\":[\"true\"]}},\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:ec2:*:*:volume/*\"]},{\"Action\":[\"ec2:CreateVolume\",\"ec2:CopyVolumes\"],\"Condition\":{\"StringLike\":{\"aws:RequestTag/CSIVolumeName\":[\"*\"]}},\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:ec2:*:*:volume/*\"]},{\"Action\":[\"ec2:CreateVolume\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:ec2:*:*:snapshot/*\"]},{\"Action\":[\"ec2:DeleteVolume\"],\"Condition\":{\"StringLike\":{\"ec2:ResourceTag/ebs.csi.aws.com/cluster\":[\"true\"]}},\"Effect\":\"Allow\",\"Resource\":[\"*\"]},{\"Action\":[\"ec2:DeleteVolume\"],\"Condition\":{\"StringLike\":{\"ec2:ResourceTag/CSIVolumeName\":[\"*\"]}},\"Effect\":\"Allow\",\"Resource\":[\"*\"]},{\"Action\":[\"ec2:DeleteVolume\"],\"Condition\":{\"StringLike\":{\"ec2:ResourceTag/kubernetes.io/created-for/pvc/name\":[\"*\"]}},\"Effect\":\"Allow\",\"Resource\":[\"*\"]},{\"Action\":[\"ec2:DeleteSnapshot\",\"ec2:LockSnapshot\"],\"Condition\":{\"StringLike\":{\"ec2:ResourceTag/CSIVolumeSnapshotName\":[\"*\"]}},\"Effect\":\"Allow\",\"Resource\":[\"*\"]},{\"Action\":[\"ec2:DeleteSnapshot\",\"ec2:LockSnapshot\"],\"Condition\":{\"StringLike\":{\"ec2:ResourceTag/ebs.csi.aws.com/cluster\":[\"true\"]}},\"Effect\":\"Allow\",\"Resource\":[\"*\"]},{\"Action\":[\"kms:CreateGrant\",\"kms:ListGrants\",\"kms:RevokeGrant\"],\"Condition\":{\"Bool\":{\"kms:GrantIsForAWSResource\":[\"true\"]}},\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:kms:us-west-2:123456789012:key/1234\"]},{\"Action\":[\"kms:Encrypt\",\"kms:Decrypt\",\"kms:ReEncrypt*\",\"kms:GenerateDataKey*\",\"kms:DescribeKey\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:kms:us-west-2:123456789012:key/1234\"]}],\"Version\":\"2012-10-17\"}"
+---
+# Source: eks-pod-identity/templates/role.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: presets-cluster-autoscaler-policy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "presets"
+    app.kubernetes.io/name: eks-pod-identity
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "cluster-autoscaler-policy"
+spec:
+  name: "Custom_ClusterAutoscaler"
+  path: "/"
+  description: "Permissions for Cluster Autoscaler"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"autoscaling:DescribeAutoScalingGroups\",\"autoscaling:DescribeAutoScalingInstances\",\"autoscaling:DescribeLaunchConfigurations\",\"autoscaling:DescribeScalingActivities\",\"autoscaling:DescribeTags\",\"ec2:DescribeLaunchTemplateVersions\",\"ec2:DescribeInstanceTypes\",\"eks:DescribeNodegroup\",\"ec2:DescribeImages\",\"ec2:GetInstanceTypesFromInstanceRequirements\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"]},{\"Action\":[\"autoscaling:SetDesiredCapacity\",\"autoscaling:TerminateInstanceInAutoScalingGroup\"],\"Condition\":{\"StringEquals\":{\"autoscaling:ResourceTag/kubernetes.io/cluster/prod-eks\":[\"owned\"]}},\"Effect\":\"Allow\",\"Resource\":[\"*\"]}],\"Version\":\"2012-10-17\"}"
+---
+# Source: eks-pod-identity/templates/role.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: presets-pganalyze-policy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "presets"
+    app.kubernetes.io/name: eks-pod-identity
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "pganalyze-policy"
+spec:
+  name: "Custom_PGAnalyze"
+  path: "/"
+  description: "Permissions for PGAnalyze"
+  policyDocument: "{\"Statement\":[{\"Action\":[\"cloudwatch:GetMetricStatistics\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"CloudwatchGetMetrics\"},{\"Action\":[\"logs:GetLogEvents\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:logs:us-west-2:123456789012:log-group:RDSOSMetrics:log-stream:*\"],\"Sid\":\"CloudwatchLogEvents\"},{\"Action\":[\"rds:DescribeDBParameters\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:rds:us-west-2:123456789012:pg:*\"],\"Sid\":\"RDSDescribeParameters\"},{\"Action\":[\"rds:DescribeDBInstances\",\"rds:DownloadDBLogFilePortion\",\"rds:DescribeDBLogFiles\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:rds:us-west-2:123456789012:db:*\"],\"Sid\":\"RDSInstanceDescribe\"},{\"Action\":[\"rds:DescribeDBClusters\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:rds:us-west-2:123456789012:cluster:*\"],\"Sid\":\"RDSClusterDescribe\"}],\"Version\":\"2012-10-17\"}"

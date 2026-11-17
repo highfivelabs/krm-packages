@@ -1,0 +1,233 @@
+---
+# Source: dynamodb-table/templates/autoscaling.yaml
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalableTarget
+metadata:
+  name: autoscaling-autoscaling-table-read-target
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "autoscaling"
+    app.kubernetes.io/name: dynamodb-table
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "autoscaling-table-read-target"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  serviceNamespace: dynamodb
+  scalableDimension: "dynamodb:table:ReadCapacityUnits"
+  resourceID: "table/autoscaled-table"
+  minCapacity: 5
+  maxCapacity: 20
+---
+# Source: dynamodb-table/templates/autoscaling.yaml
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalableTarget
+metadata:
+  name: autoscaling-autoscaling-table-write-target
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "autoscaling"
+    app.kubernetes.io/name: dynamodb-table
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "autoscaling-table-write-target"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  serviceNamespace: dynamodb
+  scalableDimension: "dynamodb:table:WriteCapacityUnits"
+  resourceID: "table/autoscaled-table"
+  minCapacity: 5
+  maxCapacity: 20
+---
+# Source: dynamodb-table/templates/autoscaling.yaml
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalableTarget
+metadata:
+  name: autoscaling-autoscaling-index-byg-read-target-d337d1bf
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "autoscaling"
+    app.kubernetes.io/name: dynamodb-table
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "autoscaling-index-ByG-read-target"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  serviceNamespace: dynamodb
+  scalableDimension: "dynamodb:index:ReadCapacityUnits"
+  resourceID: "table/autoscaled-table/index/ByG"
+  minCapacity: 5
+  maxCapacity: 15
+---
+# Source: dynamodb-table/templates/autoscaling.yaml
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalableTarget
+metadata:
+  name: autoscaling-autoscaling-index-byg-write-target-2a4d5e65
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "autoscaling"
+    app.kubernetes.io/name: dynamodb-table
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "autoscaling-index-ByG-write-target"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  serviceNamespace: dynamodb
+  scalableDimension: "dynamodb:index:WriteCapacityUnits"
+  resourceID: "table/autoscaled-table/index/ByG"
+  minCapacity: 5
+  maxCapacity: 15
+---
+# Source: dynamodb-table/templates/autoscaling.yaml
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalingPolicy
+metadata:
+  name: autoscaling-autoscaling-table-read-policy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "autoscaling"
+    app.kubernetes.io/name: dynamodb-table
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "autoscaling-table-read-policy"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  policyName: "DynamoDBReadCapacityUtilization:table/autoscaled-table"
+  policyType: TargetTrackingScaling
+  serviceNamespace: dynamodb
+  scalableDimension: "dynamodb:table:ReadCapacityUnits"
+  resourceRef:
+    from:
+      name: autoscaling-autoscaling-table-read-target
+  targetTrackingScalingPolicyConfiguration:
+    predefinedMetricSpecification:
+      predefinedMetricType: "DynamoDBReadCapacityUtilization"
+    scaleInCooldown: 60
+    scaleOutCooldown: 0
+    targetValue: 70
+---
+# Source: dynamodb-table/templates/autoscaling.yaml
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalingPolicy
+metadata:
+  name: autoscaling-autoscaling-table-write-policy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "autoscaling"
+    app.kubernetes.io/name: dynamodb-table
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "autoscaling-table-write-policy"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  policyName: "DynamoDBWriteCapacityUtilization:table/autoscaled-table"
+  policyType: TargetTrackingScaling
+  serviceNamespace: dynamodb
+  scalableDimension: "dynamodb:table:WriteCapacityUnits"
+  resourceRef:
+    from:
+      name: autoscaling-autoscaling-table-write-target
+  targetTrackingScalingPolicyConfiguration:
+    predefinedMetricSpecification:
+      predefinedMetricType: "DynamoDBWriteCapacityUtilization"
+    scaleInCooldown: 0
+    scaleOutCooldown: 0
+    targetValue: 80
+---
+# Source: dynamodb-table/templates/autoscaling.yaml
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalingPolicy
+metadata:
+  name: autoscaling-autoscaling-index-byg-read-policy-7459644d
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "autoscaling"
+    app.kubernetes.io/name: dynamodb-table
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "autoscaling-index-ByG-read-policy"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  policyName: "DynamoDBReadCapacityUtilization:table/autoscaled-table/index/ByG"
+  policyType: TargetTrackingScaling
+  serviceNamespace: dynamodb
+  scalableDimension: "dynamodb:index:ReadCapacityUnits"
+  resourceRef:
+    from:
+      name: autoscaling-autoscaling-index-byg-read-target-d337d1bf
+  targetTrackingScalingPolicyConfiguration:
+    predefinedMetricSpecification:
+      predefinedMetricType: "DynamoDBReadCapacityUtilization"
+    scaleInCooldown: 0
+    scaleOutCooldown: 0
+    targetValue: 70
+---
+# Source: dynamodb-table/templates/autoscaling.yaml
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalingPolicy
+metadata:
+  name: autoscaling-autoscaling-index-byg-write-policy-766a419c
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "autoscaling"
+    app.kubernetes.io/name: dynamodb-table
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "autoscaling-index-ByG-write-policy"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  policyName: "DynamoDBWriteCapacityUtilization:table/autoscaled-table/index/ByG"
+  policyType: TargetTrackingScaling
+  serviceNamespace: dynamodb
+  scalableDimension: "dynamodb:index:WriteCapacityUnits"
+  resourceRef:
+    from:
+      name: autoscaling-autoscaling-index-byg-write-target-2a4d5e65
+  targetTrackingScalingPolicyConfiguration:
+    predefinedMetricSpecification:
+      predefinedMetricType: "DynamoDBWriteCapacityUtilization"
+    scaleInCooldown: 0
+    scaleOutCooldown: 0
+    targetValue: 70
+---
+# Source: dynamodb-table/templates/table.yaml
+apiVersion: dynamodb.services.k8s.aws/v1alpha1
+kind: Table
+metadata:
+  name: autoscaling-table
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "autoscaling"
+    app.kubernetes.io/name: dynamodb-table
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "table"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  tableName: "autoscaled-table"
+  billingMode: "PROVISIONED"
+  attributeDefinitions:
+    - attributeName: "id"
+      attributeType: "S"
+    - attributeName: "gk"
+      attributeType: "S"
+  keySchema:
+    - attributeName: "id"
+      keyType: HASH
+  provisionedThroughput:
+    readCapacityUnits: 5
+    writeCapacityUnits: 5
+  globalSecondaryIndexes:
+    - indexName: "ByG"
+      keySchema:
+        - attributeName: "gk"
+          keyType: HASH
+      projection:
+        projectionType: "ALL"
+      provisionedThroughput:
+        readCapacityUnits: 5
+        writeCapacityUnits: 5
+  tags:
+    - key: "Name"
+      value: "autoscaled-table"

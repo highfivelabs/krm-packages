@@ -23,18 +23,6 @@ synced: 2026-11-12
 # map it yet) or by-design (Bundt replaces it). partial: the variable is
 # accepted, the reason says what is not carried.
 refused:
-- variable: autoscaling_enabled
-  kind: not-ported
-  reason: "the module's Application Auto Scaling targets and policies (applicationautoscaling-controller's ScalableTarget and ScalingPolicy) are not ported yet"
-- variable: autoscaling_indexes
-  kind: not-ported
-  reason: "the module's Application Auto Scaling targets and policies (applicationautoscaling-controller's ScalableTarget and ScalingPolicy) are not ported yet"
-- variable: autoscaling_read
-  kind: not-ported
-  reason: "the module's Application Auto Scaling targets and policies (applicationautoscaling-controller's ScalableTarget and ScalingPolicy) are not ported yet"
-- variable: autoscaling_write
-  kind: not-ported
-  reason: "the module's Application Auto Scaling targets and policies (applicationautoscaling-controller's ScalableTarget and ScalingPolicy) are not ported yet"
 - variable: global_secondary_indexes
   kind: gap
   reason: "accepted, except warm_throughput (ACK's Table has no warm throughput field)"

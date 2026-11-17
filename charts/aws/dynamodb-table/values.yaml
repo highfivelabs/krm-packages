@@ -42,13 +42,12 @@ autoscaling_defaults:
   scale_out_cooldown: 0
   target_value: 70
 # Whether or not to enable autoscaling
-# Not supported (not-ported): Application Auto Scaling is not ported yet.
 autoscaling_enabled: false
-# A map of index autoscaling configurations (not ported yet)
+# A map of index autoscaling configurations
 autoscaling_indexes: {}
-# A map of read autoscaling settings (not ported yet)
+# A map of read autoscaling settings
 autoscaling_read: {}
-# A map of write autoscaling settings (not ported yet)
+# A map of write autoscaling settings
 autoscaling_write: {}
 # Controls how you are billed for read/write throughput and how you manage
 # capacity. The valid values are PROVISIONED or PAY_PER_REQUEST

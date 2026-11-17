@@ -92,19 +92,19 @@
     },
     "autoscaling_enabled": {
       "type": "boolean",
-      "description": "Not supported (not ported yet): Application Auto Scaling"
+      "description": "Whether or not to enable autoscaling"
     },
     "autoscaling_indexes": {
       "type": "object",
-      "description": "Not supported (not ported yet): Application Auto Scaling"
+      "description": "A map of index autoscaling configurations"
     },
     "autoscaling_read": {
       "type": "object",
-      "description": "Not supported (not ported yet): Application Auto Scaling"
+      "description": "A map of read autoscaling settings"
     },
     "autoscaling_write": {
       "type": "object",
-      "description": "Not supported (not ported yet): Application Auto Scaling"
+      "description": "A map of write autoscaling settings"
     },
     "billing_mode": {
       "type": "string",
