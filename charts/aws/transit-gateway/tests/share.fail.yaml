@@ -1,0 +1,4 @@
+# expect: transit-gateway: share_tgw is not supported
+name: tgw
+create_tgw_routes: false
+enable_sg_referencing_support: false

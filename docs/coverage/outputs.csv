@@ -1337,10 +1337,10 @@ aws,rds-proxy,proxy_target_rds_resource_id,no
 aws,rds-proxy,proxy_target_target_arn,no
 aws,rds-proxy,proxy_target_tracked_cluster_id,no
 aws,rds-proxy,proxy_target_type,no
-aws,transit-gateway,ec2_transit_gateway_arn,no
+aws,transit-gateway,ec2_transit_gateway_arn,yes
 aws,transit-gateway,ec2_transit_gateway_association_default_route_table_id,no
-aws,transit-gateway,ec2_transit_gateway_id,no
-aws,transit-gateway,ec2_transit_gateway_owner_id,no
+aws,transit-gateway,ec2_transit_gateway_id,yes
+aws,transit-gateway,ec2_transit_gateway_owner_id,yes
 aws,transit-gateway,ec2_transit_gateway_propagation_default_route_table_id,no
 aws,transit-gateway,ec2_transit_gateway_route_ids,no
 aws,transit-gateway,ec2_transit_gateway_route_table_association,no
@@ -1351,7 +1351,7 @@ aws,transit-gateway,ec2_transit_gateway_route_table_id,no
 aws,transit-gateway,ec2_transit_gateway_route_table_propagation,no
 aws,transit-gateway,ec2_transit_gateway_route_table_propagation_ids,no
 aws,transit-gateway,ec2_transit_gateway_vpc_attachment,no
-aws,transit-gateway,ec2_transit_gateway_vpc_attachment_ids,no
+aws,transit-gateway,ec2_transit_gateway_vpc_attachment_ids,yes
 aws,transit-gateway,ram_principal_association_id,no
 aws,transit-gateway,ram_resource_share_id,no
 aws,apigateway-v2,acm_certificate_arn,no

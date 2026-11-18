@@ -1,0 +1,91 @@
+---
+# Source: transit-gateway/templates/transit-gateway.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: TransitGateway
+metadata:
+  name: basic-transit-gateway
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: transit-gateway
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "transit-gateway"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  description: "tgw"
+  options:
+    defaultRouteTableAssociation: enable
+    defaultRouteTablePropagation: enable
+    autoAcceptSharedAttachments: disable
+    multicastSupport: disable
+    vpnECMPSupport: enable
+    dnsSupport: enable
+  tags:
+    - key: "Name"
+      value: "tgw"
+    - key: "env"
+      value: "dev"
+---
+# Source: transit-gateway/templates/transit-gateway.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: TransitGatewayVPCAttachment
+metadata:
+  name: basic-attachment-vpc1
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: transit-gateway
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "attachment-vpc1"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  transitGatewayRef:
+    from:
+      name: basic-transit-gateway
+  vpcID: "vpc-0123456789abcdef0"
+  subnetIDs:
+    - subnet-0123456789abcdef0
+    - subnet-0123456789abcdef1
+  options:
+    dnsSupport: enable
+    ipv6Support: disable
+    applianceModeSupport: disable
+    securityGroupReferencingSupport: disable
+  tags:
+    - key: "Name"
+      value: "tgw-vpc1"
+    - key: "env"
+      value: "dev"
+---
+# Source: transit-gateway/templates/transit-gateway.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: TransitGatewayVPCAttachment
+metadata:
+  name: basic-attachment-vpc2
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: transit-gateway
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "attachment-vpc2"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  transitGatewayRef:
+    from:
+      name: basic-transit-gateway
+  vpcID: "vpc-0123456789abcdef9"
+  subnetIDs:
+    - subnet-0123456789abcdef9
+  options:
+    dnsSupport: disable
+    ipv6Support: enable
+    applianceModeSupport: disable
+    securityGroupReferencingSupport: disable
+  tags:
+    - key: "Name"
+      value: "tgw-vpc2"
+    - key: "env"
+      value: "dev"

@@ -1,0 +1,44 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+The module variables this chart keeps in its values but cannot carry
+(upstream.yaml, "refused"): each stops the render, naming the gap, when it
+is set to what it cannot carry. Renders nothing.
+*/ -}}
+{{- $v := .Values -}}
+{{- include "ack.unsupported" (list $ "enable_encryption_support" $v.enable_encryption_support "ACK's TransitGateway (ec2-controller v1.23.1) has no encryptionSupport option") }}
+{{- include "ack.unsupported" (list $ "timeouts" $v.timeouts "ACK controllers retry until the resource is ready; Bundt sets a component's time limit") }}
+{{- include "ack.unsupported" (list $ "tgw_default_route_table_tags" $v.tgw_default_route_table_tags "tags on the default association route table (aws_ec2_tag) need its ID, which the gateway's status does not carry") }}
+{{- include "ack.unsupported" (list $ "transit_gateway_route_table_id" $v.transit_gateway_route_table_id "route table associations and propagations are not ported: ack-extensions' Cloud Control kinds take plain IDs, with no reference fields") }}
+{{- include "ack.unsupported" (list $ "tgw_route_table_tags" $v.tgw_route_table_tags "the transit gateway route table is not ported: ack-extensions' Cloud Control kind takes the gateway's ID, known only after apply") }}
+{{- include "ack.unsupported" (list $ "ram_name" $v.ram_name "the RAM share is not ported (share_tgw)") }}
+{{- include "ack.unsupported" (list $ "ram_allow_external_principals" $v.ram_allow_external_principals "the RAM share is not ported (share_tgw)") }}
+{{- include "ack.unsupported" (list $ "ram_principals" $v.ram_principals "the RAM share is not ported (share_tgw)") }}
+{{- include "ack.unsupported" (list $ "ram_resource_share_arn" $v.ram_resource_share_arn "the RAM share accepter (aws_ram_resource_share_accepter) has no kind") }}
+{{- include "ack.unsupported" (list $ "ram_tags" $v.ram_tags "the RAM share is not ported (share_tgw)") }}
+{{- if and $v.share_tgw (or $v.create_tgw $v.ram_resource_share_arn) }}
+{{- fail "transit-gateway: share_tgw is not supported: the RAM share's resource association takes the gateway's ARN, built from its ID, known only after apply, and the share accepter has no kind; set share_tgw: false (docs/aws.md)" }}
+{{- end }}
+{{- $hasRoutes := false -}}
+{{- range $k, $a := ($v.vpc_attachments | default dict) }}
+{{- if $a.tgw_routes }}{{- $hasRoutes = true -}}{{- end }}
+{{- end }}
+{{- if and $v.create_tgw_routes (or $v.create_tgw $hasRoutes) }}
+{{- fail "transit-gateway: create_tgw_routes is not supported: the transit gateway route table, routes, associations and propagations (ack-extensions' Cloud Control kinds) take plain IDs of the gateway and its attachments, known only after apply, with no reference fields; set create_tgw_routes: false (docs/aws.md)" }}
+{{- end }}
+{{- if and $v.create_tgw $v.enable_sg_referencing_support }}
+{{- fail "transit-gateway: enable_sg_referencing_support is not supported: ACK's TransitGateway (ec2-controller v1.23.1) has no securityGroupReferencingSupport option; set enable_sg_referencing_support: false (docs/aws.md)" }}
+{{- end }}
+{{- range $k, $a := ($v.vpc_attachments | default dict) }}
+{{- range $f := (list "vpc_route_table_ids" "tgw_destination_cidr" "transit_gateway_route_table_id") }}
+{{- if get $a $f }}
+{{- fail (printf "transit-gateway: vpc_attachments.%s.%s is not supported: a route in a VPC route table (aws_route) cannot be added to a route table another chart owns, and the gateway's own route table is not ported (create_tgw_routes)" $k $f) }}
+{{- end }}
+{{- end }}
+{{- range $f := (list "transit_gateway_default_route_table_association" "transit_gateway_default_route_table_propagation") }}
+{{- if and (hasKey $a $f) (not (get $a $f)) }}
+{{- fail (printf "transit-gateway: vpc_attachments.%s.%s: false is not supported: ACK's TransitGatewayVPCAttachment has no such option" $k $f) }}
+{{- end }}
+{{- end }}
+{{- end }}

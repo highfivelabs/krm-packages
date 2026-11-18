@@ -3299,35 +3299,35 @@ aws,rds-proxy,use_policy_name_prefix,bool,no,"an inline policy of ACK's Role is 
 aws,rds-proxy,use_role_name_prefix,bool,no,"ACK's Role takes a name, not a name prefix: AWS cannot generate the unique name; set iam_role_name or names.role",gap
 aws,rds-proxy,vpc_security_group_ids,list(string),yes,,
 aws,rds-proxy,vpc_subnet_ids,list(string),yes,,
-aws,transit-gateway,amazon_side_asn,string,no,,no-chart
-aws,transit-gateway,create_tgw,bool,no,,no-chart
-aws,transit-gateway,create_tgw_routes,bool,no,,no-chart
-aws,transit-gateway,description,string,no,,no-chart
-aws,transit-gateway,enable_auto_accept_shared_attachments,bool,no,,no-chart
-aws,transit-gateway,enable_default_route_table_association,bool,no,,no-chart
-aws,transit-gateway,enable_default_route_table_propagation,bool,no,,no-chart
-aws,transit-gateway,enable_dns_support,bool,no,,no-chart
-aws,transit-gateway,enable_encryption_support,bool,no,,no-chart
-aws,transit-gateway,enable_multicast_support,bool,no,,no-chart
-aws,transit-gateway,enable_sg_referencing_support,bool,no,,no-chart
-aws,transit-gateway,enable_vpn_ecmp_support,bool,no,,no-chart
-aws,transit-gateway,name,string,no,,no-chart
-aws,transit-gateway,ram_allow_external_principals,bool,no,,no-chart
-aws,transit-gateway,ram_name,string,no,,no-chart
-aws,transit-gateway,ram_principals,list(string),no,,no-chart
-aws,transit-gateway,ram_resource_share_arn,string,no,,no-chart
-aws,transit-gateway,ram_tags,map(string),no,,no-chart
-aws,transit-gateway,region,string,no,,no-chart
-aws,transit-gateway,share_tgw,bool,no,,no-chart
-aws,transit-gateway,tags,map(string),no,,no-chart
-aws,transit-gateway,tgw_default_route_table_tags,map(string),no,,no-chart
-aws,transit-gateway,tgw_route_table_tags,map(string),no,,no-chart
-aws,transit-gateway,tgw_tags,map(string),no,,no-chart
-aws,transit-gateway,tgw_vpc_attachment_tags,map(string),no,,no-chart
-aws,transit-gateway,timeouts,"object({create, delete, update})",no,,no-chart
-aws,transit-gateway,transit_gateway_cidr_blocks,list(string),no,,no-chart
-aws,transit-gateway,transit_gateway_route_table_id,string,no,,no-chart
-aws,transit-gateway,vpc_attachments,any,no,,no-chart
+aws,transit-gateway,amazon_side_asn,string,yes,,
+aws,transit-gateway,create_tgw,bool,yes,,
+aws,transit-gateway,create_tgw_routes,bool,partial,"accepted at false (and with no create_tgw and no tgw_routes); true is refused: the transit gateway route table, routes, associations and propagations (ack-extensions' Cloud Control TransitGatewayRouteTable, TransitGatewayRoute and the association kinds) take plain IDs of the gateway and its attachments, known only after apply, with no reference fields",gap
+aws,transit-gateway,description,string,yes,,
+aws,transit-gateway,enable_auto_accept_shared_attachments,bool,yes,,
+aws,transit-gateway,enable_default_route_table_association,bool,yes,,
+aws,transit-gateway,enable_default_route_table_propagation,bool,yes,,
+aws,transit-gateway,enable_dns_support,bool,yes,,
+aws,transit-gateway,enable_encryption_support,bool,no,ACK's TransitGateway has no encryptionSupport option: true is refused,gap
+aws,transit-gateway,enable_multicast_support,bool,yes,,
+aws,transit-gateway,enable_sg_referencing_support,bool,partial,"accepted at false only, and not sent; true (the module's default) is refused: ACK's TransitGateway (ec2-controller v1.23.1) has no securityGroupReferencingSupport option",gap
+aws,transit-gateway,enable_vpn_ecmp_support,bool,yes,,
+aws,transit-gateway,name,string,yes,,
+aws,transit-gateway,ram_allow_external_principals,bool,no,the RAM share is not ported (share_tgw),gap
+aws,transit-gateway,ram_name,string,no,the RAM share is not ported (share_tgw),gap
+aws,transit-gateway,ram_principals,list(string),no,the RAM share is not ported (share_tgw),gap
+aws,transit-gateway,ram_resource_share_arn,string,no,the RAM share accepter (aws_ram_resource_share_accepter) has no kind,gap
+aws,transit-gateway,ram_tags,map(string),no,the RAM share is not ported (share_tgw),gap
+aws,transit-gateway,region,string,yes,,
+aws,transit-gateway,share_tgw,bool,partial,"accepted at false; true is refused: the RAM share's resource association (ACK's ResourceShare.resourceARNs) takes the gateway's ARN, built from its ID, known only after apply, and the share accepter has no kind",gap
+aws,transit-gateway,tags,map(string),yes,,
+aws,transit-gateway,tgw_default_route_table_tags,map(string),no,"tags on the default association route table (aws_ec2_tag) need its ID, which TransitGateway's status does not carry, and ack-extensions' ResourceTag takes a plain resource ID",gap
+aws,transit-gateway,tgw_route_table_tags,map(string),no,the transit gateway route table is not ported (create_tgw_routes),gap
+aws,transit-gateway,tgw_tags,map(string),yes,,
+aws,transit-gateway,tgw_vpc_attachment_tags,map(string),yes,,
+aws,transit-gateway,timeouts,"object({create, delete, update})",no,ACK controllers retry until the resource is ready; Bundt sets a component's time limit,by-design
+aws,transit-gateway,transit_gateway_cidr_blocks,list(string),yes,,
+aws,transit-gateway,transit_gateway_route_table_id,string,no,route table associations and propagations are not ported (create_tgw_routes): the Cloud Control kinds have no reference fields,gap
+aws,transit-gateway,vpc_attachments,any,yes,,
 aws,apigateway-v2,api_key_selection_expression,string,yes,,
 aws,apigateway-v2,api_mapping_key,string,yes,,
 aws,apigateway-v2,api_version,string,yes,,

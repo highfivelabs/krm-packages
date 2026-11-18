@@ -1,0 +1,103 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values mirror the Terraform variables of terraform-aws-modules' transit-gateway
+# module (v3.3.1): same names, types and defaults, so a module block's
+# arguments become a values file one to one. values.schema.json carries the
+# types. A variable the chart cannot carry stays here and stops the render
+# when set (upstream.yaml lists them; README.md says why).
+
+# Names, labels and tags (docs/design.md, "Names, labels and tags"). Not
+# Terraform variables, except tags, which is the module's own.
+# Names in full, {transitGateway}: the transit gateway's Name tag and the base
+# of the attachments' Name tags (in place of name). A name set here takes no
+# namePrefix.
+names: {}
+# An optional convenience: "<namePrefix>-" in front of every name the chart
+# derives or takes from the module's variables. Empty changes nothing.
+namePrefix: ""
+# Kubernetes labels on every object. They stay in Kubernetes: ACK does not
+# copy labels to AWS (AWS tags are the module's tags variable).
+labels: {}
+allow_alpha: false
+# DELETE (ACK's default) deletes the AWS resource with its object; ABANDON
+# keeps it (services.k8s.aws/deletion-policy: retain).
+deletion_policy: DELETE
+partition: aws
+
+# The module's variables, in its order, with its defaults.
+# Name to be used on all the resources as identifier
+name: ""
+# A map of tags to add to all resources
+tags: {}
+# Region where the resource(s) will be managed. Defaults to the region set in
+# the provider configuration
+region: null
+# Controls if TGW should be created (it affects almost all resources)
+create_tgw: true
+# Description of the EC2 Transit Gateway
+description: null
+# The Autonomous System Number (ASN) for the Amazon side of the gateway. By
+# default the TGW is created with the current default Amazon ASN.
+amazon_side_asn: null
+# Whether resource attachments are automatically associated with the default
+# association route table
+enable_default_route_table_association: true
+# Whether resource attachments automatically propagate routes to the default
+# propagation route table
+enable_default_route_table_propagation: true
+# Whether resource attachment requests are automatically accepted
+enable_auto_accept_shared_attachments: false
+# Whether VPN Equal Cost Multipath Protocol support is enabled
+enable_vpn_ecmp_support: true
+# Whether multicast support is enabled
+enable_multicast_support: false
+# Should be true to enable DNS support in the TGW
+enable_dns_support: true
+# Should be true to enable encryption support in the TGW
+enable_encryption_support: false
+# One or more IPv4 or IPv6 CIDR blocks for the transit gateway. Must be a
+# size /24 CIDR block or larger for IPv4, or a size /64 CIDR block or larger
+# for IPv6
+transit_gateway_cidr_blocks: []
+# Create, update, and delete timeout configurations for the transit gateway
+timeouts: null
+# Additional tags for the TGW
+tgw_tags: {}
+# Additional tags for the Default TGW route table
+tgw_default_route_table_tags: {}
+# Indicates whether to enable security group referencing support
+enable_sg_referencing_support: true
+# Maps of maps of VPC details to attach to TGW. Type 'any' to disable type
+# validation by Terraform.
+# In part: tgw_routes, vpc_route_table_ids, tgw_destination_cidr and
+# transit_gateway_route_table_id of an attachment are refused (no reference
+# between the route table kinds, see create_tgw_routes), as are a false
+# transit_gateway_default_route_table_association or _propagation. An
+# attachment's tgw_id names the gateway when create_tgw is false; otherwise
+# the attachment points at the gateway by transitGatewayRef.
+vpc_attachments: {}
+# Additional tags for VPC attachments
+tgw_vpc_attachment_tags: {}
+# Controls if TGW Route Table / Routes should be created
+create_tgw_routes: true
+# Identifier of EC2 Transit Gateway Route Table to use with the Target
+# Gateway when reusing it between multiple TGWs
+transit_gateway_route_table_id: null
+# Additional tags for the TGW route table
+tgw_route_table_tags: {}
+# Whether to share your transit gateway with other accounts
+share_tgw: true
+# The name of the resource share of TGW
+ram_name: ""
+# Indicates whether principals outside your organization can be associated
+# with a resource share.
+ram_allow_external_principals: false
+# A list of principals to share TGW with. Possible values are an AWS account
+# ID, an AWS Organizations Organization ARN, or an AWS Organizations
+# Organization Unit ARN
+ram_principals: []
+# ARN of RAM resource share
+ram_resource_share_arn: ""
+# Additional tags for the RAM
+ram_tags: {}

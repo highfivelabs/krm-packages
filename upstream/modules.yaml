@@ -1858,7 +1858,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/transit-gateway/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-transit-gateway/tree/v3.3.1
-    chart: null
+    chart: charts/aws/transit-gateway
   - id: aws/apigateway-v2
     cloud: aws
     module: apigateway-v2

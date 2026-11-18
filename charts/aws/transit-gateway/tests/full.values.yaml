@@ -1,0 +1,31 @@
+region: us-east-1
+labels:
+  team: network
+name: tgw
+description: Regional hub
+amazon_side_asn: "64512"
+enable_default_route_table_association: false
+enable_default_route_table_propagation: false
+enable_auto_accept_shared_attachments: true
+enable_vpn_ecmp_support: false
+enable_multicast_support: true
+enable_dns_support: false
+enable_sg_referencing_support: false
+transit_gateway_cidr_blocks: [10.99.0.0/24]
+tgw_tags:
+  tier: hub
+tgw_vpc_attachment_tags:
+  attach: "true"
+create_tgw_routes: false
+share_tgw: false
+vpc_attachments:
+  prod:
+    vpc_id: vpc-0123456789abcdef0
+    subnet_ids: [subnet-0123456789abcdef0]
+    appliance_mode_support: true
+    security_group_referencing_support: true
+    tags:
+      Name: ignored
+      stage: prod
+tags:
+  env: prod

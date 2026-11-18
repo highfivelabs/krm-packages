@@ -1,0 +1,10 @@
+# expect: transit-gateway: vpc_attachments.a.vpc_route_table_ids is not supported
+name: tgw
+create_tgw_routes: false
+share_tgw: false
+enable_sg_referencing_support: false
+vpc_attachments:
+  a:
+    vpc_id: vpc-0123456789abcdef0
+    subnet_ids: [subnet-0123456789abcdef0]
+    vpc_route_table_ids: [rtb-0123456789abcdef0]
