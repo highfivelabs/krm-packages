@@ -3255,50 +3255,50 @@ aws,vpn-gateway,vpn_connection_enable_acceleration,bool,yes,,
 aws,vpn-gateway,vpn_connection_static_routes_destinations,list(string),yes,,
 aws,vpn-gateway,vpn_connection_static_routes_only,bool,yes,,
 aws,vpn-gateway,vpn_gateway_id,string,yes,,
-aws,rds-proxy,auth,"map(object({auth_scheme, client_password_auth_type, description, iam_auth, secret_arn, username}))",no,,no-chart
-aws,rds-proxy,connection_borrow_timeout,number,no,,no-chart
-aws,rds-proxy,create,bool,no,,no-chart
-aws,rds-proxy,create_iam_policy,bool,no,,no-chart
-aws,rds-proxy,create_iam_role,bool,no,,no-chart
-aws,rds-proxy,db_cluster_identifier,string,no,,no-chart
-aws,rds-proxy,db_instance_identifier,string,no,,no-chart
-aws,rds-proxy,debug_logging,bool,no,,no-chart
-aws,rds-proxy,default_auth_scheme,string,no,,no-chart
-aws,rds-proxy,endpoint_network_type,string,no,,no-chart
-aws,rds-proxy,endpoints,"map(object({name, tags, target_role, vpc_security_group_ids, vpc_subnet_ids}))",no,,no-chart
-aws,rds-proxy,engine_family,string,no,,no-chart
-aws,rds-proxy,iam_policy_name,string,no,,no-chart
-aws,rds-proxy,iam_role_description,string,no,,no-chart
-aws,rds-proxy,iam_role_force_detach_policies,bool,no,,no-chart
-aws,rds-proxy,iam_role_max_session_duration,number,no,,no-chart
-aws,rds-proxy,iam_role_name,string,no,,no-chart
-aws,rds-proxy,iam_role_path,string,no,,no-chart
-aws,rds-proxy,iam_role_permissions_boundary,string,no,,no-chart
-aws,rds-proxy,iam_role_tags,map(string),no,,no-chart
-aws,rds-proxy,idle_client_timeout,number,no,,no-chart
-aws,rds-proxy,init_query,string,no,,no-chart
-aws,rds-proxy,kms_key_arns,list(string),no,,no-chart
-aws,rds-proxy,log_group_class,string,no,,no-chart
-aws,rds-proxy,log_group_kms_key_id,string,no,,no-chart
-aws,rds-proxy,log_group_retention_in_days,number,no,,no-chart
-aws,rds-proxy,log_group_tags,map(string),no,,no-chart
-aws,rds-proxy,manage_log_group,bool,no,,no-chart
-aws,rds-proxy,max_connections_percent,number,no,,no-chart
-aws,rds-proxy,max_idle_connections_percent,number,no,,no-chart
-aws,rds-proxy,name,string,no,,no-chart
-aws,rds-proxy,proxy_tags,map(string),no,,no-chart
-aws,rds-proxy,region,string,no,,no-chart
-aws,rds-proxy,require_tls,bool,no,,no-chart
-aws,rds-proxy,role_arn,string,no,,no-chart
-aws,rds-proxy,session_pinning_filters,list(string),no,,no-chart
-aws,rds-proxy,tags,map(string),no,,no-chart
-aws,rds-proxy,target_connection_network_type,string,no,,no-chart
-aws,rds-proxy,target_db_cluster,bool,no,,no-chart
-aws,rds-proxy,target_db_instance,bool,no,,no-chart
-aws,rds-proxy,use_policy_name_prefix,bool,no,,no-chart
-aws,rds-proxy,use_role_name_prefix,bool,no,,no-chart
-aws,rds-proxy,vpc_security_group_ids,list(string),no,,no-chart
-aws,rds-proxy,vpc_subnet_ids,list(string),no,,no-chart
+aws,rds-proxy,auth,"map(object({auth_scheme, client_password_auth_type, description, iam_auth, secret_arn, username}))",yes,,
+aws,rds-proxy,connection_borrow_timeout,number,no,the default target group's connection pool (aws_db_proxy_default_target_group) has no field on ACK's DBProxy and no kind in ack-extensions,gap
+aws,rds-proxy,create,bool,yes,,
+aws,rds-proxy,create_iam_policy,bool,yes,,
+aws,rds-proxy,create_iam_role,bool,yes,,
+aws,rds-proxy,db_cluster_identifier,string,yes,,
+aws,rds-proxy,db_instance_identifier,string,yes,,
+aws,rds-proxy,debug_logging,bool,yes,,
+aws,rds-proxy,default_auth_scheme,string,no,ACK's DBProxy (rds-controller v1.15.1) has no defaultAuthScheme field,gap
+aws,rds-proxy,endpoint_network_type,string,no,ACK's DBProxy has no endpointNetworkType field,gap
+aws,rds-proxy,endpoints,"map(object({name, tags, target_role, vpc_security_group_ids, vpc_subnet_ids}))",partial,"accepted with allow_alpha: true, as ack-extensions' rds.cloudcontrol.aws.hfl.dev DBProxyEndpoint",alpha
+aws,rds-proxy,engine_family,string,yes,,
+aws,rds-proxy,iam_policy_name,string,yes,,
+aws,rds-proxy,iam_role_description,string,yes,,
+aws,rds-proxy,iam_role_force_detach_policies,bool,partial,accepted at its default (true); ACK's Role has no forceDetachPolicies field and always deletes inline policies with the Role; false is refused,gap
+aws,rds-proxy,iam_role_max_session_duration,number,yes,,
+aws,rds-proxy,iam_role_name,string,yes,,
+aws,rds-proxy,iam_role_path,string,yes,,
+aws,rds-proxy,iam_role_permissions_boundary,string,yes,,
+aws,rds-proxy,iam_role_tags,map(string),yes,,
+aws,rds-proxy,idle_client_timeout,number,yes,,
+aws,rds-proxy,init_query,string,no,the default target group's connection pool (aws_db_proxy_default_target_group) has no field on ACK's DBProxy and no kind in ack-extensions,gap
+aws,rds-proxy,kms_key_arns,list(string),yes,,
+aws,rds-proxy,log_group_class,string,no,ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no log group class field,gap
+aws,rds-proxy,log_group_kms_key_id,string,yes,,
+aws,rds-proxy,log_group_retention_in_days,number,yes,,
+aws,rds-proxy,log_group_tags,map(string),yes,,
+aws,rds-proxy,manage_log_group,bool,yes,,
+aws,rds-proxy,max_connections_percent,number,partial,"accepted at its default (90) and not sent: the default target group's connection pool has no field on ACK's DBProxy, so AWS's own pool defaults apply (100); any other value is refused",gap
+aws,rds-proxy,max_idle_connections_percent,number,partial,"accepted at its default (50), which is also AWS's, and not sent: the default target group's connection pool has no field on ACK's DBProxy; any other value is refused",gap
+aws,rds-proxy,name,string,yes,,
+aws,rds-proxy,proxy_tags,map(string),yes,,
+aws,rds-proxy,region,string,yes,,
+aws,rds-proxy,require_tls,bool,yes,,
+aws,rds-proxy,role_arn,string,yes,,
+aws,rds-proxy,session_pinning_filters,list(string),no,the default target group's connection pool (aws_db_proxy_default_target_group) has no field on ACK's DBProxy and no kind in ack-extensions,gap
+aws,rds-proxy,tags,map(string),yes,,
+aws,rds-proxy,target_connection_network_type,string,no,ACK's DBProxy has no targetConnectionNetworkType field,gap
+aws,rds-proxy,target_db_cluster,bool,partial,"accepted with allow_alpha: true, as ack-extensions' rds.aws.hfl.dev DBProxyTarget",alpha
+aws,rds-proxy,target_db_instance,bool,partial,"accepted with allow_alpha: true, as ack-extensions' rds.aws.hfl.dev DBProxyTarget",alpha
+aws,rds-proxy,use_policy_name_prefix,bool,no,"an inline policy of ACK's Role is named by the map key the chart gives it, not generated from a name prefix",gap
+aws,rds-proxy,use_role_name_prefix,bool,no,"ACK's Role takes a name, not a name prefix: AWS cannot generate the unique name; set iam_role_name or names.role",gap
+aws,rds-proxy,vpc_security_group_ids,list(string),yes,,
+aws,rds-proxy,vpc_subnet_ids,list(string),yes,,
 aws,transit-gateway,amazon_side_asn,string,no,,no-chart
 aws,transit-gateway,create_tgw,bool,no,,no-chart
 aws,transit-gateway,create_tgw_routes,bool,no,,no-chart

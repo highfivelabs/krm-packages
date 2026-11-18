@@ -38,7 +38,7 @@ charts use are copied in `crds/ack-extensions`.
 | ACK controller | Release | Commit | Kinds the charts use |
 | --- | --- | --- | --- |
 | `ec2-controller` | `v1.23.1` | `9303654c2cffad05147e4260105439149f7c81bf` | VPC, Subnet, RouteTable, InternetGateway, NATGateway, ElasticIPAddress, NetworkACL, DHCPOptions, SecurityGroup |
-| `rds-controller` | `v1.14.2` | `8ee2451cc31ed4c6a1c313d3697437aca7b660e2` | DBSubnetGroup, DBInstance, DBParameterGroup, DBCluster, DBClusterParameterGroup, DBClusterEndpoint |
+| `rds-controller` | `v1.15.1` | `dd900cf9ae7003c5f5268b187fb6534b0495b7d7` | DBSubnetGroup, DBInstance, DBParameterGroup, DBCluster, DBClusterParameterGroup, DBClusterEndpoint, DBProxy |
 | `elasticache-controller` | `v1.12.0` | `c1c4c0897b82bd77bcc2370aa53b044c23bbfca7` | CacheSubnetGroup, ReplicationGroup, CacheCluster, CacheParameterGroup |
 | `s3-controller` | `v1.15.0` | `e679633287f9f95ec71f0ce5a26a415636fd5b25` | Bucket |
 | `kms-controller` | `v1.7.0` | `57250fba83d58aeb84a3ec2770cf3e9b45708895` | Key, Alias, Grant |

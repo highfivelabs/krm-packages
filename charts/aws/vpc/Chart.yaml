@@ -21,5 +21,5 @@ annotations:
   hfl.dev/source-version: v6.7.3
   hfl.dev/source-commit: b3abd6df2ecf052451a361ed55b8f06f8742a795
   hfl.dev/ack-ec2-controller: "v1.23.1"
-  hfl.dev/ack-rds-controller: "v1.14.2"
+  hfl.dev/ack-rds-controller: "v1.15.1"
   hfl.dev/ack-elasticache-controller: "v1.12.0"

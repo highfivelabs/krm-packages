@@ -1,0 +1,5 @@
+# expect: rds-proxy: max_connections_percent is not supported
+name: db-proxy
+engine_family: POSTGRESQL
+region: us-east-1
+max_connections_percent: 50

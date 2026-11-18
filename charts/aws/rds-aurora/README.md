@@ -8,7 +8,7 @@ terraform-aws-modules'
 [`terraform-aws-rds-aurora`](https://github.com/terraform-aws-modules/terraform-aws-rds-aurora/tree/652c0648a304e04bb53b5411874f519ace3585b6)
 at v10.4.2 (`652c0648`), Apache-2.0; modified (a translation of the
 module's variables into a Helm chart). Bundt Package `aws-rds-aurora`
-(`package.yaml`). Checked against ACK's rds-controller v1.14.2,
+(`package.yaml`). Checked against ACK's rds-controller v1.15.1,
 ec2-controller v1.23.1, iam-controller v1.11.3, cloudwatchlogs-controller
 v1.10.0 and applicationautoscaling-controller v1.9.0 (`UPSTREAM.md`, "ACK
 controllers"). The module's `dsql` submodule is not ported.

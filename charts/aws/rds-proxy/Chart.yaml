@@ -1,0 +1,22 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: v2
+name: rds-proxy
+description: >-
+  An RDS Proxy with its target, endpoints, CloudWatch log group and IAM role, as AWS Controllers for Kubernetes (ACK) objects. A port of terraform-aws-modules' rds-proxy module.
+type: application
+version: 0.1.0
+# The module release this chart was ported from (UPSTREAM.md).
+appVersion: "terraform-aws-rds-proxy-v4.4.1"
+kubeVersion: ">=1.27.0-0"
+keywords: [aws, ack, rds, rds-proxy, terraform-aws-modules]
+home: https://github.com/highfivelabs/catalog
+sources:
+  - https://github.com/terraform-aws-modules/terraform-aws-rds-proxy/tree/2524d394b402bf8b9deaa541231eba50d6745f2b
+annotations:
+  hfl.dev/source: terraform-aws-rds-proxy
+  hfl.dev/source-version: v4.4.1
+  hfl.dev/source-commit: 2524d394b402bf8b9deaa541231eba50d6745f2b
+  hfl.dev/ack-rds-controller: "v1.15.1"
+  hfl.dev/ack-iam-controller: "v1.11.3"
+  hfl.dev/ack-cloudwatchlogs-controller: "v1.10.0"

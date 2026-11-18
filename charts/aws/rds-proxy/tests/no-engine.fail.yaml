@@ -1,0 +1,3 @@
+# expect: rds-proxy: engine_family is required
+name: db-proxy
+region: us-east-1

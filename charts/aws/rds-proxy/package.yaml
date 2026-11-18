@@ -1,0 +1,36 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (docs/design.md, "Outputs"). Outputs are
+# the module's declared outputs for what the chart ports, selected from the
+# live objects (resources.<hfl.dev/id>). Not provided: the default target
+# group's ID and ARN (no kind carries the group), the target's ID and its
+# tracked cluster ID, and the endpoints map (each endpoint's object carries
+# its own status).
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: aws-rds-proxy
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [ack]
+  outputs:
+    proxy_id: >-
+      'proxy' in resources ? resources.proxy.spec.name : ""
+    proxy_arn: >-
+      'proxy' in resources && has(resources.proxy.status.ackResourceMetadata.arn) ? resources.proxy.status.ackResourceMetadata.arn : ""
+    proxy_endpoint: >-
+      'proxy' in resources && has(resources.proxy.status.endpoint) ? resources.proxy.status.endpoint : ""
+    proxy_default_target_group_name: >-
+      'proxy' in resources ? "default" : ""
+    log_group_arn: >-
+      'log-group' in resources && has(resources['log-group'].status.ackResourceMetadata.arn) ? resources['log-group'].status.ackResourceMetadata.arn : ""
+    log_group_name: >-
+      'log-group' in resources ? resources['log-group'].spec.name : ""
+    iam_role_arn: >-
+      'role' in resources && has(resources.role.status.ackResourceMetadata.arn) ? resources.role.status.ackResourceMetadata.arn : inputs.role_arn
+    iam_role_name: >-
+      'role' in resources ? resources.role.spec.name : ""
+    iam_role_unique_id: >-
+      'role' in resources && has(resources.role.status.roleID) ? resources.role.status.roleID : ""

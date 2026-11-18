@@ -1,0 +1,12 @@
+allow_alpha: true
+region: us-east-1
+name: db-proxy
+engine_family: POSTGRESQL
+create_iam_role: false
+role_arn: arn:aws:iam::123456789012:role/existing
+manage_log_group: false
+target_db_instance: true
+db_instance_identifier: my-db
+auth:
+  default:
+    secret_arn: arn:aws:secretsmanager:us-east-1:123456789012:secret:db-creds-AbCdEf

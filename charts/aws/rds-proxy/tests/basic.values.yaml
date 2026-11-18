@@ -1,0 +1,12 @@
+region: us-east-1
+name: db-proxy
+engine_family: POSTGRESQL
+vpc_subnet_ids: [subnet-0123456789abcdef0, subnet-0123456789abcdef1]
+vpc_security_group_ids: [sg-0123456789abcdef0]
+auth:
+  default:
+    auth_scheme: SECRETS
+    iam_auth: DISABLED
+    secret_arn: arn:aws:secretsmanager:us-east-1:123456789012:secret:db-creds-AbCdEf
+tags:
+  env: dev

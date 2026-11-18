@@ -1,0 +1,166 @@
+---
+# Source: rds-proxy/templates/rds-proxy.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: full-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-proxy
+    app.kubernetes.io/version: "0.1.0"
+    team: "data"
+  annotations:
+    hfl.dev/id: "role"
+spec:
+  name: "proxy-role"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"rds.amazonaws.com\"]},\"Sid\":\"RDSAssume\"}],\"Version\":\"2012-10-17\"}"
+  description: "RDS proxy role"
+  path: "/service/"
+  permissionsBoundary: "arn:aws:iam::123456789012:policy/boundary"
+  maxSessionDuration: 7200
+  inlinePolicies:
+    "proxy-secrets": "{\"Statement\":[{\"Action\":[\"kms:Decrypt\"],\"Condition\":{\"StringEquals\":{\"kms:ViaService\":[\"secretsmanager.us-east-1.amazonaws.com\"]}},\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:kms:us-east-1:123456789012:key/1234\"],\"Sid\":\"DecryptSecrets\"},{\"Action\":[\"secretsmanager:GetRandomPassword\",\"secretsmanager:ListSecrets\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"ListSecrets\"},{\"Action\":[\"secretsmanager:GetResourcePolicy\",\"secretsmanager:GetSecretValue\",\"secretsmanager:DescribeSecret\",\"secretsmanager:ListSecretVersionIds\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:secretsmanager:us-east-1:123456789012:secret:admin-AbCdEf\",\"arn:aws:secretsmanager:us-east-1:123456789012:secret:app-AbCdEf\"],\"Sid\":\"GetSecrets\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "env"
+      value: "prod"
+---
+# Source: rds-proxy/templates/rds-proxy.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBProxy
+metadata:
+  name: full-proxy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-proxy
+    app.kubernetes.io/version: "0.1.0"
+    team: "data"
+  annotations:
+    hfl.dev/id: "proxy"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "db-proxy"
+  engineFamily: "MYSQL"
+  auth:
+    - authScheme: SECRETS
+      clientPasswordAuthType: MYSQL_NATIVE_PASSWORD
+      description: admin user
+      iamAuth: REQUIRED
+      secretARN: arn:aws:secretsmanager:us-east-1:123456789012:secret:admin-AbCdEf
+      userName: admin
+    - authScheme: SECRETS
+      secretARN: arn:aws:secretsmanager:us-east-1:123456789012:secret:app-AbCdEf
+    - authScheme: SECRETS
+  roleRef:
+    from:
+      name: full-role
+  debugLogging: true
+  requireTLS: true
+  idleClientTimeout: 900
+  vpcSubnetIDs:
+    - subnet-0123456789abcdef0
+    - subnet-0123456789abcdef1
+  vpcSecurityGroupIDs:
+    - sg-0123456789abcdef0
+  tags:
+    - key: "env"
+      value: "prod"
+    - key: "tier"
+      value: "db"
+---
+# Source: rds-proxy/templates/rds-proxy.yaml
+apiVersion: rds.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: DBProxyEndpoint
+metadata:
+  name: full-endpoint-other
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-proxy
+    app.kubernetes.io/version: "0.1.0"
+    team: "data"
+  annotations:
+    hfl.dev/id: "endpoint-other"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  dbProxyName: "db-proxy"
+  dbProxyEndpointName: "other-endpoint"
+  vpcSubnetIds:
+    - subnet-0123456789abcdef0
+    - subnet-0123456789abcdef1
+  tags:
+    - key: "env"
+      value: "prod"
+---
+# Source: rds-proxy/templates/rds-proxy.yaml
+apiVersion: rds.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: DBProxyEndpoint
+metadata:
+  name: full-endpoint-ro
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-proxy
+    app.kubernetes.io/version: "0.1.0"
+    team: "data"
+  annotations:
+    hfl.dev/id: "endpoint-ro"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  dbProxyName: "db-proxy"
+  dbProxyEndpointName: "ro"
+  vpcSubnetIds:
+    - subnet-0123456789abcdef0
+    - subnet-0123456789abcdef1
+  vpcSecurityGroupIds:
+    - sg-0123456789abcdef0
+  targetRole: "READ_ONLY"
+  tags:
+    - key: "env"
+      value: "prod"
+    - key: "role"
+      value: "reader"
+---
+# Source: rds-proxy/templates/rds-proxy.yaml
+apiVersion: rds.aws.hfl.dev/v1alpha1
+kind: DBProxyTarget
+metadata:
+  name: full-target
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-proxy
+    app.kubernetes.io/version: "0.1.0"
+    team: "data"
+  annotations:
+    hfl.dev/id: "target"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  dbProxyRef:
+    from:
+      name: full-proxy
+  targetGroupName: default
+  dbClusterIdentifier: "my-aurora"
+---
+# Source: rds-proxy/templates/rds-proxy.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: full-log-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: rds-proxy
+    app.kubernetes.io/version: "0.1.0"
+    team: "data"
+  annotations:
+    hfl.dev/id: "log-group"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "/aws/rds/proxy/db-proxy"
+  retentionDays: 14
+  kmsKeyID: "arn:aws:kms:us-east-1:123456789012:key/1234"
+  tags:
+    env: prod
+    log: "true"

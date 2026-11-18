@@ -7,7 +7,7 @@ Controllers for Kubernetes (ACK) objects. A port of terraform-aws-modules'
 at v6.7.3 (`b3abd6df`), Apache-2.0; modified (this is a translation of the
 module's variables, names and logic into a Helm chart). Bundt Package
 `aws-vpc` (`package.yaml`). Checked against ACK's ec2-controller v1.23.1,
-rds-controller v1.14.2 and elasticache-controller v1.12.0 (`UPSTREAM.md`,
+rds-controller v1.15.1 and elasticache-controller v1.12.0 (`UPSTREAM.md`,
 "ACK controllers").
 
 ## Example

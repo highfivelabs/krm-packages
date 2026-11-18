@@ -1,0 +1,76 @@
+---
+# Source: rds-proxy/templates/rds-proxy.yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: mock-role
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: rds-proxy
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "role"
+spec:
+  name: "db-proxy"
+  assumeRolePolicyDocument: "{\"Statement\":[{\"Action\":[\"sts:AssumeRole\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"rds.amazonaws.com\"]},\"Sid\":\"RDSAssume\"}],\"Version\":\"2012-10-17\"}"
+  maxSessionDuration: 43200
+  inlinePolicies:
+    "db-proxy": "{\"Statement\":[{\"Action\":[\"kms:Decrypt\"],\"Condition\":{\"StringEquals\":{\"kms:ViaService\":[\"secretsmanager.us-east-1.amazonaws.com\"]}},\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:kms:*:*:key/*\"],\"Sid\":\"DecryptSecrets\"},{\"Action\":[\"secretsmanager:GetRandomPassword\",\"secretsmanager:ListSecrets\"],\"Effect\":\"Allow\",\"Resource\":[\"*\"],\"Sid\":\"ListSecrets\"},{\"Action\":[\"secretsmanager:GetResourcePolicy\",\"secretsmanager:GetSecretValue\",\"secretsmanager:DescribeSecret\",\"secretsmanager:ListSecretVersionIds\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:secretsmanager:us-east-1:123456789012:secret:db-creds-AbCdEf\"],\"Sid\":\"GetSecrets\"}],\"Version\":\"2012-10-17\"}"
+  tags:
+    - key: "env"
+      value: "dev"
+---
+# Source: rds-proxy/templates/rds-proxy.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBProxy
+metadata:
+  name: mock-proxy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: rds-proxy
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "proxy"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "db-proxy"
+  engineFamily: "POSTGRESQL"
+  auth:
+    - authScheme: SECRETS
+      iamAuth: DISABLED
+      secretARN: arn:aws:secretsmanager:us-east-1:123456789012:secret:db-creds-AbCdEf
+  roleRef:
+    from:
+      name: mock-role
+  debugLogging: false
+  requireTLS: true
+  idleClientTimeout: 1800
+  vpcSubnetIDs:
+    - subnet-0123456789abcdef0
+    - subnet-0123456789abcdef1
+  vpcSecurityGroupIDs:
+    - sg-0123456789abcdef0
+  tags:
+    - key: "env"
+      value: "dev"
+---
+# Source: rds-proxy/templates/rds-proxy.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: mock-log-group
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: rds-proxy
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "/aws/rds/proxy/db-proxy"
+  retentionDays: 30
+  tags:
+    env: dev

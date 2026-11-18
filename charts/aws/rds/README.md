@@ -6,7 +6,7 @@ for Kubernetes (ACK) objects. A port of terraform-aws-modules'
 [`terraform-aws-rds`](https://github.com/terraform-aws-modules/terraform-aws-rds/tree/175da043429cbbe41c512f976105719f6d0e538c)
 at v7.2.2 (`175da043`), Apache-2.0; modified (a translation of the module's
 variables and its submodules into a Helm chart). Bundt Package `aws-rds`
-(`package.yaml`). Checked against ACK's rds-controller v1.14.2,
+(`package.yaml`). Checked against ACK's rds-controller v1.15.1,
 iam-controller v1.11.3 and cloudwatchlogs-controller v1.10.0, and
 ack-extensions' `OptionGroup` and `DBRoleAssociation` (`crds/ack-extensions`).
 

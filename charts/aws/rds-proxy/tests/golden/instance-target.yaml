@@ -1,0 +1,44 @@
+---
+# Source: rds-proxy/templates/rds-proxy.yaml
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBProxy
+metadata:
+  name: instance-target-proxy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "instance-target"
+    app.kubernetes.io/name: rds-proxy
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "proxy"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "db-proxy"
+  engineFamily: "POSTGRESQL"
+  auth:
+    - authScheme: SECRETS
+      secretARN: arn:aws:secretsmanager:us-east-1:123456789012:secret:db-creds-AbCdEf
+  roleARN: "arn:aws:iam::123456789012:role/existing"
+  debugLogging: false
+  requireTLS: true
+  idleClientTimeout: 1800
+---
+# Source: rds-proxy/templates/rds-proxy.yaml
+apiVersion: rds.aws.hfl.dev/v1alpha1
+kind: DBProxyTarget
+metadata:
+  name: instance-target-target
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "instance-target"
+    app.kubernetes.io/name: rds-proxy
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "target"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  dbProxyRef:
+    from:
+      name: instance-target-proxy
+  targetGroupName: default
+  dbInstanceIdentifier: "my-db"

@@ -1,0 +1,80 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Where this chart came from: the Terraform module it ports and the release
+# it was ported from. Machine-readable; `task upstream-check` keeps it equal
+# to upstream/modules.yaml and Chart.yaml. To take a newer release, see
+# UPSTREAM.md ("Moving the pins").
+module: aws/rds-proxy
+repo: https://github.com/terraform-aws-modules/terraform-aws-rds-proxy
+path: .
+version: v4.4.1
+commit: 2524d394b402bf8b9deaa541231eba50d6745f2b
+license: Apache-2.0
+copyright: null
+module_url: https://github.com/terraform-aws-modules/terraform-aws-rds-proxy/tree/v4.4.1
+registry_url: https://registry.terraform.io/modules/terraform-aws-modules/rds-proxy/aws
+synced: 2026-11-18
+# Module variables the chart keeps in values.yaml (so tfvars convert one to
+# one) but refuses when set (to anything but the module's default), or
+# accepts only in part. Read by `task coverage`; `task coverage-verify`
+# renders the chart to check that each one is refused. kind: gap (no ACK or
+# ack-extensions kind or field, or none that can be wired in one render),
+# alpha (only an ack-extensions kind, behind allow_alpha), not-ported (ACK
+# has it, the chart does not map it yet) or by-design (Bundt replaces it).
+# partial: the variable is accepted, the reason says what is not carried.
+refused:
+- variable: connection_borrow_timeout
+  kind: gap
+  reason: "the default target group's connection pool (aws_db_proxy_default_target_group) has no field on ACK's DBProxy and no kind in ack-extensions"
+- variable: default_auth_scheme
+  kind: gap
+  reason: "ACK's DBProxy (rds-controller v1.15.1) has no defaultAuthScheme field"
+- variable: endpoint_network_type
+  kind: gap
+  reason: "ACK's DBProxy has no endpointNetworkType field"
+- variable: endpoints
+  kind: alpha
+  reason: "accepted with allow_alpha: true, as ack-extensions' rds.cloudcontrol.aws.hfl.dev DBProxyEndpoint"
+  partial: true
+  needs_allow_alpha: true
+- variable: iam_role_force_detach_policies
+  kind: gap
+  reason: "accepted at its default (true); ACK's Role has no forceDetachPolicies field and always deletes inline policies with the Role; false is refused"
+  partial: true
+- variable: init_query
+  kind: gap
+  reason: "the default target group's connection pool (aws_db_proxy_default_target_group) has no field on ACK's DBProxy and no kind in ack-extensions"
+- variable: log_group_class
+  kind: gap
+  reason: "ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no log group class field"
+- variable: max_connections_percent
+  kind: gap
+  reason: "accepted at its default (90) and not sent: the default target group's connection pool has no field on ACK's DBProxy, so AWS's own pool defaults apply (100); any other value is refused"
+  partial: true
+- variable: max_idle_connections_percent
+  kind: gap
+  reason: "accepted at its default (50), which is also AWS's, and not sent: the default target group's connection pool has no field on ACK's DBProxy; any other value is refused"
+  partial: true
+- variable: session_pinning_filters
+  kind: gap
+  reason: "the default target group's connection pool (aws_db_proxy_default_target_group) has no field on ACK's DBProxy and no kind in ack-extensions"
+- variable: target_connection_network_type
+  kind: gap
+  reason: "ACK's DBProxy has no targetConnectionNetworkType field"
+- variable: target_db_cluster
+  kind: alpha
+  reason: "accepted with allow_alpha: true, as ack-extensions' rds.aws.hfl.dev DBProxyTarget"
+  partial: true
+  needs_allow_alpha: true
+- variable: target_db_instance
+  kind: alpha
+  reason: "accepted with allow_alpha: true, as ack-extensions' rds.aws.hfl.dev DBProxyTarget"
+  partial: true
+  needs_allow_alpha: true
+- variable: use_policy_name_prefix
+  kind: gap
+  reason: "an inline policy of ACK's Role is named by the map key the chart gives it, not generated from a name prefix"
+- variable: use_role_name_prefix
+  kind: gap
+  reason: "ACK's Role takes a name, not a name prefix: AWS cannot generate the unique name; set iam_role_name or names.role"
