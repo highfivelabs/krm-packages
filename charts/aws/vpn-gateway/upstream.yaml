@@ -1,0 +1,43 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Where this chart came from: the Terraform module it ports and the release
+# it was ported from. Machine-readable; `task upstream-check` keeps it equal
+# to upstream/modules.yaml and Chart.yaml. To take a newer release, see
+# UPSTREAM.md ("Moving the pins").
+module: aws/vpn-gateway
+repo: https://github.com/terraform-aws-modules/terraform-aws-vpn-gateway
+path: .
+version: v4.0.0
+commit: b4a481d06144addf271996c10ebdb688b06362f6
+license: Apache-2.0
+copyright: null
+module_url: https://github.com/terraform-aws-modules/terraform-aws-vpn-gateway/tree/v4.0.0
+registry_url: https://registry.terraform.io/modules/terraform-aws-modules/vpn-gateway/aws
+synced: 2026-11-18
+# Module variables the chart keeps in values.yaml (so tfvars convert one to
+# one) but refuses when set (to anything but the module's default), or
+# accepts only in part. Read by `task coverage`; `task coverage-verify`
+# renders the chart to check that each one is refused. kind: gap (no ACK or
+# ack-extensions kind or field, or none that can be wired in one render),
+# alpha (only an ack-extensions kind, behind allow_alpha), not-ported (ACK
+# has it, the chart does not map it yet) or by-design (Bundt replaces it).
+# partial: the variable is accepted, the reason says what is not carried.
+refused:
+- variable: connect_to_transit_gateway
+  kind: gap
+  reason: "accepted, but the tags the module sets on the transit gateway attachment (aws_ec2_tag, so the attachment is named and tagged) are not applied: VPNConnection's status carries no transit gateway attachment ID, so ec2.aws.hfl.dev/ResourceTag has nothing to name; the connection's own tags are applied"
+  partial: true
+  fields: ["tags"]
+- variable: create_vpn_gateway_attachment
+  kind: gap
+  reason: "accepted at false and, with a transit gateway, at its default; true with vpc_id on a virtual private gateway is refused: ack-extensions' VPNGateway creates a gateway and attaches it in one object (spec.vpc) and cannot attach an existing gateway (aws_vpn_gateway_attachment, no stable or extension kind)"
+  partial: true
+- variable: tunnel1_preshared_key
+  kind: gap
+  reason: "accepted only as a reference to a Kubernetes Secret, {secretName, key} (docs/secrets.md); the key's value, a string, is refused; it applies only together with tunnel2_preshared_key, as in the module"
+  partial: true
+- variable: tunnel2_preshared_key
+  kind: gap
+  reason: "accepted only as a reference to a Kubernetes Secret, {secretName, key} (docs/secrets.md); the key's value, a string, is refused; it applies only together with tunnel1_preshared_key, as in the module"
+  partial: true

@@ -1,0 +1,191 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf and modules/firewall, modules/policy: the firewall policy
+(aws_networkfirewall_firewall_policy), the firewall
+(aws_networkfirewall_firewall) with its logging configuration
+(aws_networkfirewall_logging_configuration, ACK's Firewall.loggingConfiguration)
+and the policy's RAM resource associations (aws_ram_resource_association,
+ack-extensions' RAM ResourceAssociation, behind allow_alpha: true).
+*/ -}}
+{{- include "ack.names" (list $ (list "firewall" "policy")) -}}
+{{- $v := .Values -}}
+{{- if $v.create }}
+{{- $region := $v.region | default "" -}}
+{{- $fwName := include "ack.resourceName" (list $ "firewall" "firewall" ($v.name | default "") 128) -}}
+{{- if not $fwName }}
+{{- fail "network-firewall: name is required (or names.firewall)" }}
+{{- end }}
+{{- $polName := include "ack.resourceName" (list $ "policy" "firewall policy" (coalesce $v.policy_name $v.name "") 128) -}}
+{{- $polK8s := include "ack.name" (list .Release.Name "policy") -}}
+{{- $fwTags := include "ack.tags" (list $ $v.tags) | fromJson -}}
+{{- $polTags := include "ack.tags" (list $ $v.tags $v.policy_tags) | fromJson -}}
+{{- if $v.create_policy }}
+{{- if not $polName }}
+{{- fail "network-firewall: policy_name or name is required (or names.policy)" }}
+{{- end }}
+{{- $fp := dict -}}
+{{- with $v.policy_variables }}
+{{- $rv := dict -}}
+{{- range $r := (.rule_variables | default list) }}
+{{- $_ := set $rv $r.key (dict "definition" (($r.ip_set | default dict).definition | default list)) -}}
+{{- end }}
+{{- $_ := set $fp "policyVariables" (dict "ruleVariables" $rv) -}}
+{{- end }}
+{{- with $v.policy_stateful_default_actions }}{{- $_ := set $fp "statefulDefaultActions" . -}}{{- end }}
+{{- with $v.policy_stateful_engine_options }}
+{{- $eo := dict -}}
+{{- with .rule_order }}{{- $_ := set $eo "ruleOrder" . -}}{{- end }}
+{{- with .stream_exception_policy }}{{- $_ := set $eo "streamExceptionPolicy" . -}}{{- end }}
+{{- if $eo }}{{- $_ := set $fp "statefulEngineOptions" $eo -}}{{- end }}
+{{- end }}
+{{- $sr := list -}}
+{{- range $k := (keys ($v.policy_stateful_rule_group_reference | default dict) | sortAlpha) }}
+{{- $r := get $v.policy_stateful_rule_group_reference $k -}}
+{{- if not $r.resource_arn }}{{- fail (printf "network-firewall: policy_stateful_rule_group_reference.%s needs resource_arn" $k) }}{{- end }}
+{{- $e := dict "resourceARN" $r.resource_arn -}}
+{{- if not (kindIs "invalid" $r.priority) }}{{- $_ := set $e "priority" (int64 $r.priority) -}}{{- end }}
+{{- with $r.override }}{{- with .action }}{{- $_ := set $e "override" (dict "action" .) -}}{{- end }}{{- end }}
+{{- $sr = append $sr $e -}}
+{{- end }}
+{{- if $sr }}{{- $_ := set $fp "statefulRuleGroupReferences" $sr -}}{{- end }}
+{{- $ca := list -}}
+{{- range $k := (keys ($v.policy_stateless_custom_action | default dict) | sortAlpha) }}
+{{- $a := get $v.policy_stateless_custom_action $k -}}
+{{- if not $a.action_name }}{{- fail (printf "network-firewall: policy_stateless_custom_action.%s needs action_name" $k) }}{{- end }}
+{{- $e := dict "actionName" $a.action_name -}}
+{{- with $a.action_definition }}{{- with .publish_metric_action }}
+{{- $dims := list -}}
+{{- $d := .dimension | default (.dimensions | default list) -}}
+{{- if kindIs "string" $d }}{{- $d = list $d -}}{{- end }}
+{{- range $x := $d }}{{- if kindIs "map" $x }}{{- $dims = append $dims (dict "value" $x.value) -}}{{- else }}{{- $dims = append $dims (dict "value" $x) -}}{{- end }}{{- end }}
+{{- $_ := set $e "actionDefinition" (dict "publishMetricAction" (dict "dimensions" $dims)) -}}
+{{- end }}{{- end }}
+{{- $ca = append $ca $e -}}
+{{- end }}
+{{- if $ca }}{{- $_ := set $fp "statelessCustomActions" $ca -}}{{- end }}
+{{- with $v.policy_stateless_default_actions }}{{- $_ := set $fp "statelessDefaultActions" . -}}{{- end }}
+{{- with $v.policy_stateless_fragment_default_actions }}{{- $_ := set $fp "statelessFragmentDefaultActions" . -}}{{- end }}
+{{- $slr := list -}}
+{{- range $k := (keys ($v.policy_stateless_rule_group_reference | default dict) | sortAlpha) }}
+{{- $r := get $v.policy_stateless_rule_group_reference $k -}}
+{{- if not $r.resource_arn }}{{- fail (printf "network-firewall: policy_stateless_rule_group_reference.%s needs resource_arn" $k) }}{{- end }}
+{{- $slr = append $slr (dict "resourceARN" $r.resource_arn "priority" (int64 $r.priority)) -}}
+{{- end }}
+{{- if $slr }}{{- $_ := set $fp "statelessRuleGroupReferences" $slr -}}{{- end }}
+{{- with $v.policy_tls_inspection_configuration_arn }}{{- $_ := set $fp "tlsInspectionConfigurationARN" . -}}{{- end }}
+---
+apiVersion: networkfirewall.services.k8s.aws/v1alpha1
+kind: FirewallPolicy
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $polK8s "id" "policy" "region" $region) | nindent 2 }}
+spec:
+  firewallPolicyName: {{ $polName | quote }}
+{{- with $v.policy_description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with $v.policy_encryption_configuration }}
+  encryptionConfiguration:
+    type_: {{ .type | quote }}
+{{- with .key_id }}
+    keyID: {{ . | quote }}
+{{- end }}
+{{- end }}
+  firewallPolicy:
+{{- if $fp }}
+{{- toYaml $fp | nindent 4 }}
+{{- else }}
+    {}
+{{- end }}
+{{- with $polTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+
+{{- /* RAM resource associations */ -}}
+{{- if $v.policy_ram_resource_associations }}
+{{- $polARN := "" -}}
+{{- if not (and $v.account_id $region) }}
+{{- fail "network-firewall: policy_ram_resource_associations needs account_id and region, to name the firewall policy by its ARN" }}
+{{- end }}
+{{- $polARN = printf "arn:%s:network-firewall:%s:%s:firewall-policy/%s" ($v.partition | default "aws") $region $v.account_id $polName -}}
+{{- range $k := (keys $v.policy_ram_resource_associations | sortAlpha) }}
+{{- $a := get $v.policy_ram_resource_associations $k -}}
+{{- $share := $a -}}{{- if kindIs "map" $a }}{{- $share = $a.resource_share_arn -}}{{- end -}}
+{{- if not $share }}{{- fail (printf "network-firewall: policy_ram_resource_associations.%s needs a resource share ARN" $k) }}{{- end }}
+---
+apiVersion: ram.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: ResourceAssociation
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "ram" $k)) "id" (printf "ram-association-%s" $k) "region" $region) | nindent 2 }}
+spec:
+  resourceArn: {{ $polARN | quote }}
+  resourceShareArn: {{ $share | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- /* Firewall */}}
+{{- $subnets := list -}}
+{{- range $k := (keys ($v.subnet_mapping | default dict) | sortAlpha) }}
+{{- $s := get $v.subnet_mapping $k -}}
+{{- $e := dict "subnetID" $s.subnet_id -}}
+{{- with $s.ip_address_type }}{{- $_ := set $e "ipAddressType" . -}}{{- end }}
+{{- $subnets = append $subnets $e -}}
+{{- end }}
+{{- if not $subnets }}
+{{- fail "network-firewall: subnet_mapping is required: ACK's Firewall places the firewall by its subnets" }}
+{{- end }}
+{{- if and (not $v.create_policy) (not $v.firewall_policy_arn) }}
+{{- fail "network-firewall: firewall_policy_arn is required when create_policy is false" }}
+{{- end }}
+---
+apiVersion: networkfirewall.services.k8s.aws/v1alpha1
+kind: Firewall
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "firewall")) "id" "firewall" "region" $region) | nindent 2 }}
+spec:
+  firewallName: {{ $fwName | quote }}
+{{- if $v.create_policy }}
+  firewallPolicyRef:
+    from:
+      name: {{ $polK8s }}
+{{- else }}
+  firewallPolicyARN: {{ $v.firewall_policy_arn | quote }}
+{{- end }}
+{{- with $v.vpc_id }}
+  vpcID: {{ . | quote }}
+{{- end }}
+  subnetMappings:
+{{- toYaml $subnets | nindent 4 }}
+  deleteProtection: {{ $v.delete_protection }}
+  subnetChangeProtection: {{ $v.subnet_change_protection }}
+{{- if not (kindIs "invalid" $v.firewall_policy_change_protection) }}
+  firewallPolicyChangeProtection: {{ $v.firewall_policy_change_protection }}
+{{- end }}
+{{- with $v.description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with $v.encryption_configuration }}
+  encryptionConfiguration:
+    type_: {{ .type | quote }}
+{{- with .key_id }}
+    keyID: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- if and $v.create_logging_configuration $v.logging_configuration_destination_config }}
+  loggingConfiguration:
+    logDestinationConfigs:
+{{- range $v.logging_configuration_destination_config }}
+    - logDestinationType: {{ .log_destination_type | quote }}
+      logType: {{ .log_type | quote }}
+      logDestination:
+{{- toYaml .log_destination | nindent 8 }}
+{{- end }}
+{{- end }}
+{{- with $fwTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}

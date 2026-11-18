@@ -1,0 +1,10 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The chart gives no AWS name of its own: AWS names a transit gateway and an
+# attachment by the ID it assigns; their Name tags carry the namePrefix but a
+# tag need not be unique.
+exempt:
+  TransitGateway: "AWS assigns its ID; its Name tag carries the namePrefix but need not be unique"
+  TransitGatewayVPCAttachment: "AWS assigns its ID; its Name tag carries the namePrefix but need not be unique"
+noCloudNames: "AWS names a transit gateway and an attachment by the ID it assigns; the Name tags are not unique"

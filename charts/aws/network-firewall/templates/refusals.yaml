@@ -1,0 +1,27 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+The module variables this chart keeps in its values but cannot carry
+(upstream.yaml, "refused"): each stops the render, naming the gap, when it
+is set to anything but its Terraform default. Renders nothing.
+*/ -}}
+{{- $v := .Values -}}
+{{- include "ack.alpha" (list $ "policy_ram_resource_associations" $v.policy_ram_resource_associations "RAM ResourceAssociation (ack-extensions)") }}
+{{- include "ack.unsupported" (list $ "availability_zone_change_protection" $v.availability_zone_change_protection "ACK's Firewall (networkfirewall-controller v1.8.0) has no availabilityZoneChangeProtection field") }}
+{{- include "ack.unsupported" (list $ "availability_zone_mapping" $v.availability_zone_mapping "ACK's Firewall has no availabilityZoneMappings field (place a firewall with subnet_mapping)") }}
+{{- include "ack.unsupported" (list $ "enabled_analysis_types" $v.enabled_analysis_types "ACK's Firewall has no enabledAnalysisTypes field") }}
+{{- include "ack.unsupported" (list $ "transit_gateway_id" $v.transit_gateway_id "ACK's Firewall has no transitGatewayID field: only a VPC firewall can be created") }}
+{{- include "ack.unsupported" (list $ "enable_monitoring_dashboard" $v.enable_monitoring_dashboard "ACK's Firewall.loggingConfiguration has no enableMonitoringDashboard field") }}
+{{- include "ack.unsupported" (list $ "policy_enable_tls_session_holding" $v.policy_enable_tls_session_holding "ACK's FirewallPolicy has no enableTLSSessionHolding field") }}
+{{- include "ack.unsupported" (list $ "create_policy_resource_policy" $v.create_policy_resource_policy "the firewall policy's resource policy (aws_networkfirewall_resource_policy) has no kind in ACK or ack-extensions") }}
+{{- include "ack.unsupported" (list $ "policy_attach_resource_policy" $v.policy_attach_resource_policy "the firewall policy's resource policy (aws_networkfirewall_resource_policy) has no kind in ACK or ack-extensions") }}
+{{- include "ack.unsupported" (list $ "policy_resource_policy" $v.policy_resource_policy "the firewall policy's resource policy (aws_networkfirewall_resource_policy) has no kind in ACK or ack-extensions") }}
+{{- include "ack.unsupported" (list $ "policy_resource_policy_actions" $v.policy_resource_policy_actions "the firewall policy's resource policy (aws_networkfirewall_resource_policy) has no kind in ACK or ack-extensions") }}
+{{- include "ack.unsupported" (list $ "policy_resource_policy_principals" $v.policy_resource_policy_principals "the firewall policy's resource policy (aws_networkfirewall_resource_policy) has no kind in ACK or ack-extensions") }}
+{{- with $v.policy_stateful_engine_options }}
+{{- include "ack.unsupported" (list $ "policy_stateful_engine_options.flow_timeouts" .flow_timeouts "ACK's FirewallPolicy.statefulEngineOptions carries rule_order and stream_exception_policy only") }}
+{{- end }}
+{{- range $k, $r := ($v.policy_stateful_rule_group_reference | default dict) }}
+{{- include "ack.unsupported" (list $ (printf "policy_stateful_rule_group_reference.%s.deep_threat_inspection" $k) (get $r "deep_threat_inspection") "ACK's FirewallPolicy.statefulRuleGroupReferences has resourceARN, priority and override only") }}
+{{- end }}

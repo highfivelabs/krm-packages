@@ -130,14 +130,14 @@ How much of the Terraform modules people use today the catalog carries, counted 
 
 ![All tracked modules](docs/coverage/total.svg)
 
-**177 modules tracked**: 15 ported, 137 partial, 22 blocked, 3 not started. Green is ported, amber partial (some variables refused with a message that names the gap), dark grey blocked (a resource type of the module has no stable kind: none, or only an alpha one), light grey not started.
+**177 modules tracked**: 15 ported, 141 partial, 18 blocked, 3 not started. Green is ported, amber partial (some variables refused with a message that names the gap), dark grey blocked (a resource type of the module has no stable kind: none, or only an alpha one), light grey not started.
 
 | Source | Modules | Bar | Variables covered |
 | --- | ---: | --- | ---: |
 | Google Cloud: Cloud Foundation Fabric and terraform-google-modules | 98 | ![gcp](docs/coverage/gcp.svg) | 1220 of 1478 (82.5%) |
-| AWS: terraform-aws-modules | 42 | ![aws](docs/coverage/aws.svg) | 1462 of 2348 (62.3%) |
+| AWS: terraform-aws-modules | 42 | ![aws](docs/coverage/aws.svg) | 1601 of 2348 (68.2%) |
 | Azure: Azure Verified Modules | 37 | ![azure](docs/coverage/azure.svg) | 1066 of 1170 (91.1%) |
-| **All** | **177** | | **3748 of 4996 (75.0%)** |
+| **All** | **177** | | **3887 of 4996 (77.8%)** |
 
 ### Google Cloud: Cloud Foundation Fabric and terraform-google-modules
 
@@ -258,7 +258,7 @@ How much of the Terraform modules people use today the catalog carries, counted 
 
 ### AWS: terraform-aws-modules
 
-0 ported, 30 partial, 12 blocked, 0 not started.
+0 ported, 34 partial, 8 blocked, 0 not started.
 
 **Ported and partial**
 
@@ -290,25 +290,27 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | [`ssm-parameter`](https://github.com/terraform-aws-modules/terraform-aws-ssm-parameter/tree/v2.1.2) ([chart](charts/aws/ssm-parameter)) | ![ssm-parameter](docs/coverage/bars/aws-ssm-parameter.svg) 14 of 16 | 8 of 9 | 1 of 1 | partial |
 | [`step-functions`](https://github.com/terraform-aws-modules/terraform-aws-step-functions/tree/v5.1.1) ([chart](charts/aws/step-functions)) | ![step-functions](docs/coverage/bars/aws-step-functions.svg) 40 of 42 | 9 of 10 | 6 of 6 | partial |
 | [`efs`](https://github.com/terraform-aws-modules/terraform-aws-efs/tree/v2.2.1) ([chart](charts/aws/efs)) | ![efs](docs/coverage/bars/aws-efs.svg) 31 of 33 | 9 of 9 | 8 of 9 | partial |
+| [`vpn-gateway`](https://github.com/terraform-aws-modules/terraform-aws-vpn-gateway/tree/v4.0.0) ([chart](charts/aws/vpn-gateway)) | ![vpn-gateway](docs/coverage/bars/aws-vpn-gateway.svg) 56 of 56 | 3 of 11 | 0 of 5 | partial |
+| [`rds-proxy`](https://github.com/terraform-aws-modules/terraform-aws-rds-proxy/tree/v4.4.1) ([chart](charts/aws/rds-proxy)) | ![rds-proxy](docs/coverage/bars/aws-rds-proxy.svg) 35 of 44 | 9 of 19 | 5 of 7 | partial |
+| [`transit-gateway`](https://github.com/terraform-aws-modules/terraform-aws-transit-gateway/tree/v3.3.1) ([chart](charts/aws/transit-gateway)) | ![transit-gateway](docs/coverage/bars/aws-transit-gateway.svg) 19 of 29 | 4 of 17 | 4 of 12 | partial |
 | [`apigateway-v2`](https://github.com/terraform-aws-modules/terraform-aws-apigateway-v2/tree/v6.1.1) ([chart](charts/aws/apigateway-v2)) | ![apigateway-v2](docs/coverage/bars/aws-apigateway-v2.svg) 39 of 43 | 13 of 22 | 11 of 13 | partial |
 | [`notify-slack`](https://github.com/terraform-aws-modules/terraform-aws-notify-slack/tree/v7.5.2) ([chart](charts/aws/notify-slack)) | ![notify-slack](docs/coverage/bars/aws-notify-slack.svg) 47 of 51 | 9 of 11 | 4 of 4 | partial |
+| [`network-firewall`](https://github.com/terraform-aws-modules/terraform-aws-network-firewall/tree/v2.3.0) ([chart](charts/aws/network-firewall)) | ![network-firewall](docs/coverage/bars/aws-network-firewall.svg) 29 of 40 | 6 of 9 | 3 of 6 | partial |
 | [`iam-role`](https://github.com/terraform-aws-modules/terraform-aws-iam/tree/v6.8.2/modules/iam-role) ([chart](charts/aws/iam-role)) | ![iam-role](docs/coverage/bars/aws-iam-role.svg) 31 of 31 | 7 of 7 | 4 of 4 | partial |
 | [`iam-policy`](https://github.com/terraform-aws-modules/terraform-aws-iam/tree/v6.8.2/modules/iam-policy) ([chart](charts/aws/iam-policy)) | ![iam-policy](docs/coverage/bars/aws-iam-policy.svg) 6 of 7 | 4 of 4 | 1 of 1 | partial |
 
-**Blocked: a resource type has no stable kind (first 10 of 12, by rank)**
+**Blocked: a resource type has no stable kind**
 
 | Module | Variables covered | Outputs | Resource types with a stable kind | Status |
 | --- | --- | ---: | ---: | --- |
 | [`iam`](https://github.com/terraform-aws-modules/terraform-aws-iam/tree/v6.8.2) | ![iam](docs/coverage/bars/aws-iam.svg) 0 of 0 | 0 of 0 | 11 of 17 | blocked |
 | [`cloudwatch`](https://github.com/terraform-aws-modules/terraform-aws-cloudwatch/tree/v6.0.0) | ![cloudwatch](docs/coverage/bars/aws-cloudwatch.svg) 0 of 0 | 0 of 0 | 5 of 11 | blocked |
 | [`key-pair`](https://github.com/terraform-aws-modules/terraform-aws-key-pair/tree/v3.0.1) | ![key-pair](docs/coverage/bars/aws-key-pair.svg) 0 of 10 | 0 of 11 | 0 of 1 | blocked |
-| [`vpn-gateway`](https://github.com/terraform-aws-modules/terraform-aws-vpn-gateway/tree/v4.0.0) | ![vpn-gateway](docs/coverage/bars/aws-vpn-gateway.svg) 0 of 56 | 0 of 11 | 0 of 5 | blocked |
-| [`rds-proxy`](https://github.com/terraform-aws-modules/terraform-aws-rds-proxy/tree/v4.4.1) | ![rds-proxy](docs/coverage/bars/aws-rds-proxy.svg) 0 of 44 | 0 of 19 | 5 of 7 | blocked |
-| [`transit-gateway`](https://github.com/terraform-aws-modules/terraform-aws-transit-gateway/tree/v3.3.1) | ![transit-gateway](docs/coverage/bars/aws-transit-gateway.svg) 0 of 29 | 0 of 17 | 4 of 12 | blocked |
 | [`opensearch`](https://github.com/terraform-aws-modules/terraform-aws-opensearch/tree/v2.11.1) | ![opensearch](docs/coverage/bars/aws-opensearch.svg) 0 of 47 | 0 of 14 | 14 of 16 | blocked |
 | [`msk-kafka-cluster`](https://github.com/terraform-aws-modules/terraform-aws-msk-kafka-cluster/tree/v3.3.1) | ![msk-kafka-cluster](docs/coverage/bars/aws-msk-kafka-cluster.svg) 0 of 59 | 0 of 33 | 7 of 14 | blocked |
 | [`managed-service-prometheus`](https://github.com/terraform-aws-modules/terraform-aws-managed-service-prometheus/tree/v4.3.1) | ![managed-service-prometheus](docs/coverage/bars/aws-managed-service-prometheus.svg) 0 of 20 | 0 of 3 | 4 of 6 | blocked |
 | [`datadog-forwarders`](https://github.com/terraform-aws-modules/terraform-aws-datadog-forwarders/tree/v7.2.1) | ![datadog-forwarders](docs/coverage/bars/aws-datadog-forwarders.svg) 0 of 146 | 0 of 82 | 6 of 9 | blocked |
+| [`dms`](https://github.com/terraform-aws-modules/terraform-aws-dms/tree/v2.6.2) | ![dms](docs/coverage/bars/aws-dms.svg) 0 of 53 | 0 of 23 | 3 of 11 | blocked |
 
 ### Azure: Azure Verified Modules
 

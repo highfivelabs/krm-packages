@@ -21,7 +21,7 @@ annotations:
   hfl.dev/source: terraform-aws-rds-aurora
   hfl.dev/source-version: v10.4.2
   hfl.dev/source-commit: 652c0648a304e04bb53b5411874f519ace3585b6
-  hfl.dev/ack-rds-controller: "v1.14.2"
+  hfl.dev/ack-rds-controller: "v1.15.1"
   hfl.dev/ack-ec2-controller: "v1.23.1"
   hfl.dev/ack-iam-controller: "v1.11.3"
   hfl.dev/ack-cloudwatchlogs-controller: "v1.10.0"

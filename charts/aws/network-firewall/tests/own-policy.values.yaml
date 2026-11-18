@@ -1,0 +1,5 @@
+name: inspect
+create_policy: false
+firewall_policy_arn: arn:aws:network-firewall:us-east-1:123456789012:firewall-policy/existing
+subnet_mapping:
+  a: {subnet_id: subnet-0123456789abcdef0}

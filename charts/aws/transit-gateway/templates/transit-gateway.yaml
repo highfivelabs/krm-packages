@@ -1,0 +1,70 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf: the transit gateway (aws_ec2_transit_gateway) and its VPC
+attachments (aws_ec2_transit_gateway_vpc_attachment). The route table,
+routes, associations, propagations and the RAM share are refused
+(upstream.yaml, "refused").
+*/ -}}
+{{- include "ack.names" (list $ (list "transitGateway")) -}}
+{{- $v := .Values -}}
+{{- $region := $v.region | default "" -}}
+{{- $name := include "ack.resourceName" (list $ "transitGateway" "transit gateway" ($v.name | default "") 256) -}}
+{{- $tgwK8s := include "ack.name" (list .Release.Name "transit-gateway") -}}
+{{- if $v.create_tgw }}
+{{- $tags := include "ack.tags" (list $ $v.tags (dict "Name" $name) $v.tgw_tags) | fromJson }}
+---
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: TransitGateway
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $tgwK8s "id" "transit-gateway" "region" $region) | nindent 2 }}
+spec:
+  description: {{ coalesce $v.description $name | quote }}
+  options:
+{{- with $v.amazon_side_asn }}
+    amazonSideASN: {{ int64 . }}
+{{- end }}
+    defaultRouteTableAssociation: {{ include "tgw.en" $v.enable_default_route_table_association }}
+    defaultRouteTablePropagation: {{ include "tgw.en" $v.enable_default_route_table_propagation }}
+    autoAcceptSharedAttachments: {{ include "tgw.en" $v.enable_auto_accept_shared_attachments }}
+    multicastSupport: {{ include "tgw.en" $v.enable_multicast_support }}
+    vpnECMPSupport: {{ include "tgw.en" $v.enable_vpn_ecmp_support }}
+    dnsSupport: {{ include "tgw.en" $v.enable_dns_support }}
+{{- with $v.transit_gateway_cidr_blocks }}
+    transitGatewayCIDRBlocks:
+{{- toYaml . | nindent 6 }}
+{{- end }}
+  tags:
+{{- include "ack.tagList" (list $tags) | nindent 4 }}
+{{- end }}
+{{- range $k := (keys ($v.vpc_attachments | default dict) | sortAlpha) }}
+{{- $a := get $v.vpc_attachments $k -}}
+{{- if not $a.vpc_id }}{{- fail (printf "transit-gateway: vpc_attachments.%s needs vpc_id" $k) }}{{- end }}
+{{- if not $a.subnet_ids }}{{- fail (printf "transit-gateway: vpc_attachments.%s needs subnet_ids" $k) }}{{- end }}
+{{- if and (not $.Values.create_tgw) (not $a.tgw_id) }}{{- fail (printf "transit-gateway: vpc_attachments.%s needs tgw_id when create_tgw is false" $k) }}{{- end }}
+{{- $atags := include "ack.tags" (list $ $.Values.tags (dict "Name" (printf "%s-%s" $name $k)) $.Values.tgw_vpc_attachment_tags ($a.tags | default dict)) | fromJson }}
+---
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: TransitGatewayVPCAttachment
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "attachment" $k)) "id" (printf "attachment-%s" $k) "region" $region) | nindent 2 }}
+spec:
+{{- if $.Values.create_tgw }}
+  transitGatewayRef:
+    from:
+      name: {{ $tgwK8s }}
+{{- else }}
+  transitGatewayID: {{ $a.tgw_id | quote }}
+{{- end }}
+  vpcID: {{ $a.vpc_id | quote }}
+  subnetIDs:
+{{- toYaml $a.subnet_ids | nindent 4 }}
+  options:
+    dnsSupport: {{ include "tgw.en" (ternary $a.dns_support true (hasKey $a "dns_support")) }}
+    ipv6Support: {{ include "tgw.en" (ternary $a.ipv6_support false (hasKey $a "ipv6_support")) }}
+    applianceModeSupport: {{ include "tgw.en" (ternary $a.appliance_mode_support false (hasKey $a "appliance_mode_support")) }}
+    securityGroupReferencingSupport: {{ include "tgw.en" (ternary $a.security_group_referencing_support false (hasKey $a "security_group_referencing_support")) }}
+  tags:
+{{- include "ack.tagList" (list $atags) | nindent 4 }}
+{{- end }}

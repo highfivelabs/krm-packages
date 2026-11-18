@@ -1,0 +1,213 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf: the proxy (aws_db_proxy), its target (aws_db_proxy_target, as
+ack-extensions' DBProxyTarget) and endpoints (aws_db_proxy_endpoint, as
+ack-extensions' Cloud Control DBProxyEndpoint), the CloudWatch log group, and
+the IAM role with the inline policy that reads the proxy's secrets. The
+default target group's connection pool has no field on ACK's DBProxy
+(upstream.yaml, "refused").
+*/ -}}
+{{- include "ack.names" (list $ (list "proxy" "role" "logGroup")) -}}
+{{- $v := .Values -}}
+{{- if $v.create }}
+{{- $region := $v.region | default "" -}}
+{{- $part := $v.partition | default "aws" -}}
+{{- $proxyName := include "ack.resourceName" (list $ "proxy" "RDS proxy" ($v.name | default "") 63 "letter") -}}
+{{- if not $proxyName }}
+{{- fail "rds-proxy: name is required (or names.proxy)" }}
+{{- end }}
+{{- if not $v.engine_family }}
+{{- fail "rds-proxy: engine_family is required (MYSQL, POSTGRESQL or SQLSERVER)" }}
+{{- end }}
+{{- $proxyK8s := include "ack.name" (list .Release.Name "proxy") -}}
+{{- $roleK8s := include "ack.name" (list .Release.Name "role") -}}
+{{- $createRole := and $v.create_iam_role -}}
+
+{{- /* CloudWatch log group */ -}}
+{{- if $v.manage_log_group }}
+{{- $lgName := include "ack.resourceName" (list $ "logGroup" "CloudWatch log group" (printf "/aws/rds/proxy/%s" $v.name) 512) -}}
+{{- $lgTags := include "ack.tags" (list $ $v.tags $v.log_group_tags) | fromJson }}
+---
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "log-group")) "id" "log-group" "region" $region) | nindent 2 }}
+spec:
+  name: {{ $lgName | quote }}
+{{- if and (not (kindIs "invalid" $v.log_group_retention_in_days)) (gt (int64 $v.log_group_retention_in_days) 0) }}
+  retentionDays: {{ int64 $v.log_group_retention_in_days }}
+{{- end }}
+{{- with $v.log_group_kms_key_id }}
+  kmsKeyID: {{ . | quote }}
+{{- end }}
+{{- with $lgTags }}
+  tags:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* IAM role and policy */ -}}
+{{- if $createRole }}
+{{- $roleName := include "ack.resourceName" (list $ "role" "IAM role" (coalesce $v.iam_role_name $v.name) 64) -}}
+{{- $polName := coalesce $v.iam_policy_name $v.name -}}
+{{- $dns := ternary "amazonaws.com.cn" "amazonaws.com" (eq $part "aws-cn") -}}
+{{- $roleTags := include "ack.tags" (list $ $v.tags $v.iam_role_tags) | fromJson }}
+---
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $roleK8s "id" "role" "region" "") | nindent 2 }}
+spec:
+  name: {{ $roleName | quote }}
+  assumeRolePolicyDocument: {{ toJson (dict "Version" "2012-10-17" "Statement" (list (dict "Sid" "RDSAssume" "Effect" "Allow" "Action" (list "sts:AssumeRole") "Principal" (dict "Service" (list (printf "rds.%s" $dns)))))) | quote }}
+{{- with $v.iam_role_description }}
+  description: {{ . | quote }}
+{{- end }}
+{{- with $v.iam_role_path }}
+  path: {{ . | quote }}
+{{- end }}
+{{- with $v.iam_role_permissions_boundary }}
+  permissionsBoundary: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" $v.iam_role_max_session_duration) }}
+  maxSessionDuration: {{ int64 $v.iam_role_max_session_duration }}
+{{- end }}
+{{- if $v.create_iam_policy }}
+{{- if not $region }}
+{{- fail "rds-proxy: region is required to build the secrets policy's kms:ViaService condition (secretsmanager.<region>)" }}
+{{- end }}
+{{- $secrets := list -}}
+{{- range $k := (keys ($v.auth | default dict) | sortAlpha) }}
+{{- $a := get $v.auth $k -}}
+{{- with $a.secret_arn }}{{- if not (has . $secrets) }}{{- $secrets = append $secrets . -}}{{- end }}{{- end }}
+{{- end }}
+{{- $kms := $v.kms_key_arns | default list -}}
+{{- if not $kms }}{{- $kms = list (printf "arn:%s:kms:*:*:key/*" $part) -}}{{- end }}
+{{- $doc := dict "Version" "2012-10-17" "Statement" (list
+    (dict "Sid" "DecryptSecrets" "Effect" "Allow" "Action" (list "kms:Decrypt") "Resource" $kms "Condition" (dict "StringEquals" (dict "kms:ViaService" (list (printf "secretsmanager.%s.%s" $region $dns)))))
+    (dict "Sid" "ListSecrets" "Effect" "Allow" "Action" (list "secretsmanager:GetRandomPassword" "secretsmanager:ListSecrets") "Resource" (list "*"))
+    (dict "Sid" "GetSecrets" "Effect" "Allow" "Action" (list "secretsmanager:GetResourcePolicy" "secretsmanager:GetSecretValue" "secretsmanager:DescribeSecret" "secretsmanager:ListSecretVersionIds") "Resource" $secrets)) }}
+  inlinePolicies:
+    {{ $polName | quote }}: {{ toJson $doc | quote }}
+{{- end }}
+{{- with $roleTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* The proxy */ -}}
+{{- $authList := list -}}
+{{- range $k := (keys ($v.auth | default dict) | sortAlpha) }}
+{{- $a := get $v.auth $k -}}
+{{- $e := dict -}}
+{{- range $f := (list (list "auth_scheme" "authScheme") (list "client_password_auth_type" "clientPasswordAuthType") (list "description" "description") (list "iam_auth" "iamAuth") (list "secret_arn" "secretARN") (list "username" "userName")) }}
+{{- with get $a (index $f 0) }}{{- $_ := set $e (index $f 1) . -}}{{- end }}
+{{- end }}
+{{- $authList = append $authList $e -}}
+{{- end }}
+{{- if not $authList }}
+{{- fail "rds-proxy: auth needs at least one entry: ACK's DBProxy requires spec.auth" }}
+{{- end }}
+{{- if and (not $createRole) (not $v.role_arn) }}
+{{- fail "rds-proxy: role_arn is required when create_iam_role is false" }}
+{{- end }}
+{{- $proxyTags := include "ack.tags" (list $ $v.tags $v.proxy_tags) | fromJson }}
+---
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBProxy
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $proxyK8s "id" "proxy" "region" $region) | nindent 2 }}
+spec:
+  name: {{ $proxyName | quote }}
+  engineFamily: {{ $v.engine_family | quote }}
+  auth:
+{{- toYaml $authList | nindent 4 }}
+{{- if $createRole }}
+  roleRef:
+    from:
+      name: {{ $roleK8s }}
+{{- else }}
+  roleARN: {{ $v.role_arn | quote }}
+{{- end }}
+  debugLogging: {{ $v.debug_logging }}
+  requireTLS: {{ $v.require_tls }}
+{{- if not (kindIs "invalid" $v.idle_client_timeout) }}
+  idleClientTimeout: {{ int64 $v.idle_client_timeout }}
+{{- end }}
+{{- with $v.vpc_subnet_ids }}
+  vpcSubnetIDs:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $v.vpc_security_group_ids }}
+  vpcSecurityGroupIDs:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $proxyTags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+
+{{- /* Targets */ -}}
+{{- if and $v.target_db_instance $v.target_db_cluster }}
+{{- fail "rds-proxy: set one of target_db_instance and target_db_cluster, not both" }}
+{{- end }}
+{{- if $v.target_db_instance }}
+{{- if not $v.db_instance_identifier }}{{- fail "rds-proxy: db_instance_identifier is required with target_db_instance" }}{{- end }}
+---
+apiVersion: rds.aws.hfl.dev/v1alpha1
+kind: DBProxyTarget
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "target")) "id" "target" "region" $region) | nindent 2 }}
+spec:
+  dbProxyRef:
+    from:
+      name: {{ $proxyK8s }}
+  targetGroupName: default
+  dbInstanceIdentifier: {{ $v.db_instance_identifier | quote }}
+{{- end }}
+{{- if $v.target_db_cluster }}
+{{- if not $v.db_cluster_identifier }}{{- fail "rds-proxy: db_cluster_identifier is required with target_db_cluster" }}{{- end }}
+---
+apiVersion: rds.aws.hfl.dev/v1alpha1
+kind: DBProxyTarget
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "target")) "id" "target" "region" $region) | nindent 2 }}
+spec:
+  dbProxyRef:
+    from:
+      name: {{ $proxyK8s }}
+  targetGroupName: default
+  dbClusterIdentifier: {{ $v.db_cluster_identifier | quote }}
+{{- end }}
+
+{{- /* Endpoints */ -}}
+{{- range $k := (keys ($v.endpoints | default dict) | sortAlpha) }}
+{{- $e := get $v.endpoints $k -}}
+{{- if not $e.vpc_subnet_ids }}{{- fail (printf "rds-proxy: endpoints.%s needs vpc_subnet_ids" $k) }}{{- end }}
+{{- $etags := include "ack.tags" (list $ $v.tags ($e.tags | default dict)) | fromJson }}
+---
+apiVersion: rds.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: DBProxyEndpoint
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "endpoint" $k)) "id" (printf "endpoint-%s" $k) "region" $region) | nindent 2 }}
+spec:
+  dbProxyName: {{ $proxyName | quote }}
+  dbProxyEndpointName: {{ include "ack.cloudName" (list $ "proxy endpoint" (coalesce $e.name $k) 63 "letter") | quote }}
+  vpcSubnetIds:
+{{- toYaml $e.vpc_subnet_ids | nindent 4 }}
+{{- with $e.vpc_security_group_ids }}
+  vpcSecurityGroupIds:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- with $e.target_role }}
+  targetRole: {{ . | quote }}
+{{- end }}
+{{- with $etags }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}

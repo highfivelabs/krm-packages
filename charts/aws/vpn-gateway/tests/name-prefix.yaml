@@ -1,0 +1,11 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The namePrefix convention (docs/design.md, "Names, labels and tags"): the
+# chart gives no AWS name of its own. A VPN connection and a route
+# propagation are named by the IDs AWS assigns; the connection's Name tag
+# carries the namePrefix but a tag need not be unique.
+exempt:
+  VPNConnection: "AWS assigns its ID; its Name tag carries the namePrefix but need not be unique"
+  VPNGatewayRoutePropagation: "it has no name: it ties a gateway to a route table"
+noCloudNames: "AWS names a VPN connection by the ID it assigns; the Name tag is not unique"

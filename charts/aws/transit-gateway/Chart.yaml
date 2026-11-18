@@ -1,0 +1,20 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: v2
+name: transit-gateway
+description: >-
+  An EC2 transit gateway with its VPC attachments, as AWS Controllers for Kubernetes (ACK) objects. A port of terraform-aws-modules' transit-gateway module.
+type: application
+version: 0.1.0
+# The module release this chart was ported from (UPSTREAM.md).
+appVersion: "terraform-aws-transit-gateway-v3.3.1"
+kubeVersion: ">=1.27.0-0"
+keywords: [aws, ack, transit-gateway, tgw, terraform-aws-modules]
+home: https://github.com/highfivelabs/catalog
+sources:
+  - https://github.com/terraform-aws-modules/terraform-aws-transit-gateway/tree/7973ea0890176868b62bb60a694768cec19daf9a
+annotations:
+  hfl.dev/source: terraform-aws-transit-gateway
+  hfl.dev/source-version: v3.3.1
+  hfl.dev/source-commit: 7973ea0890176868b62bb60a694768cec19daf9a
+  hfl.dev/ack-ec2-controller: "v1.23.1"

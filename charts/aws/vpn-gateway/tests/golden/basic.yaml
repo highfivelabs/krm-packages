@@ -1,0 +1,63 @@
+---
+# Source: vpn-gateway/templates/vpn-gateway.yaml
+apiVersion: ec2.aws.hfl.dev/v1alpha1
+kind: VPNConnection
+metadata:
+  name: basic-vpn-connection
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: vpn-gateway
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "vpn-connection"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  type_: ipsec.1
+  customerGatewayID: "cgw-0123456789abcdef0"
+  vpnGatewayID: "vgw-0123456789abcdef0"
+  options:
+    staticRoutesOnly: true
+    tunnelInsideIPVersion: ipv4
+  staticRoutes:
+    - 192.168.0.0/24
+    - 192.168.1.0/24
+  tags:
+    - key: "Name"
+      value: "VPN Connection between VPC vpc-0123456789abcdef0 and Customer Gateway cgw-0123456789abcdef0"
+    - key: "env"
+      value: "dev"
+---
+# Source: vpn-gateway/templates/vpn-gateway.yaml
+apiVersion: ec2.aws.hfl.dev/v1alpha1
+kind: VPNGatewayRoutePropagation
+metadata:
+  name: basic-route-propagation-0
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: vpn-gateway
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "route-propagation-0"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  gatewayID: "vgw-0123456789abcdef0"
+  routeTableID: "rtb-0123456789abcdef0"
+---
+# Source: vpn-gateway/templates/vpn-gateway.yaml
+apiVersion: ec2.aws.hfl.dev/v1alpha1
+kind: VPNGatewayRoutePropagation
+metadata:
+  name: basic-route-propagation-1
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "basic"
+    app.kubernetes.io/name: vpn-gateway
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "route-propagation-1"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  gatewayID: "vgw-0123456789abcdef0"
+  routeTableID: "rtb-0123456789abcdef1"

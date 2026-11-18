@@ -1,0 +1,12 @@
+allow_alpha: true
+region: us-east-1
+vpn_gateway_id: vgw-0123456789abcdef0
+customer_gateway_id: cgw-0123456789abcdef0
+create_vpn_gateway_attachment: false
+vpc_id: vpc-0123456789abcdef0
+vpc_subnet_route_table_ids: [rtb-0123456789abcdef0, rtb-0123456789abcdef1]
+vpc_subnet_route_table_count: 2
+vpn_connection_static_routes_only: true
+vpn_connection_static_routes_destinations: [192.168.0.0/24, 192.168.1.0/24]
+tags:
+  env: dev

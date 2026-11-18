@@ -1830,7 +1830,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/vpn-gateway/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-vpn-gateway/tree/v4.0.0
-    chart: null
+    chart: charts/aws/vpn-gateway
   - id: aws/rds-proxy
     cloud: aws
     module: rds-proxy
@@ -1844,7 +1844,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/rds-proxy/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-rds-proxy/tree/v4.4.1
-    chart: null
+    chart: charts/aws/rds-proxy
   - id: aws/transit-gateway
     cloud: aws
     module: transit-gateway
@@ -1858,7 +1858,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/transit-gateway/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-transit-gateway/tree/v3.3.1
-    chart: null
+    chart: charts/aws/transit-gateway
   - id: aws/apigateway-v2
     cloud: aws
     module: apigateway-v2
@@ -1970,7 +1970,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/network-firewall/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-network-firewall/tree/v2.3.0
-    chart: null
+    chart: charts/aws/network-firewall
   - id: aws/iam-role
     cloud: aws
     module: iam-role

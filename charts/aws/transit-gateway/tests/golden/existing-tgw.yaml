@@ -1,0 +1,27 @@
+---
+# Source: transit-gateway/templates/transit-gateway.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: TransitGatewayVPCAttachment
+metadata:
+  name: existing-tgw-attachment-spoke
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing-tgw"
+    app.kubernetes.io/name: transit-gateway
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "attachment-spoke"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  transitGatewayID: "tgw-0123456789abcdef0"
+  vpcID: "vpc-0123456789abcdef0"
+  subnetIDs:
+    - subnet-0123456789abcdef0
+  options:
+    dnsSupport: enable
+    ipv6Support: disable
+    applianceModeSupport: disable
+    securityGroupReferencingSupport: disable
+  tags:
+    - key: "Name"
+      value: "tgw-spoke"

@@ -1,0 +1,49 @@
+allow_alpha: true
+region: us-east-1
+labels:
+  team: data
+name: db-proxy
+engine_family: MYSQL
+debug_logging: true
+idle_client_timeout: 900
+require_tls: true
+vpc_subnet_ids: [subnet-0123456789abcdef0, subnet-0123456789abcdef1]
+vpc_security_group_ids: [sg-0123456789abcdef0]
+auth:
+  admin:
+    auth_scheme: SECRETS
+    client_password_auth_type: MYSQL_NATIVE_PASSWORD
+    description: admin user
+    iam_auth: REQUIRED
+    secret_arn: arn:aws:secretsmanager:us-east-1:123456789012:secret:admin-AbCdEf
+    username: admin
+  app:
+    auth_scheme: SECRETS
+    secret_arn: arn:aws:secretsmanager:us-east-1:123456789012:secret:app-AbCdEf
+target_db_cluster: true
+db_cluster_identifier: my-aurora
+endpoints:
+  ro:
+    vpc_subnet_ids: [subnet-0123456789abcdef0, subnet-0123456789abcdef1]
+    vpc_security_group_ids: [sg-0123456789abcdef0]
+    target_role: READ_ONLY
+    tags:
+      role: reader
+  other:
+    name: other-endpoint
+    vpc_subnet_ids: [subnet-0123456789abcdef0, subnet-0123456789abcdef1]
+log_group_retention_in_days: 14
+log_group_kms_key_id: arn:aws:kms:us-east-1:123456789012:key/1234
+log_group_tags:
+  log: "true"
+iam_role_name: proxy-role
+iam_role_description: RDS proxy role
+iam_role_path: /service/
+iam_role_max_session_duration: 7200
+iam_role_permissions_boundary: arn:aws:iam::123456789012:policy/boundary
+iam_policy_name: proxy-secrets
+kms_key_arns: [arn:aws:kms:us-east-1:123456789012:key/1234]
+proxy_tags:
+  tier: db
+tags:
+  env: prod

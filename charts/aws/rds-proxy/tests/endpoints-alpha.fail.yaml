@@ -1,0 +1,6 @@
+# expect: rds-proxy: endpoints needs the alpha kind DBProxyEndpoint
+name: db-proxy
+engine_family: POSTGRESQL
+region: us-east-1
+endpoints:
+  ro: {vpc_subnet_ids: [subnet-0123456789abcdef0]}

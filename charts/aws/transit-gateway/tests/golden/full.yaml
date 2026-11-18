@@ -1,0 +1,70 @@
+---
+# Source: transit-gateway/templates/transit-gateway.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: TransitGateway
+metadata:
+  name: full-transit-gateway
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: transit-gateway
+    app.kubernetes.io/version: "0.1.0"
+    team: "network"
+  annotations:
+    hfl.dev/id: "transit-gateway"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  description: "Regional hub"
+  options:
+    amazonSideASN: 64512
+    defaultRouteTableAssociation: disable
+    defaultRouteTablePropagation: disable
+    autoAcceptSharedAttachments: enable
+    multicastSupport: enable
+    vpnECMPSupport: disable
+    dnsSupport: disable
+    transitGatewayCIDRBlocks:
+      - 10.99.0.0/24
+  tags:
+    - key: "Name"
+      value: "tgw"
+    - key: "env"
+      value: "prod"
+    - key: "tier"
+      value: "hub"
+---
+# Source: transit-gateway/templates/transit-gateway.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: TransitGatewayVPCAttachment
+metadata:
+  name: full-attachment-prod
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: transit-gateway
+    app.kubernetes.io/version: "0.1.0"
+    team: "network"
+  annotations:
+    hfl.dev/id: "attachment-prod"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  transitGatewayRef:
+    from:
+      name: full-transit-gateway
+  vpcID: "vpc-0123456789abcdef0"
+  subnetIDs:
+    - subnet-0123456789abcdef0
+  options:
+    dnsSupport: enable
+    ipv6Support: disable
+    applianceModeSupport: enable
+    securityGroupReferencingSupport: enable
+  tags:
+    - key: "Name"
+      value: "ignored"
+    - key: "attach"
+      value: "true"
+    - key: "env"
+      value: "prod"
+    - key: "stage"
+      value: "prod"

@@ -3199,135 +3199,135 @@ aws,efs,security_group_vpc_id,string,partial,accepted when set; unset with mount
 aws,efs,source_policy_documents,list(string),yes,,
 aws,efs,tags,map(string),yes,,
 aws,efs,throughput_mode,string,yes,,
-aws,vpn-gateway,connect_to_transit_gateway,bool,no,,no-chart
-aws,vpn-gateway,create_vpn_connection,bool,no,,no-chart
-aws,vpn-gateway,create_vpn_gateway_attachment,bool,no,,no-chart
-aws,vpn-gateway,customer_gateway_id,string,no,,no-chart
-aws,vpn-gateway,local_ipv4_network_cidr,string,no,,no-chart
-aws,vpn-gateway,local_ipv6_network_cidr,string,no,,no-chart
-aws,vpn-gateway,remote_ipv4_network_cidr,string,no,,no-chart
-aws,vpn-gateway,remote_ipv6_network_cidr,string,no,,no-chart
-aws,vpn-gateway,tags,map(string),no,,no-chart
-aws,vpn-gateway,transit_gateway_id,string,no,,no-chart
-aws,vpn-gateway,tunnel1_dpd_timeout_action,string,no,,no-chart
-aws,vpn-gateway,tunnel1_dpd_timeout_seconds,number,no,,no-chart
-aws,vpn-gateway,tunnel1_enable_tunnel_lifecycle_control,bool,no,,no-chart
-aws,vpn-gateway,tunnel1_ike_versions,list(string),no,,no-chart
-aws,vpn-gateway,tunnel1_inside_cidr,string,no,,no-chart
-aws,vpn-gateway,tunnel1_log_options,any,no,,no-chart
-aws,vpn-gateway,tunnel1_phase1_dh_group_numbers,list(number),no,,no-chart
-aws,vpn-gateway,tunnel1_phase1_encryption_algorithms,list(string),no,,no-chart
-aws,vpn-gateway,tunnel1_phase1_integrity_algorithms,list(string),no,,no-chart
-aws,vpn-gateway,tunnel1_phase1_lifetime_seconds,number,no,,no-chart
-aws,vpn-gateway,tunnel1_phase2_dh_group_numbers,list(number),no,,no-chart
-aws,vpn-gateway,tunnel1_phase2_encryption_algorithms,list(string),no,,no-chart
-aws,vpn-gateway,tunnel1_phase2_integrity_algorithms,list(string),no,,no-chart
-aws,vpn-gateway,tunnel1_phase2_lifetime_seconds,number,no,,no-chart
-aws,vpn-gateway,tunnel1_preshared_key,string,no,,no-chart
-aws,vpn-gateway,tunnel1_rekey_fuzz_percentage,number,no,,no-chart
-aws,vpn-gateway,tunnel1_rekey_margin_time_seconds,number,no,,no-chart
-aws,vpn-gateway,tunnel1_replay_window_size,number,no,,no-chart
-aws,vpn-gateway,tunnel1_startup_action,string,no,,no-chart
-aws,vpn-gateway,tunnel2_dpd_timeout_action,string,no,,no-chart
-aws,vpn-gateway,tunnel2_dpd_timeout_seconds,number,no,,no-chart
-aws,vpn-gateway,tunnel2_enable_tunnel_lifecycle_control,bool,no,,no-chart
-aws,vpn-gateway,tunnel2_ike_versions,list(string),no,,no-chart
-aws,vpn-gateway,tunnel2_inside_cidr,string,no,,no-chart
-aws,vpn-gateway,tunnel2_log_options,any,no,,no-chart
-aws,vpn-gateway,tunnel2_phase1_dh_group_numbers,list(number),no,,no-chart
-aws,vpn-gateway,tunnel2_phase1_encryption_algorithms,list(string),no,,no-chart
-aws,vpn-gateway,tunnel2_phase1_integrity_algorithms,list(string),no,,no-chart
-aws,vpn-gateway,tunnel2_phase1_lifetime_seconds,number,no,,no-chart
-aws,vpn-gateway,tunnel2_phase2_dh_group_numbers,list(number),no,,no-chart
-aws,vpn-gateway,tunnel2_phase2_encryption_algorithms,list(string),no,,no-chart
-aws,vpn-gateway,tunnel2_phase2_integrity_algorithms,list(string),no,,no-chart
-aws,vpn-gateway,tunnel2_phase2_lifetime_seconds,number,no,,no-chart
-aws,vpn-gateway,tunnel2_preshared_key,string,no,,no-chart
-aws,vpn-gateway,tunnel2_rekey_fuzz_percentage,number,no,,no-chart
-aws,vpn-gateway,tunnel2_rekey_margin_time_seconds,number,no,,no-chart
-aws,vpn-gateway,tunnel2_replay_window_size,number,no,,no-chart
-aws,vpn-gateway,tunnel2_startup_action,string,no,,no-chart
-aws,vpn-gateway,tunnel_inside_ip_version,string,no,,no-chart
-aws,vpn-gateway,vpc_id,string,no,,no-chart
-aws,vpn-gateway,vpc_subnet_route_table_count,number,no,,no-chart
-aws,vpn-gateway,vpc_subnet_route_table_ids,list(string),no,,no-chart
-aws,vpn-gateway,vpn_connection_enable_acceleration,bool,no,,no-chart
-aws,vpn-gateway,vpn_connection_static_routes_destinations,list(string),no,,no-chart
-aws,vpn-gateway,vpn_connection_static_routes_only,bool,no,,no-chart
-aws,vpn-gateway,vpn_gateway_id,string,no,,no-chart
-aws,rds-proxy,auth,"map(object({auth_scheme, client_password_auth_type, description, iam_auth, secret_arn, username}))",no,,no-chart
-aws,rds-proxy,connection_borrow_timeout,number,no,,no-chart
-aws,rds-proxy,create,bool,no,,no-chart
-aws,rds-proxy,create_iam_policy,bool,no,,no-chart
-aws,rds-proxy,create_iam_role,bool,no,,no-chart
-aws,rds-proxy,db_cluster_identifier,string,no,,no-chart
-aws,rds-proxy,db_instance_identifier,string,no,,no-chart
-aws,rds-proxy,debug_logging,bool,no,,no-chart
-aws,rds-proxy,default_auth_scheme,string,no,,no-chart
-aws,rds-proxy,endpoint_network_type,string,no,,no-chart
-aws,rds-proxy,endpoints,"map(object({name, tags, target_role, vpc_security_group_ids, vpc_subnet_ids}))",no,,no-chart
-aws,rds-proxy,engine_family,string,no,,no-chart
-aws,rds-proxy,iam_policy_name,string,no,,no-chart
-aws,rds-proxy,iam_role_description,string,no,,no-chart
-aws,rds-proxy,iam_role_force_detach_policies,bool,no,,no-chart
-aws,rds-proxy,iam_role_max_session_duration,number,no,,no-chart
-aws,rds-proxy,iam_role_name,string,no,,no-chart
-aws,rds-proxy,iam_role_path,string,no,,no-chart
-aws,rds-proxy,iam_role_permissions_boundary,string,no,,no-chart
-aws,rds-proxy,iam_role_tags,map(string),no,,no-chart
-aws,rds-proxy,idle_client_timeout,number,no,,no-chart
-aws,rds-proxy,init_query,string,no,,no-chart
-aws,rds-proxy,kms_key_arns,list(string),no,,no-chart
-aws,rds-proxy,log_group_class,string,no,,no-chart
-aws,rds-proxy,log_group_kms_key_id,string,no,,no-chart
-aws,rds-proxy,log_group_retention_in_days,number,no,,no-chart
-aws,rds-proxy,log_group_tags,map(string),no,,no-chart
-aws,rds-proxy,manage_log_group,bool,no,,no-chart
-aws,rds-proxy,max_connections_percent,number,no,,no-chart
-aws,rds-proxy,max_idle_connections_percent,number,no,,no-chart
-aws,rds-proxy,name,string,no,,no-chart
-aws,rds-proxy,proxy_tags,map(string),no,,no-chart
-aws,rds-proxy,region,string,no,,no-chart
-aws,rds-proxy,require_tls,bool,no,,no-chart
-aws,rds-proxy,role_arn,string,no,,no-chart
-aws,rds-proxy,session_pinning_filters,list(string),no,,no-chart
-aws,rds-proxy,tags,map(string),no,,no-chart
-aws,rds-proxy,target_connection_network_type,string,no,,no-chart
-aws,rds-proxy,target_db_cluster,bool,no,,no-chart
-aws,rds-proxy,target_db_instance,bool,no,,no-chart
-aws,rds-proxy,use_policy_name_prefix,bool,no,,no-chart
-aws,rds-proxy,use_role_name_prefix,bool,no,,no-chart
-aws,rds-proxy,vpc_security_group_ids,list(string),no,,no-chart
-aws,rds-proxy,vpc_subnet_ids,list(string),no,,no-chart
-aws,transit-gateway,amazon_side_asn,string,no,,no-chart
-aws,transit-gateway,create_tgw,bool,no,,no-chart
-aws,transit-gateway,create_tgw_routes,bool,no,,no-chart
-aws,transit-gateway,description,string,no,,no-chart
-aws,transit-gateway,enable_auto_accept_shared_attachments,bool,no,,no-chart
-aws,transit-gateway,enable_default_route_table_association,bool,no,,no-chart
-aws,transit-gateway,enable_default_route_table_propagation,bool,no,,no-chart
-aws,transit-gateway,enable_dns_support,bool,no,,no-chart
-aws,transit-gateway,enable_encryption_support,bool,no,,no-chart
-aws,transit-gateway,enable_multicast_support,bool,no,,no-chart
-aws,transit-gateway,enable_sg_referencing_support,bool,no,,no-chart
-aws,transit-gateway,enable_vpn_ecmp_support,bool,no,,no-chart
-aws,transit-gateway,name,string,no,,no-chart
-aws,transit-gateway,ram_allow_external_principals,bool,no,,no-chart
-aws,transit-gateway,ram_name,string,no,,no-chart
-aws,transit-gateway,ram_principals,list(string),no,,no-chart
-aws,transit-gateway,ram_resource_share_arn,string,no,,no-chart
-aws,transit-gateway,ram_tags,map(string),no,,no-chart
-aws,transit-gateway,region,string,no,,no-chart
-aws,transit-gateway,share_tgw,bool,no,,no-chart
-aws,transit-gateway,tags,map(string),no,,no-chart
-aws,transit-gateway,tgw_default_route_table_tags,map(string),no,,no-chart
-aws,transit-gateway,tgw_route_table_tags,map(string),no,,no-chart
-aws,transit-gateway,tgw_tags,map(string),no,,no-chart
-aws,transit-gateway,tgw_vpc_attachment_tags,map(string),no,,no-chart
-aws,transit-gateway,timeouts,"object({create, delete, update})",no,,no-chart
-aws,transit-gateway,transit_gateway_cidr_blocks,list(string),no,,no-chart
-aws,transit-gateway,transit_gateway_route_table_id,string,no,,no-chart
-aws,transit-gateway,vpc_attachments,any,no,,no-chart
+aws,vpn-gateway,connect_to_transit_gateway,bool,partial,"accepted, but the tags the module sets on the transit gateway attachment (aws_ec2_tag, so the attachment is named and tagged) are not applied: VPNConnection's status carries no transit gateway attachment ID, so ec2.aws.hfl.dev/ResourceTag has nothing to name; the connection's own tags are applied",gap
+aws,vpn-gateway,create_vpn_connection,bool,yes,,
+aws,vpn-gateway,create_vpn_gateway_attachment,bool,partial,"accepted at false and, with a transit gateway, at its default; true with vpc_id on a virtual private gateway is refused: ack-extensions' VPNGateway creates a gateway and attaches it in one object (spec.vpc) and cannot attach an existing gateway (aws_vpn_gateway_attachment, no stable or extension kind)",gap
+aws,vpn-gateway,customer_gateway_id,string,yes,,
+aws,vpn-gateway,local_ipv4_network_cidr,string,yes,,
+aws,vpn-gateway,local_ipv6_network_cidr,string,yes,,
+aws,vpn-gateway,remote_ipv4_network_cidr,string,yes,,
+aws,vpn-gateway,remote_ipv6_network_cidr,string,yes,,
+aws,vpn-gateway,tags,map(string),yes,,
+aws,vpn-gateway,transit_gateway_id,string,yes,,
+aws,vpn-gateway,tunnel1_dpd_timeout_action,string,yes,,
+aws,vpn-gateway,tunnel1_dpd_timeout_seconds,number,yes,,
+aws,vpn-gateway,tunnel1_enable_tunnel_lifecycle_control,bool,yes,,
+aws,vpn-gateway,tunnel1_ike_versions,list(string),yes,,
+aws,vpn-gateway,tunnel1_inside_cidr,string,yes,,
+aws,vpn-gateway,tunnel1_log_options,any,yes,,
+aws,vpn-gateway,tunnel1_phase1_dh_group_numbers,list(number),yes,,
+aws,vpn-gateway,tunnel1_phase1_encryption_algorithms,list(string),yes,,
+aws,vpn-gateway,tunnel1_phase1_integrity_algorithms,list(string),yes,,
+aws,vpn-gateway,tunnel1_phase1_lifetime_seconds,number,yes,,
+aws,vpn-gateway,tunnel1_phase2_dh_group_numbers,list(number),yes,,
+aws,vpn-gateway,tunnel1_phase2_encryption_algorithms,list(string),yes,,
+aws,vpn-gateway,tunnel1_phase2_integrity_algorithms,list(string),yes,,
+aws,vpn-gateway,tunnel1_phase2_lifetime_seconds,number,yes,,
+aws,vpn-gateway,tunnel1_preshared_key,string,partial,"accepted only as a reference to a Kubernetes Secret, {secretName, key} (docs/secrets.md); the key's value, a string, is refused; it applies only together with tunnel2_preshared_key, as in the module",gap
+aws,vpn-gateway,tunnel1_rekey_fuzz_percentage,number,yes,,
+aws,vpn-gateway,tunnel1_rekey_margin_time_seconds,number,yes,,
+aws,vpn-gateway,tunnel1_replay_window_size,number,yes,,
+aws,vpn-gateway,tunnel1_startup_action,string,yes,,
+aws,vpn-gateway,tunnel2_dpd_timeout_action,string,yes,,
+aws,vpn-gateway,tunnel2_dpd_timeout_seconds,number,yes,,
+aws,vpn-gateway,tunnel2_enable_tunnel_lifecycle_control,bool,yes,,
+aws,vpn-gateway,tunnel2_ike_versions,list(string),yes,,
+aws,vpn-gateway,tunnel2_inside_cidr,string,yes,,
+aws,vpn-gateway,tunnel2_log_options,any,yes,,
+aws,vpn-gateway,tunnel2_phase1_dh_group_numbers,list(number),yes,,
+aws,vpn-gateway,tunnel2_phase1_encryption_algorithms,list(string),yes,,
+aws,vpn-gateway,tunnel2_phase1_integrity_algorithms,list(string),yes,,
+aws,vpn-gateway,tunnel2_phase1_lifetime_seconds,number,yes,,
+aws,vpn-gateway,tunnel2_phase2_dh_group_numbers,list(number),yes,,
+aws,vpn-gateway,tunnel2_phase2_encryption_algorithms,list(string),yes,,
+aws,vpn-gateway,tunnel2_phase2_integrity_algorithms,list(string),yes,,
+aws,vpn-gateway,tunnel2_phase2_lifetime_seconds,number,yes,,
+aws,vpn-gateway,tunnel2_preshared_key,string,partial,"accepted only as a reference to a Kubernetes Secret, {secretName, key} (docs/secrets.md); the key's value, a string, is refused; it applies only together with tunnel1_preshared_key, as in the module",gap
+aws,vpn-gateway,tunnel2_rekey_fuzz_percentage,number,yes,,
+aws,vpn-gateway,tunnel2_rekey_margin_time_seconds,number,yes,,
+aws,vpn-gateway,tunnel2_replay_window_size,number,yes,,
+aws,vpn-gateway,tunnel2_startup_action,string,yes,,
+aws,vpn-gateway,tunnel_inside_ip_version,string,yes,,
+aws,vpn-gateway,vpc_id,string,yes,,
+aws,vpn-gateway,vpc_subnet_route_table_count,number,yes,,
+aws,vpn-gateway,vpc_subnet_route_table_ids,list(string),yes,,
+aws,vpn-gateway,vpn_connection_enable_acceleration,bool,yes,,
+aws,vpn-gateway,vpn_connection_static_routes_destinations,list(string),yes,,
+aws,vpn-gateway,vpn_connection_static_routes_only,bool,yes,,
+aws,vpn-gateway,vpn_gateway_id,string,yes,,
+aws,rds-proxy,auth,"map(object({auth_scheme, client_password_auth_type, description, iam_auth, secret_arn, username}))",yes,,
+aws,rds-proxy,connection_borrow_timeout,number,no,the default target group's connection pool (aws_db_proxy_default_target_group) has no field on ACK's DBProxy and no kind in ack-extensions,gap
+aws,rds-proxy,create,bool,yes,,
+aws,rds-proxy,create_iam_policy,bool,yes,,
+aws,rds-proxy,create_iam_role,bool,yes,,
+aws,rds-proxy,db_cluster_identifier,string,yes,,
+aws,rds-proxy,db_instance_identifier,string,yes,,
+aws,rds-proxy,debug_logging,bool,yes,,
+aws,rds-proxy,default_auth_scheme,string,no,ACK's DBProxy (rds-controller v1.15.1) has no defaultAuthScheme field,gap
+aws,rds-proxy,endpoint_network_type,string,no,ACK's DBProxy has no endpointNetworkType field,gap
+aws,rds-proxy,endpoints,"map(object({name, tags, target_role, vpc_security_group_ids, vpc_subnet_ids}))",partial,"accepted with allow_alpha: true, as ack-extensions' rds.cloudcontrol.aws.hfl.dev DBProxyEndpoint",alpha
+aws,rds-proxy,engine_family,string,yes,,
+aws,rds-proxy,iam_policy_name,string,yes,,
+aws,rds-proxy,iam_role_description,string,yes,,
+aws,rds-proxy,iam_role_force_detach_policies,bool,partial,accepted at its default (true); ACK's Role has no forceDetachPolicies field and always deletes inline policies with the Role; false is refused,gap
+aws,rds-proxy,iam_role_max_session_duration,number,yes,,
+aws,rds-proxy,iam_role_name,string,yes,,
+aws,rds-proxy,iam_role_path,string,yes,,
+aws,rds-proxy,iam_role_permissions_boundary,string,yes,,
+aws,rds-proxy,iam_role_tags,map(string),yes,,
+aws,rds-proxy,idle_client_timeout,number,yes,,
+aws,rds-proxy,init_query,string,no,the default target group's connection pool (aws_db_proxy_default_target_group) has no field on ACK's DBProxy and no kind in ack-extensions,gap
+aws,rds-proxy,kms_key_arns,list(string),yes,,
+aws,rds-proxy,log_group_class,string,no,ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no log group class field,gap
+aws,rds-proxy,log_group_kms_key_id,string,yes,,
+aws,rds-proxy,log_group_retention_in_days,number,yes,,
+aws,rds-proxy,log_group_tags,map(string),yes,,
+aws,rds-proxy,manage_log_group,bool,yes,,
+aws,rds-proxy,max_connections_percent,number,partial,"accepted at its default (90) and not sent: the default target group's connection pool has no field on ACK's DBProxy, so AWS's own pool defaults apply (100); any other value is refused",gap
+aws,rds-proxy,max_idle_connections_percent,number,partial,"accepted at its default (50), which is also AWS's, and not sent: the default target group's connection pool has no field on ACK's DBProxy; any other value is refused",gap
+aws,rds-proxy,name,string,yes,,
+aws,rds-proxy,proxy_tags,map(string),yes,,
+aws,rds-proxy,region,string,yes,,
+aws,rds-proxy,require_tls,bool,yes,,
+aws,rds-proxy,role_arn,string,yes,,
+aws,rds-proxy,session_pinning_filters,list(string),no,the default target group's connection pool (aws_db_proxy_default_target_group) has no field on ACK's DBProxy and no kind in ack-extensions,gap
+aws,rds-proxy,tags,map(string),yes,,
+aws,rds-proxy,target_connection_network_type,string,no,ACK's DBProxy has no targetConnectionNetworkType field,gap
+aws,rds-proxy,target_db_cluster,bool,partial,"accepted with allow_alpha: true, as ack-extensions' rds.aws.hfl.dev DBProxyTarget",alpha
+aws,rds-proxy,target_db_instance,bool,partial,"accepted with allow_alpha: true, as ack-extensions' rds.aws.hfl.dev DBProxyTarget",alpha
+aws,rds-proxy,use_policy_name_prefix,bool,no,"an inline policy of ACK's Role is named by the map key the chart gives it, not generated from a name prefix",gap
+aws,rds-proxy,use_role_name_prefix,bool,no,"ACK's Role takes a name, not a name prefix: AWS cannot generate the unique name; set iam_role_name or names.role",gap
+aws,rds-proxy,vpc_security_group_ids,list(string),yes,,
+aws,rds-proxy,vpc_subnet_ids,list(string),yes,,
+aws,transit-gateway,amazon_side_asn,string,yes,,
+aws,transit-gateway,create_tgw,bool,yes,,
+aws,transit-gateway,create_tgw_routes,bool,partial,"accepted at false (and with no create_tgw and no tgw_routes); true is refused: the transit gateway route table, routes, associations and propagations (ack-extensions' Cloud Control TransitGatewayRouteTable, TransitGatewayRoute and the association kinds) take plain IDs of the gateway and its attachments, known only after apply, with no reference fields",gap
+aws,transit-gateway,description,string,yes,,
+aws,transit-gateway,enable_auto_accept_shared_attachments,bool,yes,,
+aws,transit-gateway,enable_default_route_table_association,bool,yes,,
+aws,transit-gateway,enable_default_route_table_propagation,bool,yes,,
+aws,transit-gateway,enable_dns_support,bool,yes,,
+aws,transit-gateway,enable_encryption_support,bool,no,ACK's TransitGateway has no encryptionSupport option: true is refused,gap
+aws,transit-gateway,enable_multicast_support,bool,yes,,
+aws,transit-gateway,enable_sg_referencing_support,bool,partial,"accepted at false only, and not sent; true (the module's default) is refused: ACK's TransitGateway (ec2-controller v1.23.1) has no securityGroupReferencingSupport option",gap
+aws,transit-gateway,enable_vpn_ecmp_support,bool,yes,,
+aws,transit-gateway,name,string,yes,,
+aws,transit-gateway,ram_allow_external_principals,bool,no,the RAM share is not ported (share_tgw),gap
+aws,transit-gateway,ram_name,string,no,the RAM share is not ported (share_tgw),gap
+aws,transit-gateway,ram_principals,list(string),no,the RAM share is not ported (share_tgw),gap
+aws,transit-gateway,ram_resource_share_arn,string,no,the RAM share accepter (aws_ram_resource_share_accepter) has no kind,gap
+aws,transit-gateway,ram_tags,map(string),no,the RAM share is not ported (share_tgw),gap
+aws,transit-gateway,region,string,yes,,
+aws,transit-gateway,share_tgw,bool,partial,"accepted at false; true is refused: the RAM share's resource association (ACK's ResourceShare.resourceARNs) takes the gateway's ARN, built from its ID, known only after apply, and the share accepter has no kind",gap
+aws,transit-gateway,tags,map(string),yes,,
+aws,transit-gateway,tgw_default_route_table_tags,map(string),no,"tags on the default association route table (aws_ec2_tag) need its ID, which TransitGateway's status does not carry, and ack-extensions' ResourceTag takes a plain resource ID",gap
+aws,transit-gateway,tgw_route_table_tags,map(string),no,the transit gateway route table is not ported (create_tgw_routes),gap
+aws,transit-gateway,tgw_tags,map(string),yes,,
+aws,transit-gateway,tgw_vpc_attachment_tags,map(string),yes,,
+aws,transit-gateway,timeouts,"object({create, delete, update})",no,ACK controllers retry until the resource is ready; Bundt sets a component's time limit,by-design
+aws,transit-gateway,transit_gateway_cidr_blocks,list(string),yes,,
+aws,transit-gateway,transit_gateway_route_table_id,string,no,route table associations and propagations are not ported (create_tgw_routes): the Cloud Control kinds have no reference fields,gap
+aws,transit-gateway,vpc_attachments,any,yes,,
 aws,apigateway-v2,api_key_selection_expression,string,yes,,
 aws,apigateway-v2,api_mapping_key,string,yes,,
 aws,apigateway-v2,api_version,string,yes,,
@@ -3747,46 +3747,46 @@ aws,dms,repl_subnet_group_tags,map(string),no,,no-chart
 aws,dms,replication_tasks,any,no,,no-chart
 aws,dms,s3_endpoints,any,no,,no-chart
 aws,dms,tags,map(string),no,,no-chart
-aws,network-firewall,availability_zone_change_protection,bool,no,,no-chart
-aws,network-firewall,availability_zone_mapping,list(object({availability_zone_id})),no,,no-chart
-aws,network-firewall,create,bool,no,,no-chart
-aws,network-firewall,create_logging_configuration,bool,no,,no-chart
-aws,network-firewall,create_policy,bool,no,,no-chart
-aws,network-firewall,create_policy_resource_policy,bool,no,,no-chart
-aws,network-firewall,delete_protection,bool,no,,no-chart
-aws,network-firewall,description,string,no,,no-chart
-aws,network-firewall,enable_monitoring_dashboard,bool,no,,no-chart
-aws,network-firewall,enabled_analysis_types,list(string),no,,no-chart
-aws,network-firewall,encryption_configuration,"object({key_id, type})",no,,no-chart
-aws,network-firewall,firewall_policy_arn,string,no,,no-chart
-aws,network-firewall,firewall_policy_change_protection,bool,no,,no-chart
-aws,network-firewall,logging_configuration_destination_config,"list(object({log_destination, log_destination_type, log_type}))",no,,no-chart
-aws,network-firewall,name,string,no,,no-chart
-aws,network-firewall,policy_attach_resource_policy,bool,no,,no-chart
-aws,network-firewall,policy_description,string,no,,no-chart
-aws,network-firewall,policy_enable_tls_session_holding,bool,no,,no-chart
-aws,network-firewall,policy_encryption_configuration,"object({key_id, type})",no,,no-chart
-aws,network-firewall,policy_name,string,no,,no-chart
-aws,network-firewall,policy_ram_resource_associations,map(string),no,,no-chart
-aws,network-firewall,policy_resource_policy,string,no,,no-chart
-aws,network-firewall,policy_resource_policy_actions,list(string),no,,no-chart
-aws,network-firewall,policy_resource_policy_principals,list(string),no,,no-chart
-aws,network-firewall,policy_stateful_default_actions,list(string),no,,no-chart
-aws,network-firewall,policy_stateful_engine_options,"object({flow_timeouts, rule_order, stream_exception_policy})",no,,no-chart
-aws,network-firewall,policy_stateful_rule_group_reference,"map(object({deep_threat_inspection, override, priority, resource_arn}))",no,,no-chart
-aws,network-firewall,policy_stateless_custom_action,"map(object({action_definition, action_name}))",no,,no-chart
-aws,network-firewall,policy_stateless_default_actions,list(string),no,,no-chart
-aws,network-firewall,policy_stateless_fragment_default_actions,list(string),no,,no-chart
-aws,network-firewall,policy_stateless_rule_group_reference,"map(object({priority, resource_arn}))",no,,no-chart
-aws,network-firewall,policy_tags,map(string),no,,no-chart
-aws,network-firewall,policy_tls_inspection_configuration_arn,string,no,,no-chart
-aws,network-firewall,policy_variables,object({rule_variables}),no,,no-chart
-aws,network-firewall,region,string,no,,no-chart
-aws,network-firewall,subnet_change_protection,bool,no,,no-chart
-aws,network-firewall,subnet_mapping,"map(object({ip_address_type, subnet_id}))",no,,no-chart
-aws,network-firewall,tags,map(string),no,,no-chart
-aws,network-firewall,transit_gateway_id,string,no,,no-chart
-aws,network-firewall,vpc_id,string,no,,no-chart
+aws,network-firewall,availability_zone_change_protection,bool,no,ACK's Firewall (networkfirewall-controller v1.8.0) has no availabilityZoneChangeProtection field,gap
+aws,network-firewall,availability_zone_mapping,list(object({availability_zone_id})),no,ACK's Firewall has no availabilityZoneMappings field (a firewall is placed by subnet_mapping or vpc_id),gap
+aws,network-firewall,create,bool,yes,,
+aws,network-firewall,create_logging_configuration,bool,yes,,
+aws,network-firewall,create_policy,bool,yes,,
+aws,network-firewall,create_policy_resource_policy,bool,no,the firewall policy's resource policy (aws_networkfirewall_resource_policy) has no kind in ACK or ack-extensions,gap
+aws,network-firewall,delete_protection,bool,yes,,
+aws,network-firewall,description,string,yes,,
+aws,network-firewall,enable_monitoring_dashboard,bool,no,ACK's Firewall.loggingConfiguration has no enableMonitoringDashboard field (the dashboard aws_networkfirewall_logging_configuration creates),gap
+aws,network-firewall,enabled_analysis_types,list(string),no,ACK's Firewall has no enabledAnalysisTypes field,gap
+aws,network-firewall,encryption_configuration,"object({key_id, type})",yes,,
+aws,network-firewall,firewall_policy_arn,string,yes,,
+aws,network-firewall,firewall_policy_change_protection,bool,yes,,
+aws,network-firewall,logging_configuration_destination_config,"list(object({log_destination, log_destination_type, log_type}))",yes,,
+aws,network-firewall,name,string,yes,,
+aws,network-firewall,policy_attach_resource_policy,bool,no,the firewall policy's resource policy (aws_networkfirewall_resource_policy) has no kind in ACK or ack-extensions,gap
+aws,network-firewall,policy_description,string,yes,,
+aws,network-firewall,policy_enable_tls_session_holding,bool,no,ACK's FirewallPolicy has no enableTLSSessionHolding field,gap
+aws,network-firewall,policy_encryption_configuration,"object({key_id, type})",yes,,
+aws,network-firewall,policy_name,string,yes,,
+aws,network-firewall,policy_ram_resource_associations,map(string),partial,"accepted with allow_alpha: true, as ack-extensions' ram.cloudcontrol.aws.hfl.dev ResourceAssociation; it names the policy by ARN, built from account_id, region and the policy name (the RAM kind has no reference field)",alpha
+aws,network-firewall,policy_resource_policy,string,no,the firewall policy's resource policy (aws_networkfirewall_resource_policy) has no kind in ACK or ack-extensions,gap
+aws,network-firewall,policy_resource_policy_actions,list(string),no,the firewall policy's resource policy (aws_networkfirewall_resource_policy) has no kind in ACK or ack-extensions,gap
+aws,network-firewall,policy_resource_policy_principals,list(string),no,the firewall policy's resource policy (aws_networkfirewall_resource_policy) has no kind in ACK or ack-extensions,gap
+aws,network-firewall,policy_stateful_default_actions,list(string),yes,,
+aws,network-firewall,policy_stateful_engine_options,"object({flow_timeouts, rule_order, stream_exception_policy})",partial,flow_timeouts (tcp_idle_timeout_seconds) is refused: ACK's FirewallPolicy.statefulEngineOptions carries rule_order and stream_exception_policy only,gap
+aws,network-firewall,policy_stateful_rule_group_reference,"map(object({deep_threat_inspection, override, priority, resource_arn}))",partial,"deep_threat_inspection is refused: ACK's FirewallPolicy.statefulRuleGroupReferences has resourceARN, priority and override only",gap
+aws,network-firewall,policy_stateless_custom_action,"map(object({action_definition, action_name}))",yes,,
+aws,network-firewall,policy_stateless_default_actions,list(string),yes,,
+aws,network-firewall,policy_stateless_fragment_default_actions,list(string),yes,,
+aws,network-firewall,policy_stateless_rule_group_reference,"map(object({priority, resource_arn}))",yes,,
+aws,network-firewall,policy_tags,map(string),yes,,
+aws,network-firewall,policy_tls_inspection_configuration_arn,string,yes,,
+aws,network-firewall,policy_variables,object({rule_variables}),yes,,
+aws,network-firewall,region,string,yes,,
+aws,network-firewall,subnet_change_protection,bool,yes,,
+aws,network-firewall,subnet_mapping,"map(object({ip_address_type, subnet_id}))",yes,,
+aws,network-firewall,tags,map(string),yes,,
+aws,network-firewall,transit_gateway_id,string,no,"ACK's Firewall has no transitGatewayID field: a transit-gateway-attached firewall cannot be created, only a VPC one",gap
+aws,network-firewall,vpc_id,string,yes,,
 aws,iam-role,create,bool,yes,,
 aws,iam-role,create_inline_policy,bool,yes,,
 aws,iam-role,create_instance_profile,bool,yes,,

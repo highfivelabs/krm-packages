@@ -1,0 +1,24 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+The module variables this chart keeps in its values but cannot carry
+(upstream.yaml, "refused"): each stops the render, naming the gap, when it
+is set to anything but its Terraform default. Renders nothing.
+*/ -}}
+{{- $v := .Values -}}
+{{- include "ack.alpha" (list $ "endpoints" $v.endpoints "DBProxyEndpoint (ack-extensions, Cloud Control)") }}
+{{- include "ack.alpha" (list $ "target_db_instance" $v.target_db_instance "DBProxyTarget (ack-extensions)") }}
+{{- include "ack.alpha" (list $ "target_db_cluster" $v.target_db_cluster "DBProxyTarget (ack-extensions)") }}
+{{- include "ack.unsupported" (list $ "default_auth_scheme" $v.default_auth_scheme "ACK's DBProxy (rds-controller v1.15.1) has no defaultAuthScheme field") }}
+{{- include "ack.unsupported" (list $ "endpoint_network_type" $v.endpoint_network_type "ACK's DBProxy has no endpointNetworkType field") }}
+{{- include "ack.unsupported" (list $ "target_connection_network_type" $v.target_connection_network_type "ACK's DBProxy has no targetConnectionNetworkType field") }}
+{{- include "ack.unsupported" (list $ "connection_borrow_timeout" $v.connection_borrow_timeout "the default target group's connection pool (aws_db_proxy_default_target_group) has no field on ACK's DBProxy and no kind in ack-extensions") }}
+{{- include "ack.unsupported" (list $ "init_query" $v.init_query "the default target group's connection pool (aws_db_proxy_default_target_group) has no field on ACK's DBProxy and no kind in ack-extensions") }}
+{{- include "ack.unchanged" (list $ "max_connections_percent" $v.max_connections_percent "90" "the default target group's connection pool has no field on ACK's DBProxy, so AWS's own pool defaults apply and the module's 90 is not sent") }}
+{{- include "ack.unchanged" (list $ "max_idle_connections_percent" $v.max_idle_connections_percent "50" "the default target group's connection pool has no field on ACK's DBProxy, so AWS's own pool defaults apply") }}
+{{- include "ack.unsupported" (list $ "session_pinning_filters" $v.session_pinning_filters "the default target group's connection pool (aws_db_proxy_default_target_group) has no field on ACK's DBProxy and no kind in ack-extensions") }}
+{{- include "ack.unchanged" (list $ "iam_role_force_detach_policies" $v.iam_role_force_detach_policies "true" "ACK's Role has no forceDetachPolicies field and always deletes inline policies with the Role") }}
+{{- include "ack.unsupported" (list $ "use_role_name_prefix" $v.use_role_name_prefix "ACK's Role takes a name, not a name prefix: set iam_role_name or names.role") }}
+{{- include "ack.unsupported" (list $ "use_policy_name_prefix" $v.use_policy_name_prefix "an inline policy of ACK's Role is named by the chart, not generated from a name prefix") }}
+{{- include "ack.unsupported" (list $ "log_group_class" $v.log_group_class "ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no log group class field") }}

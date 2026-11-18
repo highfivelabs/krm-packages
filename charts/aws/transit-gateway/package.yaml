@@ -1,0 +1,26 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (docs/design.md, "Outputs"). Outputs are
+# the module's declared outputs for what the chart ports, selected from the
+# live ACK objects (resources.<hfl.dev/id>). Not provided: the default route
+# tables' IDs (the gateway's status does not carry them), the route table,
+# routes, associations, propagations and the RAM share (not ported), and the
+# attachments' whole objects.
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: aws-transit-gateway
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [ack]
+  outputs:
+    ec2_transit_gateway_arn: >-
+      'transit-gateway' in resources && has(resources['transit-gateway'].status.ackResourceMetadata.arn) ? resources['transit-gateway'].status.ackResourceMetadata.arn : ""
+    ec2_transit_gateway_id: >-
+      'transit-gateway' in resources && has(resources['transit-gateway'].status.transitGatewayID) ? resources['transit-gateway'].status.transitGatewayID : ""
+    ec2_transit_gateway_owner_id: >-
+      'transit-gateway' in resources && has(resources['transit-gateway'].status.ownerID) ? resources['transit-gateway'].status.ownerID : ""
+    ec2_transit_gateway_vpc_attachment_ids: >-
+      inputs.vpc_attachments.map(k, k).sort().map(k, resources['attachment-' + k].status.id)

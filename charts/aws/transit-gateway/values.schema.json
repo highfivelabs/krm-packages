@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "names": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "namePrefix": {
+      "type": "string"
+    },
+    "labels": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "allow_alpha": {
+      "type": "boolean"
+    },
+    "deletion_policy": {
+      "type": "string",
+      "enum": [
+        "DELETE",
+        "ABANDON"
+      ]
+    },
+    "partition": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "region": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "create_tgw": {
+      "type": "boolean"
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "amazon_side_asn": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "enable_default_route_table_association": {
+      "type": "boolean"
+    },
+    "enable_default_route_table_propagation": {
+      "type": "boolean"
+    },
+    "enable_auto_accept_shared_attachments": {
+      "type": "boolean"
+    },
+    "enable_vpn_ecmp_support": {
+      "type": "boolean"
+    },
+    "enable_multicast_support": {
+      "type": "boolean"
+    },
+    "enable_dns_support": {
+      "type": "boolean"
+    },
+    "enable_encryption_support": {
+      "type": "boolean"
+    },
+    "transit_gateway_cidr_blocks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "timeouts": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "tgw_tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "tgw_default_route_table_tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "enable_sg_referencing_support": {
+      "type": "boolean"
+    },
+    "vpc_attachments": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "tgw_vpc_attachment_tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "create_tgw_routes": {
+      "type": "boolean"
+    },
+    "transit_gateway_route_table_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tgw_route_table_tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "share_tgw": {
+      "type": "boolean"
+    },
+    "ram_name": {
+      "type": "string"
+    },
+    "ram_allow_external_principals": {
+      "type": "boolean"
+    },
+    "ram_principals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ram_resource_share_arn": {
+      "type": "string"
+    },
+    "ram_tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  }
+}

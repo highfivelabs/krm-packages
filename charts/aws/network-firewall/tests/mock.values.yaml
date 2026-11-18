@@ -1,0 +1,10 @@
+name: inspect
+subnet_mapping:
+  a: {subnet_id: subnet-0123456789abcdef0}
+  b: {subnet_id: subnet-0123456789abcdef1}
+vpc_id: vpc-0123456789abcdef0
+region: us-east-1
+policy_stateless_default_actions: ["aws:pass"]
+policy_stateless_fragment_default_actions: ["aws:drop"]
+tags:
+  env: dev

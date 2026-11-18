@@ -1,0 +1,39 @@
+allow_alpha: true
+region: us-east-1
+labels:
+  team: network
+transit_gateway_id: tgw-0123456789abcdef0
+connect_to_transit_gateway: true
+customer_gateway_id: cgw-0123456789abcdef0
+vpn_connection_enable_acceleration: true
+tunnel_inside_ip_version: ipv4
+local_ipv4_network_cidr: 0.0.0.0/0
+remote_ipv4_network_cidr: 10.0.0.0/8
+tunnel1_inside_cidr: 169.254.10.0/30
+tunnel2_inside_cidr: 169.254.11.0/30
+tunnel1_preshared_key: {secretName: vpn-psk, key: tunnel1}
+tunnel2_preshared_key: {secretName: vpn-psk, key: tunnel2}
+tunnel1_phase1_dh_group_numbers: [14, 20]
+tunnel1_phase1_encryption_algorithms: [AES256, AES256-GCM-16]
+tunnel1_phase1_integrity_algorithms: [SHA2-256]
+tunnel1_phase1_lifetime_seconds: 28800
+tunnel1_phase2_dh_group_numbers: [14]
+tunnel1_phase2_encryption_algorithms: [AES256]
+tunnel1_phase2_integrity_algorithms: [SHA2-256]
+tunnel1_phase2_lifetime_seconds: 3600
+tunnel1_dpd_timeout_seconds: 30
+tunnel1_dpd_timeout_action: restart
+tunnel1_rekey_fuzz_percentage: 100
+tunnel1_rekey_margin_time_seconds: 540
+tunnel1_replay_window_size: 1024
+tunnel1_startup_action: start
+tunnel1_ike_versions: [ikev2]
+tunnel1_enable_tunnel_lifecycle_control: true
+tunnel1_log_options:
+  cloudwatch_log_options:
+    log_enabled: true
+    log_group_arn: arn:aws:logs:us-east-1:123456789012:log-group:vpn
+    log_output_format: json
+tunnel2_startup_action: add
+tags:
+  env: prod

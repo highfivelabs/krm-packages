@@ -1,0 +1,20 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: v2
+name: vpn-gateway
+description: >-
+  A Site-to-Site VPN connection between a customer gateway and a virtual private gateway or transit gateway, with its static routes and route propagation, as ack-extensions' ec2.aws.hfl.dev VPNConnection and VPNGatewayRoutePropagation objects. A port of terraform-aws-modules' vpn-gateway module.
+type: application
+version: 0.1.0
+# The module release this chart was ported from (UPSTREAM.md).
+appVersion: "terraform-aws-vpn-gateway-v4.0.0"
+kubeVersion: ">=1.27.0-0"
+keywords: [aws, ack, vpn, site-to-site, terraform-aws-modules]
+home: https://github.com/highfivelabs/catalog
+sources:
+  - https://github.com/terraform-aws-modules/terraform-aws-vpn-gateway/tree/b4a481d06144addf271996c10ebdb688b06362f6
+annotations:
+  hfl.dev/source: terraform-aws-vpn-gateway
+  hfl.dev/source-version: v4.0.0
+  hfl.dev/source-commit: b4a481d06144addf271996c10ebdb688b06362f6
+  hfl.dev/ack-ec2-controller: "v1.23.1"

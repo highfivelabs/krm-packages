@@ -1,0 +1,302 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "names": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "namePrefix": {
+      "type": "string"
+    },
+    "labels": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "allow_alpha": {
+      "type": "boolean"
+    },
+    "deletion_policy": {
+      "type": "string",
+      "enum": [
+        "DELETE",
+        "ABANDON"
+      ]
+    },
+    "partition": {
+      "type": "string"
+    },
+    "create": {
+      "type": "boolean"
+    },
+    "region": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "name": {
+      "type": "string"
+    },
+    "auth": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "auth_scheme": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "client_password_auth_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "iam_auth": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "secret_arn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "username": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "debug_logging": {
+      "type": "boolean"
+    },
+    "default_auth_scheme": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "endpoint_network_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "engine_family": {
+      "type": "string"
+    },
+    "idle_client_timeout": {
+      "type": "number"
+    },
+    "require_tls": {
+      "type": "boolean"
+    },
+    "role_arn": {
+      "type": "string"
+    },
+    "target_connection_network_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "vpc_security_group_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "vpc_subnet_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "proxy_tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "connection_borrow_timeout": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "init_query": {
+      "type": "string"
+    },
+    "max_connections_percent": {
+      "type": "number"
+    },
+    "max_idle_connections_percent": {
+      "type": "number"
+    },
+    "session_pinning_filters": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "target_db_instance": {
+      "type": "boolean"
+    },
+    "db_instance_identifier": {
+      "type": "string"
+    },
+    "target_db_cluster": {
+      "type": "boolean"
+    },
+    "db_cluster_identifier": {
+      "type": "string"
+    },
+    "endpoints": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "vpc_subnet_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "vpc_security_group_ids": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "target_role": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tags": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "manage_log_group": {
+      "type": "boolean"
+    },
+    "log_group_retention_in_days": {
+      "type": "number"
+    },
+    "log_group_kms_key_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "log_group_class": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "log_group_tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "create_iam_role": {
+      "type": "boolean"
+    },
+    "iam_role_name": {
+      "type": "string"
+    },
+    "use_role_name_prefix": {
+      "type": "boolean"
+    },
+    "iam_role_description": {
+      "type": "string"
+    },
+    "iam_role_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "iam_role_force_detach_policies": {
+      "type": "boolean"
+    },
+    "iam_role_max_session_duration": {
+      "type": "number"
+    },
+    "iam_role_permissions_boundary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "iam_role_tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "create_iam_policy": {
+      "type": "boolean"
+    },
+    "iam_policy_name": {
+      "type": "string"
+    },
+    "use_policy_name_prefix": {
+      "type": "boolean"
+    },
+    "kms_key_arns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

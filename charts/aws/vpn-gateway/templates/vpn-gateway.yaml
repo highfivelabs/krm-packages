@@ -1,0 +1,111 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf: the VPN connection (one of the module's four aws_vpn_connection
+resources, which differ only in whether both tunnels' inside CIDRs and
+pre-shared keys are given), its static routes (aws_vpn_connection_route) and
+the route propagation of a virtual private gateway to route tables
+(aws_vpn_gateway_route_propagation), as ack-extensions' VPNConnection and
+VPNGatewayRoutePropagation, behind allow_alpha: true.
+*/ -}}
+{{- include "ack.names" (list $ (list "vpnConnection")) -}}
+{{- $v := .Values -}}
+{{- if $v.create_vpn_connection }}
+{{- include "ack.alpha" (list $ "create_vpn_connection" true "VPNConnection (ack-extensions)") -}}
+{{- if not $v.customer_gateway_id }}
+{{- fail "vpn-gateway: customer_gateway_id is required" }}
+{{- end }}
+{{- if and (not $v.vpn_gateway_id) (not $v.transit_gateway_id) }}
+{{- fail "vpn-gateway: vpn_gateway_id or transit_gateway_id is required" }}
+{{- end }}
+{{- if and $v.vpn_gateway_id $v.transit_gateway_id }}
+{{- fail "vpn-gateway: set one of vpn_gateway_id and transit_gateway_id, not both" }}
+{{- end }}
+{{- $tgw := $v.connect_to_transit_gateway -}}
+{{- $region := $v.region | default "" -}}
+{{- $ident := ternary (printf "TGW %s" ($v.transit_gateway_id | default "")) (printf "VPC %s" ($v.vpc_id | default "")) $tgw -}}
+{{- $nameTag := include "ack.resourceName" (list $ "vpnConnection" "VPN connection" (printf "VPN Connection between %s and Customer Gateway %s" $ident $v.customer_gateway_id) 256) -}}
+{{- $insideGiven := and $v.tunnel1_inside_cidr $v.tunnel2_inside_cidr -}}
+{{- $pskGiven := and $v.tunnel1_preshared_key $v.tunnel2_preshared_key -}}
+{{- $tunnels := list -}}
+{{- range $i := (list 1 2) -}}
+{{- $p := printf "tunnel%d_" $i -}}
+{{- $t := dict -}}
+{{- if $insideGiven }}{{- $_ := set $t "tunnelInsideCIDR" (get $v (printf "%sinside_cidr" $p)) -}}{{- end -}}
+{{- if $pskGiven }}{{- $_ := set $t "preSharedKey" (include "vpn.secretRef" (list $ (printf "%spreshared_key" $p) (get $v (printf "%spreshared_key" $p))) | fromJson) -}}{{- end -}}
+{{- range $f := (list (list "phase1_dh_group_numbers" "phase1DHGroupNumbers" "int") (list "phase1_encryption_algorithms" "phase1EncryptionAlgorithms" "str") (list "phase1_integrity_algorithms" "phase1IntegrityAlgorithms" "str") (list "phase2_dh_group_numbers" "phase2DHGroupNumbers" "int") (list "phase2_encryption_algorithms" "phase2EncryptionAlgorithms" "str") (list "phase2_integrity_algorithms" "phase2IntegrityAlgorithms" "str") (list "ike_versions" "iKEVersions" "str")) -}}
+{{- $val := get $v (printf "%s%s" $p (index $f 0)) -}}
+{{- if $val }}{{- $items := list -}}{{- range $x := $val }}{{- $items = append $items (dict "value" (ternary (int64 $x) $x (eq (index $f 2) "int"))) -}}{{- end -}}{{- $_ := set $t (index $f 1) $items -}}{{- end -}}
+{{- end -}}
+{{- range $f := (list (list "phase1_lifetime_seconds" "phase1LifetimeSeconds") (list "phase2_lifetime_seconds" "phase2LifetimeSeconds") (list "dpd_timeout_seconds" "dpdTimeoutSeconds") (list "rekey_fuzz_percentage" "rekeyFuzzPercentage") (list "rekey_margin_time_seconds" "rekeyMarginTimeSeconds") (list "replay_window_size" "replayWindowSize")) -}}
+{{- $val := get $v (printf "%s%s" $p (index $f 0)) -}}
+{{- if not (kindIs "invalid" $val) }}{{- $_ := set $t (index $f 1) (int64 $val) -}}{{- end -}}
+{{- end -}}
+{{- range $f := (list (list "dpd_timeout_action" "dpdTimeoutAction") (list "startup_action" "startupAction")) -}}
+{{- $val := get $v (printf "%s%s" $p (index $f 0)) -}}
+{{- if $val }}{{- $_ := set $t (index $f 1) $val -}}{{- end -}}
+{{- end -}}
+{{- $lc := get $v (printf "%senable_tunnel_lifecycle_control" $p) -}}
+{{- if not (kindIs "invalid" $lc) }}{{- $_ := set $t "enableTunnelLifecycleControl" $lc -}}{{- end -}}
+{{- $lo := get $v (printf "%slog_options" $p) | default dict -}}
+{{- with $lo.cloudwatch_log_options }}
+{{- $cw := dict -}}
+{{- range $f := (list (list "log_enabled" "logEnabled") (list "log_group_arn" "logGroupARN") (list "log_output_format" "logOutputFormat")) -}}
+{{- if hasKey $lo.cloudwatch_log_options (index $f 0) }}{{- $_ := set $cw (index $f 1) (get $lo.cloudwatch_log_options (index $f 0)) -}}{{- end -}}
+{{- end -}}
+{{- $_ := set $t "logOptions" (dict "cloudWatchLogOptions" $cw) -}}
+{{- end -}}
+{{- $tunnels = append $tunnels $t -}}
+{{- end -}}
+{{- /* The tunnel options are positional: tunnel 1 first. Trailing empty entries are dropped. */ -}}
+{{- if not (last $tunnels) }}{{- $tunnels = initial $tunnels -}}{{- end -}}
+{{- if and (eq (len $tunnels) 1) (not (first $tunnels)) }}{{- $tunnels = list -}}{{- end -}}
+{{- $tags := include "ack.tags" (list $ (dict "Name" $nameTag) $v.tags) | fromJson }}
+---
+apiVersion: ec2.aws.hfl.dev/v1alpha1
+kind: VPNConnection
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list .Release.Name "vpn-connection")) "id" "vpn-connection" "region" $region) | nindent 2 }}
+spec:
+  type_: ipsec.1
+  customerGatewayID: {{ $v.customer_gateway_id | quote }}
+{{- with $v.vpn_gateway_id }}
+  vpnGatewayID: {{ . | quote }}
+{{- end }}
+{{- with $v.transit_gateway_id }}
+  transitGatewayID: {{ . | quote }}
+{{- end }}
+{{- $opts := dict -}}
+{{- if $v.vpn_connection_static_routes_only }}{{- $_ := set $opts "staticRoutesOnly" true -}}{{- end -}}
+{{- if not (kindIs "invalid" $v.vpn_connection_enable_acceleration) }}{{- $_ := set $opts "enableAcceleration" $v.vpn_connection_enable_acceleration -}}{{- end -}}
+{{- with $v.tunnel_inside_ip_version }}{{- $_ := set $opts "tunnelInsideIPVersion" . -}}{{- end -}}
+{{- range $f := (list (list "local_ipv4_network_cidr" "localIPv4NetworkCIDR") (list "remote_ipv4_network_cidr" "remoteIPv4NetworkCIDR") (list "local_ipv6_network_cidr" "localIPv6NetworkCIDR") (list "remote_ipv6_network_cidr" "remoteIPv6NetworkCIDR")) -}}
+{{- with get $v (index $f 0) }}{{- $_ := set $opts (index $f 1) . -}}{{- end -}}
+{{- end -}}
+{{- if $tunnels }}{{- $_ := set $opts "tunnelOptions" $tunnels -}}{{- end }}
+{{- if $opts }}
+  options:
+{{- toYaml $opts | nindent 4 }}
+{{- end }}
+{{- if and $v.vpn_connection_static_routes_only (not $tgw) $v.vpn_connection_static_routes_destinations }}
+  staticRoutes:
+{{- toYaml $v.vpn_connection_static_routes_destinations | nindent 4 }}
+{{- end }}
+  tags:
+{{- include "ack.tagList" (list $tags) | nindent 4 }}
+{{- if not $tgw }}
+{{- range $i, $rt := $v.vpc_subnet_route_table_ids }}
+{{- if lt (int $i) (int $v.vpc_subnet_route_table_count) }}
+---
+apiVersion: ec2.aws.hfl.dev/v1alpha1
+kind: VPNGatewayRoutePropagation
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "route-propagation" $i)) "id" (printf "route-propagation-%d" $i) "region" $region) | nindent 2 }}
+spec:
+  gatewayID: {{ $v.vpn_gateway_id | quote }}
+  routeTableID: {{ $rt | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,12 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+The module variables this chart keeps in its values but cannot carry
+(upstream.yaml, "refused"): each stops the render, naming the gap, when it
+is set to what it cannot carry. Renders nothing.
+*/ -}}
+{{- $v := .Values -}}
+{{- if and $v.create_vpn_connection $v.create_vpn_gateway_attachment (not $v.connect_to_transit_gateway) $v.vpc_id }}
+{{- fail "vpn-gateway: create_vpn_gateway_attachment is not supported: ack-extensions' VPNGateway creates a gateway and attaches it in one object (spec.vpc) and cannot attach an existing gateway (aws_vpn_gateway_attachment); attach the gateway where it is created and set create_vpn_gateway_attachment: false (docs/aws.md)" }}
+{{- end }}

@@ -1,0 +1,20 @@
+---
+# Source: network-firewall/templates/network-firewall.yaml
+apiVersion: networkfirewall.services.k8s.aws/v1alpha1
+kind: Firewall
+metadata:
+  name: own-policy-firewall
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "own-policy"
+    app.kubernetes.io/name: network-firewall
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "firewall"
+spec:
+  firewallName: "inspect"
+  firewallPolicyARN: "arn:aws:network-firewall:us-east-1:123456789012:firewall-policy/existing"
+  subnetMappings:
+    - subnetID: subnet-0123456789abcdef0
+  deleteProtection: true
+  subnetChangeProtection: true
