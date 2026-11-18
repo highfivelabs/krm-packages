@@ -1,0 +1,74 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Where this chart came from: the Terraform module it ports and the release
+# it was ported from. Machine-readable; `task upstream-check` keeps it equal
+# to upstream/modules.yaml and Chart.yaml. To take a newer release, see
+# UPSTREAM.md ("Moving the pins").
+module: aws/network-firewall
+repo: https://github.com/terraform-aws-modules/terraform-aws-network-firewall
+path: .
+version: v2.3.0
+commit: da5ce58c76ab0827c712ec881dad56b0e24c1114
+license: Apache-2.0
+copyright: null
+module_url: https://github.com/terraform-aws-modules/terraform-aws-network-firewall/tree/v2.3.0
+registry_url: https://registry.terraform.io/modules/terraform-aws-modules/network-firewall/aws
+synced: 2026-11-18
+# Module variables the chart keeps in values.yaml (so tfvars convert one to
+# one) but refuses when set (to anything but the module's default), or
+# accepts only in part. Read by `task coverage`; `task coverage-verify`
+# renders the chart to check that each one is refused. kind: gap (no ACK or
+# ack-extensions kind or field, or none that can be wired in one render),
+# alpha (only an ack-extensions kind, behind allow_alpha), not-ported (ACK
+# has it, the chart does not map it yet) or by-design (Bundt replaces it).
+# partial: the variable is accepted, the reason says what is not carried.
+refused:
+- variable: availability_zone_change_protection
+  kind: gap
+  reason: "ACK's Firewall (networkfirewall-controller v1.8.0) has no availabilityZoneChangeProtection field"
+- variable: availability_zone_mapping
+  kind: gap
+  reason: "ACK's Firewall has no availabilityZoneMappings field (a firewall is placed by subnet_mapping or vpc_id)"
+- variable: create_policy_resource_policy
+  kind: gap
+  reason: "the firewall policy's resource policy (aws_networkfirewall_resource_policy) has no kind in ACK or ack-extensions"
+- variable: enable_monitoring_dashboard
+  kind: gap
+  reason: "ACK's Firewall.loggingConfiguration has no enableMonitoringDashboard field (the dashboard aws_networkfirewall_logging_configuration creates)"
+- variable: enabled_analysis_types
+  kind: gap
+  reason: "ACK's Firewall has no enabledAnalysisTypes field"
+- variable: policy_attach_resource_policy
+  kind: gap
+  reason: "the firewall policy's resource policy (aws_networkfirewall_resource_policy) has no kind in ACK or ack-extensions"
+- variable: policy_enable_tls_session_holding
+  kind: gap
+  reason: "ACK's FirewallPolicy has no enableTLSSessionHolding field"
+- variable: policy_ram_resource_associations
+  kind: alpha
+  reason: "accepted with allow_alpha: true, as ack-extensions' ram.cloudcontrol.aws.hfl.dev ResourceAssociation; it names the policy by ARN, built from account_id, region and the policy name (the RAM kind has no reference field)"
+  partial: true
+  needs_allow_alpha: true
+- variable: policy_resource_policy
+  kind: gap
+  reason: "the firewall policy's resource policy (aws_networkfirewall_resource_policy) has no kind in ACK or ack-extensions"
+- variable: policy_resource_policy_actions
+  kind: gap
+  reason: "the firewall policy's resource policy (aws_networkfirewall_resource_policy) has no kind in ACK or ack-extensions"
+- variable: policy_resource_policy_principals
+  kind: gap
+  reason: "the firewall policy's resource policy (aws_networkfirewall_resource_policy) has no kind in ACK or ack-extensions"
+- variable: policy_stateful_engine_options
+  kind: gap
+  reason: "flow_timeouts (tcp_idle_timeout_seconds) is refused: ACK's FirewallPolicy.statefulEngineOptions carries rule_order and stream_exception_policy only"
+  partial: true
+  fields: ["flow_timeouts"]
+- variable: policy_stateful_rule_group_reference
+  kind: gap
+  reason: "deep_threat_inspection is refused: ACK's FirewallPolicy.statefulRuleGroupReferences has resourceARN, priority and override only"
+  partial: true
+  fields: ["deep_threat_inspection"]
+- variable: transit_gateway_id
+  kind: gap
+  reason: "ACK's Firewall has no transitGatewayID field: a transit-gateway-attached firewall cannot be created, only a VPC one"

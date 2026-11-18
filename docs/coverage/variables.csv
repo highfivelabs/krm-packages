@@ -3747,46 +3747,46 @@ aws,dms,repl_subnet_group_tags,map(string),no,,no-chart
 aws,dms,replication_tasks,any,no,,no-chart
 aws,dms,s3_endpoints,any,no,,no-chart
 aws,dms,tags,map(string),no,,no-chart
-aws,network-firewall,availability_zone_change_protection,bool,no,,no-chart
-aws,network-firewall,availability_zone_mapping,list(object({availability_zone_id})),no,,no-chart
-aws,network-firewall,create,bool,no,,no-chart
-aws,network-firewall,create_logging_configuration,bool,no,,no-chart
-aws,network-firewall,create_policy,bool,no,,no-chart
-aws,network-firewall,create_policy_resource_policy,bool,no,,no-chart
-aws,network-firewall,delete_protection,bool,no,,no-chart
-aws,network-firewall,description,string,no,,no-chart
-aws,network-firewall,enable_monitoring_dashboard,bool,no,,no-chart
-aws,network-firewall,enabled_analysis_types,list(string),no,,no-chart
-aws,network-firewall,encryption_configuration,"object({key_id, type})",no,,no-chart
-aws,network-firewall,firewall_policy_arn,string,no,,no-chart
-aws,network-firewall,firewall_policy_change_protection,bool,no,,no-chart
-aws,network-firewall,logging_configuration_destination_config,"list(object({log_destination, log_destination_type, log_type}))",no,,no-chart
-aws,network-firewall,name,string,no,,no-chart
-aws,network-firewall,policy_attach_resource_policy,bool,no,,no-chart
-aws,network-firewall,policy_description,string,no,,no-chart
-aws,network-firewall,policy_enable_tls_session_holding,bool,no,,no-chart
-aws,network-firewall,policy_encryption_configuration,"object({key_id, type})",no,,no-chart
-aws,network-firewall,policy_name,string,no,,no-chart
-aws,network-firewall,policy_ram_resource_associations,map(string),no,,no-chart
-aws,network-firewall,policy_resource_policy,string,no,,no-chart
-aws,network-firewall,policy_resource_policy_actions,list(string),no,,no-chart
-aws,network-firewall,policy_resource_policy_principals,list(string),no,,no-chart
-aws,network-firewall,policy_stateful_default_actions,list(string),no,,no-chart
-aws,network-firewall,policy_stateful_engine_options,"object({flow_timeouts, rule_order, stream_exception_policy})",no,,no-chart
-aws,network-firewall,policy_stateful_rule_group_reference,"map(object({deep_threat_inspection, override, priority, resource_arn}))",no,,no-chart
-aws,network-firewall,policy_stateless_custom_action,"map(object({action_definition, action_name}))",no,,no-chart
-aws,network-firewall,policy_stateless_default_actions,list(string),no,,no-chart
-aws,network-firewall,policy_stateless_fragment_default_actions,list(string),no,,no-chart
-aws,network-firewall,policy_stateless_rule_group_reference,"map(object({priority, resource_arn}))",no,,no-chart
-aws,network-firewall,policy_tags,map(string),no,,no-chart
-aws,network-firewall,policy_tls_inspection_configuration_arn,string,no,,no-chart
-aws,network-firewall,policy_variables,object({rule_variables}),no,,no-chart
-aws,network-firewall,region,string,no,,no-chart
-aws,network-firewall,subnet_change_protection,bool,no,,no-chart
-aws,network-firewall,subnet_mapping,"map(object({ip_address_type, subnet_id}))",no,,no-chart
-aws,network-firewall,tags,map(string),no,,no-chart
-aws,network-firewall,transit_gateway_id,string,no,,no-chart
-aws,network-firewall,vpc_id,string,no,,no-chart
+aws,network-firewall,availability_zone_change_protection,bool,no,ACK's Firewall (networkfirewall-controller v1.8.0) has no availabilityZoneChangeProtection field,gap
+aws,network-firewall,availability_zone_mapping,list(object({availability_zone_id})),no,ACK's Firewall has no availabilityZoneMappings field (a firewall is placed by subnet_mapping or vpc_id),gap
+aws,network-firewall,create,bool,yes,,
+aws,network-firewall,create_logging_configuration,bool,yes,,
+aws,network-firewall,create_policy,bool,yes,,
+aws,network-firewall,create_policy_resource_policy,bool,no,the firewall policy's resource policy (aws_networkfirewall_resource_policy) has no kind in ACK or ack-extensions,gap
+aws,network-firewall,delete_protection,bool,yes,,
+aws,network-firewall,description,string,yes,,
+aws,network-firewall,enable_monitoring_dashboard,bool,no,ACK's Firewall.loggingConfiguration has no enableMonitoringDashboard field (the dashboard aws_networkfirewall_logging_configuration creates),gap
+aws,network-firewall,enabled_analysis_types,list(string),no,ACK's Firewall has no enabledAnalysisTypes field,gap
+aws,network-firewall,encryption_configuration,"object({key_id, type})",yes,,
+aws,network-firewall,firewall_policy_arn,string,yes,,
+aws,network-firewall,firewall_policy_change_protection,bool,yes,,
+aws,network-firewall,logging_configuration_destination_config,"list(object({log_destination, log_destination_type, log_type}))",yes,,
+aws,network-firewall,name,string,yes,,
+aws,network-firewall,policy_attach_resource_policy,bool,no,the firewall policy's resource policy (aws_networkfirewall_resource_policy) has no kind in ACK or ack-extensions,gap
+aws,network-firewall,policy_description,string,yes,,
+aws,network-firewall,policy_enable_tls_session_holding,bool,no,ACK's FirewallPolicy has no enableTLSSessionHolding field,gap
+aws,network-firewall,policy_encryption_configuration,"object({key_id, type})",yes,,
+aws,network-firewall,policy_name,string,yes,,
+aws,network-firewall,policy_ram_resource_associations,map(string),partial,"accepted with allow_alpha: true, as ack-extensions' ram.cloudcontrol.aws.hfl.dev ResourceAssociation; it names the policy by ARN, built from account_id, region and the policy name (the RAM kind has no reference field)",alpha
+aws,network-firewall,policy_resource_policy,string,no,the firewall policy's resource policy (aws_networkfirewall_resource_policy) has no kind in ACK or ack-extensions,gap
+aws,network-firewall,policy_resource_policy_actions,list(string),no,the firewall policy's resource policy (aws_networkfirewall_resource_policy) has no kind in ACK or ack-extensions,gap
+aws,network-firewall,policy_resource_policy_principals,list(string),no,the firewall policy's resource policy (aws_networkfirewall_resource_policy) has no kind in ACK or ack-extensions,gap
+aws,network-firewall,policy_stateful_default_actions,list(string),yes,,
+aws,network-firewall,policy_stateful_engine_options,"object({flow_timeouts, rule_order, stream_exception_policy})",partial,flow_timeouts (tcp_idle_timeout_seconds) is refused: ACK's FirewallPolicy.statefulEngineOptions carries rule_order and stream_exception_policy only,gap
+aws,network-firewall,policy_stateful_rule_group_reference,"map(object({deep_threat_inspection, override, priority, resource_arn}))",partial,"deep_threat_inspection is refused: ACK's FirewallPolicy.statefulRuleGroupReferences has resourceARN, priority and override only",gap
+aws,network-firewall,policy_stateless_custom_action,"map(object({action_definition, action_name}))",yes,,
+aws,network-firewall,policy_stateless_default_actions,list(string),yes,,
+aws,network-firewall,policy_stateless_fragment_default_actions,list(string),yes,,
+aws,network-firewall,policy_stateless_rule_group_reference,"map(object({priority, resource_arn}))",yes,,
+aws,network-firewall,policy_tags,map(string),yes,,
+aws,network-firewall,policy_tls_inspection_configuration_arn,string,yes,,
+aws,network-firewall,policy_variables,object({rule_variables}),yes,,
+aws,network-firewall,region,string,yes,,
+aws,network-firewall,subnet_change_protection,bool,yes,,
+aws,network-firewall,subnet_mapping,"map(object({ip_address_type, subnet_id}))",yes,,
+aws,network-firewall,tags,map(string),yes,,
+aws,network-firewall,transit_gateway_id,string,no,"ACK's Firewall has no transitGatewayID field: a transit-gateway-attached firewall cannot be created, only a VPC one",gap
+aws,network-firewall,vpc_id,string,yes,,
 aws,iam-role,create,bool,yes,,
 aws,iam-role,create_inline_policy,bool,yes,,
 aws,iam-role,create_instance_profile,bool,yes,,

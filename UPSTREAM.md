@@ -64,6 +64,7 @@ charts use are copied in `crds/ack-extensions`.
 | `lambda-controller` | `v1.19.0` | `86905357482d01538cb00ab28d59c6af5c46e6f4` | Function, LayerVersion, EventSourceMapping, FunctionURLConfig, Version, Alias, CodeSigningConfig |
 | `apigatewayv2-controller` | `v1.9.0` | `4e95251285d92491095760729ec61695cd434ead` | API, APIMapping, Authorizer, Deployment, DomainName, Integration, Route, Stage, VPCLink |
 | `cloudfront-controller` | `v1.11.0` | `753248487a022254c571746f88180603e5c4c63f` | CachePolicy, Distribution, Function, OriginAccessControl, OriginRequestPolicy, ResponseHeadersPolicy, VPCOrigin |
+| `networkfirewall-controller` | `v1.8.0` | `4756924349a0880597d19481a1959bfd7777ebf1` | Firewall, FirewallPolicy |
 
 To move a controller: change its row, run `task test` (it re-fetches the
 CRDs and re-validates every AWS render), and re-read the gaps in

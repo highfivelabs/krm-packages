@@ -1,0 +1,343 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "names": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "namePrefix": {
+      "type": "string"
+    },
+    "labels": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "allow_alpha": {
+      "type": "boolean"
+    },
+    "deletion_policy": {
+      "type": "string",
+      "enum": [
+        "DELETE",
+        "ABANDON"
+      ]
+    },
+    "partition": {
+      "type": "string"
+    },
+    "account_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "create": {
+      "type": "boolean"
+    },
+    "region": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "availability_zone_change_protection": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "availability_zone_mapping": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "delete_protection": {
+      "type": "boolean"
+    },
+    "description": {
+      "type": "string"
+    },
+    "enabled_analysis_types": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "encryption_configuration": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "key_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "firewall_policy_arn": {
+      "type": "string"
+    },
+    "firewall_policy_change_protection": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "name": {
+      "type": "string"
+    },
+    "subnet_change_protection": {
+      "type": "boolean"
+    },
+    "subnet_mapping": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "subnet_id"
+        ],
+        "properties": {
+          "subnet_id": {
+            "type": "string"
+          },
+          "ip_address_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "transit_gateway_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "vpc_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "create_logging_configuration": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "logging_configuration_destination_config": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "log_destination",
+          "log_destination_type",
+          "log_type"
+        ],
+        "properties": {
+          "log_destination": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "log_destination_type": {
+            "type": "string"
+          },
+          "log_type": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "enable_monitoring_dashboard": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "create_policy": {
+      "type": "boolean"
+    },
+    "policy_description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "policy_encryption_configuration": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "key_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "policy_variables": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "policy_stateful_default_actions": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "policy_stateful_engine_options": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "policy_stateful_rule_group_reference": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "policy_stateless_custom_action": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "policy_stateless_default_actions": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "policy_stateless_fragment_default_actions": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "policy_stateless_rule_group_reference": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "policy_name": {
+      "type": "string"
+    },
+    "policy_tls_inspection_configuration_arn": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "policy_enable_tls_session_holding": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "policy_tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "create_policy_resource_policy": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "policy_resource_policy_actions": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "policy_resource_policy_principals": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "policy_attach_resource_policy": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "policy_resource_policy": {
+      "type": "string"
+    },
+    "policy_ram_resource_associations": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": [
+          "string",
+          "object"
+        ]
+      }
+    }
+  }
+}

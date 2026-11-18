@@ -1,0 +1,6 @@
+# expect: network-firewall: policy_ram_resource_associations needs the alpha kind
+name: inspect
+subnet_mapping:
+  a: {subnet_id: subnet-0123456789abcdef0}
+policy_ram_resource_associations:
+  shared: arn:aws:ram:us-east-1:123456789012:resource-share/abcd

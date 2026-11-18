@@ -1970,7 +1970,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/network-firewall/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-network-firewall/tree/v2.3.0
-    chart: null
+    chart: charts/aws/network-firewall
   - id: aws/iam-role
     cloud: aws
     module: iam-role

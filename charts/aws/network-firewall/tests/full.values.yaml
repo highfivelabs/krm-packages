@@ -1,0 +1,68 @@
+allow_alpha: true
+account_id: "123456789012"
+region: us-east-1
+labels:
+  team: network
+name: inspect
+description: Egress inspection
+delete_protection: false
+subnet_change_protection: false
+firewall_policy_change_protection: true
+vpc_id: vpc-0123456789abcdef0
+subnet_mapping:
+  a: {subnet_id: subnet-0123456789abcdef0, ip_address_type: IPV4}
+  b: {subnet_id: subnet-0123456789abcdef1}
+encryption_configuration:
+  type: CUSTOMER_KMS
+  key_id: arn:aws:kms:us-east-1:123456789012:key/1234
+create_logging_configuration: true
+logging_configuration_destination_config:
+  - log_destination_type: S3
+    log_type: FLOW
+    log_destination:
+      bucketName: my-fw-logs
+      prefix: flow
+  - log_destination_type: CloudWatchLogs
+    log_type: ALERT
+    log_destination:
+      logGroup: /aws/fw/alerts
+policy_name: inspect-policy
+policy_description: Strict egress policy
+policy_encryption_configuration:
+  type: AWS_OWNED_KMS_KEY
+policy_variables:
+  rule_variables:
+    - key: HOME_NET
+      ip_set:
+        definition: [10.0.0.0/8, 172.16.0.0/12]
+policy_stateful_default_actions: ["aws:drop_strict", "aws:alert_strict"]
+policy_stateful_engine_options:
+  rule_order: STRICT_ORDER
+  stream_exception_policy: DROP
+policy_stateful_rule_group_reference:
+  domains:
+    priority: 10
+    resource_arn: arn:aws:network-firewall:us-east-1:123456789012:stateful-rulegroup/domains
+  managed:
+    resource_arn: arn:aws:network-firewall:us-east-1:aws-managed:stateful-rulegroup/ThreatSignaturesBotnetStrictOrder
+    priority: 20
+    override: {action: DROP_TO_ALERT}
+policy_stateless_custom_action:
+  metric:
+    action_name: CountIt
+    action_definition:
+      publish_metric_action:
+        dimension: counted
+policy_stateless_default_actions: ["aws:forward_to_sfe", "CountIt"]
+policy_stateless_fragment_default_actions: ["aws:forward_to_sfe"]
+policy_stateless_rule_group_reference:
+  stateless:
+    priority: 1
+    resource_arn: arn:aws:network-firewall:us-east-1:123456789012:stateless-rulegroup/s
+policy_tls_inspection_configuration_arn: arn:aws:network-firewall:us-east-1:123456789012:tls-configuration/tls
+policy_ram_resource_associations:
+  shared: arn:aws:ram:us-east-1:123456789012:resource-share/abcd
+tags:
+  env: prod
+policy_tags:
+  tier: edge

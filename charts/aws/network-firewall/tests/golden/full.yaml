@@ -1,0 +1,124 @@
+---
+# Source: network-firewall/templates/network-firewall.yaml
+apiVersion: networkfirewall.services.k8s.aws/v1alpha1
+kind: Firewall
+metadata:
+  name: full-firewall
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: network-firewall
+    app.kubernetes.io/version: "0.1.0"
+    team: "network"
+  annotations:
+    hfl.dev/id: "firewall"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  firewallName: "inspect"
+  firewallPolicyRef:
+    from:
+      name: full-policy
+  vpcID: "vpc-0123456789abcdef0"
+  subnetMappings:
+    - ipAddressType: IPV4
+      subnetID: subnet-0123456789abcdef0
+    - subnetID: subnet-0123456789abcdef1
+  deleteProtection: false
+  subnetChangeProtection: false
+  firewallPolicyChangeProtection: true
+  description: "Egress inspection"
+  encryptionConfiguration:
+    type_: "CUSTOMER_KMS"
+    keyID: "arn:aws:kms:us-east-1:123456789012:key/1234"
+  loggingConfiguration:
+    logDestinationConfigs:
+    - logDestinationType: "S3"
+      logType: "FLOW"
+      logDestination:
+        bucketName: my-fw-logs
+        prefix: flow
+    - logDestinationType: "CloudWatchLogs"
+      logType: "ALERT"
+      logDestination:
+        logGroup: /aws/fw/alerts
+  tags:
+    - key: "env"
+      value: "prod"
+---
+# Source: network-firewall/templates/network-firewall.yaml
+apiVersion: networkfirewall.services.k8s.aws/v1alpha1
+kind: FirewallPolicy
+metadata:
+  name: full-policy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: network-firewall
+    app.kubernetes.io/version: "0.1.0"
+    team: "network"
+  annotations:
+    hfl.dev/id: "policy"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  firewallPolicyName: "inspect-policy"
+  description: "Strict egress policy"
+  encryptionConfiguration:
+    type_: "AWS_OWNED_KMS_KEY"
+  firewallPolicy:
+    policyVariables:
+      ruleVariables:
+        HOME_NET:
+          definition:
+          - 10.0.0.0/8
+          - 172.16.0.0/12
+    statefulDefaultActions:
+    - aws:drop_strict
+    - aws:alert_strict
+    statefulEngineOptions:
+      ruleOrder: STRICT_ORDER
+      streamExceptionPolicy: DROP
+    statefulRuleGroupReferences:
+    - priority: 10
+      resourceARN: arn:aws:network-firewall:us-east-1:123456789012:stateful-rulegroup/domains
+    - override:
+        action: DROP_TO_ALERT
+      priority: 20
+      resourceARN: arn:aws:network-firewall:us-east-1:aws-managed:stateful-rulegroup/ThreatSignaturesBotnetStrictOrder
+    statelessCustomActions:
+    - actionDefinition:
+        publishMetricAction:
+          dimensions:
+          - value: counted
+      actionName: CountIt
+    statelessDefaultActions:
+    - aws:forward_to_sfe
+    - CountIt
+    statelessFragmentDefaultActions:
+    - aws:forward_to_sfe
+    statelessRuleGroupReferences:
+    - priority: 1
+      resourceARN: arn:aws:network-firewall:us-east-1:123456789012:stateless-rulegroup/s
+    tlsInspectionConfigurationARN: arn:aws:network-firewall:us-east-1:123456789012:tls-configuration/tls
+  tags:
+    - key: "env"
+      value: "prod"
+    - key: "tier"
+      value: "edge"
+---
+# Source: network-firewall/templates/network-firewall.yaml
+apiVersion: ram.cloudcontrol.aws.hfl.dev/v1alpha1
+kind: ResourceAssociation
+metadata:
+  name: full-ram-shared
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: network-firewall
+    app.kubernetes.io/version: "0.1.0"
+    team: "network"
+  annotations:
+    hfl.dev/id: "ram-association-shared"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  resourceArn: "arn:aws:network-firewall:us-east-1:123456789012:firewall-policy/inspect-policy"
+  resourceShareArn: "arn:aws:ram:us-east-1:123456789012:resource-share/abcd"

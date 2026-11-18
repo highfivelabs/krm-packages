@@ -1,0 +1,6 @@
+# expect: network-firewall: policy_stateful_engine_options.flow_timeouts is not supported
+name: inspect
+subnet_mapping:
+  a: {subnet_id: subnet-0123456789abcdef0}
+policy_stateful_engine_options:
+  flow_timeouts: {tcp_idle_timeout_seconds: 300}

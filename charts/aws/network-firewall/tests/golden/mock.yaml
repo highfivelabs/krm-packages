@@ -1,0 +1,52 @@
+---
+# Source: network-firewall/templates/network-firewall.yaml
+apiVersion: networkfirewall.services.k8s.aws/v1alpha1
+kind: Firewall
+metadata:
+  name: mock-firewall
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: network-firewall
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "firewall"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  firewallName: "inspect"
+  firewallPolicyRef:
+    from:
+      name: mock-policy
+  vpcID: "vpc-0123456789abcdef0"
+  subnetMappings:
+    - subnetID: subnet-0123456789abcdef0
+    - subnetID: subnet-0123456789abcdef1
+  deleteProtection: true
+  subnetChangeProtection: true
+  tags:
+    - key: "env"
+      value: "dev"
+---
+# Source: network-firewall/templates/network-firewall.yaml
+apiVersion: networkfirewall.services.k8s.aws/v1alpha1
+kind: FirewallPolicy
+metadata:
+  name: mock-policy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: network-firewall
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "policy"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  firewallPolicyName: "inspect"
+  firewallPolicy:
+    statelessDefaultActions:
+    - aws:pass
+    statelessFragmentDefaultActions:
+    - aws:drop
+  tags:
+    - key: "env"
+      value: "dev"

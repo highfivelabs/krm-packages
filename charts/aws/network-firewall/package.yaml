@@ -1,0 +1,29 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (docs/design.md, "Outputs"). Outputs are
+# the module's declared outputs for what the chart ports, selected from the
+# live ACK objects (resources.<hfl.dev/id>). Not provided: the update tokens
+# (the firewall's status carries none), the firewall's status block, and the
+# resource policy's ID (the resource policy has no kind).
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: aws-network-firewall
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [ack]
+  outputs:
+    id: >-
+      'firewall' in resources && has(resources.firewall.status.ackResourceMetadata.arn) ? resources.firewall.status.ackResourceMetadata.arn : ""
+    arn: >-
+      'firewall' in resources && has(resources.firewall.status.ackResourceMetadata.arn) ? resources.firewall.status.ackResourceMetadata.arn : ""
+    logging_configuration_id: >-
+      'firewall' in resources && has(resources.firewall.spec.loggingConfiguration) && has(resources.firewall.status.ackResourceMetadata.arn) ? resources.firewall.status.ackResourceMetadata.arn : ""
+    policy_id: >-
+      'policy' in resources && has(resources.policy.status.ackResourceMetadata.arn) ? resources.policy.status.ackResourceMetadata.arn : ""
+    policy_arn: >-
+      'policy' in resources && has(resources.policy.status.ackResourceMetadata.arn) ? resources.policy.status.ackResourceMetadata.arn : ""
+    policy_update_token: >-
+      'policy' in resources && has(resources.policy.status.updateToken) ? resources.policy.status.updateToken : ""

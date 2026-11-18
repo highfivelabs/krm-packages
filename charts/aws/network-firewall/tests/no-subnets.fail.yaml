@@ -1,0 +1,2 @@
+# expect: network-firewall: subnet_mapping is required
+name: inspect

@@ -46,3 +46,4 @@ only with `allow_alpha: true` (`docs/design.md`, "Alpha kinds";
 | `elasticache.aws.hfl.dev_replicationgroups.yaml` | `ReplicationGroup` (`elasticache.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `6cb80e7c` (2026-11-17) |
 | `ec2.aws.hfl.dev_vpnconnections.yaml` | `VPNConnection` (`ec2.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `6cb80e7c` (2026-11-18) |
 | `ec2.aws.hfl.dev_vpngatewayroutepropagations.yaml` | `VPNGatewayRoutePropagation` (`ec2.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `6cb80e7c` (2026-11-18) |
+| `ram.cloudcontrol.aws.hfl.dev_resourceassociations.yaml` | `ResourceAssociation` (`ram.cloudcontrol.aws.hfl.dev/v1alpha1`, Cloud Control) | `cloudcontrol/config/crds/` at `6cb80e7c` (2026-11-18) |

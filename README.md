@@ -130,14 +130,14 @@ How much of the Terraform modules people use today the catalog carries, counted 
 
 ![All tracked modules](docs/coverage/total.svg)
 
-**177 modules tracked**: 15 ported, 138 partial, 21 blocked, 3 not started. Green is ported, amber partial (some variables refused with a message that names the gap), dark grey blocked (a resource type of the module has no stable kind: none, or only an alpha one), light grey not started.
+**177 modules tracked**: 15 ported, 139 partial, 20 blocked, 3 not started. Green is ported, amber partial (some variables refused with a message that names the gap), dark grey blocked (a resource type of the module has no stable kind: none, or only an alpha one), light grey not started.
 
 | Source | Modules | Bar | Variables covered |
 | --- | ---: | --- | ---: |
 | Google Cloud: Cloud Foundation Fabric and terraform-google-modules | 98 | ![gcp](docs/coverage/gcp.svg) | 1220 of 1478 (82.5%) |
-| AWS: terraform-aws-modules | 42 | ![aws](docs/coverage/aws.svg) | 1518 of 2348 (64.7%) |
+| AWS: terraform-aws-modules | 42 | ![aws](docs/coverage/aws.svg) | 1547 of 2348 (65.9%) |
 | Azure: Azure Verified Modules | 37 | ![azure](docs/coverage/azure.svg) | 1066 of 1170 (91.1%) |
-| **All** | **177** | | **3804 of 4996 (76.1%)** |
+| **All** | **177** | | **3833 of 4996 (76.7%)** |
 
 ### Google Cloud: Cloud Foundation Fabric and terraform-google-modules
 
@@ -258,7 +258,7 @@ How much of the Terraform modules people use today the catalog carries, counted 
 
 ### AWS: terraform-aws-modules
 
-0 ported, 31 partial, 11 blocked, 0 not started.
+0 ported, 32 partial, 10 blocked, 0 not started.
 
 **Ported and partial**
 
@@ -293,10 +293,11 @@ How much of the Terraform modules people use today the catalog carries, counted 
 | [`vpn-gateway`](https://github.com/terraform-aws-modules/terraform-aws-vpn-gateway/tree/v4.0.0) ([chart](charts/aws/vpn-gateway)) | ![vpn-gateway](docs/coverage/bars/aws-vpn-gateway.svg) 56 of 56 | 3 of 11 | 0 of 5 | partial |
 | [`apigateway-v2`](https://github.com/terraform-aws-modules/terraform-aws-apigateway-v2/tree/v6.1.1) ([chart](charts/aws/apigateway-v2)) | ![apigateway-v2](docs/coverage/bars/aws-apigateway-v2.svg) 39 of 43 | 13 of 22 | 11 of 13 | partial |
 | [`notify-slack`](https://github.com/terraform-aws-modules/terraform-aws-notify-slack/tree/v7.5.2) ([chart](charts/aws/notify-slack)) | ![notify-slack](docs/coverage/bars/aws-notify-slack.svg) 47 of 51 | 9 of 11 | 4 of 4 | partial |
+| [`network-firewall`](https://github.com/terraform-aws-modules/terraform-aws-network-firewall/tree/v2.3.0) ([chart](charts/aws/network-firewall)) | ![network-firewall](docs/coverage/bars/aws-network-firewall.svg) 29 of 40 | 6 of 9 | 3 of 6 | partial |
 | [`iam-role`](https://github.com/terraform-aws-modules/terraform-aws-iam/tree/v6.8.2/modules/iam-role) ([chart](charts/aws/iam-role)) | ![iam-role](docs/coverage/bars/aws-iam-role.svg) 31 of 31 | 7 of 7 | 4 of 4 | partial |
 | [`iam-policy`](https://github.com/terraform-aws-modules/terraform-aws-iam/tree/v6.8.2/modules/iam-policy) ([chart](charts/aws/iam-policy)) | ![iam-policy](docs/coverage/bars/aws-iam-policy.svg) 6 of 7 | 4 of 4 | 1 of 1 | partial |
 
-**Blocked: a resource type has no stable kind (first 10 of 11, by rank)**
+**Blocked: a resource type has no stable kind**
 
 | Module | Variables covered | Outputs | Resource types with a stable kind | Status |
 | --- | --- | ---: | ---: | --- |
