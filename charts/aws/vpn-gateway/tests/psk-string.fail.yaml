@@ -1,0 +1,7 @@
+# expect: vpn-gateway: tunnel1_preshared_key takes a reference to a Kubernetes Secret
+allow_alpha: true
+vpn_gateway_id: vgw-0123456789abcdef0
+customer_gateway_id: cgw-0123456789abcdef0
+create_vpn_gateway_attachment: false
+tunnel1_preshared_key: plaintext-secret
+tunnel2_preshared_key: {secretName: vpn-psk, key: tunnel2}

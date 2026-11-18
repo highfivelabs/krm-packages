@@ -1,0 +1,4 @@
+# expect: vpn-gateway: create_vpn_connection needs the alpha kind VPNConnection
+vpn_gateway_id: vgw-0123456789abcdef0
+customer_gateway_id: cgw-0123456789abcdef0
+create_vpn_gateway_attachment: false

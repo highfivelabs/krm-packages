@@ -1,0 +1,25 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (docs/design.md, "Outputs"). Outputs are
+# the module's declared outputs for what the chart ports, selected from the
+# live objects (resources.<hfl.dev/id>). Not provided: the tunnels' inside
+# addresses and the customer gateway configuration (VPNConnection's status
+# does not carry them), the transit gateway attachment's ID (no status
+# field), and the pre-shared keys (sensitive; they stay in the Secrets they
+# were taken from).
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: aws-vpn-gateway
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [ack]
+  outputs:
+    vpn_connection_id: >-
+      'vpn-connection' in resources && has(resources['vpn-connection'].status.vpnConnectionID) ? resources['vpn-connection'].status.vpnConnectionID : ""
+    vpn_connection_tunnel1_address: >-
+      'vpn-connection' in resources && has(resources['vpn-connection'].status.vgwTelemetry) && size(resources['vpn-connection'].status.vgwTelemetry) > 0 ? resources['vpn-connection'].status.vgwTelemetry[0].outsideIPAddress : ""
+    vpn_connection_tunnel2_address: >-
+      'vpn-connection' in resources && has(resources['vpn-connection'].status.vgwTelemetry) && size(resources['vpn-connection'].status.vgwTelemetry) > 1 ? resources['vpn-connection'].status.vgwTelemetry[1].outsideIPAddress : ""

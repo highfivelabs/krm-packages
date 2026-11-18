@@ -44,3 +44,5 @@ only with `allow_alpha: true` (`docs/design.md`, "Alpha kinds";
 | `efs.aws.hfl.dev_mounttargets.yaml` | `MountTarget` (`efs.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `6cb80e7c` (2026-11-17) |
 | `elasticache.aws.hfl.dev_cacheclusters.yaml` | `CacheCluster` (`elasticache.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `6cb80e7c` (2026-11-17) |
 | `elasticache.aws.hfl.dev_replicationgroups.yaml` | `ReplicationGroup` (`elasticache.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `6cb80e7c` (2026-11-17) |
+| `ec2.aws.hfl.dev_vpnconnections.yaml` | `VPNConnection` (`ec2.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `6cb80e7c` (2026-11-18) |
+| `ec2.aws.hfl.dev_vpngatewayroutepropagations.yaml` | `VPNGatewayRoutePropagation` (`ec2.aws.hfl.dev/v1alpha1`) | `config/crds/bases/` at `6cb80e7c` (2026-11-18) |

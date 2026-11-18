@@ -1310,12 +1310,12 @@ aws,efs,size_in_bytes,yes
 aws,vpn-gateway,tunnel1_preshared_key,no
 aws,vpn-gateway,tunnel2_preshared_key,no
 aws,vpn-gateway,vpn_connection_customer_gateway_configuration,no
-aws,vpn-gateway,vpn_connection_id,no
+aws,vpn-gateway,vpn_connection_id,yes
 aws,vpn-gateway,vpn_connection_transit_gateway_attachment_id,no
-aws,vpn-gateway,vpn_connection_tunnel1_address,no
+aws,vpn-gateway,vpn_connection_tunnel1_address,yes
 aws,vpn-gateway,vpn_connection_tunnel1_cgw_inside_address,no
 aws,vpn-gateway,vpn_connection_tunnel1_vgw_inside_address,no
-aws,vpn-gateway,vpn_connection_tunnel2_address,no
+aws,vpn-gateway,vpn_connection_tunnel2_address,yes
 aws,vpn-gateway,vpn_connection_tunnel2_cgw_inside_address,no
 aws,vpn-gateway,vpn_connection_tunnel2_vgw_inside_address,no
 aws,rds-proxy,db_proxy_endpoints,no

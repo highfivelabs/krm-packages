@@ -1830,7 +1830,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/vpn-gateway/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-vpn-gateway/tree/v4.0.0
-    chart: null
+    chart: charts/aws/vpn-gateway
   - id: aws/rds-proxy
     cloud: aws
     module: rds-proxy

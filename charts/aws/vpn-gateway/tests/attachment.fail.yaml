@@ -1,0 +1,5 @@
+# expect: vpn-gateway: create_vpn_gateway_attachment is not supported
+allow_alpha: true
+vpn_gateway_id: vgw-0123456789abcdef0
+customer_gateway_id: cgw-0123456789abcdef0
+vpc_id: vpc-0123456789abcdef0

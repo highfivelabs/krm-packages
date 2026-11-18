@@ -1,0 +1,69 @@
+---
+# Source: vpn-gateway/templates/vpn-gateway.yaml
+apiVersion: ec2.aws.hfl.dev/v1alpha1
+kind: VPNConnection
+metadata:
+  name: full-vpn-connection
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: vpn-gateway
+    app.kubernetes.io/version: "0.1.0"
+    team: "network"
+  annotations:
+    hfl.dev/id: "vpn-connection"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  type_: ipsec.1
+  customerGatewayID: "cgw-0123456789abcdef0"
+  transitGatewayID: "tgw-0123456789abcdef0"
+  options:
+    enableAcceleration: true
+    localIPv4NetworkCIDR: 0.0.0.0/0
+    remoteIPv4NetworkCIDR: 10.0.0.0/8
+    tunnelInsideIPVersion: ipv4
+    tunnelOptions:
+    - dpdTimeoutAction: restart
+      dpdTimeoutSeconds: 30
+      enableTunnelLifecycleControl: true
+      iKEVersions:
+      - value: ikev2
+      logOptions:
+        cloudWatchLogOptions:
+          logEnabled: true
+          logGroupARN: arn:aws:logs:us-east-1:123456789012:log-group:vpn
+          logOutputFormat: json
+      phase1DHGroupNumbers:
+      - value: 14
+      - value: 20
+      phase1EncryptionAlgorithms:
+      - value: AES256
+      - value: AES256-GCM-16
+      phase1IntegrityAlgorithms:
+      - value: SHA2-256
+      phase1LifetimeSeconds: 28800
+      phase2DHGroupNumbers:
+      - value: 14
+      phase2EncryptionAlgorithms:
+      - value: AES256
+      phase2IntegrityAlgorithms:
+      - value: SHA2-256
+      phase2LifetimeSeconds: 3600
+      preSharedKey:
+        key: tunnel1
+        name: vpn-psk
+      rekeyFuzzPercentage: 100
+      rekeyMarginTimeSeconds: 540
+      replayWindowSize: 1024
+      startupAction: start
+      tunnelInsideCIDR: 169.254.10.0/30
+    - preSharedKey:
+        key: tunnel2
+        name: vpn-psk
+      startupAction: add
+      tunnelInsideCIDR: 169.254.11.0/30
+  tags:
+    - key: "Name"
+      value: "VPN Connection between TGW tgw-0123456789abcdef0 and Customer Gateway cgw-0123456789abcdef0"
+    - key: "env"
+      value: "prod"

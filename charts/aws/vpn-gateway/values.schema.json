@@ -1,0 +1,396 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "names": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "namePrefix": {
+      "type": "string"
+    },
+    "labels": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "allow_alpha": {
+      "type": "boolean"
+    },
+    "deletion_policy": {
+      "type": "string",
+      "enum": [
+        "DELETE",
+        "ABANDON"
+      ]
+    },
+    "partition": {
+      "type": "string"
+    },
+    "region": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "vpn_gateway_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "transit_gateway_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "customer_gateway_id": {
+      "type": "string"
+    },
+    "create_vpn_connection": {
+      "type": "boolean"
+    },
+    "vpc_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "vpc_subnet_route_table_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "vpc_subnet_route_table_count": {
+      "type": "number"
+    },
+    "tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "vpn_connection_static_routes_only": {
+      "type": "boolean"
+    },
+    "vpn_connection_enable_acceleration": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "vpn_connection_static_routes_destinations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tunnel1_inside_cidr": {
+      "type": "string"
+    },
+    "tunnel2_inside_cidr": {
+      "type": "string"
+    },
+    "tunnel1_preshared_key": {
+      "type": [
+        "object",
+        "string",
+        "null"
+      ],
+      "description": "A reference to a Kubernetes Secret, {secretName, key}; a non-empty string is refused (docs/secrets.md)"
+    },
+    "tunnel2_preshared_key": {
+      "type": [
+        "object",
+        "string",
+        "null"
+      ],
+      "description": "A reference to a Kubernetes Secret, {secretName, key}; a non-empty string is refused (docs/secrets.md)"
+    },
+    "create_vpn_gateway_attachment": {
+      "type": "boolean"
+    },
+    "connect_to_transit_gateway": {
+      "type": "boolean"
+    },
+    "tunnel1_phase1_dh_group_numbers": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "number"
+      }
+    },
+    "tunnel2_phase1_dh_group_numbers": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "number"
+      }
+    },
+    "tunnel1_phase1_encryption_algorithms": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "tunnel2_phase1_encryption_algorithms": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "tunnel1_phase1_integrity_algorithms": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "tunnel2_phase1_integrity_algorithms": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "tunnel1_phase1_lifetime_seconds": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tunnel2_phase1_lifetime_seconds": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tunnel1_dpd_timeout_seconds": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tunnel2_dpd_timeout_seconds": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tunnel1_dpd_timeout_action": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tunnel2_dpd_timeout_action": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tunnel1_phase2_dh_group_numbers": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "number"
+      }
+    },
+    "tunnel2_phase2_dh_group_numbers": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "number"
+      }
+    },
+    "tunnel1_phase2_encryption_algorithms": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "tunnel2_phase2_encryption_algorithms": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "tunnel1_phase2_integrity_algorithms": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "tunnel2_phase2_integrity_algorithms": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "tunnel1_phase2_lifetime_seconds": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tunnel2_phase2_lifetime_seconds": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tunnel1_rekey_fuzz_percentage": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tunnel2_rekey_fuzz_percentage": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tunnel1_rekey_margin_time_seconds": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tunnel2_rekey_margin_time_seconds": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tunnel1_replay_window_size": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tunnel2_replay_window_size": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tunnel1_startup_action": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tunnel2_startup_action": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tunnel1_ike_versions": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "tunnel2_ike_versions": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "tunnel1_log_options": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "tunnel2_log_options": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "tunnel_inside_ip_version": {
+      "type": "string"
+    },
+    "local_ipv4_network_cidr": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "remote_ipv4_network_cidr": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "local_ipv6_network_cidr": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "remote_ipv6_network_cidr": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tunnel1_enable_tunnel_lifecycle_control": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "tunnel2_enable_tunnel_lifecycle_control": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    }
+  }
+}
