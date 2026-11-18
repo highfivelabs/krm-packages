@@ -75,6 +75,35 @@ in `.env`, see `.env.example`):
   Compute Engine API is usable (O34e: `compute.skipDefaultNetworkCreation`
   on the folder).
 
+Rerun 2026-11-18, after the grants of tf-infra #25 and #30 (Deny Admin on
+the organization, the `live-tests` folder's policy), acting as
+`live-tests@hfl-testing-8347a2` through `offload run --impersonate`:
+
+- folders (run `ofr-11181651-08f6`, organization policies left out, the
+  hierarchical firewall policy in): exit 0, 14 resources applied,
+  `terraform plan` empty, 5 calls graduated, Bundt's server-side dry run
+  and `terraform plan` after adoption both empty, the abandoned objects
+  left every resource, `terraform destroy` clean, nothing named
+  `ofr-11181651-08f6` left. **Not the clean no-op of `ofr-11160002-a4c3`**:
+  the export refused all 6 folders (`accessNotConfigured`), only 6 of 14
+  objects reached `Ready` `UpToDate`, 7 ended `UpdateFailed` and 6
+  `DependencyNotReady`. The run's artifacts were not kept, so the exact
+  API error was not read; the cause is taken to be that the Cloud
+  Resource Manager, Service Usage and Cloud Billing APIs are not enabled
+  in `live-tests@`'s home project (tf-infra's `hfl-testing` lists them;
+  `gcloud services list` shows only Compute Engine, IAM, IAM Credentials
+  and Logging there), which a Config Connector call made as that account
+  is charged to. Until they are, the earlier run stays the no-op proof.
+  Its audit-log row (15 `CreateSink` in `hfl-dev-514205`) was the
+  config-connector-extensions log-sink tests running as the same account
+  at the same time, not the off-ramp.
+- platform-project (run `ofr-11181736-8aaf`): blocked at `terraform apply`
+  before anything was made: 403 `Cloud Billing API has not been used in
+  project 50660598795` (the same project) when the provider checked the
+  billing account. `terraform destroy` ran clean, nothing left. The
+  folder's `compute.skipDefaultNetworkCreation` policy (O34e) is in place
+  and is untested until the APIs are on.
+
 gke has not run live yet. The non-live shapes are validated
 (`task offramp-validate`) and converted offline from synthetic states.
 
