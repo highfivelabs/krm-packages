@@ -1,0 +1,5 @@
+# expect: opensearch: vpc_options.security_group_ids is not supported with create_security_group: true
+domain_name: x-os
+create_cloudwatch_log_groups: false
+vpc_id: vpc-1
+vpc_options: {subnet_ids: [subnet-1], security_group_ids: [sg-1]}

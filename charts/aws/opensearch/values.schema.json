@@ -1,0 +1,355 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "names": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "domain": {
+          "type": "string"
+        },
+        "securityGroup": {
+          "type": "string"
+        }
+      }
+    },
+    "namePrefix": {
+      "type": "string",
+      "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?)?$",
+      "maxLength": 63
+    },
+    "labels": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "deletion_policy": {
+      "type": "string",
+      "enum": [
+        "DELETE",
+        "ABANDON"
+      ]
+    },
+    "partition": {
+      "type": "string"
+    },
+    "account_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "vpc_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "create": {
+      "type": "boolean"
+    },
+    "tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "advanced_options": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "advanced_security_options": {
+      "type": "object"
+    },
+    "aiml_options": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "natural_language_query_generation_options": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "desired_state": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "s3_vectors_engine": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "enabled": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            }
+          }
+        },
+        "serverless_vector_acceleration": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "enabled": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "auto_tune_options": {
+      "type": "object"
+    },
+    "cluster_config": {
+      "type": "object"
+    },
+    "cognito_options": {
+      "type": "object"
+    },
+    "deployment_strategy_options": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "deployment_strategy": {
+          "type": "string"
+        }
+      }
+    },
+    "domain_endpoint_options": {
+      "type": "object"
+    },
+    "domain_name": {
+      "type": "string"
+    },
+    "ebs_options": {
+      "type": "object"
+    },
+    "encrypt_at_rest": {
+      "type": "object"
+    },
+    "engine_version": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^(Elasticsearch_[0-9]{1}\\.[0-9]{1,2}|OpenSearch_[0-9]{1,2}\\.[0-9]{1,2})$"
+    },
+    "ip_address_type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "ipv4",
+        "dualstack",
+        null
+      ]
+    },
+    "identity_center_options": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "enabled_api_access": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "identity_center_instance_arn": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "roles_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "subject_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "log_publishing_options": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "node_to_node_encryption": {
+      "type": "object"
+    },
+    "off_peak_window_options": {
+      "type": "object"
+    },
+    "region": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "software_update_options": {
+      "type": "object"
+    },
+    "vpc_options": {
+      "type": "object"
+    },
+    "timeouts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "package_associations": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "vpc_endpoints": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "enable_access_policy": {
+      "type": "boolean"
+    },
+    "create_access_policy": {
+      "type": "boolean"
+    },
+    "access_policies": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "access_policy_statements": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "access_policy_source_policy_documents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "access_policy_override_policy_documents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "create_saml_options": {
+      "type": "boolean"
+    },
+    "saml_options": {
+      "type": "object"
+    },
+    "outbound_connections": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "create_cloudwatch_log_groups": {
+      "type": "boolean"
+    },
+    "cloudwatch_log_group_retention_in_days": {
+      "type": "integer"
+    },
+    "cloudwatch_log_group_kms_key_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cloudwatch_log_group_skip_destroy": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "cloudwatch_log_group_class": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "STANDARD",
+        "INFREQUENT_ACCESS",
+        null
+      ]
+    },
+    "create_cloudwatch_log_resource_policy": {
+      "type": "boolean"
+    },
+    "cloudwatch_log_resource_policy_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "create_security_group": {
+      "type": "boolean"
+    },
+    "security_group_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "security_group_use_name_prefix": {
+      "type": "boolean"
+    },
+    "security_group_description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "security_group_rules": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "security_group_tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  }
+}

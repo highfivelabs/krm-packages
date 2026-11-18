@@ -1,0 +1,4 @@
+# expect: opensearch: advanced_security_options.jwt_options.jwks_url is not supported
+domain_name: x-os
+create_cloudwatch_log_groups: false
+advanced_security_options: {enabled: true, jwt_options: {enabled: true, jwks_url: "https://x/jwks"}}

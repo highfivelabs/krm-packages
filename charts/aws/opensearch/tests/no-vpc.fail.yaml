@@ -1,0 +1,4 @@
+# expect: opensearch: vpc_id is required with vpc_options
+domain_name: x-os
+create_cloudwatch_log_groups: false
+vpc_options: {subnet_ids: [subnet-1]}

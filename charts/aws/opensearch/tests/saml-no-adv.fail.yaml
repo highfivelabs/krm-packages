@@ -1,0 +1,6 @@
+# expect: opensearch: create_saml_options needs advanced_security_options
+domain_name: x-os
+create_cloudwatch_log_groups: false
+advanced_security_options: null
+create_saml_options: true
+saml_options: {enabled: true}

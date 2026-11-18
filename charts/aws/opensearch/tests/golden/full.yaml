@@ -1,0 +1,238 @@
+---
+# Source: opensearch/templates/opensearch.yaml
+apiVersion: opensearchservice.services.k8s.aws/v1alpha1
+kind: Domain
+metadata:
+  name: full-domain
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: opensearch
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "domain"
+    services.k8s.aws/region: "us-east-1"
+    services.k8s.aws/deletion-policy: retain
+spec:
+  accessPolicies: '{"Statement":[{"Action":["es:*"],"Effect":"Allow","Principal":"*","Resource":["arn:aws:es:us-east-1:123456789012:domain/catalog-os-full/*"]},{"Action":["es:ESHttpGet"],"Condition":{"IpAddress":{"aws:SourceIp":["10.0.0.0/8"]}},"Effect":"Allow","Principal":{"AWS":["arn:aws:iam::123456789012:root"]},"Resource":["arn:aws:es:us-east-1:123456789012:domain/catalog-os-full/*","arn:aws:es:us-east-1:123456789012:domain/catalog-os-full/logs/*"],"Sid":"Read"}],"Version":"2012-10-17"}'
+  advancedOptions:
+    rest.action.multi.allow_explicit_index: "true"
+  advancedSecurityOptions:
+    anonymousAuthEnabled: false
+    enabled: true
+    internalUserDatabaseEnabled: true
+    jwtOptions:
+      enabled: true
+      publicKey: '-----BEGIN PUBLIC KEY-----'
+      rolesKey: roles
+      subjectKey: sub
+    masterUserOptions:
+      masterUserName: admin
+      masterUserPassword:
+        key: password
+        name: os-master
+        namespace: default
+    sAMLOptions:
+      enabled: true
+      idp:
+        entityID: https://idp.example.com
+        metadataContent: <EntityDescriptor/>
+      masterBackendRole: admins
+      masterUserName: root
+      rolesKey: roles
+      sessionTimeoutMinutes: 120
+      subjectKey: sub
+  aimlOptions:
+    naturalLanguageQueryGenerationOptions:
+      desiredState: ENABLED
+  autoTuneOptions:
+    desiredState: ENABLED
+    useOffPeakWindow: true
+  clusterConfig:
+    coldStorageOptions:
+      enabled: true
+    dedicatedMasterCount: 3
+    dedicatedMasterEnabled: true
+    dedicatedMasterType: c6g.large.search
+    instanceCount: 3
+    instanceType: r6g.large.search
+    multiAZWithStandbyEnabled: true
+    warmCount: 2
+    warmEnabled: true
+    warmType: ultrawarm1.medium.search
+    zoneAwarenessConfig:
+      availabilityZoneCount: 3
+    zoneAwarenessEnabled: true
+  cognitoOptions:
+    enabled: true
+    identityPoolID: us-east-1:00000000-0000-0000-0000-000000000000
+    roleARN: arn:aws:iam::123456789012:role/CognitoAccessForAmazonOpenSearch
+    userPoolID: us-east-1_AbCdEfGhI
+  domainEndpointOptions:
+    customEndpoint: search.example.com
+    customEndpointCertificateARN: arn:aws:acm:us-east-1:123456789012:certificate/abc
+    customEndpointEnabled: true
+    enforceHTTPS: true
+    tlsSecurityPolicy: Policy-Min-TLS-1-2-PFS-2023-10
+  ebsOptions:
+    ebsEnabled: true
+    iops: 3000
+    throughput: 125
+    volumeSize: 100
+    volumeType: gp3
+  encryptionAtRestOptions:
+    enabled: true
+    kmsKeyID: arn:aws:kms:us-east-1:123456789012:key/abc
+  engineVersion: OpenSearch_2.17
+  ipAddressType: dualstack
+  logPublishingOptions:
+    AUDIT_LOGS:
+      cloudWatchLogsLogGroupARN: arn:aws:logs:us-east-1:123456789012:log-group:/audit
+      enabled: false
+    ES_APPLICATION_LOGS:
+      cloudWatchLogsLogGroupARN: arn:aws:logs:us-east-1:123456789012:log-group:/mine
+      enabled: true
+    INDEX_SLOW_LOGS:
+      cloudWatchLogsLogGroupARN: arn:aws:logs:us-east-1:123456789012:log-group:/aws/opensearch/catalog-os-full/INDEX_SLOW_LOGS
+      enabled: true
+    SEARCH_SLOW_LOGS:
+      cloudWatchLogsLogGroupARN: arn:aws:logs:us-east-1:123456789012:log-group:/aws/opensearch/catalog-os-full/SEARCH_SLOW_LOGS
+      enabled: true
+  name: catalog-os-full
+  nodeToNodeEncryptionOptions:
+    enabled: true
+  offPeakWindowOptions:
+    enabled: true
+    offPeakWindow:
+      windowStartTime:
+        hours: 2
+        minutes: 30
+  softwareUpdateOptions:
+    autoSoftwareUpdateEnabled: true
+  tags:
+  - key: env
+    value: prod
+  vpcOptions:
+    securityGroupRefs:
+    - from:
+        name: full-sg
+    subnetIDs:
+    - subnet-0123456789abcdef0
+    - subnet-0123456789abcdef1
+    - subnet-0123456789abcdef2
+---
+# Source: opensearch/templates/opensearch.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: full-log-group-index-slow-logs
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: opensearch
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group-index-slow-logs"
+    services.k8s.aws/region: "us-east-1"
+    services.k8s.aws/deletion-policy: retain
+spec:
+  name: "/aws/opensearch/catalog-os-full/INDEX_SLOW_LOGS"
+  retentionDays: 30
+  kmsKeyID: "arn:aws:kms:us-east-1:123456789012:key/def"
+  tags:
+    env: prod
+    kind: index
+---
+# Source: opensearch/templates/opensearch.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: full-log-group-search-slow-logs
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: opensearch
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group-search-slow-logs"
+    services.k8s.aws/region: "us-east-1"
+    services.k8s.aws/deletion-policy: retain
+spec:
+  name: "/aws/opensearch/catalog-os-full/SEARCH_SLOW_LOGS"
+  retentionDays: 60
+  kmsKeyID: "arn:aws:kms:us-east-1:123456789012:key/def"
+  tags:
+    env: prod
+---
+# Source: opensearch/templates/opensearch.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: full-log-group-es-application-logs
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: opensearch
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group-es-application-logs"
+    services.k8s.aws/region: "us-east-1"
+    services.k8s.aws/deletion-policy: retain
+spec:
+  name: "/aws/opensearch/mine"
+  retentionDays: 60
+  kmsKeyID: "arn:aws:kms:us-east-1:123456789012:key/def"
+  tags:
+    env: prod
+---
+# Source: opensearch/templates/opensearch.yaml
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+  name: full-sg
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: opensearch
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "security-group"
+    services.k8s.aws/region: "us-east-1"
+    services.k8s.aws/deletion-policy: retain
+spec:
+  name: "catalog-os-full"
+  description: "Managed by Terraform"
+  vpcID: "vpc-0123456789abcdef0"
+  ingressRules:
+    - ipProtocol: "tcp"
+      fromPort: 443
+      toPort: 443
+      ipRanges:
+        - {"cidrIP":"10.0.0.0/8"}
+  tags:
+    - key: "env"
+      value: "prod"
+    - key: "team"
+      value: "search"
+---
+# Source: opensearch/templates/opensearch.yaml
+apiVersion: opensearchservice.services.k8s.aws/v1alpha1
+kind: VPCEndpoint
+metadata:
+  name: full-vpc-endpoint-b
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "full"
+    app.kubernetes.io/name: opensearch
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "vpc-endpoint-b"
+    services.k8s.aws/region: "us-east-1"
+    services.k8s.aws/deletion-policy: retain
+spec:
+  domainRef:
+    from:
+      name: full-domain
+  vpcOptions:
+    subnetIDs:
+    - subnet-0123456789abcdef9

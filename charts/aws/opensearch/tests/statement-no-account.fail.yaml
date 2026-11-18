@@ -1,0 +1,4 @@
+# expect: opensearch: access_policy_statements.a has no resources: account_id and region are required
+domain_name: x-os
+create_cloudwatch_log_groups: false
+access_policy_statements: {a: {actions: ["es:*"], principals: [{type: AWS, identifiers: ["*"]}]}}

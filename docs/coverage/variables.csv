@@ -3422,53 +3422,53 @@ aws,notify-slack,subscription_filter_policy,string,yes,,
 aws,notify-slack,subscription_filter_policy_scope,string,yes,,
 aws,notify-slack,tags,map(string),yes,,
 aws,notify-slack,trigger_on_package_timestamp,bool,no,local deployment package building is not portable; pass s3_existing_package or image_uri,by-design
-aws,opensearch,access_policies,string,no,,no-chart
-aws,opensearch,access_policy_override_policy_documents,list(string),no,,no-chart
-aws,opensearch,access_policy_source_policy_documents,list(string),no,,no-chart
-aws,opensearch,access_policy_statements,any,no,,no-chart
-aws,opensearch,advanced_options,map(string),no,,no-chart
-aws,opensearch,advanced_security_options,any,no,,no-chart
-aws,opensearch,aiml_options,"object({natural_language_query_generation_options, s3_vectors_engine, serverless_vector_acceleration})",no,,no-chart
-aws,opensearch,auto_tune_options,any,no,,no-chart
-aws,opensearch,cloudwatch_log_group_class,string,no,,no-chart
-aws,opensearch,cloudwatch_log_group_kms_key_id,string,no,,no-chart
-aws,opensearch,cloudwatch_log_group_retention_in_days,number,no,,no-chart
-aws,opensearch,cloudwatch_log_group_skip_destroy,bool,no,,no-chart
-aws,opensearch,cloudwatch_log_resource_policy_name,string,no,,no-chart
-aws,opensearch,cluster_config,any,no,,no-chart
-aws,opensearch,cognito_options,any,no,,no-chart
-aws,opensearch,create,bool,no,,no-chart
-aws,opensearch,create_access_policy,bool,no,,no-chart
-aws,opensearch,create_cloudwatch_log_groups,bool,no,,no-chart
-aws,opensearch,create_cloudwatch_log_resource_policy,bool,no,,no-chart
-aws,opensearch,create_saml_options,bool,no,,no-chart
-aws,opensearch,create_security_group,bool,no,,no-chart
-aws,opensearch,deployment_strategy_options,object({deployment_strategy}),no,,no-chart
-aws,opensearch,domain_endpoint_options,any,no,,no-chart
-aws,opensearch,domain_name,string,no,,no-chart
-aws,opensearch,ebs_options,any,no,,no-chart
-aws,opensearch,enable_access_policy,bool,no,,no-chart
-aws,opensearch,encrypt_at_rest,any,no,,no-chart
-aws,opensearch,engine_version,string,no,,no-chart
-aws,opensearch,identity_center_options,"object({enabled_api_access, identity_center_instance_arn, roles_key, subject_key})",no,,no-chart
-aws,opensearch,ip_address_type,string,no,,no-chart
-aws,opensearch,log_publishing_options,any,no,,no-chart
-aws,opensearch,node_to_node_encryption,any,no,,no-chart
-aws,opensearch,off_peak_window_options,any,no,,no-chart
-aws,opensearch,outbound_connections,any,no,,no-chart
-aws,opensearch,package_associations,map(string),no,,no-chart
-aws,opensearch,region,string,no,,no-chart
-aws,opensearch,saml_options,any,no,,no-chart
-aws,opensearch,security_group_description,string,no,,no-chart
-aws,opensearch,security_group_name,string,no,,no-chart
-aws,opensearch,security_group_rules,any,no,,no-chart
-aws,opensearch,security_group_tags,map(string),no,,no-chart
-aws,opensearch,security_group_use_name_prefix,bool,no,,no-chart
-aws,opensearch,software_update_options,any,no,,no-chart
-aws,opensearch,tags,map(string),no,,no-chart
-aws,opensearch,timeouts,map(string),no,,no-chart
-aws,opensearch,vpc_endpoints,any,no,,no-chart
-aws,opensearch,vpc_options,any,no,,no-chart
+aws,opensearch,access_policies,string,yes,,
+aws,opensearch,access_policy_override_policy_documents,list(string),no,the chart does not merge IAM policy documents (data.aws_iam_policy_document override_policy_documents); write the statements in access_policy_statements,not-ported
+aws,opensearch,access_policy_source_policy_documents,list(string),no,the chart does not merge IAM policy documents (data.aws_iam_policy_document source_policy_documents); write the statements in access_policy_statements,not-ported
+aws,opensearch,access_policy_statements,any,partial,"accepted, but a statement without resources needs account_id and region: the module's default resource is the domain's own ARN, read after apply, and ACK's Domain takes its policy as a string with no reference to it",gap
+aws,opensearch,advanced_options,map(string),yes,,
+aws,opensearch,advanced_security_options,any,partial,"accepted, but jwt_options.jwks_url has no field on ACK's Domain, and master_user_options.master_user_password (a password in values would be written into the render) is replaced by master_user_options.master_user_password_secret_ref, a Kubernetes Secret; both are refused",gap
+aws,opensearch,aiml_options,"object({natural_language_query_generation_options, s3_vectors_engine, serverless_vector_acceleration})",partial,accepted for natural_language_query_generation_options; s3_vectors_engine and serverless_vector_acceleration have no field on ACK's Domain (opensearchservice-controller v1.10.0) and are refused,gap
+aws,opensearch,auto_tune_options,any,partial,"accepted, but rollback_on_disable has no field on ACK's Domain: only its default, NO_ROLLBACK, is accepted",gap
+aws,opensearch,cloudwatch_log_group_class,string,no,ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no log group class field,gap
+aws,opensearch,cloudwatch_log_group_kms_key_id,string,yes,,
+aws,opensearch,cloudwatch_log_group_retention_in_days,number,yes,,
+aws,opensearch,cloudwatch_log_group_skip_destroy,bool,yes,,
+aws,opensearch,cloudwatch_log_resource_policy_name,string,yes,,
+aws,opensearch,cluster_config,any,partial,"accepted, but node_options (OpenSearch optimized instance node configuration) has no field on ACK's Domain and is refused",gap
+aws,opensearch,cognito_options,any,yes,,
+aws,opensearch,create,bool,yes,,
+aws,opensearch,create_access_policy,bool,yes,,
+aws,opensearch,create_cloudwatch_log_groups,bool,yes,,
+aws,opensearch,create_cloudwatch_log_resource_policy,bool,no,"no kind makes a CloudWatch Logs resource policy (aws_cloudwatch_log_resource_policy), in ACK or in ack-extensions, and the domain cannot publish to its log groups without one; true (the default) is refused while the chart makes log groups: set false and give the account a resource policy that lets es.amazonaws.com write to them",gap
+aws,opensearch,create_saml_options,bool,yes,,
+aws,opensearch,create_security_group,bool,yes,,
+aws,opensearch,deployment_strategy_options,object({deployment_strategy}),no,ACK's Domain (opensearchservice-controller v1.10.0) has no deploymentStrategyOptions field,gap
+aws,opensearch,domain_endpoint_options,any,yes,,
+aws,opensearch,domain_name,string,yes,,
+aws,opensearch,ebs_options,any,yes,,
+aws,opensearch,enable_access_policy,bool,yes,,
+aws,opensearch,encrypt_at_rest,any,yes,,
+aws,opensearch,engine_version,string,yes,,
+aws,opensearch,identity_center_options,"object({enabled_api_access, identity_center_instance_arn, roles_key, subject_key})",no,ACK's Domain has no identityCenterOptions field,gap
+aws,opensearch,ip_address_type,string,yes,,
+aws,opensearch,log_publishing_options,any,partial,"accepted, but each entry's log_group_class is refused (ACK's LogGroup has no field), and a log group ARN is written from account_id and region unless the entry gives cloudwatch_log_group_arn, as the module reads it after apply",gap
+aws,opensearch,node_to_node_encryption,any,yes,,
+aws,opensearch,off_peak_window_options,any,yes,,
+aws,opensearch,outbound_connections,any,no,opensearchservice-controller v1.10.0 has no kind for an outbound connection (aws_opensearch_outbound_connection),gap
+aws,opensearch,package_associations,map(string),no,opensearchservice-controller v1.10.0 has no kind for a package association (aws_opensearch_package_association),gap
+aws,opensearch,region,string,yes,,
+aws,opensearch,saml_options,any,yes,,
+aws,opensearch,security_group_description,string,yes,,
+aws,opensearch,security_group_name,string,yes,,
+aws,opensearch,security_group_rules,any,partial,"accepted, but each rule's tags are not carried (ACK keeps a group's rules inline in SecurityGroup, which has no per-rule tags); region is not used",gap
+aws,opensearch,security_group_tags,map(string),yes,,
+aws,opensearch,security_group_use_name_prefix,bool,partial,"accepted: true (the default) names the group as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two stacks' groups apart",gap
+aws,opensearch,software_update_options,any,yes,,
+aws,opensearch,tags,map(string),yes,,
+aws,opensearch,timeouts,map(string),no,ACK reconciles until the domain is ready and ACK's Domain has no timeout setting,gap
+aws,opensearch,vpc_endpoints,any,yes,,
+aws,opensearch,vpc_options,any,yes,,
 aws,msk-kafka-cluster,broker_node_az_distribution,string,no,,no-chart
 aws,msk-kafka-cluster,broker_node_client_subnets,list(string),no,,no-chart
 aws,msk-kafka-cluster,broker_node_connectivity_info,"object({network_type, public_access, vpc_connectivity})",no,,no-chart

@@ -1,0 +1,217 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Values mirror the Terraform variables of terraform-aws-modules' opensearch
+# module (v2.11.1): same names, types and defaults, so a module block's
+# arguments become a values file one to one. values.schema.json carries the
+# types. A variable the chart cannot carry stays here and stops the render
+# when set (upstream.yaml lists them; README.md says why).
+
+# Names, labels and tags (docs/design.md, "Names, labels and tags"). Not
+# Terraform variables, except tags, which is the module's own.
+# Names in full, {domain, securityGroup}: the domain's and the security
+# group's names. A name set here takes no namePrefix. The log groups are
+# named by log_publishing_options[].log_group_name.
+names: {}
+# An optional convenience: "<namePrefix>-" in front of every name the chart
+# derives or takes from the module's variables. Empty changes nothing.
+namePrefix: ""
+# Kubernetes labels on every object. They stay in Kubernetes: ACK does not
+# copy labels to AWS (AWS tags are the module's tags variable).
+labels: {}
+# DELETE (ACK's default) deletes the AWS resource with its object; ABANDON
+# keeps it (services.k8s.aws/deletion-policy: retain).
+deletion_policy: DELETE
+partition: aws
+# The AWS account the domain is in, which the module reads from the provider
+# (aws_caller_identity). A chart cannot read it, so Bundt fills it from the
+# Environment. Needed (with region) where the chart writes an ARN itself:
+# the CloudWatch log group ARN of each log_publishing_options entry that
+# names none, and an access policy statement without resources.
+account_id: null
+# The VPC the security group is created in, which the module reads from the
+# first of vpc_options.subnet_ids (aws_subnet). A chart cannot look it up:
+# required with create_security_group and vpc_options.
+vpc_id: null
+
+# The module's variables, in its order, with its defaults.
+# Determines whether resources will be created (affects all resources)
+create: true
+# A map of tags to add to all resources
+tags: {}
+
+# Domain
+# Key-value string pairs to specify advanced configuration options. Note that
+# the values for these configuration options must be strings (wrapped in
+# quotes) or they may be wrong and cause a perpetual diff, causing Terraform
+# to want to recreate your Elasticsearch domain on every apply
+advanced_options: {}
+# Configuration block for fine-grained access control
+# In part: advanced_security_options.jwt_options.jwks_url is refused (no
+# field on ACK's Domain), and so is master_user_options.master_user_password
+# (a password in values would be written into the render): the chart takes
+# master_user_options.master_user_password_secret_ref {name, key, namespace},
+# a Kubernetes Secret, which ACK reads.
+advanced_security_options:
+  enabled: true
+  anonymous_auth_enabled: false
+# Configuration block for AI/ML options including Natural Language Query
+# Generation, S3 Vectors, and Serverless Vector Acceleration
+# In part: s3_vectors_engine and serverless_vector_acceleration are refused
+# (no field on ACK's Domain).
+aiml_options: null
+# Configuration block for the Auto-Tune options of the domain
+# In part: rollback_on_disable is not carried (no field on ACK's Domain); only
+# its default, NO_ROLLBACK, is accepted.
+auto_tune_options:
+  desired_state: ENABLED
+  rollback_on_disable: NO_ROLLBACK
+# Configuration block for the cluster of the domain
+# In part: node_options (OpenSearch optimized instance node configuration) is
+# refused (no field on ACK's Domain).
+cluster_config:
+  dedicated_master_enabled: true
+# Configuration block for authenticating Kibana with Cognito
+cognito_options: {}
+# Configuration block for deployment strategy options
+# Not supported (gap): ACK's Domain (opensearchservice-controller v1.10.0)
+# has no deploymentStrategyOptions field.
+deployment_strategy_options: null
+# Configuration block for domain endpoint HTTP(S) related options
+domain_endpoint_options:
+  enforce_https: true
+  tls_security_policy: Policy-Min-TLS-1-2-2019-07
+# Name of the domain
+domain_name: ""
+# Configuration block for EBS related options, may be required based on chosen
+# instance size
+ebs_options:
+  ebs_enabled: true
+  volume_size: 64
+  volume_type: gp3
+# Configuration block for encrypting at rest
+encrypt_at_rest:
+  enabled: true
+# Version of the OpenSearch engine to use. Must follow format
+# 'OpenSearch_X.Y' (e.g., 'OpenSearch_2.11')
+engine_version: null
+# The IP address type for the endpoint. Valid values are ipv4 and dualstack
+ip_address_type: null
+# Configuration block for enabling and managing IAM Identity Center
+# integration within a domain
+# Not supported (gap): ACK's Domain has no identityCenterOptions field.
+identity_center_options: null
+# Configuration block for publishing slow and application logs to CloudWatch
+# Logs. This block can be declared multiple times, for each log_type, within
+# the same resource
+log_publishing_options:
+  - log_type: INDEX_SLOW_LOGS
+  - log_type: SEARCH_SLOW_LOGS
+# Configuration block for node-to-node encryption options
+node_to_node_encryption:
+  enabled: true
+# Configuration to add Off Peak update options
+off_peak_window_options:
+  enabled: true
+  off_peak_window:
+    hours: 7
+# Region where this resource will be managed. Defaults to the Region set in
+# the provider configuration
+region: null
+# Software update options for the domain
+software_update_options:
+  auto_software_update_enabled: true
+# Configuration block for VPC related options. Adding or removing this
+# configuration forces a new resource
+vpc_options: {}
+# Create and delete timeout configurations for the domain
+# Not supported (gap): ACK reconciles until the domain is ready, with no
+# timeout setting on the Domain.
+timeouts: {}
+
+# Package Association(s)
+# Map of package association IDs to associate with the domain
+# Not supported (gap): ACK's opensearchservice-controller has no kind for a
+# package association (aws_opensearch_package_association).
+package_associations: {}
+
+# VPC Endpoint(s)
+# Map of VPC endpoints to create for the domain
+vpc_endpoints: {}
+
+# Access Policy
+# Determines whether an access policy will be applied to the domain
+enable_access_policy: true
+# Determines whether an access policy will be created
+create_access_policy: true
+# IAM policy document specifying the access policies for the domain. Required
+# if `create_access_policy` is `false`
+access_policies: null
+# A map of IAM policy statements for custom permission usage
+# In part: a statement without resources takes the domain's ARN from
+# account_id and region (the module reads the domain's ARN, known after apply).
+access_policy_statements: {}
+# List of IAM policy documents that are merged together into the exported
+# document. Statements must have unique `sid`s
+# Not supported (not-ported): the chart does not merge policy documents;
+# write the statements in access_policy_statements.
+access_policy_source_policy_documents: []
+# List of IAM policy documents that are merged together into the exported
+# document. In merging, statements with non-blank `sid`s will override
+# statements with the same `sid`
+# Not supported (not-ported): see access_policy_source_policy_documents.
+access_policy_override_policy_documents: []
+
+# SAML Options
+# Determines whether SAML options will be created
+create_saml_options: false
+# SAML authentication options for an AWS OpenSearch Domain
+saml_options: {}
+
+# Outbound Connections
+# Map of AWS OpenSearch outbound connections to create
+# Not supported (gap): ACK's opensearchservice-controller has no kind for an
+# outbound connection (aws_opensearch_outbound_connection).
+outbound_connections: {}
+
+# CloudWatch Log Group
+# Determines whether log groups are created
+create_cloudwatch_log_groups: true
+# Number of days to retain log events
+cloudwatch_log_group_retention_in_days: 60
+# If a KMS Key ARN is set, this key will be used to encrypt the corresponding
+# log group
+cloudwatch_log_group_kms_key_id: null
+# Set to true if you do not wish the log group (and any logs it may contain)
+# to be deleted at destroy time
+cloudwatch_log_group_skip_destroy: null
+# Specified the log class of the log group. Possible values are: STANDARD or
+# INFREQUENT_ACCESS
+# Not supported (gap): ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has
+# no log group class field.
+cloudwatch_log_group_class: null
+# Determines whether a resource policy will be created for OpenSearch to log
+# to CloudWatch
+# Not supported (gap): no kind makes a CloudWatch Logs resource policy
+# (aws_cloudwatch_log_resource_policy), in ACK or ack-extensions. true is
+# refused while the chart makes log groups: set false, and give the account
+# a resource policy that lets es.amazonaws.com write to the log groups.
+create_cloudwatch_log_resource_policy: true
+# Name of the resource policy for OpenSearch to log to CloudWatch
+cloudwatch_log_resource_policy_name: null
+
+# Security Group
+# Determines if a security group is created
+create_security_group: true
+# Name to use on security group created
+security_group_name: null
+# Determines whether the security group name (`security_group_name`) is used
+# as a prefix
+# In part: true names the group as given, without Terraform's random suffix.
+security_group_use_name_prefix: true
+# Description of the security group created
+security_group_description: null
+# Security group ingress and egress rules to add to the security group created
+security_group_rules: {}
+# A map of additional tags to add to the security group created
+security_group_tags: {}

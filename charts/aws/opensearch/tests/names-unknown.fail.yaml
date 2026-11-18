@@ -1,0 +1,2 @@
+# expect: names: Additional property logGroup is not allowed
+names: {logGroup: x}

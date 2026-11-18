@@ -1,0 +1,22 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: v2
+name: opensearch
+description: >-
+  An Amazon OpenSearch Service domain with its access policy, SAML options, VPC endpoints, CloudWatch log groups and security group, as AWS Controllers for Kubernetes (ACK) objects. A port of terraform-aws-modules' opensearch module.
+type: application
+version: 0.1.0
+# The module release this chart was ported from (UPSTREAM.md).
+appVersion: "terraform-aws-opensearch-v2.11.1"
+kubeVersion: ">=1.27.0-0"
+keywords: [aws, ack, opensearch, opensearchservice, elasticsearch, terraform-aws-modules]
+home: https://github.com/highfivelabs/catalog
+sources:
+  - https://github.com/terraform-aws-modules/terraform-aws-opensearch/tree/370988b1bd771fd26037e8b1471ddd0ae651c602
+annotations:
+  hfl.dev/source: terraform-aws-opensearch
+  hfl.dev/source-version: v2.11.1
+  hfl.dev/source-commit: 370988b1bd771fd26037e8b1471ddd0ae651c602
+  hfl.dev/ack-opensearchservice-controller: "v1.10.0"
+  hfl.dev/ack-ec2-controller: "v1.23.1"
+  hfl.dev/ack-cloudwatchlogs-controller: "v1.10.0"

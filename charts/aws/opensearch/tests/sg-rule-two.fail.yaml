@@ -1,0 +1,6 @@
+# expect: opensearch: security_group_rules.a must set exactly one of
+domain_name: x-os
+create_cloudwatch_log_groups: false
+vpc_id: vpc-1
+vpc_options: {subnet_ids: [subnet-1]}
+security_group_rules: {a: {cidr_ipv4: 10.0.0.0/8, cidr_ipv6: "::/0"}}

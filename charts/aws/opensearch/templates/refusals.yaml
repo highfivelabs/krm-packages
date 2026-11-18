@@ -1,0 +1,36 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+The module variables this chart keeps in its values but cannot carry
+(upstream.yaml, "refused"): each stops the render, naming the gap, when it
+is set to anything but its Terraform default. Renders nothing.
+*/ -}}
+{{- $v := .Values -}}
+{{- if $v.create }}
+{{- include "ack.unsupported" (list $ "deployment_strategy_options" $v.deployment_strategy_options "ACK's Domain (opensearchservice-controller v1.10.0) has no deploymentStrategyOptions field") }}
+{{- include "ack.unsupported" (list $ "identity_center_options" $v.identity_center_options "ACK's Domain has no identityCenterOptions field") }}
+{{- include "ack.unsupported" (list $ "timeouts" $v.timeouts "ACK reconciles until the domain is ready and the Domain has no timeout setting") }}
+{{- include "ack.unsupported" (list $ "package_associations" $v.package_associations "opensearchservice-controller v1.10.0 has no kind for a package association (aws_opensearch_package_association)") }}
+{{- include "ack.unsupported" (list $ "outbound_connections" $v.outbound_connections "opensearchservice-controller v1.10.0 has no kind for an outbound connection (aws_opensearch_outbound_connection)") }}
+{{- include "ack.unsupported" (list $ "access_policy_source_policy_documents" $v.access_policy_source_policy_documents "the chart does not merge IAM policy documents (data.aws_iam_policy_document source_policy_documents); write the statements in access_policy_statements") }}
+{{- include "ack.unsupported" (list $ "access_policy_override_policy_documents" $v.access_policy_override_policy_documents "the chart does not merge IAM policy documents (data.aws_iam_policy_document override_policy_documents); write the statements in access_policy_statements") }}
+{{- include "ack.unsupported" (list $ "cloudwatch_log_group_class" $v.cloudwatch_log_group_class "ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no log group class field") }}
+{{- range $o := ($v.log_publishing_options | default list) }}
+{{- include "ack.unsupported" (list $ "log_publishing_options[].log_group_class" $o.log_group_class "ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no log group class field") }}
+{{- end }}
+{{- if and $v.create_cloudwatch_log_groups $v.create_cloudwatch_log_resource_policy ($v.log_publishing_options | default list) }}
+{{- include "ack.unsupported" (list $ "create_cloudwatch_log_resource_policy" true "no kind makes a CloudWatch Logs resource policy (aws_cloudwatch_log_resource_policy), in ACK or in ack-extensions, and the domain cannot publish to its log groups without one: set it to false and give the account a resource policy that lets es.amazonaws.com write to them") }}
+{{- end }}
+{{- $adv := $v.advanced_security_options | default dict }}
+{{- include "ack.unsupported" (list $ "advanced_security_options.jwt_options.jwks_url" (($adv.jwt_options | default dict).jwks_url) "ACK's Domain has no jwksURL field in jwtOptions (use public_key)") }}
+{{- include "ack.unsupported" (list $ "advanced_security_options.master_user_options.master_user_password" (($adv.master_user_options | default dict).master_user_password) "a password in values would be written into the render; ACK takes a Kubernetes Secret: set master_user_options.master_user_password_secret_ref {name, key, namespace}") }}
+{{- $aiml := $v.aiml_options | default dict }}
+{{- include "ack.unsupported" (list $ "aiml_options.s3_vectors_engine" $aiml.s3_vectors_engine "ACK's Domain has no s3VectorsEngine field in aimlOptions") }}
+{{- include "ack.unsupported" (list $ "aiml_options.serverless_vector_acceleration" $aiml.serverless_vector_acceleration "ACK's Domain has no serverlessVectorAcceleration field in aimlOptions") }}
+{{- $at := $v.auto_tune_options | default dict }}
+{{- if and $at.rollback_on_disable (ne $at.rollback_on_disable "NO_ROLLBACK") }}
+{{- include "ack.unsupported" (list $ "auto_tune_options.rollback_on_disable" $at.rollback_on_disable "ACK's Domain has no rollbackOnDisable field in autoTuneOptions, so AWS's own default applies; only NO_ROLLBACK, the module's default, is accepted") }}
+{{- end }}
+{{- include "ack.unsupported" (list $ "cluster_config.node_options" (($v.cluster_config | default dict).node_options) "ACK's Domain has no nodeOptions field in clusterConfig") }}
+{{- end }}

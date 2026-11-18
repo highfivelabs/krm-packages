@@ -1,0 +1,4 @@
+# expect: opensearch: cluster_config.node_options is not supported
+domain_name: x-os
+create_cloudwatch_log_groups: false
+cluster_config: {node_options: {coordinator: {node_config: {enabled: true}}}}

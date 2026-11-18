@@ -1,0 +1,3 @@
+# expect: opensearch: account_id and region are required to write the domain's log group ARNs
+domain_name: x-os
+create_cloudwatch_log_resource_policy: false

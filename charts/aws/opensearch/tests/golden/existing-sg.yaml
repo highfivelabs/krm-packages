@@ -1,0 +1,49 @@
+---
+# Source: opensearch/templates/opensearch.yaml
+apiVersion: opensearchservice.services.k8s.aws/v1alpha1
+kind: Domain
+metadata:
+  name: existing-sg-domain
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "existing-sg"
+    app.kubernetes.io/name: opensearch
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "domain"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  accessPolicies: '{"Version":"2012-10-17","Statement":[]}'
+  advancedSecurityOptions:
+    anonymousAuthEnabled: false
+    enabled: true
+  autoTuneOptions:
+    desiredState: ENABLED
+  clusterConfig:
+    dedicatedMasterCount: 3
+    dedicatedMasterEnabled: true
+    dedicatedMasterType: c6g.large.search
+    instanceCount: 3
+    instanceType: r6g.large.search
+    zoneAwarenessEnabled: true
+  domainEndpointOptions:
+    enforceHTTPS: true
+    tlsSecurityPolicy: Policy-Min-TLS-1-2-2019-07
+  ebsOptions:
+    ebsEnabled: true
+    volumeSize: 64
+    volumeType: gp3
+  encryptionAtRestOptions:
+    enabled: true
+  name: catalog-os-sg
+  nodeToNodeEncryptionOptions:
+    enabled: true
+  offPeakWindowOptions:
+    enabled: true
+  softwareUpdateOptions:
+    autoSoftwareUpdateEnabled: true
+  vpcOptions:
+    securityGroupIDs:
+    - sg-0123456789abcdef0
+    subnetIDs:
+    - subnet-0123456789abcdef0

@@ -1,0 +1,10 @@
+# names, labels and tags (docs/design.md, "Names, labels and tags").
+region: us-east-1
+account_id: "123456789012"
+domain_name: shared
+names: {domain: shop-dev-search, securityGroup: shop-dev-search-clients}
+labels: {hfl.dev/team: shop}
+tags: {team: shop}
+create_cloudwatch_log_resource_policy: false
+vpc_id: vpc-1
+vpc_options: {subnet_ids: [subnet-1]}

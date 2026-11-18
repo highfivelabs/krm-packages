@@ -1,0 +1,8 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+exempt:
+  VPCEndpoint: "it has no name: it ties a domain to a VPC"
+nameFields:
+  Domain: name
+  LogGroup: name
+  SecurityGroup: name

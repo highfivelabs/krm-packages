@@ -1,0 +1,4 @@
+# expect: opensearch: auto_tune_options.rollback_on_disable is not supported
+domain_name: x-os
+create_cloudwatch_log_groups: false
+auto_tune_options: {desired_state: ENABLED, rollback_on_disable: DEFAULT_ROLLBACK}

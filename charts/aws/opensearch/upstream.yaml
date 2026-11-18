@@ -1,0 +1,100 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# Where this chart came from: the Terraform module it ports and the release
+# it was ported from. Machine-readable; `task upstream-check` keeps it equal
+# to upstream/modules.yaml and Chart.yaml. To take a newer release, see
+# UPSTREAM.md ("Moving the pins").
+module: aws/opensearch
+repo: https://github.com/terraform-aws-modules/terraform-aws-opensearch
+path: .
+version: v2.11.1
+commit: 370988b1bd771fd26037e8b1471ddd0ae651c602
+license: Apache-2.0
+copyright: null
+module_url: https://github.com/terraform-aws-modules/terraform-aws-opensearch/tree/v2.11.1
+registry_url: https://registry.terraform.io/modules/terraform-aws-modules/opensearch/aws
+synced: 2026-11-18
+# Module variables the chart keeps in values.yaml (so tfvars convert one to
+# one) but refuses when set (to anything but the module's default), or
+# accepts only in part. Read by `task coverage`; `task coverage-verify`
+# renders the chart to check that each one is refused. kind: gap (no ACK or
+# ack-extensions kind or field), not-ported (ACK has it, the chart does not
+# map it yet) or by-design (Bundt replaces it). partial: the variable is
+# accepted, the reason says what is not carried.
+refused:
+- variable: access_policy_override_policy_documents
+  kind: not-ported
+  reason: "the chart does not merge IAM policy documents (data.aws_iam_policy_document override_policy_documents); write the statements in access_policy_statements"
+- variable: access_policy_source_policy_documents
+  kind: not-ported
+  reason: "the chart does not merge IAM policy documents (data.aws_iam_policy_document source_policy_documents); write the statements in access_policy_statements"
+- variable: access_policy_statements
+  kind: gap
+  reason: "accepted, but a statement without resources needs account_id and region: the module's default resource is the domain's own ARN, read after apply, and ACK's Domain takes its policy as a string with no reference to it"
+  partial: true
+  fields:
+  - resources
+- variable: advanced_security_options
+  kind: gap
+  reason: "accepted, but jwt_options.jwks_url has no field on ACK's Domain, and master_user_options.master_user_password (a password in values would be written into the render) is replaced by master_user_options.master_user_password_secret_ref, a Kubernetes Secret; both are refused"
+  partial: true
+  fields:
+  - jwt_options.jwks_url
+  - master_user_options.master_user_password
+- variable: aiml_options
+  kind: gap
+  reason: "accepted for natural_language_query_generation_options; s3_vectors_engine and serverless_vector_acceleration have no field on ACK's Domain (opensearchservice-controller v1.10.0) and are refused"
+  partial: true
+  fields:
+  - s3_vectors_engine
+  - serverless_vector_acceleration
+- variable: auto_tune_options
+  kind: gap
+  reason: "accepted, but rollback_on_disable has no field on ACK's Domain: only its default, NO_ROLLBACK, is accepted"
+  partial: true
+  fields:
+  - rollback_on_disable
+- variable: cloudwatch_log_group_class
+  kind: gap
+  reason: "ACK's LogGroup (cloudwatchlogs-controller v1.10.0) has no log group class field"
+- variable: cluster_config
+  kind: gap
+  reason: "accepted, but node_options (OpenSearch optimized instance node configuration) has no field on ACK's Domain and is refused"
+  partial: true
+  fields:
+  - node_options
+- variable: create_cloudwatch_log_resource_policy
+  kind: gap
+  reason: "no kind makes a CloudWatch Logs resource policy (aws_cloudwatch_log_resource_policy), in ACK or in ack-extensions, and the domain cannot publish to its log groups without one; true (the default) is refused while the chart makes log groups: set false and give the account a resource policy that lets es.amazonaws.com write to them"
+- variable: deployment_strategy_options
+  kind: gap
+  reason: "ACK's Domain (opensearchservice-controller v1.10.0) has no deploymentStrategyOptions field"
+- variable: identity_center_options
+  kind: gap
+  reason: "ACK's Domain has no identityCenterOptions field"
+- variable: log_publishing_options
+  kind: gap
+  reason: "accepted, but each entry's log_group_class is refused (ACK's LogGroup has no field), and a log group ARN is written from account_id and region unless the entry gives cloudwatch_log_group_arn, as the module reads it after apply"
+  partial: true
+  fields:
+  - log_group_class
+- variable: outbound_connections
+  kind: gap
+  reason: "opensearchservice-controller v1.10.0 has no kind for an outbound connection (aws_opensearch_outbound_connection)"
+- variable: package_associations
+  kind: gap
+  reason: "opensearchservice-controller v1.10.0 has no kind for a package association (aws_opensearch_package_association)"
+- variable: security_group_rules
+  kind: gap
+  reason: "accepted, but each rule's tags are not carried (ACK keeps a group's rules inline in SecurityGroup, which has no per-rule tags); region is not used"
+  partial: true
+  fields:
+  - tags
+- variable: security_group_use_name_prefix
+  kind: gap
+  reason: "accepted: true (the default) names the group as given, without Terraform's random suffix, since a render must not change between plans; the namePrefix value keeps two stacks' groups apart"
+  partial: true
+- variable: timeouts
+  kind: gap
+  reason: "ACK reconciles until the domain is ready and ACK's Domain has no timeout setting"

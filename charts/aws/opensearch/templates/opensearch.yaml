@@ -1,0 +1,399 @@
+{{- /*
+Copyright 2026 High Five Labs
+SPDX-License-Identifier: Apache-2.0
+
+main.tf: the domain (aws_opensearch_domain) as ACK's opensearchservice
+Domain, which also carries what the module makes as separate resources: the
+access policy (aws_opensearch_domain_policy, spec.accessPolicies) and the
+SAML options (aws_opensearch_domain_saml_options,
+spec.advancedSecurityOptions.sAMLOptions); the VPC endpoints
+(aws_opensearch_vpc_endpoint) as VPCEndpoint, each taking the domain by
+reference; the CloudWatch log groups (aws_cloudwatch_log_group) as
+cloudwatchlogs LogGroup; and the security group
+(aws_security_group, aws_vpc_security_group_*_rule) as ec2 SecurityGroup
+with its rules inline, taken by the domain by reference
+(vpcOptions.securityGroupRefs), as charts/aws/efs does. Not carried
+(upstream.yaml, "refused"): package associations, outbound connections, the
+log resource policy, IAM Identity Center and deployment strategy options.
+*/ -}}
+{{- include "ack.names" (list $ (list "domain" "securityGroup")) -}}
+{{- $v := .Values -}}
+{{- if $v.create }}
+{{- $region := $v.region | default "" -}}
+{{- $part := $v.partition | default "aws" -}}
+{{- $account := $v.account_id | default "" -}}
+{{- $domainName := include "ack.resourceName" (list $ "domain" "domain" ($v.domain_name | default "") 28 "letter") -}}
+{{- if not $domainName }}
+{{- fail "opensearch: domain_name is required (or names.domain)" }}
+{{- end }}
+{{- if not (regexMatch "^[a-z][a-z0-9-]{2,27}$" $domainName) }}
+{{- fail (printf "opensearch: the domain name %q must be 3 to 28 characters: lower-case letters, digits and hyphens, starting with a letter" $domainName) }}
+{{- end }}
+{{- $domainK8s := include "ack.name" (list .Release.Name "domain") -}}
+{{- $vpc := $v.vpc_options | default dict -}}
+{{- $sgObj := include "ack.name" (list .Release.Name "sg") -}}
+{{- $createSG := and $v.create_security_group $vpc -}}
+
+{{- /* Security group */ -}}
+{{- if $createSG }}
+{{- $derived := $v.security_group_name | default $domainName }}
+{{- $sgName := include "ack.resourceName" (list $ "securityGroup" "security group" $derived 255) }}
+{{- if not $v.vpc_id }}
+{{- fail "opensearch: vpc_id is required with vpc_options and create_security_group: true: ACK's SecurityGroup needs its VPC's ID, which the module reads from the first subnet and a chart cannot look up (docs/aws.md)" }}
+{{- end }}
+---
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: SecurityGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $sgObj "id" "security-group" "region" $region) | nindent 2 }}
+spec:
+  name: {{ $sgName | quote }}
+  {{- /* Unset, the Terraform provider's default; AWS cannot change it later. */}}
+  description: {{ $v.security_group_description | default "Managed by Terraform" | quote }}
+  vpcID: {{ $v.vpc_id | quote }}
+{{- range $dir := list "ingress" "egress" }}
+{{- $rules := dict }}
+{{- range $key, $r := ($v.security_group_rules | default dict) }}
+{{- if eq (($r | default dict).type | default "ingress") $dir }}{{ $_ := set $rules $key $r }}{{ end }}
+{{- end }}
+{{- if $rules }}
+  {{ $dir }}Rules:
+{{- range $key := keys $rules | sortAlpha }}
+{{- $r := index $rules $key | default dict }}
+{{- $set := list }}
+{{- range $f := list "cidr_ipv4" "cidr_ipv6" "prefix_list_id" "referenced_security_group_id" }}
+{{- if index $r $f }}{{ $set = append $set $f }}{{ end }}
+{{- end }}
+{{- if ne (len $set) 1 }}
+{{- fail (printf "opensearch: security_group_rules.%s must set exactly one of cidr_ipv4, cidr_ipv6, prefix_list_id or referenced_security_group_id" $key) }}
+{{- end }}
+{{- /* The module's defaults: tcp, and for an ingress rule port 443. */}}
+{{- $from := $r.from_port }}
+{{- if and (kindIs "invalid" $from) (eq $dir "ingress") }}{{ $from = 443 }}{{ end }}
+{{- $to := $r.to_port }}
+{{- if and (kindIs "invalid" $to) (eq $dir "ingress") }}{{ $to = 443 }}{{ end }}
+{{- $desc := dict }}
+{{- with $r.description }}{{ $desc = dict "description" . }}{{ end }}
+    - ipProtocol: {{ $r.ip_protocol | default "tcp" | toString | quote }}
+{{- if not (kindIs "invalid" $from) }}
+      fromPort: {{ int64 $from }}
+{{- end }}
+{{- if not (kindIs "invalid" $to) }}
+      toPort: {{ int64 $to }}
+{{- end }}
+{{- if $r.cidr_ipv4 }}
+      ipRanges:
+        - {{ toJson (merge (dict "cidrIP" $r.cidr_ipv4) $desc) }}
+{{- else if $r.cidr_ipv6 }}
+      ipv6Ranges:
+        - {{ toJson (merge (dict "cidrIPv6" $r.cidr_ipv6) $desc) }}
+{{- else if $r.prefix_list_id }}
+      prefixListIDs:
+        - {{ toJson (merge (dict "prefixListID" $r.prefix_list_id) $desc) }}
+{{- else if eq $r.referenced_security_group_id "self" }}
+      {{- /* self: a pair without a group ID is this group (ACK fills its ID in) */}}
+      userIDGroupPairs:
+        - {{ toJson $desc }}
+{{- else }}
+      userIDGroupPairs:
+        - {{ toJson (merge (dict "groupID" $r.referenced_security_group_id) $desc) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with include "ack.tags" (list $ $v.tags $v.security_group_tags) | fromJson }}
+  tags:
+{{- include "ack.tagList" (list .) | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{- /* CloudWatch log groups, one for each enabled log type, as the module makes them */ -}}
+{{- $logOpts := $v.log_publishing_options | default list -}}
+{{- $logARNs := dict -}}
+{{- range $o := $logOpts }}
+{{- if not $o.log_type }}{{ fail "opensearch: every log_publishing_options entry needs a log_type" }}{{ end }}
+{{- $enabled := true }}{{ if not (kindIs "invalid" $o.enabled) }}{{ $enabled = $o.enabled }}{{ end }}
+{{- $lgName := $o.log_group_name | default (printf "/aws/opensearch/%s/%s" $domainName $o.log_type) }}
+{{- if and $enabled $v.create_cloudwatch_log_groups }}
+{{- $lgName = include "ack.cloudName" (list $ "log group" $lgName 512) }}
+{{- end }}
+{{- if $o.cloudwatch_log_group_arn }}
+{{- $_ := set $logARNs $o.log_type $o.cloudwatch_log_group_arn }}
+{{- else if and $enabled $v.create_cloudwatch_log_groups }}
+{{- if not (and $account $region) }}
+{{- fail "opensearch: account_id and region are required to write the domain's log group ARNs (log_publishing_options without cloudwatch_log_group_arn): the module reads the log group's ARN, known only after apply" }}
+{{- end }}
+{{- $_ := set $logARNs $o.log_type (printf "arn:%s:logs:%s:%s:log-group:%s" $part $region $account $lgName) }}
+{{- end }}
+{{- if and $enabled $v.create_cloudwatch_log_groups }}
+{{- $lgTags := include "ack.tags" (list $ $v.tags ($o.log_group_tags | default dict)) | fromJson }}
+{{- $retention := $o.log_group_retention_in_days }}
+{{- if kindIs "invalid" $retention }}{{ $retention = $v.cloudwatch_log_group_retention_in_days }}{{ end }}
+{{- $kms := $o.log_group_kms_key_id | default $v.cloudwatch_log_group_kms_key_id }}
+{{- $skip := $o.log_group_skip_destroy }}
+{{- if kindIs "invalid" $skip }}{{ $skip = $v.cloudwatch_log_group_skip_destroy }}{{ end }}
+{{- $lgAnn := dict }}
+{{- if and (eq (toString $skip) "true") (not (include "ack.abandon" $)) }}{{ $_ := set $lgAnn "services.k8s.aws/deletion-policy" "retain" }}{{ end }}
+---
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "log-group" (lower (replace "_" "-" $o.log_type)))) "id" (printf "log-group-%s" (lower (replace "_" "-" $o.log_type))) "region" ($o.region | default $region) "annotations" $lgAnn) | nindent 2 }}
+spec:
+  name: {{ $lgName | quote }}
+{{- if and (not (kindIs "invalid" $retention)) (gt (int64 $retention) 0) }}
+  retentionDays: {{ int64 $retention }}
+{{- end }}
+{{- with $kms }}
+  kmsKeyID: {{ . | quote }}
+{{- end }}
+{{- with $lgTags }}
+  tags:
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- /* The domain */ -}}
+{{- $spec := dict "name" $domainName -}}
+{{- with $v.engine_version }}{{ $_ := set $spec "engineVersion" . }}{{ end -}}
+{{- with $v.ip_address_type }}{{ $_ := set $spec "ipAddressType" . }}{{ end -}}
+{{- if $v.advanced_options }}{{ $_ := set $spec "advancedOptions" $v.advanced_options }}{{ end -}}
+
+{{- /* Access policy */ -}}
+{{- $statements := $v.access_policy_statements | default dict -}}
+{{- $createPolicy := and $v.create_access_policy (or $statements $v.access_policy_source_policy_documents $v.access_policy_override_policy_documents) -}}
+{{- if and $v.enable_access_policy (or $createPolicy $v.access_policies) }}
+{{- if $createPolicy }}
+{{- $stmts := list }}
+{{- range $k := keys $statements | sortAlpha }}
+{{- $s := index $statements $k | default dict }}
+{{- $o := dict "Effect" ($s.effect | default "Allow") }}
+{{- with $s.sid }}{{ $_ := set $o "Sid" . }}{{ end }}
+{{- with $s.actions }}{{ $_ := set $o "Action" . }}{{ end }}
+{{- with $s.not_actions }}{{ $_ := set $o "NotAction" . }}{{ end }}
+{{- if $s.resources }}
+{{- $_ := set $o "Resource" $s.resources }}
+{{- else if not $s.not_resources }}
+{{- if not (and $account $region) }}
+{{- fail (printf "opensearch: access_policy_statements.%s has no resources: account_id and region are required to write the domain's ARN, which the module reads after apply" $k) }}
+{{- end }}
+{{- $rs := list }}
+{{- range $p := ($s.resource_paths | default (list "*")) }}{{ $rs = append $rs (printf "arn:%s:es:%s:%s:domain/%s/%s" $part $region $account $domainName $p) }}{{ end }}
+{{- $_ := set $o "Resource" $rs }}
+{{- end }}
+{{- with $s.not_resources }}{{ $_ := set $o "NotResource" . }}{{ end }}
+{{- range $pk := list "principals" "not_principals" }}
+{{- $pl := index $s $pk }}
+{{- if $pl }}
+{{- $pm := dict }}
+{{- range $p := $pl }}
+{{- if eq $p.type "*" }}{{ $pm = "*" }}{{ else }}{{ $_ := set $pm $p.type $p.identifiers }}{{ end }}
+{{- end }}
+{{- $_ := set $o (ternary "Principal" "NotPrincipal" (eq $pk "principals")) $pm }}
+{{- end }}
+{{- end }}
+{{- if $s.conditions }}
+{{- $cm := dict }}
+{{- range $c := $s.conditions }}
+{{- $inner := get $cm $c.test | default dict }}
+{{- $_ := set $inner $c.variable $c.values }}
+{{- $_ := set $cm $c.test $inner }}
+{{- end }}
+{{- $_ := set $o "Condition" $cm }}
+{{- end }}
+{{- $stmts = append $stmts $o }}
+{{- end }}
+{{- $_ := set $spec "accessPolicies" (toJson (dict "Version" "2012-10-17" "Statement" $stmts)) }}
+{{- else }}
+{{- $_ := set $spec "accessPolicies" $v.access_policies }}
+{{- end }}
+{{- end }}
+
+{{- /* Fine-grained access control and SAML */ -}}
+{{- $adv := $v.advanced_security_options | default dict -}}
+{{- if $adv }}
+{{- $a := dict "enabled" (ternary $adv.enabled true (hasKey $adv "enabled")) "anonymousAuthEnabled" (ternary $adv.anonymous_auth_enabled false (hasKey $adv "anonymous_auth_enabled")) }}
+{{- if not (kindIs "invalid" $adv.internal_user_database_enabled) }}{{ $_ := set $a "internalUserDatabaseEnabled" $adv.internal_user_database_enabled }}{{ end }}
+{{- with $adv.jwt_options }}
+{{- $j := dict }}
+{{- range $f := list (list "enabled" "enabled") (list "public_key" "publicKey") (list "roles_key" "rolesKey") (list "subject_key" "subjectKey") }}
+{{- $val := get $adv.jwt_options (index $f 0) }}
+{{- if not (kindIs "invalid" $val) }}{{ $_ := set $j (index $f 1) $val }}{{ end }}
+{{- end }}
+{{- $_ := set $a "jwtOptions" $j }}
+{{- end }}
+{{- with $adv.master_user_options }}
+{{- $m := dict }}
+{{- if .master_user_arn }}
+{{- $_ := set $m "masterUserARN" .master_user_arn }}
+{{- else }}
+{{- with .master_user_name }}{{ $_ := set $m "masterUserName" . }}{{ end }}
+{{- with .master_user_password_secret_ref }}{{ $_ := set $m "masterUserPassword" . }}{{ end }}
+{{- end }}
+{{- if $m }}{{ $_ := set $a "masterUserOptions" $m }}{{ end }}
+{{- end }}
+{{- if and $v.create_saml_options $v.saml_options }}
+{{- $sm := $v.saml_options }}
+{{- $s := dict }}
+{{- range $f := list (list "enabled" "enabled") (list "master_backend_role" "masterBackendRole") (list "master_user_name" "masterUserName") (list "roles_key" "rolesKey") (list "session_timeout_minutes" "sessionTimeoutMinutes") (list "subject_key" "subjectKey") }}
+{{- $val := get $sm (index $f 0) }}
+{{- if not (kindIs "invalid" $val) }}{{ $_ := set $s (index $f 1) $val }}{{ end }}
+{{- end }}
+{{- with $sm.idp }}{{ $_ := set $s "idp" (dict "entityID" .entity_id "metadataContent" .metadata_content) }}{{ end }}
+{{- $_ := set $a "sAMLOptions" $s }}
+{{- end }}
+{{- $_ := set $spec "advancedSecurityOptions" $a }}
+{{- else if and $v.create_saml_options $v.saml_options }}
+{{- fail "opensearch: create_saml_options needs advanced_security_options: ACK's Domain carries the SAML options inside advancedSecurityOptions" }}
+{{- end }}
+
+{{- /* AI/ML */ -}}
+{{- with $v.aiml_options }}
+{{- with .natural_language_query_generation_options }}
+{{- $_ := set $spec "aimlOptions" (dict "naturalLanguageQueryGenerationOptions" (dict "desiredState" .desired_state)) }}
+{{- end }}
+{{- end }}
+
+{{- /* Auto-Tune */ -}}
+{{- with $v.auto_tune_options }}
+{{- $t := dict "desiredState" (ternary .desired_state "ENABLED" (hasKey . "desired_state")) }}
+{{- if not (kindIs "invalid" .use_off_peak_window) }}{{ $_ := set $t "useOffPeakWindow" .use_off_peak_window }}{{ end }}
+{{- if .maintenance_schedule }}
+{{- $ms := list }}
+{{- range $m := .maintenance_schedule }}
+{{- $ms = append $ms (dict "cronExpressionForRecurrence" $m.cron_expression_for_recurrence "duration" (dict "unit" $m.duration.unit "value" (int64 $m.duration.value)) "startAt" $m.start_at) }}
+{{- end }}
+{{- $_ := set $t "maintenanceSchedules" $ms }}
+{{- end }}
+{{- $_ := set $spec "autoTuneOptions" $t }}
+{{- end }}
+
+{{- /* Cluster */ -}}
+{{- with $v.cluster_config }}
+{{- $c := dict }}
+{{- $dm := ternary .dedicated_master_enabled true (hasKey . "dedicated_master_enabled") }}
+{{- $_ := set $c "dedicatedMasterEnabled" $dm }}
+{{- if $dm }}
+{{- $_ := set $c "dedicatedMasterCount" (int64 (ternary .dedicated_master_count 3 (hasKey . "dedicated_master_count"))) }}
+{{- $_ := set $c "dedicatedMasterType" (ternary .dedicated_master_type "c6g.large.search" (hasKey . "dedicated_master_type")) }}
+{{- end }}
+{{- $_ := set $c "instanceCount" (int64 (ternary .instance_count 3 (hasKey . "instance_count"))) }}
+{{- $_ := set $c "instanceType" (ternary .instance_type "r6g.large.search" (hasKey . "instance_type")) }}
+{{- with .cold_storage_options }}{{ $_ := set $c "coldStorageOptions" (dict "enabled" .enabled) }}{{ end }}
+{{- if not (kindIs "invalid" .multi_az_with_standby_enabled) }}{{ $_ := set $c "multiAZWithStandbyEnabled" .multi_az_with_standby_enabled }}{{ end }}
+{{- if not (kindIs "invalid" .warm_count) }}{{ $_ := set $c "warmCount" (int64 .warm_count) }}{{ end }}
+{{- if not (kindIs "invalid" .warm_enabled) }}{{ $_ := set $c "warmEnabled" .warm_enabled }}{{ end }}
+{{- with .warm_type }}{{ $_ := set $c "warmType" . }}{{ end }}
+{{- $za := ternary .zone_awareness_enabled true (hasKey . "zone_awareness_enabled") }}
+{{- $_ := set $c "zoneAwarenessEnabled" $za }}
+{{- if and $za .zone_awareness_config }}
+{{- $_ := set $c "zoneAwarenessConfig" (dict "availabilityZoneCount" (int64 .zone_awareness_config.availability_zone_count)) }}
+{{- end }}
+{{- $_ := set $spec "clusterConfig" $c }}
+{{- end }}
+
+{{- with $v.cognito_options }}
+{{- $c := dict "identityPoolID" .identity_pool_id "roleARN" .role_arn "userPoolID" .user_pool_id }}
+{{- if not (kindIs "invalid" .enabled) }}{{ $_ := set $c "enabled" .enabled }}{{ end }}
+{{- $_ := set $spec "cognitoOptions" $c }}
+{{- end }}
+
+{{- with $v.domain_endpoint_options }}
+{{- $d := dict "enforceHTTPS" (ternary .enforce_https true (hasKey . "enforce_https")) "tlsSecurityPolicy" (ternary .tls_security_policy "Policy-Min-TLS-1-2-2019-07" (hasKey . "tls_security_policy")) }}
+{{- with .custom_endpoint }}{{ $_ := set $d "customEndpoint" . }}{{ end }}
+{{- with .custom_endpoint_certificate_arn }}{{ $_ := set $d "customEndpointCertificateARN" . }}{{ end }}
+{{- if not (kindIs "invalid" .custom_endpoint_enabled) }}{{ $_ := set $d "customEndpointEnabled" .custom_endpoint_enabled }}{{ end }}
+{{- $_ := set $spec "domainEndpointOptions" $d }}
+{{- end }}
+
+{{- with $v.ebs_options }}
+{{- $e := dict "ebsEnabled" (ternary .ebs_enabled true (hasKey . "ebs_enabled")) "volumeType" (ternary .volume_type "gp3" (hasKey . "volume_type")) }}
+{{- if not (kindIs "invalid" .iops) }}{{ $_ := set $e "iops" (int64 .iops) }}{{ end }}
+{{- if not (kindIs "invalid" .throughput) }}{{ $_ := set $e "throughput" (int64 .throughput) }}{{ end }}
+{{- if not (kindIs "invalid" .volume_size) }}{{ $_ := set $e "volumeSize" (int64 .volume_size) }}{{ end }}
+{{- $_ := set $spec "ebsOptions" $e }}
+{{- end }}
+
+{{- with $v.encrypt_at_rest }}
+{{- $e := dict "enabled" (ternary .enabled true (hasKey . "enabled")) }}
+{{- with .kms_key_id }}{{ $_ := set $e "kmsKeyID" . }}{{ end }}
+{{- $_ := set $spec "encryptionAtRestOptions" $e }}
+{{- end }}
+
+{{- if $logARNs }}
+{{- $lp := dict }}
+{{- range $o := $logOpts }}
+{{- $enabled := true }}{{ if not (kindIs "invalid" $o.enabled) }}{{ $enabled = $o.enabled }}{{ end }}
+{{- with get $logARNs $o.log_type }}
+{{- $_ := set $lp $o.log_type (dict "cloudWatchLogsLogGroupARN" . "enabled" $enabled) }}
+{{- end }}
+{{- end }}
+{{- $_ := set $spec "logPublishingOptions" $lp }}
+{{- end }}
+
+{{- with $v.node_to_node_encryption }}
+{{- $_ := set $spec "nodeToNodeEncryptionOptions" (dict "enabled" (ternary .enabled true (hasKey . "enabled"))) }}
+{{- end }}
+
+{{- with $v.off_peak_window_options }}
+{{- $o := dict "enabled" (ternary .enabled true (hasKey . "enabled")) }}
+{{- with .off_peak_window }}
+{{- with .window_start_time }}
+{{- $w := dict }}
+{{- if not (kindIs "invalid" .hours) }}{{ $_ := set $w "hours" (int64 .hours) }}{{ end }}
+{{- if not (kindIs "invalid" .minutes) }}{{ $_ := set $w "minutes" (int64 .minutes) }}{{ end }}
+{{- $_ := set $o "offPeakWindow" (dict "windowStartTime" $w) }}
+{{- end }}
+{{- end }}
+{{- $_ := set $spec "offPeakWindowOptions" $o }}
+{{- end }}
+
+{{- with $v.software_update_options }}
+{{- $_ := set $spec "softwareUpdateOptions" (dict "autoSoftwareUpdateEnabled" (ternary .auto_software_update_enabled true (hasKey . "auto_software_update_enabled"))) }}
+{{- end }}
+
+{{- if $vpc }}
+{{- $o := dict }}
+{{- with $vpc.subnet_ids }}{{ $_ := set $o "subnetIDs" . }}{{ end }}
+{{- if and $createSG $vpc.security_group_ids }}
+{{- fail "opensearch: vpc_options.security_group_ids is not supported with create_security_group: true: ACK's Domain cannot take group references (the chart's group) and IDs together; set create_security_group: false and give every group's ID (docs/aws.md)" }}
+{{- end }}
+{{- if $createSG }}
+{{- $_ := set $o "securityGroupRefs" (list (dict "from" (dict "name" $sgObj))) }}
+{{- else if $vpc.security_group_ids }}
+{{- $_ := set $o "securityGroupIDs" $vpc.security_group_ids }}
+{{- end }}
+{{- $_ := set $spec "vpcOptions" $o }}
+{{- end }}
+
+{{- with include "ack.tags" (list $ $v.tags) | fromJson }}
+{{- $_ := set $spec "tags" (include "ack.tagList" (list .) | fromYamlArray) }}
+{{- end }}
+---
+apiVersion: opensearchservice.services.k8s.aws/v1alpha1
+kind: Domain
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" $domainK8s "id" "domain" "region" $region) | nindent 2 }}
+spec:
+{{- toYaml $spec | nindent 2 }}
+
+{{- /* VPC endpoints */ -}}
+{{- range $k := keys ($v.vpc_endpoints | default dict) | sortAlpha }}
+{{- $e := get $v.vpc_endpoints $k | default dict }}
+{{- if not $e.subnet_ids }}{{ fail (printf "opensearch: vpc_endpoints.%s needs subnet_ids" $k) }}{{ end }}
+{{- $vo := dict "subnetIDs" $e.subnet_ids }}
+{{- with $e.security_group_ids }}{{ $_ := set $vo "securityGroupIDs" . }}{{ end }}
+---
+apiVersion: opensearchservice.services.k8s.aws/v1alpha1
+kind: VPCEndpoint
+metadata:
+{{- include "ack.metadata" (dict "root" $ "name" (include "ack.name" (list $.Release.Name "vpc-endpoint" $k)) "id" (printf "vpc-endpoint-%s" $k) "region" ($e.region | default $region)) | nindent 2 }}
+spec:
+  domainRef:
+    from:
+      name: {{ $domainK8s }}
+  vpcOptions:
+{{- toYaml $vo | nindent 4 }}
+{{- end }}
+{{- end }}

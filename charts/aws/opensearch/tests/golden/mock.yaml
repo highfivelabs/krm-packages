@@ -1,0 +1,94 @@
+---
+# Source: opensearch/templates/opensearch.yaml
+apiVersion: opensearchservice.services.k8s.aws/v1alpha1
+kind: Domain
+metadata:
+  name: mock-domain
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: opensearch
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "domain"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  accessPolicies: '{"Statement":[{"Action":["es:*"],"Effect":"Allow","Principal":{"AWS":["arn:aws:iam::000000000000:role/os-admin"]},"Resource":["arn:aws:es:us-east-1:000000000000:domain/catalog-os/*"]}],"Version":"2012-10-17"}'
+  advancedSecurityOptions:
+    anonymousAuthEnabled: false
+    enabled: true
+    internalUserDatabaseEnabled: false
+    masterUserOptions:
+      masterUserARN: arn:aws:iam::000000000000:role/os-admin
+  autoTuneOptions:
+    desiredState: ENABLED
+  clusterConfig:
+    dedicatedMasterEnabled: false
+    instanceCount: 1
+    instanceType: t3.small.search
+    zoneAwarenessEnabled: false
+  domainEndpointOptions:
+    enforceHTTPS: true
+    tlsSecurityPolicy: Policy-Min-TLS-1-2-2019-07
+  ebsOptions:
+    ebsEnabled: true
+    volumeSize: 10
+    volumeType: gp3
+  encryptionAtRestOptions:
+    enabled: true
+  engineVersion: OpenSearch_2.17
+  logPublishingOptions:
+    INDEX_SLOW_LOGS:
+      cloudWatchLogsLogGroupARN: arn:aws:logs:us-east-1:000000000000:log-group:/aws/opensearch/catalog-os/INDEX_SLOW_LOGS
+      enabled: true
+    SEARCH_SLOW_LOGS:
+      cloudWatchLogsLogGroupARN: arn:aws:logs:us-east-1:000000000000:log-group:/aws/opensearch/catalog-os/SEARCH_SLOW_LOGS
+      enabled: true
+  name: catalog-os
+  nodeToNodeEncryptionOptions:
+    enabled: true
+  offPeakWindowOptions:
+    enabled: true
+  softwareUpdateOptions:
+    autoSoftwareUpdateEnabled: true
+  tags:
+  - key: catalog-test
+    value: "true"
+---
+# Source: opensearch/templates/opensearch.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: mock-log-group-index-slow-logs
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: opensearch
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group-index-slow-logs"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "/aws/opensearch/catalog-os/INDEX_SLOW_LOGS"
+  retentionDays: 60
+  tags:
+    catalog-test: "true"
+---
+# Source: opensearch/templates/opensearch.yaml
+apiVersion: cloudwatchlogs.services.k8s.aws/v1alpha1
+kind: LogGroup
+metadata:
+  name: mock-log-group-search-slow-logs
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: "mock"
+    app.kubernetes.io/name: opensearch
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    hfl.dev/id: "log-group-search-slow-logs"
+    services.k8s.aws/region: "us-east-1"
+spec:
+  name: "/aws/opensearch/catalog-os/SEARCH_SLOW_LOGS"
+  retentionDays: 60
+  tags:
+    catalog-test: "true"

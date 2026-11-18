@@ -1,0 +1,48 @@
+# Copyright 2026 High Five Labs
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Bundt Package for this chart (docs/design.md, "Outputs"). Outputs are
+# the module's declared outputs for what the chart ports, selected from the
+# live objects (resources.<hfl.dev/id>): the domain (resources.domain), its
+# security group (resources.security-group). Not provided: the dashboard
+# endpoints' v2 form and the maps of package associations and outbound
+# connections (those are refused), cloudwatch_logs (each log group's object
+# carries its own status) and vpc_endpoints (each endpoint's object does).
+# EC2 reports no ARN for a group, so security_group_arn is built as the
+# provider builds it.
+apiVersion: hfl.dev/v1
+kind: Package
+metadata:
+  name: aws-opensearch
+spec:
+  version: 0.1.0
+  engine: helm
+  providers: [ack]
+  outputs:
+    domain_arn: >-
+      'domain' in resources && has(resources.domain.status.ackResourceMetadata) && has(resources.domain.status.ackResourceMetadata.arn)
+      ? dyn(resources.domain.status.ackResourceMetadata.arn) : null
+    domain_id: >-
+      'domain' in resources && has(resources.domain.status.domainID) ? dyn(resources.domain.status.domainID) : null
+    domain_name: >-
+      'domain' in resources ? dyn(resources.domain.spec.name) : null
+    domain_endpoint: >-
+      'domain' in resources && has(resources.domain.status.endpoint) ? dyn(resources.domain.status.endpoint) : null
+    domain_endpoint_v2: >-
+      'domain' in resources && has(resources.domain.status.endpointV2) ? dyn(resources.domain.status.endpointV2) : null
+    domain_dashboard_endpoint: >-
+      'domain' in resources && has(resources.domain.status.endpoint) ? dyn(resources.domain.status.endpoint + '/_dashboards') : null
+    domain_endpoint_v2_hosted_zone_id: >-
+      'domain' in resources && has(resources.domain.status.domainEndpointV2HostedZoneID) ? dyn(resources.domain.status.domainEndpointV2HostedZoneID) : null
+    security_group_id: >-
+      'security-group' in resources && has(resources['security-group'].status.id)
+      ? dyn(resources['security-group'].status.id) : null
+    security_group_arn: >-
+      'security-group' in resources && has(resources['security-group'].status.id)
+      ? dyn('arn:'
+        + (resources['security-group'].status.ackResourceMetadata.region.startsWith('cn-') ? 'aws-cn'
+          : (resources['security-group'].status.ackResourceMetadata.region.startsWith('us-gov-') ? 'aws-us-gov' : 'aws'))
+        + ':ec2:' + resources['security-group'].status.ackResourceMetadata.region
+        + ':' + resources['security-group'].status.ackResourceMetadata.ownerAccountID
+        + ':security-group/' + resources['security-group'].status.id)
+      : null

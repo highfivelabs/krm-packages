@@ -1,0 +1,28 @@
+region: us-east-1
+account_id: "123456789012"
+domain_name: catalog-os-vpc
+engine_version: OpenSearch_2.17
+create_cloudwatch_log_resource_policy: false
+create_cloudwatch_log_groups: false
+log_publishing_options: []
+vpc_id: vpc-0123456789abcdef0
+vpc_options:
+  subnet_ids: [subnet-0123456789abcdef0, subnet-0123456789abcdef1]
+security_group_name: os-clients
+security_group_rules:
+  https:
+    cidr_ipv4: 10.0.0.0/8
+    description: HTTPS from the VPC
+  self:
+    referenced_security_group_id: self
+    from_port: 0
+    to_port: 65535
+    ip_protocol: "-1"
+  out:
+    type: egress
+    cidr_ipv4: 0.0.0.0/0
+    ip_protocol: "-1"
+vpc_endpoints:
+  other:
+    subnet_ids: [subnet-0123456789abcdef2]
+    security_group_ids: [sg-0123456789abcdef0]

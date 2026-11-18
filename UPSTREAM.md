@@ -65,6 +65,7 @@ charts use are copied in `crds/ack-extensions`.
 | `apigatewayv2-controller` | `v1.9.0` | `4e95251285d92491095760729ec61695cd434ead` | API, APIMapping, Authorizer, Deployment, DomainName, Integration, Route, Stage, VPCLink |
 | `cloudfront-controller` | `v1.11.0` | `753248487a022254c571746f88180603e5c4c63f` | CachePolicy, Distribution, Function, OriginAccessControl, OriginRequestPolicy, ResponseHeadersPolicy, VPCOrigin |
 | `networkfirewall-controller` | `v1.8.0` | `4756924349a0880597d19481a1959bfd7777ebf1` | Firewall, FirewallPolicy |
+| `opensearchservice-controller` | `v1.10.0` | `a2f082f1ec1d4ab08d3f73a39b9935016d632435` | Domain, VPCEndpoint |
 
 To move a controller: change its row, run `task test` (it re-fetches the
 CRDs and re-validates every AWS render), and re-read the gaps in

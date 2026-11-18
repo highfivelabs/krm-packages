@@ -394,6 +394,7 @@ Thirteen submodules, one resource each:
 - **step-functions** (28): `sfn/StateMachine`, `Activity`, `StateMachineAlias`. Covered.
 - **efs** (29): `efs/FileSystem` (policy, backup policy and replication inline), `MountTarget`, `AccessPoint`. Covered.
 - **rds-proxy** (31): `rds/DBProxy`, plus `ack-ext` `DBProxyTarget`. Still missing: proxy endpoints and the default target group's settings.
+- **opensearch** (35): `opensearchservice/Domain` (access policy and SAML options inline), `VPCEndpoint`, with `cloudwatchlogs/LogGroup` and `ec2/SecurityGroup`. Still missing: package associations and outbound connections (no kind), the CloudWatch Logs resource policy (no kind, ACK or ack-extensions), identity center and deployment strategy options (no Domain field). The module's OpenSearch Serverless submodule is not ported (opensearchserverless-controller v1.7.0 has `Collection`, `AccessPolicy`, `SecurityPolicy`, `LifecyclePolicy`, `CollectionGroup`).
 
 ## 4. The ACK controllers used
 
@@ -442,7 +443,7 @@ controller's latest GitHub release on 2026-11-09.
 | dsql | v1.4.0 | `881f8c7b2a79` | GA | clusters |
 | networkfirewall | v1.7.0 | `6d7cec5f8948` | GA | firewallpolicies, firewalls, rulegroups |
 | kafka | v1.14.0 | `7264a328ebd2` | GA | clusters, configurations, serverlessclusters, vpcconnections |
-| opensearchservice | v1.9.0 | `ffa3379859d8` | GA | domains, vpcendpointaccesses, vpcendpoints |
+| opensearchservice | v1.10.0 | `a2f082f1ec1d` | GA | domains, vpcendpointaccesses, vpcendpoints |
 | memorydb | v1.9.0 | `8b533f3b1260` | GA | acls, clusters, parametergroups, snapshots, subnetgroups, users |
 
 Controllers that a top module would need but that have no release:

@@ -1,0 +1,4 @@
+# expect: opensearch: vpc_endpoints.a needs subnet_ids
+domain_name: x-os
+create_cloudwatch_log_groups: false
+vpc_endpoints: {a: {}}

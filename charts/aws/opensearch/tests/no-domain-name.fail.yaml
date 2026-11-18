@@ -1,0 +1,2 @@
+# expect: opensearch: domain_name is required
+create_cloudwatch_log_groups: false

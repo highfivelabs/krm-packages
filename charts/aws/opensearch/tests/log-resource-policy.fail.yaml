@@ -1,0 +1,4 @@
+# expect: opensearch: create_cloudwatch_log_resource_policy is not supported
+region: us-east-1
+account_id: "123456789012"
+domain_name: x-os

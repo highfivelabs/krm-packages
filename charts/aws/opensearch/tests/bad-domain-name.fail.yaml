@@ -1,0 +1,3 @@
+# expect: opensearch: the domain name "Bad_Name" must be 3 to 28 characters
+domain_name: Bad_Name
+create_cloudwatch_log_groups: false

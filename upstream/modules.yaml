@@ -1900,7 +1900,7 @@ modules:
     copyright: null
     registry_url: https://registry.terraform.io/modules/terraform-aws-modules/opensearch/aws
     url: https://github.com/terraform-aws-modules/terraform-aws-opensearch/tree/v2.11.1
-    chart: null
+    chart: charts/aws/opensearch
   - id: aws/msk-kafka-cluster
     cloud: aws
     module: msk-kafka-cluster
