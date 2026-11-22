@@ -18,7 +18,7 @@ require (
 	github.com/google/cel-go v0.26.1
 	github.com/hashicorp/hcl/v2 v2.25.0
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
-	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3 // indirect
+	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3
 	github.com/stoewer/go-strcase v1.2.0 // indirect
 	github.com/zclconf/go-cty v1.20.0
 	golang.org/x/exp v0.0.0-20230515195305-f3d0a9c9a5cc // indirect

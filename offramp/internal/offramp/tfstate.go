@@ -16,6 +16,14 @@ type State struct {
 	Version          int             `json:"version"`
 	TerraformVersion string          `json:"terraform_version"`
 	Resources        []StateResource `json:"resources"`
+	// Tool is terraform or opentofu, from the providers' registry hosts
+	// (both write format 4, and terraform_version holds whichever wrote
+	// it); "" when the state does not say.
+	Tool string `json:"-"`
+	// Form is how it was read: state (a raw snapshot, format 4) or
+	// show-json (`terraform show -json` / `tofu show -json`, which has no
+	// per-instance dependencies).
+	Form string `json:"-"`
 }
 
 // StateResource is one resource block of a state, with its instances.
@@ -37,6 +45,9 @@ type StateInstance struct {
 	// SensitiveAttributes are the paths Terraform marks sensitive, each a
 	// list of steps ({"type": "get_attr", "value": "password"}).
 	SensitiveAttributes []any `json:"sensitive_attributes"`
+	// Deposed is set on an instance create_before_destroy left behind:
+	// replaced, and waiting to be destroyed. It is not converted.
+	Deposed string `json:"deposed,omitempty"`
 }
 
 // ReadState reads and checks a state file.
@@ -45,14 +56,11 @@ func ReadState(path string) (*State, error) {
 	if err != nil {
 		return nil, err
 	}
-	var s State
-	if err := json.Unmarshal(b, &s); err != nil {
+	s, err := ParseState(b)
+	if err != nil {
 		return nil, fmt.Errorf("%s: %w", path, err)
 	}
-	if s.Version != 4 {
-		return nil, fmt.Errorf("%s: state format version %d; the converter reads version 4 (`terraform state pull`)", path, s.Version)
-	}
-	return &s, nil
+	return s, nil
 }
 
 // TFResource is one instance of a managed resource, as the converter
@@ -74,7 +82,9 @@ type TFResource struct {
 	// Deps are the addresses (without instance keys) this instance
 	// depends on, as Terraform recorded them.
 	Deps []string
-	// Sensitive are the top-level attributes Terraform marks sensitive.
+	// Sensitive are the top-level attributes in which a sensitive value
+	// (Terraform's or OpenTofu's mark) was removed from Attrs. Only the
+	// sensitive leaves are removed; the rest of the attribute stays.
 	Sensitive map[string]bool
 }
 
@@ -84,6 +94,10 @@ func (s *State) Instances() []*TFResource {
 	var out []*TFResource
 	for _, r := range s.Resources {
 		for _, in := range r.Instances {
+			if in.Deposed != "" {
+				continue
+			}
+			attrs, sens := redact(in.Attributes, in.SensitiveAttributes)
 			// A tainted instance is still the live resource, so it is
 			// converted like any other.
 			base := r.Type + "." + r.Name
@@ -101,9 +115,9 @@ func (s *State) Instances() []*TFResource {
 				Name:      r.Name,
 				Provider:  r.Provider,
 				Mode:      r.Mode,
-				Attrs:     in.Attributes,
+				Attrs:     attrs,
 				Deps:      in.Dependencies,
-				Sensitive: sensitiveTop(in.SensitiveAttributes),
+				Sensitive: sens,
 			})
 		}
 	}
@@ -153,21 +167,4 @@ func ProviderName(p string) string {
 		p = p[:i]
 	}
 	return p
-}
-
-// sensitiveTop gives the first attribute of each sensitive path.
-func sensitiveTop(paths []any) map[string]bool {
-	out := map[string]bool{}
-	for _, p := range paths {
-		steps, ok := p.([]any)
-		if !ok || len(steps) == 0 {
-			continue
-		}
-		if m, ok := steps[0].(map[string]any); ok && m["type"] == "get_attr" {
-			if v, ok := m["value"].(string); ok {
-				out[v] = true
-			}
-		}
-	}
-	return out
 }
