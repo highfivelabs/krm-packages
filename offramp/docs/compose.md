@@ -65,6 +65,8 @@ state ─► convert ─► normalize ─► classify ─► choose values ─�
     disk size and type, node counts, release channel, CIDR range, SQL
     tier, …). The value is named per resource when the chart has more
     than one of that kind (`appsMachineType`).
+  - **Override:** `names`, full names by resource ID (see "Names"
+    below).
   - **Adoption:** `deletionPolicy`, and `resourceIds` for cloud-assigned
     IDs (a folder's or a hierarchical firewall policy's number). These
     bind this adoption to these resources and are empty for a new
@@ -96,6 +98,29 @@ Names that the converter built around a cloud-assigned ID
 (`n100000000765`) don't vote. `--code-name` overrides it. Bundt mints
 short codenames (8 characters or fewer) for new instances; an imported
 codename that is longer is flagged.
+
+## Names: convention by default, an escape hatch always
+
+The codename convention keeps instances in one project from colliding,
+but a chart a customer brings, or one composed from an import, often
+follows the organization's own naming instead, and a generic chart is
+rarely expressive enough for every organization. So every name is
+overridable:
+
+```yaml
+names:
+  containercluster-ofr-test-std: acme-prod-gke   # by resource ID
+```
+
+A resource's `metadata.name` (and a `resourceID` equal to it) holds
+`${name.<id>}` in the ChartSpec, defaulting to `nameDefault`, the name
+the conventions gave. Every reference to it inside the chart holds the
+same binding, so overriding one name rewires its dependents: the node
+pools' `clusterRef` follows the cluster, a folder's grants follow the
+folder. The values schema lists the resource IDs a name can be given for,
+so a typo is refused. With no override, names render exactly as before
+and the zero-diff proof is unchanged. Names Bundt cannot vary (fixed by
+default) are listed as findings, with the override that would fix them.
 
 ## Terraform and OpenTofu
 

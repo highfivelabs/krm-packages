@@ -66,6 +66,7 @@ const (
 	TierPlacement = "placement" // the standard placement block, in every chart
 	TierKnob      = "knob"      // a field two real instances would set differently
 	TierAdoption  = "adoption"  // how Bundt holds the objects (deletion policy)
+	TierOverride  = "override"  // escape hatches: replace a convention outright
 )
 
 // SpecValue is one chart value. Default is what the state holds, so the
@@ -87,11 +88,15 @@ type SpecValue struct {
 // ${values.<name>} (the whole field, typed) or interpolate it in a string.
 // A labels map may hold the key "$merge": "${values.labels}".
 type SpecRes struct {
-	ID             string         `json:"id"`
-	Kind           string         `json:"kind"`
-	Stateful       bool           `json:"stateful,omitempty"`
-	IdentityFields []string       `json:"identityFields,omitempty"`
-	Object         map[string]any `json:"object"`
+	ID             string   `json:"id"`
+	Kind           string   `json:"kind"`
+	Stateful       bool     `json:"stateful,omitempty"`
+	IdentityFields []string `json:"identityFields,omitempty"`
+	// NameDefault is the resource's name when the names value does not
+	// override it: metadata.name (and a resourceID equal to it) hold
+	// ${name.<id>}, and so does every reference to it inside the chart.
+	NameDefault string         `json:"nameDefault,omitempty"`
+	Object      map[string]any `json:"object"`
 }
 
 // SpecOutput is a CEL expression over resources (by hfl.dev/id) and inputs,
@@ -202,7 +207,7 @@ func Compose(objs []*Object, opt ComposeOptions) (*ChartSpec, error) {
 		}
 		res = append(res, SpecRes{ID: id, Kind: o.Kind, Stateful: statefulKinds[o.Kind], Object: obj})
 	}
-	internalRefs(res)
+	internalRefs(res, true)
 
 	// Choose values: placement first, from what the objects hold.
 	c := &chooser{spec: spec, res: res}
@@ -247,6 +252,8 @@ func Compose(objs []*Object, opt ComposeOptions) (*ChartSpec, error) {
 		Description: "Labels on every labelled resource, merged under each resource's own."})
 	c.add(SpecValue{Name: "deletionPolicy", Tier: TierAdoption, Type: "string", Default: "abandon",
 		Description: "deletion-policy of resources that hold no data (stateful ones always abandon)."})
+	c.add(SpecValue{Name: "names", Tier: TierOverride, Type: "object", Default: map[string]any{}, Identity: true,
+		Description: "Full names by resource ID, replacing the codename convention for that resource, for an organization's own naming. References inside the chart follow."})
 
 	// Cloud-assigned IDs, then knobs: whole fields, before substitution.
 	c.cloudAssigned()
@@ -279,6 +286,7 @@ func Compose(objs []*Object, opt ComposeOptions) (*ChartSpec, error) {
 		c.deletion(r)
 		r.IdentityFields = identityOf(r.Object)
 	}
+	c.bindNames()
 	spec.Resources = res
 	spec.Outputs = outputsOf(res)
 
@@ -292,11 +300,8 @@ func Compose(objs []*Object, opt ComposeOptions) (*ChartSpec, error) {
 		spec.Findings = append(spec.Findings, SpecFinding{Reason: fmt.Sprintf("codename %q is longer than 8 characters; Bundt mints shorter ones for new instances", codeName)})
 	}
 	for _, r := range res {
-		for _, f := range []string{"metadata.name", "spec.resourceID"} {
-			s, ok := digPath(r.Object, f).(string)
-			if ok && s != "" && !strings.Contains(s, "${") {
-				spec.Findings = append(spec.Findings, SpecFinding{Resource: r.ID, Reason: fmt.Sprintf("%s %q is fixed: two instances in one project would collide", f, s)})
-			}
+		if n := r.NameDefault; n != "" && !strings.Contains(n, "${") {
+			spec.Findings = append(spec.Findings, SpecFinding{Resource: r.ID, Reason: fmt.Sprintf("name %q is fixed by default: two instances in one project would collide unless names.%s overrides it", n, r.ID)})
 		}
 		walkStrings(r.Object, "", func(path, s string) {
 			if strings.HasSuffix(path, ".external") && !strings.Contains(s, "${values.") {
@@ -322,8 +327,9 @@ func describeSource(s SpecSource) string {
 
 // internalRefs turns references to objects in the chart into name refs, so
 // the chart wires its own objects and a renamed instance stays wired.
-func internalRefs(res []SpecRes) {
+func internalRefs(res []SpecRes, mark bool) {
 	byKindName := map[string]bool{}
+	idOf := map[string]string{}
 	byName := map[string][]string{}
 	// A reference may name an object by its name or its resource ID
 	// (folders/123); both resolve to the object's name.
@@ -332,7 +338,9 @@ func internalRefs(res []SpecRes) {
 		n := str(dig(r.Object, "metadata", "name"))
 		byKindName[r.Kind+"/"+n] = true
 		byName[n] = append(byName[n], r.Kind)
+		idOf[r.Kind+"/"+n] = r.ID
 		if id := str(dig(r.Object, "spec", "resourceID")); id != "" && id != n {
+			idOf[r.Kind+"/"+id] = r.ID
 			byKindName[r.Kind+"/"+id] = true
 			byName[id] = append(byName[id], r.Kind)
 			nameOf[r.Kind+"/"+id] = n
@@ -345,10 +353,14 @@ func internalRefs(res []SpecRes) {
 			if ext, ok := t["external"].(string); ok && strings.HasSuffix(field, "Ref") || ok && field == "resourceRef" {
 				if kind := refTarget(field, ext, t, byKindName, byName); kind != "" {
 					n := lastSegment(normRef(ext))
+					target := idOf[kind+"/"+n]
 					if m, ok := nameOf[kind+"/"+n]; ok {
 						n = m
 					}
 					out := map[string]any{"name": n}
+					if mark && target != "" {
+						out[targetKey] = target
+					}
 					if k, ok := t["kind"]; ok {
 						out["kind"] = k
 					}
@@ -663,7 +675,7 @@ func (c *chooser) subst(kind, path string, v any, rules []rule) any {
 	switch t := v.(type) {
 	case map[string]any:
 		for k, x := range t {
-			if path == "metadata.annotations" && k == AnnID {
+			if path == "metadata.annotations" && k == AnnID || k == targetKey {
 				continue
 			}
 			p := k
@@ -679,7 +691,7 @@ func (c *chooser) subst(kind, path string, v any, rules []rule) any {
 		}
 		return t
 	case string:
-		if (strings.HasPrefix(t, "${values.") || strings.HasPrefix(t, "${resourceIds.")) && strings.HasSuffix(t, "}") {
+		if (strings.HasPrefix(t, "${values.") || strings.HasPrefix(t, "${resourceIds.") || strings.HasPrefix(t, "${name.")) && strings.HasSuffix(t, "}") {
 			return t
 		}
 		segs := []segment{{lit: t}}
@@ -939,4 +951,49 @@ func (c *chooser) cloudAssigned() {
 	}
 	c.add(SpecValue{Name: "resourceIds", Tier: TierAdoption, Type: "object", Default: ids, Uses: len(ids),
 		Description: "Cloud-assigned IDs of resources this instance adopts, by resource. Leave empty for a new instance: the cloud assigns them."})
+}
+
+// targetKey marks a reference with the chart resource it points at, until
+// bindNames replaces its name with that resource's name binding.
+const targetKey = "$target"
+
+// bindNames makes every name overridable: metadata.name (and a resourceID
+// equal to it) become ${name.<id>}, defaulting to the name the conventions
+// gave, and every reference inside the chart follows its target.
+func (c *chooser) bindNames() {
+	for i := range c.res {
+		r := &c.res[i]
+		md := r.Object["metadata"].(map[string]any)
+		n, ok := md["name"].(string)
+		if !ok || n == "" {
+			continue
+		}
+		r.NameDefault = n
+		md["name"] = "${name." + r.ID + "}"
+		if spec, ok := r.Object["spec"].(map[string]any); ok && spec["resourceID"] == n {
+			spec["resourceID"] = "${name." + r.ID + "}"
+		}
+		c.use("names")
+	}
+	var fix func(v any)
+	fix = func(v any) {
+		switch t := v.(type) {
+		case map[string]any:
+			if id, ok := t[targetKey].(string); ok {
+				delete(t, targetKey)
+				t["name"] = "${name." + id + "}"
+				return
+			}
+			for _, x := range t {
+				fix(x)
+			}
+		case []any:
+			for _, x := range t {
+				fix(x)
+			}
+		}
+	}
+	for i := range c.res {
+		fix(c.res[i].Object["spec"])
+	}
 }
