@@ -21,7 +21,7 @@ type ComposeStateOptions struct {
 	Calls       []string
 	Prefix      string // prepended to each chart's name
 	Environment string
-	Moniker     string
+	CodeName    string
 	Version     string
 	StatePath   string
 }
@@ -63,7 +63,7 @@ func ComposeState(res *Result, st *State, opt ComposeStateOptions) ([]*Composed,
 			call = objs[0].Call
 		}
 		spec, err := Compose(objs, ComposeOptions{
-			Name: chart, Version: opt.Version, Environment: opt.Environment, Moniker: opt.Moniker,
+			Name: chart, Version: opt.Version, Environment: opt.Environment, CodeName: opt.CodeName,
 			Source: SpecSource{Kind: "terraform-state", State: filepath.Base(opt.StatePath), Tool: st.Tool, Form: st.Form, TerraformVersion: st.TerraformVersion, Call: call},
 		})
 		if err != nil {

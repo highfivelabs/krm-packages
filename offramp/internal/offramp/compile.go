@@ -314,7 +314,7 @@ type Verification struct {
 	Chart       string
 	Lint        string // "" when helm lint passed
 	Differences []Difference
-	// Collisions are identities two instances (different monikers, networks
+	// Collisions are identities two instances (different codenames, networks
 	// and subnetworks, one project) would share.
 	Collisions []string
 	Err        string
@@ -361,9 +361,9 @@ func Verify(spec *ChartSpec, dir string, objs []*Object) *Verification {
 	// Collisions.
 	seen := map[string]int{}
 	for i, m := range []string{"zqa", "zqb", "zqc"} {
-		// A new instance: its own moniker and names, no adopted IDs; its
+		// A new instance: its own codeName and names, no adopted IDs; its
 		// own project when the chart makes the project.
-		vals := map[string]any{"moniker": m}
+		vals := map[string]any{"codeName": m}
 		for _, sv := range spec.Values {
 			if sv.Name == "resourceIds" {
 				// Helm merges maps: null each key to clear it.

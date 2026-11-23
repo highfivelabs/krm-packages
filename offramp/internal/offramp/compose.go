@@ -112,7 +112,7 @@ type ComposeOptions struct {
 	Name        string // the chart's name
 	Version     string // the chart's version (default 0.1.0)
 	Environment string // the environment's literal in names and labels, when known
-	Moniker     string // the stack moniker; default: derived from the names
+	CodeName    string // the stack codename; default: derived from the names
 	Source      SpecSource
 }
 
@@ -226,9 +226,9 @@ func Compose(objs []*Object, opt ComposeOptions) (*ChartSpec, error) {
 		return ""
 	})
 	network, subnet := networkNames(res)
-	moniker := opt.Moniker
-	if moniker == "" {
-		moniker = deriveMoniker(res, project)
+	codeName := opt.CodeName
+	if codeName == "" {
+		codeName = deriveCodeName(res, project)
 	}
 
 	c.add(SpecValue{Name: "projectId", Tier: TierPlacement, Type: "string", Default: project, Identity: true,
@@ -239,7 +239,7 @@ func Compose(objs []*Object, opt ComposeOptions) (*ChartSpec, error) {
 		Description: "The VPC network's name: the one the chart makes, or the one it attaches to."})
 	c.add(SpecValue{Name: "subnetwork", Tier: TierPlacement, Type: "string", Default: subnet, Identity: true,
 		Description: "The subnetwork's name: the one the chart makes, or the one it attaches to."})
-	c.add(SpecValue{Name: "moniker", Tier: TierPlacement, Type: "string", Default: moniker, Identity: true,
+	c.add(SpecValue{Name: "codeName", Tier: TierPlacement, Type: "string", Default: codeName, Identity: true,
 		Description: "The stack's short unique name; every name the chart makes starts with it, so instances in one project do not collide. Bundt mints it per StackInstance."})
 	c.add(SpecValue{Name: "environment", Tier: TierPlacement, Type: "string", Default: opt.Environment,
 		Description: "The Environment's name, where it appears in names and labels."})
@@ -250,7 +250,7 @@ func Compose(objs []*Object, opt ComposeOptions) (*ChartSpec, error) {
 
 	// Cloud-assigned IDs, then knobs: whole fields, before substitution.
 	c.cloudAssigned()
-	c.knobs(moniker)
+	c.knobs(codeName)
 
 	// Substitute placement literals in every string, most specific first.
 	var rules []rule
@@ -266,8 +266,8 @@ func Compose(objs []*Object, opt ComposeOptions) (*ChartSpec, error) {
 	if region != "" {
 		rules = append(rules, rule{value: "region", lit: region, anywhere: true})
 	}
-	if moniker != "" && len(moniker) >= 3 {
-		rules = append(rules, rule{value: "moniker", lit: moniker, anywhere: true})
+	if codeName != "" && len(codeName) >= 3 {
+		rules = append(rules, rule{value: "codeName", lit: codeName, anywhere: true})
 	}
 	if opt.Environment != "" && len(opt.Environment) >= 3 {
 		rules = append(rules, rule{value: "environment", lit: opt.Environment, names: true})
@@ -288,8 +288,8 @@ func Compose(objs []*Object, opt ComposeOptions) (*ChartSpec, error) {
 			spec.Findings = append(spec.Findings, SpecFinding{Reason: fmt.Sprintf("value %s is exposed (standard placement block) but nothing in the state uses it", v.Name)})
 		}
 	}
-	if len(moniker) > 8 {
-		spec.Findings = append(spec.Findings, SpecFinding{Reason: fmt.Sprintf("moniker %q is longer than 8 characters; Bundt mints shorter ones for new instances", moniker)})
+	if len(codeName) > 8 {
+		spec.Findings = append(spec.Findings, SpecFinding{Reason: fmt.Sprintf("codename %q is longer than 8 characters; Bundt mints shorter ones for new instances", codeName)})
 	}
 	for _, r := range res {
 		for _, f := range []string{"metadata.name", "spec.resourceID"} {
@@ -449,7 +449,7 @@ func networkNames(res []SpecRes) (string, string) {
 			return str(dig(own[0].Object, "metadata", "name"))
 		}
 		if len(own) > 1 {
-			return "" // several: each name stays fixed or follows the moniker
+			return "" // several: each name stays fixed or follows the codename
 		}
 		return mostCommon(res, func(r SpecRes) string {
 			var found string
@@ -464,9 +464,9 @@ func networkNames(res []SpecRes) (string, string) {
 	return pick(nets, "network"), pick(subs, "subnetwork")
 }
 
-// deriveMoniker is the name prefix most names share (at a "-"), or the only
+// deriveCodeName is the name prefix most names share (at a "-"), or the only
 // name when there is one.
-func deriveMoniker(res []SpecRes, project string) string {
+func deriveCodeName(res []SpecRes, project string) string {
 	var names []string
 	for _, r := range res {
 		// Grants and enabled APIs (named for the API) name nothing the
@@ -517,7 +517,7 @@ func deriveMoniker(res []SpecRes, project string) string {
 	}
 	if best == "" {
 		// No shared prefix: the first resource is the module's main one
-		// (the cluster, the bucket); its name becomes the moniker.
+		// (the cluster, the bucket); its name becomes the codename.
 		if n := names[0]; len(n) >= 3 && n != project {
 			best = n
 		}
@@ -585,7 +585,7 @@ func (c *chooser) value(name string) *SpecValue {
 // knobs exposes the known sizing fields. A field one resource holds is
 // named for the field (machineType); one several hold is named per resource
 // (appsMachineType).
-func (c *chooser) knobs(moniker string) {
+func (c *chooser) knobs(codeName string) {
 	type hit struct {
 		res  int
 		path string
@@ -611,7 +611,7 @@ func (c *chooser) knobs(moniker string) {
 			r := &c.res[h.res]
 			name := leaf
 			if len(hits) > 1 || kindCount(c.res, r.Kind) > 1 {
-				name = resourceStem(r, moniker) + strings.ToUpper(leaf[:1]) + leaf[1:]
+				name = resourceStem(r, codeName) + strings.ToUpper(leaf[:1]) + leaf[1:]
 			}
 			if c.value(name) != nil {
 				name = name + fmt.Sprint(h.res)
@@ -624,10 +624,10 @@ func (c *chooser) knobs(moniker string) {
 	}
 }
 
-func resourceStem(r *SpecRes, moniker string) string {
+func resourceStem(r *SpecRes, codeName string) string {
 	n := str(dig(r.Object, "metadata", "name"))
-	if moniker != "" {
-		n = strings.TrimPrefix(strings.TrimPrefix(n, moniker), "-")
+	if codeName != "" {
+		n = strings.TrimPrefix(strings.TrimPrefix(n, codeName), "-")
 	}
 	if n == "" {
 		n = strings.ToLower(strings.TrimPrefix(strings.TrimPrefix(r.Kind, "Compute"), "Container"))

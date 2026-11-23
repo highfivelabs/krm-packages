@@ -113,7 +113,7 @@ func TestVerifyCatchesDifference(t *testing.T) {
 func TestPlacementWiring(t *testing.T) {
 	needHelm(t)
 	c := chart(t, composeFixture(t, "testdata/synthetic/gke/terraform.tfstate"), "gke-standard")
-	objs, err := renderChart(c.Dir, "x", "", map[string]any{"subnetwork": "sub-b", "network": "net-a", "moniker": "kite", "region": "europe-west4"})
+	objs, err := renderChart(c.Dir, "x", "", map[string]any{"subnetwork": "sub-b", "network": "net-a", "codeName": "kite", "region": "europe-west4"})
 	if err != nil {
 		t.Fatal(err)
 	}

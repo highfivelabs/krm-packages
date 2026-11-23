@@ -60,7 +60,7 @@
         { "contains": { "properties": { "name": { "const": "region" } } } },
         { "contains": { "properties": { "name": { "const": "network" } } } },
         { "contains": { "properties": { "name": { "const": "subnetwork" } } } },
-        { "contains": { "properties": { "name": { "const": "moniker" } } } },
+        { "contains": { "properties": { "name": { "const": "codeName" } } } },
         { "contains": { "properties": { "name": { "const": "environment" } } } },
         { "contains": { "properties": { "name": { "const": "labels" } } } }
       ]
