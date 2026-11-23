@@ -102,6 +102,12 @@ func ConvertState(st *State, k *KCC, opt Options) *Result {
 			res.Objects = append(res.Objects, o)
 		}
 	}
+	for _, a := range st.DeposedAddresses() {
+		res.Findings = append(res.Findings, Finding{a, "", "note", "a deposed instance (create_before_destroy replaced it; Terraform or OpenTofu destroys it on the next apply): not adopted"})
+	}
+	if st.Form == "show-json" {
+		res.Findings = append(res.Findings, Finding{"", "", "note", "read from show -json, which records no per-instance dependencies: components' dependsOn comes only from references"})
+	}
 	uniqueNames(res.Objects)
 	return res
 }
@@ -259,10 +265,12 @@ func generic(r *TFResource, k *KCC, sm *SMResource, crd *CRD) (*Object, []Findin
 			continue
 		}
 		if r.Sensitive[a] {
-			if !empty(attrs[a]) {
+			if empty(attrs[a]) {
+				// The whole attribute was sensitive.
 				findings = append(findings, Finding{r.Address, r.Type, "note", "the sensitive attribute " + a + " is not written into the object: give it as a reference to a Secret (or to Secret Manager) by hand"})
+				continue
 			}
-			continue
+			findings = append(findings, Finding{r.Address, r.Type, "note", "a sensitive value in " + a + " is not written into the object (the rest of it is): give it as a reference to a Secret (or to Secret Manager) by hand"})
 		}
 		v := attrs[a]
 		if empty(v) {

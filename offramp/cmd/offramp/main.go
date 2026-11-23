@@ -10,6 +10,7 @@
 //	offramp krm    --krm DIR|FILE --out DIR [bundt flags]
 //	offramp names  --assets assets.json
 //	offramp compare A.yaml B.yaml
+//	offramp compose --kcc DIR --state terraform.tfstate --out DIR
 package main
 
 import (
@@ -38,6 +39,12 @@ func main() {
 		err = cmdNames(os.Args[2:])
 	case "synth":
 		err = cmdSynth(os.Args[2:])
+	case "compose":
+		var bad int
+		bad, err = cmdCompose(os.Args[2:])
+		if err == nil && bad > 0 {
+			os.Exit(1)
+		}
 	case "compare":
 		var n int
 		n, err = cmdCompare(os.Args[2:])
@@ -62,7 +69,9 @@ func usage() {
   offramp synth   --root DIR --tfvars FILE --out STATE [--terraform BIN --project P]
                      (a synthetic state: Terraform plans the root module offline, repeatedly)
   offramp names   --assets FILE      (full resource names for config-connector export)
-  offramp compare A.yaml B.yaml      (exit 1 when they differ)`)
+  offramp compare A.yaml B.yaml      (exit 1 when they differ)
+  offramp compose --kcc DIR --state FILE --out DIR [--single NAME] [--call C]... [--prefix P --env E --moniker M --version V]
+                     (author a chart per call from the state: ChartSpec, chart, and a zero-diff check; exit 1 when one is not proven)`)
 	os.Exit(2)
 }
 
@@ -354,4 +363,52 @@ func cmdSynth(args []string) error {
 	}
 	fmt.Printf("synthetic state: %d resource instances\n", n)
 	return nil
+}
+
+func cmdCompose(args []string) (int, error) {
+	fs := flag.NewFlagSet("compose", flag.ExitOnError)
+	var kccDir, statePath string
+	var calls multiFlag
+	var o offramp.ComposeStateOptions
+	fs.StringVar(&kccDir, "kcc", "", "a Config Connector checkout (config/crds/resources and config/servicemappings)")
+	fs.StringVar(&statePath, "state", "", "a Terraform state, format 4 (terraform state pull)")
+	fs.StringVar(&o.Out, "out", "", "output directory: one chart per directory")
+	fs.StringVar(&o.Single, "single", "", "compose the whole state into one chart with this name")
+	fs.Var(&calls, "call", "compose only this root module call (repeatable; root for the root module)")
+	fs.StringVar(&o.Prefix, "prefix", "", "prepended to each chart's name")
+	fs.StringVar(&o.Environment, "env", "", "the environment's name as it appears in names and labels (prod), when it does")
+	fs.StringVar(&o.Moniker, "moniker", "", "the stack moniker the names start with (default: derived from the names)")
+	fs.StringVar(&o.Version, "version", "0.1.0", "the charts' version")
+	fs.Parse(args)
+	if kccDir == "" || statePath == "" || o.Out == "" {
+		return 0, fmt.Errorf("--kcc, --state and --out are required")
+	}
+	o.Calls = calls
+	o.StatePath = statePath
+	k, err := offramp.LoadKCC(kccDir)
+	if err != nil {
+		return 0, err
+	}
+	st, err := offramp.ReadState(statePath)
+	if err != nil {
+		return 0, err
+	}
+	res := offramp.ConvertState(st, k, offramp.Options{DeletionPolicy: "abandon"})
+	cs, err := offramp.ComposeState(res, st, o)
+	if err != nil {
+		return 0, err
+	}
+	if err := os.WriteFile(filepath.Join(o.Out, "report.md"), []byte(offramp.ComposeReport(cs, res)), 0o644); err != nil {
+		return 0, err
+	}
+	bad := 0
+	for _, c := range cs {
+		mark := "ok"
+		if !c.Verify.OK() {
+			mark = "NOT PROVEN"
+			bad++
+		}
+		fmt.Printf("%-40s %3d resources %3d values  diff %d  collisions %d  %s\n", c.Spec.Chart.Name, len(c.Spec.Resources), len(c.Spec.Values), len(c.Verify.Differences), len(c.Verify.Collisions), mark)
+	}
+	return bad, nil
 }

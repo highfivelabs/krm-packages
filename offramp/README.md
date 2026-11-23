@@ -15,7 +15,8 @@ The design, the live results and the questions for the builder are in Bundt,
 | --- | --- |
 | `fixtures/` | four Terraform root modules built only from published modules pinned to exact releases (below); they may move to the `terraform-offramp-demo` repository, so every task takes `FIXTURES` |
 | `fixtures-terragrunt/` | a Terragrunt estate: units whose source is an open-source module, and units whose source is the team's own wrapper module (below) |
-| `cmd/offramp`, `internal/offramp` | the converter, the graduation to charts, `offramp synth`, the Terragrunt reader |
+| `cmd/offramp`, `internal/offramp` | the converter, the graduation to charts, `offramp compose` (charts authored from a state), `offramp synth`, the Terragrunt reader |
+| `schema/` | the ChartSpec schema `offramp compose` writes (`docs/compose.md`) |
 | `hack/scan.sh` | the scan: Cloud Asset Inventory, else the services' own list calls |
 | `hack/live.sh` | the live proof of one shape |
 | `hack/validate.sh` | `terraform fmt`, `init` and `validate` of every fixture; keeps each fixture's `modules.json` |
@@ -194,6 +195,34 @@ For each call whose module a chart ports:
 
 `go test ./...` runs this for every fixture (`TestEquivalence`): against the
 live shared-vpc state, and against synthetic states for all four shapes.
+
+## Terraform and OpenTofu states
+
+Every command that takes a state (`state`, `terragrunt`, `compose`) reads
+the same forms, from either tool:
+
+| Form | From | Notes |
+| --- | --- | --- |
+| Raw state, format 4 | Terraform 0.12 and later, every OpenTofu release (`terraform.tfstate`, `state pull`) | the tool is told by the providers' registry host (`registry.opentofu.org` or `registry.terraform.io`) |
+| `show -json` (`format_version` 1.x) | `terraform show -json`, `tofu show -json` | the documented, versioned form; carries no per-instance dependencies (a finding says so) |
+
+Refused, each with what to run instead: an OpenTofu-encrypted state
+(1.7 and later; `tofu state pull` or `tofu show -json` in the root
+decrypts it with its own keys, which the off-ramp never holds), format 3
+or older (Terraform 0.11), a format newer than 4, and a `show -json` major
+version other than 1. A deposed instance (left by `create_before_destroy`)
+is not adopted and is listed. A sensitive value is removed by its exact
+path, so the rest of its block still converts (`master_auth` keeps
+`client_certificate_config` without `client_key`). The fixtures in
+`internal/offramp/testdata/stateformats/` were written by Terraform
+1.17.2 and OpenTofu 1.10.7 (`stateformats_test.go`).
+
+## Composing charts: `offramp compose`
+
+Where no catalog chart ports a call's module, `offramp compose` authors
+one from the state instead of freezing it: a ChartSpec, a catalog-shaped
+chart with the standard placement values and sizing knobs, and the same
+zero-diff proof. See `docs/compose.md`.
 
 ## Terragrunt estates
 
