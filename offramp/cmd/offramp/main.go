@@ -70,7 +70,7 @@ func usage() {
                      (a synthetic state: Terraform plans the root module offline, repeatedly)
   offramp names   --assets FILE      (full resource names for config-connector export)
   offramp compare A.yaml B.yaml      (exit 1 when they differ)
-  offramp compose --kcc DIR --state FILE --out DIR [--single NAME] [--call C]... [--prefix P --env E --moniker M --version V]
+  offramp compose --kcc DIR --state FILE --out DIR [--single NAME] [--call C]... [--prefix P --env E --code-name M --version V]
                      (author a chart per call from the state: ChartSpec, chart, and a zero-diff check; exit 1 when one is not proven)`)
 	os.Exit(2)
 }
@@ -377,7 +377,7 @@ func cmdCompose(args []string) (int, error) {
 	fs.Var(&calls, "call", "compose only this root module call (repeatable; root for the root module)")
 	fs.StringVar(&o.Prefix, "prefix", "", "prepended to each chart's name")
 	fs.StringVar(&o.Environment, "env", "", "the environment's name as it appears in names and labels (prod), when it does")
-	fs.StringVar(&o.Moniker, "moniker", "", "the stack moniker the names start with (default: derived from the names)")
+	fs.StringVar(&o.CodeName, "codeName", "", "the stack codename the names start with (default: derived from the names)")
 	fs.StringVar(&o.Version, "version", "0.1.0", "the charts' version")
 	fs.Parse(args)
 	if kccDir == "" || statePath == "" || o.Out == "" {

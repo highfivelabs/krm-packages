@@ -84,8 +84,12 @@ func Compile(spec *ChartSpec, dir string) error {
 	}
 	files["package.yaml"] = append([]byte(header("#")), b...)
 
+	nameDefaults := map[string]string{}
 	for _, r := range spec.Resources {
-		t, err := template(r.Object)
+		nameDefaults[r.ID] = r.NameDefault
+	}
+	for _, r := range spec.Resources {
+		t, err := template(r.Object, nameDefaults)
 		if err != nil {
 			return fmt.Errorf("%s: %w", r.ID, err)
 		}
@@ -125,7 +129,7 @@ func valuesYAML(spec *ChartSpec) []byte {
 	for _, v := range orderedValues(spec) {
 		if v.Tier != tier {
 			tier = v.Tier
-			fmt.Fprintf(&b, "\n# --- %s ---\n", map[string]string{TierPlacement: "Standard placement block (Bundt fills these from the StackInstance)", TierKnob: "Knobs", TierAdoption: "Adoption"}[tier])
+			fmt.Fprintf(&b, "\n# --- %s ---\n", map[string]string{TierPlacement: "Standard placement block (Bundt fills these from the StackInstance)", TierKnob: "Knobs", TierAdoption: "Adoption", TierOverride: "Overrides (escape hatches)"}[tier])
 		}
 		fmt.Fprintf(&b, "\n# %s", v.Description)
 		if v.Identity {
@@ -139,7 +143,7 @@ func valuesYAML(spec *ChartSpec) []byte {
 }
 
 func orderedValues(spec *ChartSpec) []SpecValue {
-	rank := map[string]int{TierPlacement: 0, TierKnob: 1, TierAdoption: 2}
+	rank := map[string]int{TierPlacement: 0, TierKnob: 1, TierAdoption: 2, TierOverride: 3}
 	vs := append([]SpecValue(nil), spec.Values...)
 	sort.SliceStable(vs, func(i, j int) bool { return rank[vs[i].Tier] < rank[vs[j].Tier] })
 	return vs
@@ -150,6 +154,16 @@ func valuesSchema(spec *ChartSpec) map[string]any {
 	var required []any
 	for _, v := range spec.Values {
 		p := map[string]any{"type": v.Type, "description": v.Description}
+		if v.Name == "names" {
+			var ids []any
+			for _, r := range spec.Resources {
+				if r.NameDefault != "" {
+					ids = append(ids, r.ID)
+				}
+			}
+			p["additionalProperties"] = map[string]any{"type": "string", "minLength": 1}
+			p["propertyNames"] = map[string]any{"enum": ids}
+		}
 		if v.Name == "labels" || v.Name == "resourceIds" {
 			p["additionalProperties"] = map[string]any{"type": "string"}
 		}
@@ -171,6 +185,8 @@ func valuesSchema(spec *ChartSpec) map[string]any {
 	}
 }
 
+var nameRE = regexp.MustCompile(`^\$\{name\.([^}]+)\}$`)
+
 var adoptRE = regexp.MustCompile(`^\$\{resourceIds\.([^}]+)\}$`)
 
 var valueRefRE = regexp.MustCompile(`\$\{values\.([A-Za-z0-9_]+)\}`)
@@ -178,7 +194,7 @@ var valueRefRE = regexp.MustCompile(`\$\{values\.([A-Za-z0-9_]+)\}`)
 // template turns a resource into a Helm template: the object as YAML, with
 // each bound field replaced by a Go template expression rendering JSON
 // (valid YAML in flow style), so types survive.
-func template(obj map[string]any) ([]byte, error) {
+func template(obj map[string]any, nameDefaults map[string]string) ([]byte, error) {
 	exprs := map[string]string{}
 	n := 0
 	token := func(expr string) string {
@@ -212,6 +228,9 @@ func template(obj map[string]any) ([]byte, error) {
 			}
 			return t
 		case string:
+			if m := nameRE.FindStringSubmatch(t); m != nil {
+				return token(fmt.Sprintf("{{ index (.Values.names | default dict) %q | default %s | toJson }}", m[1], stringExpr(nameDefaults[m[1]])))
+			}
 			if m := adoptRE.FindStringSubmatch(t); m != nil {
 				return token(fmt.Sprintf("{{ with index (.Values.resourceIds | default dict) %q }}{{ toJson . }}{{ end }}", m[1]))
 			}
@@ -314,7 +333,7 @@ type Verification struct {
 	Chart       string
 	Lint        string // "" when helm lint passed
 	Differences []Difference
-	// Collisions are identities two instances (different monikers, networks
+	// Collisions are identities two instances (different codenames, networks
 	// and subnetworks, one project) would share.
 	Collisions []string
 	Err        string
@@ -348,7 +367,7 @@ func Verify(spec *ChartSpec, dir string, objs []*Object) *Verification {
 	for i, o := range objs {
 		want[i] = SpecRes{Kind: o.Kind, Object: deepCopy(o.Obj).(map[string]any)}
 	}
-	internalRefs(want)
+	internalRefs(want, false)
 	var a, b []map[string]any
 	for _, r := range rendered {
 		a = append(a, r)
@@ -361,9 +380,9 @@ func Verify(spec *ChartSpec, dir string, objs []*Object) *Verification {
 	// Collisions.
 	seen := map[string]int{}
 	for i, m := range []string{"zqa", "zqb", "zqc"} {
-		// A new instance: its own moniker and names, no adopted IDs; its
+		// A new instance: its own codeName and names, no adopted IDs; its
 		// own project when the chart makes the project.
-		vals := map[string]any{"moniker": m}
+		vals := map[string]any{"codeName": m}
 		for _, sv := range spec.Values {
 			if sv.Name == "resourceIds" {
 				// Helm merges maps: null each key to clear it.

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://hfl.dev/schemas/composer/chartspec.v1alpha1.json",
   "title": "ChartSpec",
-  "description": "What the Bundt chart composer compiles into a Helm chart. Agents write or edit a ChartSpec, never templates. A field bound to a value holds ${values.<name>}: the whole string takes the value with its type; inside a longer string it interpolates. A labels map may hold \"$merge\": \"${values.labels}\". A cloud-assigned resource ID holds ${resourceIds.<resource id>}.",
+  "description": "What the Bundt chart composer compiles into a Helm chart. Agents write or edit a ChartSpec, never templates. A field bound to a value holds ${values.<name>}: the whole string takes the value with its type; inside a longer string it interpolates. A labels map may hold \"$merge\": \"${values.labels}\". A cloud-assigned resource ID holds ${resourceIds.<resource id>}. A resource's name, and every reference to it inside the chart, holds ${name.<resource id>}: its nameDefault unless the names value overrides it.",
   "type": "object",
   "additionalProperties": false,
   "required": ["apiVersion", "kind", "metadata", "source", "chart", "values", "resources"],
@@ -47,7 +47,7 @@
         "required": ["name", "tier", "type", "default", "description", "uses"],
         "properties": {
           "name": { "type": "string", "pattern": "^[a-z][A-Za-z0-9]*$" },
-          "tier": { "enum": ["placement", "knob", "adoption"] },
+          "tier": { "enum": ["placement", "knob", "adoption", "override"] },
           "type": { "enum": ["string", "integer", "number", "boolean", "object", "array"] },
           "default": {},
           "description": { "type": "string", "minLength": 1 },
@@ -60,7 +60,7 @@
         { "contains": { "properties": { "name": { "const": "region" } } } },
         { "contains": { "properties": { "name": { "const": "network" } } } },
         { "contains": { "properties": { "name": { "const": "subnetwork" } } } },
-        { "contains": { "properties": { "name": { "const": "moniker" } } } },
+        { "contains": { "properties": { "name": { "const": "codeName" } } } },
         { "contains": { "properties": { "name": { "const": "environment" } } } },
         { "contains": { "properties": { "name": { "const": "labels" } } } }
       ]
@@ -77,6 +77,7 @@
           "kind": { "type": "string", "minLength": 1 },
           "stateful": { "type": "boolean" },
           "identityFields": { "type": "array", "items": { "type": "string" } },
+          "nameDefault": { "type": "string", "description": "The name when the names value does not override it; metadata.name and references inside the chart hold ${name.<id>}." },
           "object": {
             "type": "object",
             "required": ["apiVersion", "kind", "metadata"]

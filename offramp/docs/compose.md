@@ -55,7 +55,7 @@ state ─► convert ─► normalize ─► classify ─► choose values ─�
   recreates the resource; the recreate guard, BND-57, will read these).
 - **Choose values** is deterministic for now:
   - **Placement** (always exposed): `projectId`, `region`, `network`,
-    `subnetwork`, `moniker`, `environment`, `labels`. Their literals are
+    `subnetwork`, `codeName`, `environment`, `labels`. Their literals are
     replaced in every string at word boundaries, most specific first.
     Network and subnetwork are matched only after `networks/` and
     `subnetworks/` or as a network's own name, because a network and
@@ -65,6 +65,8 @@ state ─► convert ─► normalize ─► classify ─► choose values ─�
     disk size and type, node counts, release channel, CIDR range, SQL
     tier, …). The value is named per resource when the chart has more
     than one of that kind (`appsMachineType`).
+  - **Override:** `names`, full names by resource ID (see "Names"
+    below).
   - **Adoption:** `deletionPolicy`, and `resourceIds` for cloud-assigned
     IDs (a folder's or a hierarchical firewall policy's number). These
     bind this adoption to these resources and are empty for a new
@@ -78,7 +80,7 @@ state ─► convert ─► normalize ─► classify ─► choose values ─�
   - `helm lint`
   - render with defaults and compare with the state's objects (spec,
     labels and project), with zero differences required
-  - the collision test: render three instances (new moniker, network and
+  - the collision test: render three instances (new codename, network and
     subnetwork, no adopted IDs; a new project when the chart makes the
     project) and list any identity they share
 
@@ -86,15 +88,39 @@ A collision is reported, not failed. Some are real and correct: two
 instances granting on the same parent folder, or on another call's
 subnet, really do share that policy.
 
-## The moniker
+## The codename
 
-The moniker is the most common name prefix (at a `-`) across what the
+The codename (the `codeName` value, formerly "moniker") is the most
+common name prefix (at a `-`) across what the
 chart makes, after stripping a leading project ID. If there is no shared
 prefix, it is the name of the first resource (the module's main one).
 Names that the converter built around a cloud-assigned ID
-(`n100000000765`) don't vote. `--moniker` overrides it. Bundt mints
-short monikers (8 characters or fewer) for new instances; an imported
-moniker that is longer is flagged.
+(`n100000000765`) don't vote. `--code-name` overrides it. Bundt mints
+short codenames (8 characters or fewer) for new instances; an imported
+codename that is longer is flagged.
+
+## Names: convention by default, an escape hatch always
+
+The codename convention keeps instances in one project from colliding,
+but a chart a customer brings, or one composed from an import, often
+follows the organization's own naming instead, and a generic chart is
+rarely expressive enough for every organization. So every name is
+overridable:
+
+```yaml
+names:
+  containercluster-ofr-test-std: acme-prod-gke   # by resource ID
+```
+
+A resource's `metadata.name` (and a `resourceID` equal to it) holds
+`${name.<id>}` in the ChartSpec, defaulting to `nameDefault`, the name
+the conventions gave. Every reference to it inside the chart holds the
+same binding, so overriding one name rewires its dependents: the node
+pools' `clusterRef` follows the cluster, a folder's grants follow the
+folder. The values schema lists the resource IDs a name can be given for,
+so a typo is refused. With no override, names render exactly as before
+and the zero-diff proof is unchanged. Names Bundt cannot vary (fixed by
+default) are listed as findings, with the override that would fix them.
 
 ## Terraform and OpenTofu
 

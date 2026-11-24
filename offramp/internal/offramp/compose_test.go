@@ -113,7 +113,7 @@ func TestVerifyCatchesDifference(t *testing.T) {
 func TestPlacementWiring(t *testing.T) {
 	needHelm(t)
 	c := chart(t, composeFixture(t, "testdata/synthetic/gke/terraform.tfstate"), "gke-standard")
-	objs, err := renderChart(c.Dir, "x", "", map[string]any{"subnetwork": "sub-b", "network": "net-a", "moniker": "kite", "region": "europe-west4"})
+	objs, err := renderChart(c.Dir, "x", "", map[string]any{"subnetwork": "sub-b", "network": "net-a", "codeName": "kite", "region": "europe-west4"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -232,4 +232,67 @@ func objectsOf(t *testing.T, state, call string) []*Object {
 		}
 	}
 	return out
+}
+
+// The names value overrides any resource's name outright, for an
+// organization's own convention, and references inside the chart follow.
+func TestNameEscapeHatch(t *testing.T) {
+	needHelm(t)
+	c := chart(t, composeFixture(t, "testdata/synthetic/gke/terraform.tfstate"), "gke-standard")
+	var cid string
+	for _, r := range c.Spec.Resources {
+		if r.Kind == "ContainerCluster" {
+			cid = r.ID
+		}
+	}
+	objs, err := renderChart(c.Dir, "x", "", map[string]any{"names": map[string]any{cid: "acme-prod-gke"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, o := range objs {
+		switch o["kind"] {
+		case "ContainerCluster":
+			if n, id := dig(o, "metadata", "name"), dig(o, "spec", "resourceID"); n != "acme-prod-gke" || id != "acme-prod-gke" {
+				t.Errorf("cluster name %v resourceID %v, want acme-prod-gke", n, id)
+			}
+		case "ContainerNodePool":
+			if got := dig(o, "spec", "clusterRef", "name"); got != "acme-prod-gke" {
+				t.Errorf("node pool %v clusterRef.name = %v, want acme-prod-gke", dig(o, "metadata", "name"), got)
+			}
+		}
+	}
+	// The schema names the resources a name can be given for.
+	if _, err := renderChart(c.Dir, "x", "", map[string]any{"names": map[string]any{"no-such-resource": "x"}}); err == nil {
+		t.Error("a name for an unknown resource was accepted")
+	}
+}
+
+// A grant on a folder in the chart follows the folder's overridden name.
+func TestNameEscapeHatchFollowsReferences(t *testing.T) {
+	needHelm(t)
+	c := chart(t, composeFixture(t, "testdata/synthetic/folders/terraform.tfstate"), "environments")
+	names := map[string]any{}
+	for _, r := range c.Spec.Resources {
+		if r.Kind == "Folder" {
+			names[r.ID] = "acme-" + r.ID
+		}
+	}
+	objs, err := renderChart(c.Dir, "x", "", map[string]any{"names": names})
+	if err != nil {
+		t.Fatal(err)
+	}
+	refs := 0
+	for _, o := range objs {
+		walkStrings(o["spec"], "spec", func(path, s string) {
+			if strings.HasSuffix(path, "Ref.name") && dig(o, "spec", "resourceRef", "kind") == "Folder" {
+				refs++
+				if !strings.HasPrefix(s, "acme-") {
+					t.Errorf("%v %s = %q does not follow the folder's name", o["kind"], path, s)
+				}
+			}
+		})
+	}
+	if refs == 0 {
+		t.Error("no references to folders inside the chart")
+	}
 }
