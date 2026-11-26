@@ -210,6 +210,44 @@ For each call whose module a chart ports:
 `go test ./...` runs this for every fixture (`TestEquivalence`): against the
 live shared-vpc state, and against synthetic states for all four shapes.
 
+## AWS: ACK and ack-extensions
+
+A state's `aws` resources convert to AWS Controllers for Kubernetes (ACK)
+objects, and to ack-extensions' kinds where ACK has none (`docs/aws.md`
+maps the modules; `internal/offramp/aws.go` maps the types, one function
+each). Each object adopts the resource with ACK's own annotations
+(ack-extensions `docs/slot-moves.md`):
+
+- `services.k8s.aws/adoption-policy: adopt` and `adoption-fields` naming
+  the kind's identifier (`{"accountID": ...}` for an `Account`, Cloud
+  Control's primary identifier as `{"identifier": "a|b"}` for its kinds).
+  `adopt`, not `adopt-or-create`: a missing resource is an error, never a
+  new account or permission set, and the spec is filled from AWS, so the
+  adoption makes no write.
+- `services.k8s.aws/deletion-policy: retain` (with `--abandon`, the
+  default) in place of Config Connector's `deletion-policy` and
+  `state-into-spec`.
+- `services.k8s.aws/region` from the resource's `region` (aws provider v6).
+
+What Terraform keeps apart and the kind holds inline is folded:
+`aws_ssoadmin_managed_policy_attachment`, `_permission_set_inline_policy`
+and `_customer_managed_policy_attachment` are fields of their
+`PermissionSet`; one on a permission set outside the state is a gap. A type
+with no function in `aws.go` is a gap that says so.
+
+Mapped so far (tf-infra's organization and Identity Center, 2026-11-26):
+`aws_organizations_account` (ACK `Account`, plus ack-extensions'
+`AccountPlacement` for its OU), `_organizational_unit` (ACK
+`OrganizationalUnit`), `_policy` and `_policy_attachment`
+(ack-extensions' `Policy`, `PolicyAttachment`), `aws_ssoadmin_permission_set`
+and `_account_assignment` (Cloud Control `PermissionSet`, `Assignment`).
+
+The Environment pins the providers the objects need, by Bundt's names
+(`providers.md` R10): `kcc` for Config Connector's kinds,
+`hfl.kcc-extensions`, `aws.ack-<service>`, `hfl.ack-extensions`. Give the
+versions with `--provider NAME=VERSION` (repeatable); one left unpinned is
+a note in the report, not a guess.
+
 ## Terraform and OpenTofu states
 
 Every command that takes a state (`state`, `terragrunt`, `compose`) reads
