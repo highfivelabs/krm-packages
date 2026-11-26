@@ -81,12 +81,14 @@ func ConvertState(st *State, k *KCC, opt Options) *Result {
 	res := &Result{}
 	all := st.Instances()
 	var awsCtx *awsContext
+	var ghCtx *githubContext
 	for _, r := range all {
-		if ProviderName(r.Provider) == "aws" && r.Mode != "data" {
-			if awsCtx == nil {
-				awsCtx = newAWSContext(all)
-			}
-			break
+		switch {
+		case r.Mode == "data":
+		case ProviderName(r.Provider) == "aws" && awsCtx == nil:
+			awsCtx = newAWSContext(all)
+		case ProviderName(r.Provider) == "github" && ghCtx == nil:
+			ghCtx = newGitHubContext(all)
 		}
 	}
 	for _, r := range all {
@@ -101,8 +103,14 @@ func ConvertState(st *State, k *KCC, opt Options) *Result {
 		case prov == "kubernetes" || prov == "helm" || prov == "kubectl":
 			res.Findings = append(res.Findings, Finding{r.Address, r.Type, "in-cluster", "a Kubernetes object, not a cloud resource: carry it as a plain manifest in the component that owns the cluster's contents, or leave it to the app"})
 			continue
-		case prov == "aws":
-			objs, f := convertAWS(r, awsCtx)
+		case prov == "aws" || prov == "github":
+			var objs []*Object
+			var f []Finding
+			if prov == "aws" {
+				objs, f = convertAWS(r, awsCtx)
+			} else {
+				objs, f = convertGitHub(r, ghCtx)
+			}
 			res.Findings = append(res.Findings, f...)
 			for _, o := range objs {
 				finish(o, opt)
@@ -623,12 +631,18 @@ func finish(o *Object, opt Options) {
 	if dp == "" {
 		dp = "abandon"
 	}
-	if isACK(str(o.Obj["apiVersion"])) {
+	switch av := str(o.Obj["apiVersion"]); {
+	case isACK(av):
 		// ACK's: retain keeps the resource; delete is its default.
 		if dp == "abandon" {
 			ann[AnnACKDeletionPolicy] = "retain"
 		}
-	} else {
+	case isREST(av):
+		// krm-rest-runtime's: abandon leaves it; delete is its default.
+		if dp == "abandon" {
+			ann[AnnRESTDeletionPolicy] = "abandon"
+		}
+	default:
 		ann[AnnDeletionPolicy] = dp
 		ann[AnnStateIntoSpec] = "absent"
 	}

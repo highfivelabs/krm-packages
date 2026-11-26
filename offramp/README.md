@@ -248,6 +248,36 @@ The Environment pins the providers the objects need, by Bundt's names
 versions with `--provider NAME=VERSION` (repeatable); one left unpinned is
 a note in the report, not a guess.
 
+## GitHub: github-krm-extensions
+
+A state's `github` resources (the `integrations/github` provider) convert to
+github-krm-extensions' kinds (`internal/offramp/github.go`), whose spec
+fields keep GitHub's own names. Each object carries krm-rest-runtime's
+annotations (its README, "Conventions"):
+
+- `krm.hfl.dev/deletion-policy: abandon` (with `--abandon`, the default):
+  deleting the object leaves the resource.
+- `krm.hfl.dev/adopt-id` on a CRUD kind: the ID `status.id` would hold
+  (`ActionsVariable`'s name, `BranchProtection`'s node ID), so the first
+  reconcile reads the resource instead of making a second one. Settings and
+  upsert kinds are read before they are written and need none.
+
+The owner is the provider's, which no resource holds: it comes from a
+`github_repository`'s `full_name` in the same state (or an organization
+resource's ID); without one, a repository-level resource is a gap. A
+file's text is written base64-encoded, as the contents API takes it.
+`BranchProtection` takes node IDs for actors; one Terraform names by name
+(`/octocat`, `org/team`) is a note.
+
+Mapped: Actions permissions (organization and repository), workflow
+permissions (both), `github_actions_variable`, `github_branch_default`,
+`github_branch_protection`, `github_repository_file`. Not converted:
+`github_repository` and `github_organization_settings`, which
+github-krm-extensions leaves to git-hubby, whose `Repository` and
+`Organization` also own the default branch and the Actions settings (two
+controllers on one field) and archive a repository on delete with no
+abandon. They are gaps until that is decided.
+
 ## Terraform and OpenTofu states
 
 Every command that takes a state (`state`, `terragrunt`, `compose`) reads

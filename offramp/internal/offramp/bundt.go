@@ -401,7 +401,8 @@ func literalIfFrozen(p convert.Pair, g *Graduated, graduated map[string]bool) an
 
 // providerOf is the Bundt provider (providers.md R10) an object's
 // apiVersion belongs to: Config Connector's (still pinned as kcc),
-// config-connector-extensions', one ACK controller's, or ack-extensions'.
+// config-connector-extensions', one ACK controller's, ack-extensions' or
+// github-krm-extensions'.
 func providerOf(apiVersion string) string {
 	g, _, _ := strings.Cut(apiVersion, "/")
 	switch {
@@ -413,6 +414,8 @@ func providerOf(apiVersion string) string {
 		return "aws.ack-" + strings.TrimSuffix(g, ".services.k8s.aws")
 	case strings.HasSuffix(g, ".aws.hfl.dev"):
 		return "hfl.ack-extensions"
+	case strings.HasSuffix(g, ".github.hfl.dev"):
+		return "hfl.github-krm-extensions"
 	}
 	return ""
 }
