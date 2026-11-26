@@ -1,0 +1,316 @@
+# From Azure Service Operator v2.22.0 (azureserviceoperator_customresourcedefinitions_v2.22.0.yaml), MIT License, Copyright (c) Microsoft Corporation.
+# Cut to the version the converter emits (marked storage here) and without status, for the converter tests.
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: roleassignments.authorization.azure.com
+spec:
+  group: authorization.azure.com
+  names:
+    categories:
+    - azure
+    - authorization
+    kind: RoleAssignment
+    listKind: RoleAssignmentList
+    plural: roleassignments
+    singular: roleassignment
+  scope: Namespaced
+  versions:
+  - name: v20220401
+    schema:
+      openAPIV3Schema:
+        description: 'Generator information:
+
+          - Generated from: /authorization/resource-manager/Microsoft.Authorization/Authorization/stable/2022-04-01/authorization-RoleAssignmentsCalls.json
+
+          - ARM URI: /{scope}/providers/Microsoft.Authorization/roleAssignments/{roleAssignmentName}'
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object.
+
+              Servers should convert recognized schemas to the latest internal value,
+              and
+
+              may reject unrecognized values.
+
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents.
+
+              Servers may infer this from the endpoint the client submits requests
+              to.
+
+              Cannot be updated.
+
+              In CamelCase.
+
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            properties:
+              azureName:
+                description: 'AzureName: The name of the resource in Azure. This is
+                  often the same as the name of the resource in Kubernetes but it
+
+                  doesn''t have to be.'
+                type: string
+              condition:
+                description: 'Condition: The conditions on the role assignment. This
+                  limits the resources it can be assigned to. e.g.:
+
+                  @Resource[Microsoft.Storage/storageAccounts/blobServices/containers:ContainerName]
+                  StringEqualsIgnoreCase
+
+                  ''foo_storage_container'''
+                type: string
+              conditionVersion:
+                description: 'ConditionVersion: Version of the condition. Currently
+                  the only accepted value is ''2.0'''
+                type: string
+              delegatedManagedIdentityResourceReference:
+                description: 'DelegatedManagedIdentityResourceReference: Id of the
+                  delegated managed identity resource'
+                properties:
+                  armId:
+                    description: 'ARMID is a string of the form /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.
+
+                      The /resourcegroups/{resourceGroupName} bit is optional as some
+                      resources are scoped at the subscription level
+
+                      ARMID is mutually exclusive with Group, Kind, Namespace and
+                      Name.'
+                    pattern: (?i)(^(/subscriptions/([^/]+)(/resourcegroups/([^/]+))?)?/providers/([^/]+)/([^/]+/[^/]+)(/([^/]+/[^/]+))*$|^/subscriptions/([^/]+)(/resourcegroups/([^/]+))?$)
+                    type: string
+                  group:
+                    description: Group is the Kubernetes group of the resource.
+                    type: string
+                  kind:
+                    description: Kind is the Kubernetes kind of the resource.
+                    type: string
+                  name:
+                    description: Name is the Kubernetes name of the resource.
+                    type: string
+                type: object
+              description:
+                description: 'Description: Description of role assignment'
+                type: string
+              operatorSpec:
+                description: 'OperatorSpec: The specification for configuring operator
+                  behavior. This field is interpreted by the operator and not
+
+                  passed directly to Azure'
+                properties:
+                  configMapExpressions:
+                    description: 'ConfigMapExpressions: configures where to place
+                      operator written dynamic ConfigMaps (created with CEL expressions).'
+                    items:
+                      description: 'DestinationExpression is a CEL expression and
+                        a destination to store the result in. The destination may
+
+                        be a secret or a configmap. The value of the expression is
+                        stored at the specified location in
+
+                        the destination.'
+                      properties:
+                        annotations:
+                          additionalProperties:
+                            type: string
+                          description: Annotations is an optional set of annotations
+                            to apply to the destination resource.
+                          type: object
+                        key:
+                          description: 'Key is the key in the ConfigMap or Secret
+                            being written to. If the CEL expression in Value returns
+                            a string
+
+                            this is required to identify what key to write to. If
+                            the CEL expression in Value returns a map[string]string
+
+                            Key must not be set, instead the keys written will be
+                            determined dynamically based on the keys of the resulting
+
+                            map[string]string.'
+                          type: string
+                        labels:
+                          additionalProperties:
+                            type: string
+                          description: Labels is an optional set of labels to apply
+                            to the destination resource.
+                          type: object
+                        name:
+                          description: 'Name is the name of the Kubernetes configmap
+                            or secret to write to.
+
+                            The configmap or secret will be created in the same namespace
+                            as the resource.'
+                          type: string
+                        value:
+                          description: 'Value is a CEL expression. The CEL expression
+                            may return a string or a map[string]string. For more information
+
+                            on CEL in ASO see https://azure.github.io/azure-service-operator/guide/expressions/'
+                          type: string
+                      required:
+                      - name
+                      - value
+                      type: object
+                    type: array
+                  namingConvention:
+                    description: 'NamingConvention: The uuid generation technique
+                      to use for any role without an explicit AzureName. One of ''stable''
+                      or
+
+                      ''random''.'
+                    enum:
+                    - random
+                    - stable
+                    type: string
+                  secretExpressions:
+                    description: 'SecretExpressions: configures where to place operator
+                      written dynamic secrets (created with CEL expressions).'
+                    items:
+                      description: 'DestinationExpression is a CEL expression and
+                        a destination to store the result in. The destination may
+
+                        be a secret or a configmap. The value of the expression is
+                        stored at the specified location in
+
+                        the destination.'
+                      properties:
+                        annotations:
+                          additionalProperties:
+                            type: string
+                          description: Annotations is an optional set of annotations
+                            to apply to the destination resource.
+                          type: object
+                        key:
+                          description: 'Key is the key in the ConfigMap or Secret
+                            being written to. If the CEL expression in Value returns
+                            a string
+
+                            this is required to identify what key to write to. If
+                            the CEL expression in Value returns a map[string]string
+
+                            Key must not be set, instead the keys written will be
+                            determined dynamically based on the keys of the resulting
+
+                            map[string]string.'
+                          type: string
+                        labels:
+                          additionalProperties:
+                            type: string
+                          description: Labels is an optional set of labels to apply
+                            to the destination resource.
+                          type: object
+                        name:
+                          description: 'Name is the name of the Kubernetes configmap
+                            or secret to write to.
+
+                            The configmap or secret will be created in the same namespace
+                            as the resource.'
+                          type: string
+                        value:
+                          description: 'Value is a CEL expression. The CEL expression
+                            may return a string or a map[string]string. For more information
+
+                            on CEL in ASO see https://azure.github.io/azure-service-operator/guide/expressions/'
+                          type: string
+                      required:
+                      - name
+                      - value
+                      type: object
+                    type: array
+                type: object
+              owner:
+                description: 'Owner: The owner of the resource. The owner controls
+                  where the resource goes when it is deployed. The owner also
+
+                  controls the resources lifecycle. When the owner is deleted the
+                  resource will also be deleted. This resource is an
+
+                  extension resource, which means that any other Azure resource can
+                  be its owner.'
+                properties:
+                  armId:
+                    description: Ownership across namespaces is not supported.
+                    pattern: (?i)(^(/subscriptions/([^/]+)(/resourcegroups/([^/]+))?)?/providers/([^/]+)/([^/]+/[^/]+)(/([^/]+/[^/]+))*$|^/subscriptions/([^/]+)(/resourcegroups/([^/]+))?$)
+                    type: string
+                  group:
+                    description: Group is the Kubernetes group of the resource.
+                    type: string
+                  kind:
+                    description: Kind is the Kubernetes kind of the resource.
+                    type: string
+                  name:
+                    description: This is the name of the Kubernetes resource to reference.
+                    type: string
+                type: object
+              principalId:
+                description: 'PrincipalId: The principal ID.'
+                type: string
+              principalIdFromConfig:
+                description: 'PrincipalIdFromConfig: The principal ID.'
+                properties:
+                  key:
+                    description: Key is the key in the Kubernetes configmap being
+                      referenced
+                    type: string
+                  name:
+                    description: 'Name is the name of the Kubernetes configmap being
+                      referenced.
+
+                      The configmap must be in the same namespace as the resource'
+                    type: string
+                required:
+                - key
+                - name
+                type: object
+              principalType:
+                description: 'PrincipalType: The principal type of the assigned principal
+                  ID.'
+                enum:
+                - AgentServicePrincipal
+                - AgentUser
+                - Device
+                - ForeignGroup
+                - Group
+                - ServicePrincipal
+                - User
+                type: string
+              roleDefinitionReference:
+                description: 'RoleDefinitionReference: The role definition ID.'
+                properties:
+                  armId:
+                    description: 'ARMID is a string of the form /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}.
+
+                      The /resourcegroups/{resourceGroupName} bit is optional as some
+                      resources are scoped at the subscription level
+
+                      ARMID is mutually exclusive with Group, Kind, Namespace and
+                      Name.'
+                    pattern: (?i)(^(/subscriptions/([^/]+)(/resourcegroups/([^/]+))?)?/providers/([^/]+)/([^/]+/[^/]+)(/([^/]+/[^/]+))*$|^/subscriptions/([^/]+)(/resourcegroups/([^/]+))?$)
+                    type: string
+                  group:
+                    description: Group is the Kubernetes group of the resource.
+                    type: string
+                  kind:
+                    description: Kind is the Kubernetes kind of the resource.
+                    type: string
+                  name:
+                    description: Name is the Kubernetes name of the resource.
+                    type: string
+                  wellKnownName:
+                    type: string
+                type: object
+            required:
+            - owner
+            - roleDefinitionReference
+            type: object
+        type: object
+    served: true
+    storage: true

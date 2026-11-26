@@ -1,0 +1,444 @@
+# From Azure Service Operator v2.22.0 (azureserviceoperator_customresourcedefinitions_v2.22.0.yaml), MIT License, Copyright (c) Microsoft Corporation.
+# Cut to the version the converter emits (marked storage here) and without status, for the converter tests.
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: userassignedidentities.managedidentity.azure.com
+spec:
+  group: managedidentity.azure.com
+  names:
+    categories:
+    - azure
+    - managedidentity
+    kind: UserAssignedIdentity
+    listKind: UserAssignedIdentityList
+    plural: userassignedidentities
+    singular: userassignedidentity
+  scope: Namespaced
+  versions:
+  - name: v1api20230131
+    schema:
+      openAPIV3Schema:
+        description: 'Generator information:
+
+          - Generated from: /msi/resource-manager/Microsoft.ManagedIdentity/ManagedIdentity/stable/2023-01-31/ManagedIdentity.json
+
+          - ARM URI: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{resourceName}'
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object.
+
+              Servers should convert recognized schemas to the latest internal value,
+              and
+
+              may reject unrecognized values.
+
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents.
+
+              Servers may infer this from the endpoint the client submits requests
+              to.
+
+              Cannot be updated.
+
+              In CamelCase.
+
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            properties:
+              azureName:
+                description: 'AzureName: The name of the resource in Azure. This is
+                  often the same as the name of the resource in Kubernetes but it
+
+                  doesn''t have to be.'
+                type: string
+              location:
+                description: 'Location: The geo-location where the resource lives'
+                type: string
+              operatorSpec:
+                description: 'OperatorSpec: The specification for configuring operator
+                  behavior. This field is interpreted by the operator and not
+
+                  passed directly to Azure'
+                properties:
+                  configMapExpressions:
+                    description: 'ConfigMapExpressions: configures where to place
+                      operator written dynamic ConfigMaps (created with CEL expressions).'
+                    items:
+                      description: 'DestinationExpression is a CEL expression and
+                        a destination to store the result in. The destination may
+
+                        be a secret or a configmap. The value of the expression is
+                        stored at the specified location in
+
+                        the destination.'
+                      properties:
+                        annotations:
+                          additionalProperties:
+                            type: string
+                          description: Annotations is an optional set of annotations
+                            to apply to the destination resource.
+                          type: object
+                        key:
+                          description: 'Key is the key in the ConfigMap or Secret
+                            being written to. If the CEL expression in Value returns
+                            a string
+
+                            this is required to identify what key to write to. If
+                            the CEL expression in Value returns a map[string]string
+
+                            Key must not be set, instead the keys written will be
+                            determined dynamically based on the keys of the resulting
+
+                            map[string]string.'
+                          type: string
+                        labels:
+                          additionalProperties:
+                            type: string
+                          description: Labels is an optional set of labels to apply
+                            to the destination resource.
+                          type: object
+                        name:
+                          description: 'Name is the name of the Kubernetes configmap
+                            or secret to write to.
+
+                            The configmap or secret will be created in the same namespace
+                            as the resource.'
+                          type: string
+                        value:
+                          description: 'Value is a CEL expression. The CEL expression
+                            may return a string or a map[string]string. For more information
+
+                            on CEL in ASO see https://azure.github.io/azure-service-operator/guide/expressions/'
+                          type: string
+                      required:
+                      - name
+                      - value
+                      type: object
+                    type: array
+                  configMaps:
+                    description: 'ConfigMaps: configures where to place operator written
+                      ConfigMaps.'
+                    properties:
+                      clientId:
+                        description: 'ClientId: indicates where the ClientId config
+                          map should be placed. If omitted, no config map will be
+                          created.'
+                        properties:
+                          annotations:
+                            additionalProperties:
+                              type: string
+                            description: Annotations is an optional set of annotations
+                              to apply to the ConfigMap.
+                            type: object
+                          key:
+                            description: Key is the key in the ConfigMap being referenced
+                            type: string
+                          labels:
+                            additionalProperties:
+                              type: string
+                            description: Labels is an optional set of labels to apply
+                              to the ConfigMap.
+                            type: object
+                          name:
+                            description: 'Name is the name of the Kubernetes ConfigMap
+                              to write to.
+
+                              The ConfigMap will be created in the same namespace
+                              as the resource.'
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      principalId:
+                        description: 'PrincipalId: indicates where the PrincipalId
+                          config map should be placed. If omitted, no config map will
+                          be created.'
+                        properties:
+                          annotations:
+                            additionalProperties:
+                              type: string
+                            description: Annotations is an optional set of annotations
+                              to apply to the ConfigMap.
+                            type: object
+                          key:
+                            description: Key is the key in the ConfigMap being referenced
+                            type: string
+                          labels:
+                            additionalProperties:
+                              type: string
+                            description: Labels is an optional set of labels to apply
+                              to the ConfigMap.
+                            type: object
+                          name:
+                            description: 'Name is the name of the Kubernetes ConfigMap
+                              to write to.
+
+                              The ConfigMap will be created in the same namespace
+                              as the resource.'
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      tenantId:
+                        description: 'TenantId: indicates where the TenantId config
+                          map should be placed. If omitted, no config map will be
+                          created.'
+                        properties:
+                          annotations:
+                            additionalProperties:
+                              type: string
+                            description: Annotations is an optional set of annotations
+                              to apply to the ConfigMap.
+                            type: object
+                          key:
+                            description: Key is the key in the ConfigMap being referenced
+                            type: string
+                          labels:
+                            additionalProperties:
+                              type: string
+                            description: Labels is an optional set of labels to apply
+                              to the ConfigMap.
+                            type: object
+                          name:
+                            description: 'Name is the name of the Kubernetes ConfigMap
+                              to write to.
+
+                              The ConfigMap will be created in the same namespace
+                              as the resource.'
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                    type: object
+                  secretExpressions:
+                    description: 'SecretExpressions: configures where to place operator
+                      written dynamic secrets (created with CEL expressions).'
+                    items:
+                      description: 'DestinationExpression is a CEL expression and
+                        a destination to store the result in. The destination may
+
+                        be a secret or a configmap. The value of the expression is
+                        stored at the specified location in
+
+                        the destination.'
+                      properties:
+                        annotations:
+                          additionalProperties:
+                            type: string
+                          description: Annotations is an optional set of annotations
+                            to apply to the destination resource.
+                          type: object
+                        key:
+                          description: 'Key is the key in the ConfigMap or Secret
+                            being written to. If the CEL expression in Value returns
+                            a string
+
+                            this is required to identify what key to write to. If
+                            the CEL expression in Value returns a map[string]string
+
+                            Key must not be set, instead the keys written will be
+                            determined dynamically based on the keys of the resulting
+
+                            map[string]string.'
+                          type: string
+                        labels:
+                          additionalProperties:
+                            type: string
+                          description: Labels is an optional set of labels to apply
+                            to the destination resource.
+                          type: object
+                        name:
+                          description: 'Name is the name of the Kubernetes configmap
+                            or secret to write to.
+
+                            The configmap or secret will be created in the same namespace
+                            as the resource.'
+                          type: string
+                        value:
+                          description: 'Value is a CEL expression. The CEL expression
+                            may return a string or a map[string]string. For more information
+
+                            on CEL in ASO see https://azure.github.io/azure-service-operator/guide/expressions/'
+                          type: string
+                      required:
+                      - name
+                      - value
+                      type: object
+                    type: array
+                  secrets:
+                    description: 'Secrets: configures where to place Azure generated
+                      secrets.'
+                    properties:
+                      clientId:
+                        description: 'ClientId: indicates where the ClientId secret
+                          should be placed. If omitted, the secret will not be retrieved
+                          from Azure.'
+                        properties:
+                          annotations:
+                            additionalProperties:
+                              type: string
+                            description: Annotations is an optional set of annotations
+                              to apply to the secret.
+                            type: object
+                          key:
+                            description: Key is the key in the Kubernetes secret being
+                              referenced.
+                            type: string
+                          labels:
+                            additionalProperties:
+                              type: string
+                            description: Labels is an optional set of labels to apply
+                              to the secret.
+                            type: object
+                          name:
+                            description: 'Name is the name of the Kubernetes secret
+                              to write to.
+
+                              The secret will be created in the same namespace as
+                              the resource.'
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      principalId:
+                        description: 'PrincipalId: indicates where the PrincipalId
+                          secret should be placed. If omitted, the secret will not
+                          be retrieved from
+
+                          Azure.'
+                        properties:
+                          annotations:
+                            additionalProperties:
+                              type: string
+                            description: Annotations is an optional set of annotations
+                              to apply to the secret.
+                            type: object
+                          key:
+                            description: Key is the key in the Kubernetes secret being
+                              referenced.
+                            type: string
+                          labels:
+                            additionalProperties:
+                              type: string
+                            description: Labels is an optional set of labels to apply
+                              to the secret.
+                            type: object
+                          name:
+                            description: 'Name is the name of the Kubernetes secret
+                              to write to.
+
+                              The secret will be created in the same namespace as
+                              the resource.'
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      subscriptionId:
+                        description: 'SubscriptionId: indicates where the SubscriptionId
+                          secret should be placed. If omitted, the secret will not
+                          be retrieved
+
+                          from Azure.'
+                        properties:
+                          annotations:
+                            additionalProperties:
+                              type: string
+                            description: Annotations is an optional set of annotations
+                              to apply to the secret.
+                            type: object
+                          key:
+                            description: Key is the key in the Kubernetes secret being
+                              referenced.
+                            type: string
+                          labels:
+                            additionalProperties:
+                              type: string
+                            description: Labels is an optional set of labels to apply
+                              to the secret.
+                            type: object
+                          name:
+                            description: 'Name is the name of the Kubernetes secret
+                              to write to.
+
+                              The secret will be created in the same namespace as
+                              the resource.'
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      tenantId:
+                        description: 'TenantId: indicates where the TenantId secret
+                          should be placed. If omitted, the secret will not be retrieved
+                          from Azure.'
+                        properties:
+                          annotations:
+                            additionalProperties:
+                              type: string
+                            description: Annotations is an optional set of annotations
+                              to apply to the secret.
+                            type: object
+                          key:
+                            description: Key is the key in the Kubernetes secret being
+                              referenced.
+                            type: string
+                          labels:
+                            additionalProperties:
+                              type: string
+                            description: Labels is an optional set of labels to apply
+                              to the secret.
+                            type: object
+                          name:
+                            description: 'Name is the name of the Kubernetes secret
+                              to write to.
+
+                              The secret will be created in the same namespace as
+                              the resource.'
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                    type: object
+                type: object
+              owner:
+                description: 'Owner: The owner of the resource. The owner controls
+                  where the resource goes when it is deployed. The owner also
+
+                  controls the resources lifecycle. When the owner is deleted the
+                  resource will also be deleted. Owner is expected to be a
+
+                  reference to a resources.azure.com/ResourceGroup resource'
+                properties:
+                  armId:
+                    pattern: (?i)(^(/subscriptions/([^/]+)(/resourcegroups/([^/]+))?)?/providers/([^/]+)/([^/]+/[^/]+)(/([^/]+/[^/]+))*$|^/subscriptions/([^/]+)(/resourcegroups/([^/]+))?$)
+                    type: string
+                  name:
+                    description: This is the name of the Kubernetes resource to reference.
+                    type: string
+                type: object
+              tags:
+                additionalProperties:
+                  type: string
+                description: 'Tags: Resource tags.'
+                type: object
+            required:
+            - location
+            - owner
+            type: object
+        type: object
+    served: true
+    storage: true
