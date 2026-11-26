@@ -275,8 +275,61 @@ permissions (both), `github_actions_variable`, `github_branch_default`,
 `github_repository` and `github_organization_settings`, which
 github-krm-extensions leaves to git-hubby, whose `Repository` and
 `Organization` also own the default branch and the Actions settings (two
-controllers on one field) and archive a repository on delete with no
-abandon. They are gaps until that is decided.
+controllers on one field). What git-hubby does when a `Repository` is
+deleted is one setting for the whole operator, `REPOSITORY_FINALIZER_MODE`:
+`ignore` (the default: the repository stays), `archive` or `delete`. They
+are gaps until the converter maps them to git-hubby's kinds.
+
+## Azure: ASO and aso-extensions
+
+A state's `azapi` resources (what the Azure Verified Modules use) convert
+to Azure Service Operator kinds, and to aso-extensions' where ASO has none
+(`internal/offramp/azure.go`). The versions are the Azure charts' (docs/azure.md).
+An azapi resource names its ARM type and sends a body; ASO's spec is that
+body with `properties` lifted to the top. The converter also:
+
+- turns ARM IDs into ASO references: an `{id}` object becomes
+  `{reference: {armId}}`, and a field named `...Id` or `...ID` holding an
+  ARM ID becomes `...Reference: {armId}` (`roleDefinitionId`,
+  `apiServerAccessProfile.subnetId`, `hostedSystemProfile.nodeSubnetID`);
+- names the parent as the owner: by the object's name when the parent is
+  converted too (a role assignment's owner also carries group and kind),
+  by ARM ID when it is not. A resource group has no owner: ASO puts it in
+  its credential's subscription;
+- keeps each Azure name in `azureName` (a role assignment's GUID too, so
+  the object adopts the assignment rather than making another).
+
+ASO has no adopt annotation: it adopts an existing resource by name and
+owner, and its first reconcile writes the spec back (a PUT of what is
+already there). `--azure-reconcile-policy` sets
+`serviceoperator.azure.com/reconcile-policy` on every object:
+
+| Policy | ASO | When |
+| --- | --- | --- |
+| `skip` | reads only: no write, no delete | the first, safe step: check that every object goes Ready with what Azure reports, then switch |
+| `detach-on-delete` | manages, and leaves the resource on delete | the default with `--abandon`, as the Azure charts set it |
+| `manage` | manages and deletes | the default without `--abandon` |
+
+ASO takes the subscription from its credential, not from the object, so
+every object carries `hfl.dev/azure-subscription`. When a state's objects
+span subscriptions, a note says that each subscription needs a credential
+of its own (`serviceoperator.azure.com/credential-from`).
+
+Mapped: resource groups, user-assigned identities and their federated
+credentials, role assignments, virtual networks and subnets, NAT gateways,
+public IPs and AKS clusters (ASO); management groups, a subscription's
+placement under one (`ManagementGroupsSubscription`) and its tags (`TagSet`)
+(aso-extensions); subscription aliases (ASO's `Alias`). The rename of an
+existing subscription is a note: a one-time action with no kind, so the name
+stays as it is. sub-vending's cancel at destroy is not carried, so deleting
+the objects never cancels a subscription. Any other ARM type, and any
+`azurerm` resource, is a gap that names `azure.go`.
+
+The fixtures in `testdata/azure` are tf-infra's Azure units: the network,
+the AKS cluster, and the tenant layout from avm-ptn-alz and sub-vending
+(`testdata/azure/README.md`). The tests check every converted object
+against its CRD, field by field (`testdata/aso`: ASO v2.22.0's, one version
+each; `crds/aso-extensions`).
 
 ## Terraform and OpenTofu states
 

@@ -80,6 +80,8 @@ type bundtFlags struct {
 	out       string
 	abandon   bool
 	providers multiFlag
+	// azurePolicy is --azure-reconcile-policy.
+	azurePolicy string
 }
 
 func (b *bundtFlags) register(fs *flag.FlagSet) {
@@ -93,6 +95,7 @@ func (b *bundtFlags) register(fs *flag.FlagSet) {
 	fs.StringVar(&b.opt.KCCVersion, "kcc-version", "1.160.0", "the Config Connector version the Environment pins")
 	fs.Var(&b.providers, "provider", "NAME=VERSION: another provider the Environment pins, by Bundt's name (hfl.kcc-extensions, aws.ack-organizations, hfl.ack-extensions; repeatable)")
 	fs.BoolVar(&b.abandon, "abandon", true, "write deletion-policy abandon on every object")
+	fs.StringVar(&b.azurePolicy, "azure-reconcile-policy", "", "ASO's reconcile policy on every Azure object: skip (read only: no write, no delete), detach-on-delete (the default with --abandon) or manage (the default without)")
 }
 
 func (b *bundtFlags) finish(defaultName string) error {
@@ -105,6 +108,11 @@ func (b *bundtFlags) finish(defaultName string) error {
 	b.opt.Name = strings.Trim(strings.ToLower(b.opt.Name), "-")
 	if b.opt.Namespace == "" {
 		b.opt.Namespace = b.opt.Team + "-" + b.opt.Env
+	}
+	switch b.azurePolicy {
+	case "", "skip", "detach-on-delete", "manage":
+	default:
+		return fmt.Errorf("--azure-reconcile-policy %q: want skip, detach-on-delete or manage", b.azurePolicy)
 	}
 	b.opt.Providers = map[string]string{}
 	for _, p := range b.providers {
@@ -119,9 +127,9 @@ func (b *bundtFlags) finish(defaultName string) error {
 
 func (b *bundtFlags) convOpt() offramp.Options {
 	if b.abandon {
-		return offramp.Options{DeletionPolicy: "abandon"}
+		return offramp.Options{DeletionPolicy: "abandon", AzureReconcilePolicy: b.azurePolicy}
 	}
-	return offramp.Options{DeletionPolicy: "delete"}
+	return offramp.Options{DeletionPolicy: "delete", AzureReconcilePolicy: b.azurePolicy}
 }
 
 func cmdState(args []string) error {

@@ -68,6 +68,10 @@ type Options struct {
 	// DeletionPolicy is written on every object: abandon (the default for
 	// an import) or delete.
 	DeletionPolicy string
+	// AzureReconcilePolicy is ASO's reconcile policy on every Azure
+	// object: skip, detach-on-delete or manage (azure.go). Empty follows
+	// DeletionPolicy: detach-on-delete for abandon, manage for delete.
+	AzureReconcilePolicy string
 }
 
 var terraformOnly = map[string]bool{
@@ -82,6 +86,7 @@ func ConvertState(st *State, k *KCC, opt Options) *Result {
 	all := st.Instances()
 	var awsCtx *awsContext
 	var ghCtx *githubContext
+	var azCtx *azureContext
 	for _, r := range all {
 		switch {
 		case r.Mode == "data":
@@ -89,6 +94,8 @@ func ConvertState(st *State, k *KCC, opt Options) *Result {
 			awsCtx = newAWSContext(all)
 		case ProviderName(r.Provider) == "github" && ghCtx == nil:
 			ghCtx = newGitHubContext(all)
+		case ProviderName(r.Provider) == "azapi" && azCtx == nil:
+			azCtx = newAzureContext(all)
 		}
 	}
 	for _, r := range all {
@@ -103,19 +110,25 @@ func ConvertState(st *State, k *KCC, opt Options) *Result {
 		case prov == "kubernetes" || prov == "helm" || prov == "kubectl":
 			res.Findings = append(res.Findings, Finding{r.Address, r.Type, "in-cluster", "a Kubernetes object, not a cloud resource: carry it as a plain manifest in the component that owns the cluster's contents, or leave it to the app"})
 			continue
-		case prov == "aws" || prov == "github":
+		case prov == "aws" || prov == "github" || prov == "azapi":
 			var objs []*Object
 			var f []Finding
-			if prov == "aws" {
+			switch prov {
+			case "aws":
 				objs, f = convertAWS(r, awsCtx)
-			} else {
+			case "github":
 				objs, f = convertGitHub(r, ghCtx)
+			default:
+				objs, f = convertAzure(r, azCtx)
 			}
 			res.Findings = append(res.Findings, f...)
 			for _, o := range objs {
 				finish(o, opt)
 				res.Objects = append(res.Objects, o)
 			}
+			continue
+		case prov == "azurerm":
+			res.Findings = append(res.Findings, Finding{r.Address, r.Type, "gap", "azurerm is not converted (azapi is: azure.go); keep it in Terraform"})
 			continue
 		case prov != "google" && prov != "google-beta":
 			res.Findings = append(res.Findings, Finding{r.Address, r.Type, "gap", "provider " + prov + " is not converted"})
@@ -128,6 +141,7 @@ func ConvertState(st *State, k *KCC, opt Options) *Result {
 			res.Objects = append(res.Objects, o)
 		}
 	}
+	res.Findings = append(res.Findings, azureSubscriptionNote(res.Objects)...)
 	for _, a := range st.DeposedAddresses() {
 		res.Findings = append(res.Findings, Finding{a, "", "note", "a deposed instance (create_before_destroy replaced it; Terraform or OpenTofu destroys it on the next apply): not adopted"})
 	}
@@ -636,6 +650,17 @@ func finish(o *Object, opt Options) {
 		// ACK's: retain keeps the resource; delete is its default.
 		if dp == "abandon" {
 			ann[AnnACKDeletionPolicy] = "retain"
+		}
+	case isASO(av):
+		p := opt.AzureReconcilePolicy
+		if p == "" {
+			p = "detach-on-delete"
+			if dp == "delete" {
+				p = "manage"
+			}
+		}
+		if p != "manage" {
+			ann[AnnASOReconcilePolicy] = p
 		}
 	case isREST(av):
 		// krm-rest-runtime's: abandon leaves it; delete is its default.

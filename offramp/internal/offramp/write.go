@@ -167,7 +167,7 @@ func Report(res *Result, b *Bundle, header string) string {
 	if header != "" {
 		s.WriteString(header + "\n\n")
 	}
-	fmt.Fprintf(&s, "%d Config Connector objects in %d components; %d findings.\n\n", len(res.Objects), len(b.Components), len(res.Findings))
+	fmt.Fprintf(&s, "%d objects in %d components; %d findings.\n\n", len(res.Objects), len(b.Components), len(res.Findings))
 	s.WriteString("| Component | Package | Source | Kind | Name | Resource ID | Note |\n| --- | --- | --- | --- | --- | --- | --- |\n")
 	for _, c := range b.Components {
 		for _, o := range c.Objects {
