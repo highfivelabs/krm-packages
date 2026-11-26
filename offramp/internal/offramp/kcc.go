@@ -116,6 +116,38 @@ type KCC struct {
 	// IAMBase maps a Terraform IAM type (google_x_iam_member, _binding,
 	// _policy) to the service mapping entry of the resource it is on.
 	IAMBase map[string]*SMResource
+	// Ext holds config-connector-extensions' kinds (LoadExtensions), by
+	// kind. They are kept apart from CRDs: several share a name with a
+	// Config Connector kind they overlay, and only the converters that name
+	// an extension kind on purpose look here (direct.go).
+	Ext map[string]*CRD
+}
+
+// LoadExtensions reads the CRDs in dir (config-connector-extensions'
+// config/crds: one file per kind) into k.Ext.
+func (k *KCC) LoadExtensions(dir string) error {
+	files, err := filepath.Glob(filepath.Join(dir, "*.yaml"))
+	if err != nil {
+		return err
+	}
+	if k.Ext == nil {
+		k.Ext = map[string]*CRD{}
+	}
+	n := 0
+	for _, f := range files {
+		c, err := loadCRD(f)
+		if err != nil {
+			return fmt.Errorf("%s: %w", f, err)
+		}
+		if c != nil {
+			k.Ext[c.Kind] = c
+			n++
+		}
+	}
+	if n == 0 {
+		return fmt.Errorf("no CRDs in %s", dir)
+	}
+	return nil
 }
 
 // LoadKCC reads config/crds/resources and config/servicemappings under dir,

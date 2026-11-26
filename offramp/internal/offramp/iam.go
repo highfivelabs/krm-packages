@@ -34,6 +34,9 @@ var iamBindingKinds = map[string]bool{
 // closest kind that does not own the whole policy.
 func convertIAM(r *TFResource, k *KCC) (*Object, []Finding) {
 	base := k.IAMBase[r.Type]
+	if t, ok := iamTargetOf(r.Type); ok && base == nil {
+		return convertIAMTarget(r, k, t)
+	}
 	if base == nil {
 		return nil, []Finding{{r.Address, r.Type, "gap", "IAM on a resource Config Connector's IAM kinds cannot reference"}}
 	}
