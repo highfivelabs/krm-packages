@@ -27,6 +27,11 @@ type BundtOptions struct {
 	// KCCVersion is the Config Connector provider version the
 	// Environment pins.
 	KCCVersion string
+	// Providers pins the other providers the objects need, by Bundt's
+	// provider name (providers.md R10): hfl.kcc-extensions, aws.ack-<service>,
+	// hfl.ack-extensions. One the objects need and this does not pin is
+	// left out of the Environment, with a note.
+	Providers map[string]string
 	// Registry is where the Packages' manifests artifacts are pushed
 	// (`<Registry>/<package>`); their digests are known only after the push.
 	Registry string
@@ -266,7 +271,7 @@ func (b *Bundle) build(opt BundtOptions) {
 				"version":   opt.Version,
 				"engine":    "manifests",
 				"outputs":   map[string]any{},
-				"providers": []any{"kcc"},
+				"providers": providerList(c.Objects),
 			},
 		}
 		if mes := managedElsewhere(c.Objects); len(mes) > 0 {
@@ -294,10 +299,32 @@ func (b *Bundle) build(opt BundtOptions) {
 		"spec":       map[string]any{"version": opt.Version, "components": tcomps},
 	})
 	project := commonProject(b.Components)
+	pins := map[string]any{}
+	for _, c := range b.Components {
+		objs := c.Objects
+		if c.Graduated != nil {
+			pins["kcc"] = kccVersion // the catalog's charts render Config Connector's kinds
+		}
+		for _, n := range providerNames(objs) {
+			if n == "kcc" {
+				pins[n] = kccVersion
+			} else if v := opt.Providers[n]; v != "" {
+				pins[n] = v
+			} else if _, seen := pins[n]; !seen {
+				pins[n] = nil
+			}
+		}
+	}
+	for _, n := range sortedKeys(pins) {
+		if pins[n] == nil {
+			delete(pins, n)
+			b.Notes = append(b.Notes, fmt.Sprintf("the objects need the provider %s, which no --provider pins: add it to the Environment's providers (environments.md R3 R15) before the plan", n))
+		}
+	}
 	env := map[string]any{
 		"target":     opt.Target,
 		"namespaces": []any{opt.Namespace},
-		"providers":  map[string]any{"kcc": kccVersion},
+		"providers":  pins,
 	}
 	if project != "" {
 		env["cloud"] = map[string]any{"gcp": map[string]any{"project": project}}
@@ -370,4 +397,45 @@ func literalIfFrozen(p convert.Pair, g *Graduated, graduated map[string]bool) an
 		}
 	}
 	return p.Value
+}
+
+// providerOf is the Bundt provider (providers.md R10) an object's
+// apiVersion belongs to: Config Connector's (still pinned as kcc),
+// config-connector-extensions', one ACK controller's, ack-extensions' or
+// github-krm-extensions'.
+func providerOf(apiVersion string) string {
+	g, _, _ := strings.Cut(apiVersion, "/")
+	switch {
+	case strings.HasSuffix(g, ".cnrm.cloud.google.com"):
+		return "kcc"
+	case strings.HasSuffix(g, ".gcp.hfl.dev"):
+		return "hfl.kcc-extensions"
+	case strings.HasSuffix(g, ".services.k8s.aws"):
+		return "aws.ack-" + strings.TrimSuffix(g, ".services.k8s.aws")
+	case strings.HasSuffix(g, ".aws.hfl.dev"):
+		return "hfl.ack-extensions"
+	case strings.HasSuffix(g, ".github.hfl.dev"):
+		return "hfl.github-krm-extensions"
+	}
+	return ""
+}
+
+// providerNames lists the providers objects need, sorted.
+func providerNames(objs []*Object) []string {
+	seen := map[string]bool{}
+	for _, o := range objs {
+		if n := providerOf(str(o.Obj["apiVersion"])); n != "" {
+			seen[n] = true
+		}
+	}
+	return sortedKeys(seen)
+}
+
+// providerList is providerNames as a Package's spec.providers.
+func providerList(objs []*Object) []any {
+	var out []any
+	for _, n := range providerNames(objs) {
+		out = append(out, n)
+	}
+	return out
 }

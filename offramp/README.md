@@ -210,6 +210,74 @@ For each call whose module a chart ports:
 `go test ./...` runs this for every fixture (`TestEquivalence`): against the
 live shared-vpc state, and against synthetic states for all four shapes.
 
+## AWS: ACK and ack-extensions
+
+A state's `aws` resources convert to AWS Controllers for Kubernetes (ACK)
+objects, and to ack-extensions' kinds where ACK has none (`docs/aws.md`
+maps the modules; `internal/offramp/aws.go` maps the types, one function
+each). Each object adopts the resource with ACK's own annotations
+(ack-extensions `docs/slot-moves.md`):
+
+- `services.k8s.aws/adoption-policy: adopt` and `adoption-fields` naming
+  the kind's identifier (`{"accountID": ...}` for an `Account`, Cloud
+  Control's primary identifier as `{"identifier": "a|b"}` for its kinds).
+  `adopt`, not `adopt-or-create`: a missing resource is an error, never a
+  new account or permission set, and the spec is filled from AWS, so the
+  adoption makes no write.
+- `services.k8s.aws/deletion-policy: retain` (with `--abandon`, the
+  default) in place of Config Connector's `deletion-policy` and
+  `state-into-spec`.
+- `services.k8s.aws/region` from the resource's `region` (aws provider v6).
+
+What Terraform keeps apart and the kind holds inline is folded:
+`aws_ssoadmin_managed_policy_attachment`, `_permission_set_inline_policy`
+and `_customer_managed_policy_attachment` are fields of their
+`PermissionSet`; one on a permission set outside the state is a gap. A type
+with no function in `aws.go` is a gap that says so.
+
+Mapped so far (tf-infra's organization and Identity Center, 2026-11-26):
+`aws_organizations_account` (ACK `Account`, plus ack-extensions'
+`AccountPlacement` for its OU), `_organizational_unit` (ACK
+`OrganizationalUnit`), `_policy` and `_policy_attachment`
+(ack-extensions' `Policy`, `PolicyAttachment`), `aws_ssoadmin_permission_set`
+and `_account_assignment` (Cloud Control `PermissionSet`, `Assignment`).
+
+The Environment pins the providers the objects need, by Bundt's names
+(`providers.md` R10): `kcc` for Config Connector's kinds,
+`hfl.kcc-extensions`, `aws.ack-<service>`, `hfl.ack-extensions`. Give the
+versions with `--provider NAME=VERSION` (repeatable); one left unpinned is
+a note in the report, not a guess.
+
+## GitHub: github-krm-extensions
+
+A state's `github` resources (the `integrations/github` provider) convert to
+github-krm-extensions' kinds (`internal/offramp/github.go`), whose spec
+fields keep GitHub's own names. Each object carries krm-rest-runtime's
+annotations (its README, "Conventions"):
+
+- `krm.hfl.dev/deletion-policy: abandon` (with `--abandon`, the default):
+  deleting the object leaves the resource.
+- `krm.hfl.dev/adopt-id` on a CRUD kind: the ID `status.id` would hold
+  (`ActionsVariable`'s name, `BranchProtection`'s node ID), so the first
+  reconcile reads the resource instead of making a second one. Settings and
+  upsert kinds are read before they are written and need none.
+
+The owner is the provider's, which no resource holds: it comes from a
+`github_repository`'s `full_name` in the same state (or an organization
+resource's ID); without one, a repository-level resource is a gap. A
+file's text is written base64-encoded, as the contents API takes it.
+`BranchProtection` takes node IDs for actors; one Terraform names by name
+(`/octocat`, `org/team`) is a note.
+
+Mapped: Actions permissions (organization and repository), workflow
+permissions (both), `github_actions_variable`, `github_branch_default`,
+`github_branch_protection`, `github_repository_file`. Not converted:
+`github_repository` and `github_organization_settings`, which
+github-krm-extensions leaves to git-hubby, whose `Repository` and
+`Organization` also own the default branch and the Actions settings (two
+controllers on one field) and archive a repository on delete with no
+abandon. They are gaps until that is decided.
+
 ## Terraform and OpenTofu states
 
 Every command that takes a state (`state`, `terragrunt`, `compose`) reads

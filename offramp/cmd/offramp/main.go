@@ -76,9 +76,10 @@ func usage() {
 }
 
 type bundtFlags struct {
-	opt     offramp.BundtOptions
-	out     string
-	abandon bool
+	opt       offramp.BundtOptions
+	out       string
+	abandon   bool
+	providers multiFlag
 }
 
 func (b *bundtFlags) register(fs *flag.FlagSet) {
@@ -90,6 +91,7 @@ func (b *bundtFlags) register(fs *flag.FlagSet) {
 	fs.StringVar(&b.opt.Namespace, "namespace", "", "the Environment's namespace (default: <team>-<env>)")
 	fs.StringVar(&b.opt.Version, "version", "0.1.0", "the Packages' and the Template's version")
 	fs.StringVar(&b.opt.KCCVersion, "kcc-version", "1.160.0", "the Config Connector version the Environment pins")
+	fs.Var(&b.providers, "provider", "NAME=VERSION: another provider the Environment pins, by Bundt's name (hfl.kcc-extensions, aws.ack-organizations, hfl.ack-extensions; repeatable)")
 	fs.BoolVar(&b.abandon, "abandon", true, "write deletion-policy abandon on every object")
 }
 
@@ -103,6 +105,14 @@ func (b *bundtFlags) finish(defaultName string) error {
 	b.opt.Name = strings.Trim(strings.ToLower(b.opt.Name), "-")
 	if b.opt.Namespace == "" {
 		b.opt.Namespace = b.opt.Team + "-" + b.opt.Env
+	}
+	b.opt.Providers = map[string]string{}
+	for _, p := range b.providers {
+		n, v, ok := strings.Cut(p, "=")
+		if !ok || n == "" || v == "" {
+			return fmt.Errorf("--provider %q: want NAME=VERSION", p)
+		}
+		b.opt.Providers[n] = v
 	}
 	return nil
 }
