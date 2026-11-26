@@ -117,7 +117,8 @@ func (b *bundtFlags) convOpt() offramp.Options {
 func cmdState(args []string) error {
 	fs := flag.NewFlagSet("state", flag.ExitOnError)
 	var kccDir, statePath, root, catalog, modulesJSON string
-	var tfvars multiFlag
+	var tfvars, crds multiFlag
+	fs.Var(&crds, "crds", "a directory of config-connector-extensions CRDs (its config/crds), for the kinds Config Connector lacks (repeatable; default: the catalog's crds/config-connector-extensions)")
 	fs.StringVar(&kccDir, "kcc", "", "a Config Connector checkout (config/crds/resources and config/servicemappings)")
 	fs.StringVar(&statePath, "state", "", "a Terraform state, format 4 (terraform state pull)")
 	fs.StringVar(&root, "root", "", "the root module's directory: its module calls graduate to Instances of the catalog's charts where one ports the module and its render matches the state")
@@ -134,7 +135,7 @@ func cmdState(args []string) error {
 	if err := b.finish(filepath.Base(filepath.Dir(abs))); err != nil {
 		return err
 	}
-	k, err := offramp.LoadKCC(kccDir)
+	k, err := loadKCC(kccDir, crds)
 	if err != nil {
 		return err
 	}
@@ -189,10 +190,11 @@ func cmdKRM(args []string) error {
 func cmdTerragrunt(args []string) error {
 	fs := flag.NewFlagSet("terragrunt", flag.ExitOnError)
 	var kccDir, estate, catalog string
-	var states, sourceMap, env, modulesJSON multiFlag
+	var states, sourceMap, env, modulesJSON, crds multiFlag
 	opt := offramp.EstateOptions{States: map[string]string{}, ModulesJSON: map[string]string{}}
 	opt.TG.SourceMap, opt.TG.Env = map[string]string{}, map[string]string{}
 	fs.StringVar(&kccDir, "kcc", "", "a Config Connector checkout (config/crds/resources and config/servicemappings)")
+	fs.Var(&crds, "crds", "a directory of config-connector-extensions CRDs (its config/crds), for the kinds Config Connector lacks (repeatable; default: the catalog's crds/config-connector-extensions)")
 	fs.StringVar(&estate, "estate", "", "the Terragrunt estate: a directory whose units (terragrunt.hcl) are converted together")
 	fs.StringVar(&opt.StateDir, "states", "", "a directory holding each unit's state as <unit path>/terraform.tfstate (terragrunt state pull)")
 	fs.Var(&states, "state", "UNIT=FILE: one unit's state, by its path in the estate (repeatable)")
@@ -226,7 +228,7 @@ func cmdTerragrunt(args []string) error {
 		catalog = findCatalog()
 	}
 	opt.Catalog, opt.Namespace, opt.Convert = catalog, b.opt.Namespace, b.convOpt()
-	k, err := offramp.LoadKCC(kccDir)
+	k, err := loadKCC(kccDir, crds)
 	if err != nil {
 		return err
 	}
@@ -368,9 +370,10 @@ func cmdSynth(args []string) error {
 func cmdCompose(args []string) (int, error) {
 	fs := flag.NewFlagSet("compose", flag.ExitOnError)
 	var kccDir, statePath string
-	var calls multiFlag
+	var calls, crds multiFlag
 	var o offramp.ComposeStateOptions
 	fs.StringVar(&kccDir, "kcc", "", "a Config Connector checkout (config/crds/resources and config/servicemappings)")
+	fs.Var(&crds, "crds", "a directory of config-connector-extensions CRDs (its config/crds), for the kinds Config Connector lacks (repeatable; default: the catalog's crds/config-connector-extensions)")
 	fs.StringVar(&statePath, "state", "", "a Terraform state, format 4 (terraform state pull)")
 	fs.StringVar(&o.Out, "out", "", "output directory: one chart per directory")
 	fs.StringVar(&o.Single, "single", "", "compose the whole state into one chart with this name")
@@ -385,7 +388,7 @@ func cmdCompose(args []string) (int, error) {
 	}
 	o.Calls = calls
 	o.StatePath = statePath
-	k, err := offramp.LoadKCC(kccDir)
+	k, err := loadKCC(kccDir, crds)
 	if err != nil {
 		return 0, err
 	}
@@ -411,4 +414,31 @@ func cmdCompose(args []string) (int, error) {
 		fmt.Printf("%-40s %3d resources %3d values  diff %d  collisions %d  %s\n", c.Spec.Chart.Name, len(c.Spec.Resources), len(c.Spec.Values), len(c.Verify.Differences), len(c.Verify.Collisions), mark)
 	}
 	return bad, nil
+}
+
+// loadKCC loads Config Connector's kinds and, from each --crds directory
+// (default: the catalog's crds/config-connector-extensions),
+// config-connector-extensions' kinds.
+func loadKCC(dir string, crds []string) (*offramp.KCC, error) {
+	k, err := offramp.LoadKCC(dir)
+	if err != nil {
+		return nil, err
+	}
+	if len(crds) == 0 {
+		// The catalog vendors config-connector-extensions' CRDs.
+		if d := filepath.Join(findCatalog(), "crds", "config-connector-extensions"); isDir(d) {
+			crds = []string{d}
+		}
+	}
+	for _, d := range crds {
+		if err := k.LoadExtensions(d); err != nil {
+			return nil, err
+		}
+	}
+	return k, nil
+}
+
+func isDir(p string) bool {
+	fi, err := os.Stat(p)
+	return err == nil && fi.IsDir()
 }

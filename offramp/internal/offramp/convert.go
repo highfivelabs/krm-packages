@@ -130,6 +130,9 @@ func convertResource(r *TFResource, k *KCC) ([]*Object, []Finding) {
 		return h(r, k)
 	}
 	sm := k.SM[t]
+	if a, ok := tfAlias[t]; ok && sm == nil {
+		sm = k.SM[a]
+	}
 	var crd *CRD
 	if sm != nil {
 		crd = k.CRDs[sm.Kind]

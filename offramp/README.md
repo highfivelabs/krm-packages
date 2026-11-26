@@ -124,6 +124,20 @@ go build -o ../bin/offramp ./cmd/offramp
   --root path/to/root-module --tfvars path/to/terraform.tfvars \
   --out out --name shared-vpc --team platform --env prod --target infra
 
+# --crds (repeatable; state, terragrunt and compose) loads
+# config-connector-extensions' kinds, for the types Config Connector has no
+# kind for: IAP's IAM (IAMMember, IAMBinding), Cloud Build repositories
+# (CloudBuildRepository). It defaults to the catalog's vendored copy,
+# crds/config-connector-extensions; pass it to use a newer checkout's
+# config/crds. A kind found in neither is a gap that says so. Config Connector's own direct
+# and DCL kinds, which have no service mapping (IAMCustomRole,
+# LoggingLogMetric, LoggingLogBucket, APIQuotaPreference,
+# CloudIdentityMembership, IAM on the organization and the billing account),
+# are converted from --kcc alone (internal/offramp/direct.go).
+../bin/offramp state --kcc ~/src/k8s-config-connector \
+  --crds ~/src/config-connector-extensions/config/crds \
+  --state terraform.tfstate --out out
+
 # A synthetic state for a root module that cannot be applied: Terraform
 # plans it offline, repeatedly; only what the cloud assigns is made up.
 ../bin/offramp synth --root fixtures/folders --tfvars folders.tfvars --out folders.tfstate
