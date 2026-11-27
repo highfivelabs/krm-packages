@@ -41,14 +41,17 @@ type githubContext struct {
 	defaultBranch           map[string]string
 	orgActions, orgWorkflow map[string]any
 	hasOrg, hasRepo         map[string]bool
-	// From Options: what git-hubby's Organization needs that no state holds.
+	// From Options: whether git-hubby takes the repository and the
+	// organization's settings, and what its Organization needs that no
+	// state holds.
+	githubby     bool
 	plan         string
 	installation int64
 }
 
 func newGitHubContext(rs []*TFResource, opt Options) *githubContext {
 	c := &githubContext{defaultBranch: map[string]string{}, hasOrg: map[string]bool{}, hasRepo: map[string]bool{},
-		plan: opt.GitHubPlan, installation: opt.GitHubAppInstallation}
+		githubby: opt.GitHubOperator == "git-hubby", plan: opt.GitHubPlan, installation: opt.GitHubAppInstallation}
 	for _, r := range rs {
 		switch r.Type {
 		case "github_organization_settings":
@@ -89,13 +92,27 @@ var githubConverters = map[string]githubConverter{
 	"github_branch_default":                            convertGHBranchDefault,
 	"github_branch_protection":                         convertGHBranchProtection,
 	"github_repository_file":                           convertGHRepositoryFile,
-	"github_repository":                                convertGHRepository,
-	"github_organization_settings":                     convertGHOrganization,
+	"github_repository":                                byOperator(convertGHRepositoryREST, convertGHRepository),
+	"github_organization_settings":                     byOperator(convertGHOrgSettings, convertGHOrganization),
+}
+
+// byOperator: github-krm-extensions' converter, or git-hubby's with
+// --github-operator git-hubby.
+func byOperator(ext, hubby githubConverter) githubConverter {
+	return func(r *TFResource, c *githubContext) ([]*Object, []Finding) {
+		if c.githubby {
+			return hubby(r, c)
+		}
+		return ext(r, c)
+	}
 }
 
 // githubbyFolds: our kinds whose fields git-hubby's objects carry when the
 // object they fold into is in the same state.
 func githubbyFolds(r *TFResource, c *githubContext) githubConverter {
+	if !c.githubby {
+		return nil
+	}
 	switch r.Type {
 	case "github_branch_default":
 		if c.hasRepo[str(r.Attrs["repository"])] {
@@ -127,6 +144,110 @@ var needsOwner = map[string]bool{
 	"github_actions_repository_permissions": true, "github_workflow_repository_permissions": true,
 	"github_actions_variable": true, "github_branch_default": true, "github_repository_file": true,
 	"github_repository": true, "github_organization_settings": true,
+}
+
+// convertGHRepositoryREST: github_repository to Repository, a CRUD kind
+// whose ID is the repository's name, so an existing repository is adopted.
+// Terraform's resource makes other calls too, each another kind here:
+// topics (RepositoryTopics) and vulnerability alerts
+// (RepositoryVulnerabilityAlerts). Fields only a create takes (auto_init,
+// templates, has_downloads) are left out: an adopted repository is never
+// created. Its default branch is github_branch_default's (BranchDefault).
+func convertGHRepositoryREST(r *TFResource, c *githubContext) ([]*Object, []Finding) {
+	a := r.Attrs
+	name := str(a["name"])
+	spec := map[string]any{
+		"owner": c.owner, "name": name,
+		"description": str(a["description"]),
+		"homepage":    str(a["homepage_url"]),
+		"visibility":  str(a["visibility"]),
+	}
+	for _, k := range []string{
+		"has_issues", "has_projects", "has_wiki", "is_template", "archived",
+		"allow_merge_commit", "allow_squash_merge", "allow_rebase_merge", "allow_auto_merge",
+		"allow_update_branch", "allow_forking", "delete_branch_on_merge", "web_commit_signoff_required",
+	} {
+		spec[k] = boolOf(a[k])
+	}
+	for _, k := range []string{"merge_commit_title", "merge_commit_message", "squash_merge_commit_title", "squash_merge_commit_message"} {
+		spec[k] = str(a[k])
+	}
+	if sa := securityAndAnalysis(a["security_and_analysis"]); len(sa) > 0 {
+		spec["security_and_analysis"] = sa
+	}
+	objs := []*Object{restObject(r, "repository", "Repository", name, spec, name)}
+	var f []Finding
+	if topics := list(a["topics"]); len(topics) > 0 {
+		objs = append(objs, restObject(r, "repository", "RepositoryTopics", name+"-topics",
+			map[string]any{"owner": c.owner, "repo": name, "names": topics}, ""))
+	}
+	if b, _ := a["vulnerability_alerts"].(bool); b {
+		objs = append(objs, restObject(r, "repository", "RepositoryVulnerabilityAlerts", name+"-vulnerability-alerts",
+			map[string]any{"owner": c.owner, "repo": name}, ""))
+	}
+	if b, _ := a["has_discussions"].(bool); b {
+		f = append(f, Finding{r.Address, r.Type, "note", "has_discussions is not in GitHub's REST update body: discussions stay as GitHub has them"})
+	}
+	if len(list(a["pages"])) > 0 {
+		f = append(f, Finding{r.Address, r.Type, "gap", "the repository's Pages site: RepositoryPagesSite cannot set a source yet (github-krm-extensions' live.yaml): keep it in Terraform"})
+	}
+	if b, _ := a["archive_on_destroy"].(bool); b {
+		f = append(f, Finding{r.Address, r.Type, "note", "archive_on_destroy: Terraform archives the repository on destroy; deleting a Repository object with deletion-policy delete deletes it"})
+	}
+	return objs, f
+}
+
+// securityAndAnalysis: Terraform's security_and_analysis block (each
+// feature a one-element list of {status}) as the API's object.
+func securityAndAnalysis(v any) map[string]any {
+	out := map[string]any{}
+	for _, b := range list(v) {
+		m, _ := b.(map[string]any)
+		for feat, x := range m {
+			if l := list(x); len(l) > 0 {
+				if fm, _ := l[0].(map[string]any); str(fm["status"]) != "" {
+					out[feat] = map[string]any{"status": str(fm["status"])}
+				}
+			}
+		}
+	}
+	return out
+}
+
+// convertGHOrgSettings: github_organization_settings to
+// OrganizationSettings, a settings kind on the organization (never
+// deleted).
+func convertGHOrgSettings(r *TFResource, c *githubContext) ([]*Object, []Finding) {
+	a := r.Attrs
+	spec := map[string]any{"org": c.owner}
+	for _, k := range []string{"billing_email", "blog", "company", "description", "email", "location", "name",
+		"twitter_username", "default_repository_permission", "secret_scanning_push_protection_custom_link"} {
+		spec[k] = str(a[k])
+	}
+	for _, k := range []string{"has_organization_projects", "has_repository_projects", "members_can_create_repositories",
+		"members_can_create_public_repositories", "members_can_create_private_repositories",
+		"members_can_create_pages", "members_can_create_public_pages", "members_can_create_private_pages",
+		"members_can_fork_private_repositories", "web_commit_signoff_required",
+		"secret_scanning_push_protection_custom_link_enabled"} {
+		spec[k] = boolOf(a[k])
+	}
+	// Internal repositories exist only in an enterprise: sent only when on.
+	if b, _ := a["members_can_create_internal_repositories"].(bool); b {
+		spec["members_can_create_internal_repositories"] = true
+	}
+	var f []Finding
+	var dep []string
+	for _, k := range sortedKeys(a) {
+		if strings.HasSuffix(k, "_enabled_for_new_repositories") {
+			if b, _ := a[k].(bool); b {
+				dep = append(dep, k)
+			}
+		}
+	}
+	if len(dep) > 0 {
+		f = append(f, Finding{r.Address, r.Type, "note", "GitHub has deprecated " + strings.Join(dep, ", ") + " for code security configurations: not converted"})
+	}
+	return []*Object{restObject(r, "organization", "OrganizationSettings", c.owner, spec, "")}, f
 }
 
 // restObject is one github-krm-extensions object; adoptID is set for a CRUD

@@ -8,13 +8,14 @@ import (
 	"strings"
 )
 
-// git-hubby (github.com/Interhyp/git-hubby, Apache-2.0) is the GitHub
-// operator the converter treats as GitHub's provider: its Repository and
-// Organization take github_repository and github_organization_settings,
-// and every field it has wins over github-krm-extensions' kinds, which fill
-// only what it lacks. So github_branch_default folds into
-// Repository.defaultBranch, and the organization's Actions permissions into
-// Organization.actionsSettings, when they are in the same state.
+// git-hubby (github.com/Interhyp/git-hubby, Apache-2.0), with
+// --github-operator git-hubby: its Repository and Organization take
+// github_repository and github_organization_settings, and every field it
+// has wins over github-krm-extensions' kinds, which fill only what it
+// lacks. So github_branch_default folds into Repository.defaultBranch, and
+// the organization's Actions permissions into Organization.actionsSettings,
+// when they are in the same state. The default is github-krm-extensions'
+// own kinds for both (github.go).
 //
 // git-hubby is authoritative where Terraform is not: what its spec leaves
 // out it resets to its own defaults, and its lists (topics, webhooks,

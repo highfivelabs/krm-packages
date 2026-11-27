@@ -248,68 +248,61 @@ The Environment pins the providers the objects need, by Bundt's names
 versions with `--provider NAME=VERSION` (repeatable); one left unpinned is
 a note in the report, not a guess.
 
-## GitHub: git-hubby and github-krm-extensions
+## GitHub: github-krm-extensions (git-hubby opt-in)
 
 A state's `github` resources (the `integrations/github` provider) convert to
-[git-hubby](https://github.com/Interhyp/git-hubby)'s kinds where it has the
-field, and to github-krm-extensions' kinds for the rest. git-hubby is
-treated as GitHub's provider; github-krm-extensions fills its gaps.
-
-**git-hubby** (`internal/offramp/githubby.go`, Bundt provider
-`interhyp.git-hubby`):
-
-- `github_repository` becomes a `Repository`, which adopts an existing
-  repository of the same name. `github_branch_default` folds into its
-  `defaultBranch` when the repository is in the same state.
-- `github_organization_settings` becomes an `Organization`. The
-  organization's Actions and workflow permissions fold into its
-  `actionsSettings` when they are in the same state. The state does not
-  hold two required inputs: `--github-plan` (free, team or enterprise;
-  git-hubby's default is enterprise) and `--github-app-installation` (the
-  App installation git-hubby authenticates as; its credentials are the
-  Secret `git-hubby-app`). Without both, the Organization is a gap.
-- git-hubby resets whatever its spec leaves out to its own defaults. Every
-  setting is therefore written from the state, including the false ones.
-  Its lists (topics, webhooks, deploy keys, autolinks, rulesets, runner
-  groups) are the whole set, and anything on GitHub that is not listed is
-  removed. The artifact and log retention and the runner groups are
-  settings Terraform did not manage. They are written as GitHub's defaults
-  (90 days; the Default group), with a note to compare them with GitHub
-  before applying.
-- Settings git-hubby has no field for (for example `vulnerability_alerts`,
-  `allow_auto_merge`, an organization's `billing_email`) get a note: GitHub
-  keeps their current values, and nothing manages them after the offramp.
-- git-hubby has no deletion policy per object. What deleting a `Repository`
-  does is set once for the whole operator by `REPOSITORY_FINALIZER_MODE`:
-  `ignore` (the default: the repository stays), `archive` or `delete`. The
-  report says which one the deletion policy needs.
-
-**github-krm-extensions** (`internal/offramp/github.go`): these kinds keep
-GitHub's own field names. Each object carries krm-rest-runtime's
+github-krm-extensions' kinds (`internal/offramp/github.go`). Their spec
+fields keep GitHub's own names. Each object carries krm-rest-runtime's
 annotations (its README, "Conventions"):
 
 - `krm.hfl.dev/deletion-policy: abandon` (with `--abandon`, the default):
   deleting the object leaves the resource.
 - `krm.hfl.dev/adopt-id` on a CRUD kind: the ID `status.id` would hold
-  (`ActionsVariable`'s name, `BranchProtection`'s node ID), so the first
-  reconcile reads the resource instead of making a second one. Settings and
-  upsert kinds are read before they are written and need none.
+  (a `Repository`'s or an `ActionsVariable`'s name, a `BranchProtection`'s
+  node ID), so the first reconcile reads the resource instead of making a
+  second one. Settings and upsert kinds are read before they are written
+  and need none.
+
+Terraform's `github_repository` makes several calls, and each becomes its
+own kind:
+- `Repository`: its settings. Fields only a create takes (`auto_init`, the
+  templates, `has_downloads`) are left out, since an adopted repository is
+  never created.
+- `RepositoryTopics`: its topics, when it has any.
+- `RepositoryVulnerabilityAlerts`: when Terraform turns them on.
+
+`github_branch_default` stays `BranchDefault`. `github_organization_settings`
+becomes `OrganizationSettings`, a settings kind that is never deleted.
+Settings GitHub has deprecated get a note: the
+`*_enabled_for_new_repositories` flags, replaced by code security
+configurations. So does `has_discussions`, which the REST API cannot set.
+A Pages site is a gap.
 
 The owner is the provider's, and no resource holds it. It comes from a
 `github_repository`'s `full_name` in the same state, or from an
 organization resource's ID. Without one, a repository-level resource is a
 gap. A file's text is written base64-encoded, as the contents API takes
-it. `BranchProtection` takes node IDs for actors; an actor Terraform
-gives by name (`/octocat`, `org/team`) gets a note.
+it. `BranchProtection` takes node IDs for actors; an actor Terraform gives
+by name (`/octocat`, `org/team`) gets a note. A test checks every object
+field by field against the kinds' CRDs (`crds/github-krm-extensions`).
 
-Mapped here:
-- Actions permissions for a repository, and for an organization whose
-  settings are in another state.
-- Workflow permissions.
-- `github_actions_variable`.
-- `github_branch_default` when its repository is in another state.
-- `github_branch_protection`.
-- `github_repository_file`.
+**git-hubby** (`--github-operator git-hubby`, `internal/offramp/githubby.go`,
+Bundt provider `interhyp.git-hubby`) is the opt-in alternative for the
+repository and the organization. It is young (v0.13, API `v1alpha1`) and
+mostly one maintainer's work, and its objects reset or remove whatever
+their spec leaves out. With it:
+- `github_repository` becomes its `Repository`, and `github_branch_default`
+  folds into that `Repository`'s `defaultBranch`.
+- `github_organization_settings` becomes its `Organization`, and the
+  organization's Actions and workflow permissions fold into its
+  `actionsSettings`.
+- The `Organization` needs `--github-plan` and `--github-app-installation`,
+  which no state holds.
+- Every setting is written from the state, the false ones too.
+- Settings Terraform did not manage (artifact retention, runner groups) are
+  written as GitHub's defaults, with notes to compare them before applying.
+- `REPOSITORY_FINALIZER_MODE`, set once for the whole operator, decides
+  what deleting a `Repository` does.
 
 ## Azure: ASO and aso-extensions
 
