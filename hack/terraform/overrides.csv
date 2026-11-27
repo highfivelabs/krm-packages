@@ -6,9 +6,38 @@ aws,aws_iam_role_policy_attachment,-,a property of Role (ManagedPolicyArns)
 aws,aws_iam_openid_connect_provider,OIDCProvider,name differs
 aws,aws_iam_saml_provider,SAMLProvider,name differs
 aws,aws_iam_user_ssh_key,SSHPublicKey,name differs
-aws,aws_ssoadmin_account_assignment,Assignment,name differs (AWS::SSO::Assignment)
-aws,aws_iam_account_alias,AccountAlias,name differs
+aws,aws_ssoadmin_account_assignment,sso:Assignment,name differs (AWS::SSO::Assignment); not QuickSight's Assignment
+aws,aws_iam_account_alias,iam:AccountAlias,name differs; not the Support App's AccountAlias
 aws,aws_iam_account_password_policy,AccountPasswordPolicy,name differs
+aws,aws_db_event_subscription,rds:EventSubscription,AWS::RDS::EventSubscription; DMS/DocumentDB/Neptune/Redshift have their own resources
+aws,aws_db_parameter_group,rds:DBParameterGroup,AWS::RDS::DBParameterGroup; not ElastiCache or MemoryDB
+aws,aws_db_subnet_group,rds:DBSubnetGroup,AWS::RDS::DBSubnetGroup; not ElastiCache or MemoryDB
+aws,aws_default_security_group,ec2:SecurityGroup,the VPC's default AWS::EC2::SecurityGroup; not ElastiCache
+aws,aws_docdb_subnet_group,docdb:DBSubnetGroup,AWS::DocDB::DBSubnetGroup; not ElastiCache or MemoryDB
+aws,aws_instance,ec2:Instance,AWS::EC2::Instance; not an IAM Identity Center (SSO) instance
+aws,aws_key_pair,ec2:KeyPair,AWS::EC2::KeyPair; Lightsail key pairs are aws_lightsail_key_pair
+aws,aws_neptune_subnet_group,neptune:DBSubnetGroup,AWS::Neptune::DBSubnetGroup; not ElastiCache or MemoryDB
+aws,aws_pinpointsmsvoicev2_resource_policy,smsvoice:ResourcePolicy,AWS::SMSVOICE::ResourcePolicy (the pinpoint-sms-voice-v2 API)
+aws,aws_prometheus_resource_policy,aps:ResourcePolicy,AWS::APS::ResourcePolicy (Amazon Managed Service for Prometheus)
+aws,aws_s3control_bucket_policy,s3outposts:BucketPolicy,S3 on Outposts bucket policy (AWS::S3Outposts::BucketPolicy)
+aws,aws_security_group,ec2:SecurityGroup,AWS::EC2::SecurityGroup; not an ElastiCache cache security group
+aws,aws_security_group_rule,ec2:SecurityGroupIngress;ec2:SecurityGroupEgress,an ingress or egress rule of an EC2 security group (type)
+aws,aws_vpc_endpoint,ec2:VPCEndpoint,AWS::EC2::VPCEndpoint; not an OpenSearch Serverless VPC endpoint
+aws,aws_vpc_peering_connection,ec2:VPCPeeringConnection,AWS::EC2::VPCPeeringConnection; not an MSK VPC connection
+aws,aws_vpc_security_group_ingress_rule,ec2:SecurityGroupIngress,AWS::EC2::SecurityGroupIngress; not ElastiCache
+aws,aws_codebuild_resource_policy,-,no ResourcePolicy type for this service in the CloudFormation schemas; another service's ResourcePolicy is not it
+aws,aws_dynamodb_resource_policy,-,a property of Table (ResourcePolicy); another service's ResourcePolicy is not it
+aws,aws_efs_file_system_policy,-,a property of FileSystem (FileSystemPolicy); not S3 Files
+aws,aws_glue_resource_policy,-,no ResourcePolicy type for this service in the CloudFormation schemas; another service's ResourcePolicy is not it
+aws,aws_lambdaweb_resource_policy,-,no ResourcePolicy type for this service in the CloudFormation schemas; another service's ResourcePolicy is not it
+aws,aws_networkfirewall_resource_policy,-,no ResourcePolicy type for this service in the CloudFormation schemas; another service's ResourcePolicy is not it
+aws,aws_osis_resource_policy,-,no ResourcePolicy type for this service in the CloudFormation schemas; another service's ResourcePolicy is not it
+aws,aws_redshift_resource_policy,-,no ResourcePolicy type for this service in the CloudFormation schemas; another service's ResourcePolicy is not it
+aws,aws_redshiftserverless_endpoint_access,-,no Redshift Serverless type for it in the CloudFormation schemas; Redshift's (provisioned) EndpointAccess is another API
+aws,aws_redshiftserverless_resource_policy,-,a property of Namespace (NamespaceResourcePolicy); another service's ResourcePolicy is not it
+aws,aws_redshiftserverless_usage_limit,-,no Redshift Serverless type for it in the CloudFormation schemas; Redshift's (provisioned) UsageLimit is another API
+aws,aws_waf_geo_match_set,-,AWS::WAF (global WAF Classic) has no GeoMatchSet; WAF Regional's is aws_wafregional_geo_match_set
+aws,aws_waf_regex_pattern_set,-,AWS::WAF (global WAF Classic) has no RegexPatternSet; WAF Regional's is aws_wafregional_regex_pattern_set
 azure,azurerm_policy_definition,Microsoft.Authorization/policydefinitions,the denominator spells it in lower case
 azure,azurerm_management_group_policy_assignment,Microsoft.Authorization/policyassignments,extension-scope resource
 azure,azurerm_subscription_policy_assignment,Microsoft.Authorization/policyassignments,extension-scope resource

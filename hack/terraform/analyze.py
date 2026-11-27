@@ -211,7 +211,8 @@ def build_mapping(cloud, res, tf, overrides):
             continue
         if name in overrides:
             for ak in overrides[name]:
-                cand = [k for k in res if k[1] == ak]
+                # a resource name, or service:resource where the name is in several services
+                cand = [k for k in res if k[1] == ak or f"{k[0]}:{k[1]}" == ak]
                 for k in cand:
                     mapping.append((name, k, 1.0, 1.0, "override"))
             if any(m[0] == name for m in mapping):
