@@ -2,15 +2,14 @@
 # Copyright 2026 High Five Labs
 # SPDX-License-Identifier: Apache-2.0
 #
-# The merge gate while GitHub Actions is off: the actions run locally (or
-# on a VM) before a commit merges; the GitHub workflows stay, disabled.
+# ci.yml's pull-request job, run locally before a push (opt-in: the merge
+# gate is ci.yml on GitHub, HFL-818).
 #
-#   hack/ci/gate.sh [SHA]      task ci [SHA=...]; the pre-push hook runs it
+#   hack/ci/gate.sh [SHA]      task ci [SHA=...]; the pre-push hook runs it with HFL_PREPUSH_GATE=1
 #
 # For one commit (default HEAD) it runs what .github/workflows/ci.yml's
 # pull-request job runs, `task check`, then posts the commit status
-# `offload/ci` on that commit. A pull request merges only when that status
-# on its head is success (README.md, "The merge gate").
+# `offload/ci` on that commit (README.md, "The merge gate").
 #
 # It runs on this machine, not a VM: `task check` took under a minute
 # here (measured 2026-11-11; about six minutes by 2026-11-14, longer than

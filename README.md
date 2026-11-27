@@ -85,32 +85,32 @@ this repository's tracking issue; run it by hand only to do that.
 
 ## The merge gate
 
-GitHub Actions is off in the organization (2026-11-11); the
-workflows in `.github/workflows/` stay, disabled. `ci.yml`'s pull-request
-job runs before the push instead:
+`ci.yml`'s `check` job on GitHub is the merge gate: it runs `task check` on
+every pull request and on `main`, on GitHub's free runners (the repository
+is public; HFL-818). **Merge only when `check` is green on the pull
+request's head.**
+
+The same check can also run before a push, on this machine, at `ci.yml`'s
+tool pins:
 
 ```sh
-task hooks          # once per clone: core.hooksPath=hack/hooks
-task ci             # by hand: HEAD (or SHA=...)
+task ci                              # by hand: HEAD (or SHA=...)
+task hooks; export HFL_PREPUSH_GATE=1  # opt in to running it on every push
 ```
 
 `task ci` (`hack/ci/gate.sh`) checks the commit out into a temporary
-worktree and runs `task check` there, on this machine: it takes under a
-minute (an offload VM takes longer than that to boot), and the offload
-image lacks the linters it runs. It fails unless task and the tools
-`ci.yml` pins (`*_VERSION`) are installed at those versions and
-shellcheck is installed, and it runs Go at `ci.yml`'s `go-version-file`
+worktree and runs `task check` there. It fails unless task and the tools
+`ci.yml` pins (`*_VERSION`) are installed at those versions and shellcheck
+is installed, and it runs Go at `ci.yml`'s `go-version-file`
 (`GOTOOLCHAIN`), so nothing is skipped as "not installed". It uploads the
 log to the offload bucket, prints its location (the bucket is private),
-and posts the commit status `offload/ci` (success or failure, what ran,
-in how long; no link and no environment identifiers, since the
-repository's statuses are public) on the commit. The pre-push
-hook (`hack/hooks/pre-push`) runs it for every branch commit pushed and
-refuses the push on a failure; a commit that already has `offload/ci`
-success is not run again.
-
-**Merge only when the `offload/ci` status on the pull request's head is
-success.** A new commit on the branch needs its own run.
+and posts the commit status `offload/ci` (success or failure, what ran, in
+how long; no link and no environment identifiers, since the repository's
+statuses are public) on the commit. The pre-push hook
+(`hack/hooks/pre-push`) does nothing unless `HFL_PREPUSH_GATE=1`; with it,
+it runs the gate for every branch commit pushed and refuses the push on a
+failure, and a commit that already has `offload/ci` success is not run
+again.
 
 ### Environment identifiers
 
