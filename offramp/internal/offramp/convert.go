@@ -72,6 +72,10 @@ type Options struct {
 	// object: skip, detach-on-delete or manage (azure.go). Empty follows
 	// DeletionPolicy: detach-on-delete for abandon, manage for delete.
 	AzureReconcilePolicy string
+	// GitHubPlan (free, team or enterprise) and GitHubAppInstallation are
+	// what git-hubby's Organization needs and no state holds (githubby.go).
+	GitHubPlan            string
+	GitHubAppInstallation int64
 }
 
 var terraformOnly = map[string]bool{
@@ -93,7 +97,7 @@ func ConvertState(st *State, k *KCC, opt Options) *Result {
 		case ProviderName(r.Provider) == "aws" && awsCtx == nil:
 			awsCtx = newAWSContext(all)
 		case ProviderName(r.Provider) == "github" && ghCtx == nil:
-			ghCtx = newGitHubContext(all)
+			ghCtx = newGitHubContext(all, opt)
 		case ProviderName(r.Provider) == "azapi" && azCtx == nil:
 			azCtx = newAzureContext(all)
 		}
@@ -142,6 +146,7 @@ func ConvertState(st *State, k *KCC, opt Options) *Result {
 		}
 	}
 	res.Findings = append(res.Findings, azureSubscriptionNote(res.Objects)...)
+	res.Findings = append(res.Findings, githubbyDeletionNote(res.Objects, opt)...)
 	for _, a := range st.DeposedAddresses() {
 		res.Findings = append(res.Findings, Finding{a, "", "note", "a deposed instance (create_before_destroy replaced it; Terraform or OpenTofu destroys it on the next apply): not adopted"})
 	}
@@ -662,6 +667,8 @@ func finish(o *Object, opt Options) {
 		if p != "manage" {
 			ann[AnnASOReconcilePolicy] = p
 		}
+	case isGitHubby(av):
+		// git-hubby's deletion is operator-wide (githubbyDeletionNote).
 	case isREST(av):
 		// krm-rest-runtime's: abandon leaves it; delete is its default.
 		if dp == "abandon" {

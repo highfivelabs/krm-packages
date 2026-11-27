@@ -33,11 +33,32 @@ func isREST(apiVersion string) bool {
 // githubContext is what the GitHub converters need from the whole state:
 // the owner (the provider's, which no resource holds), read from a
 // repository's full_name, or an organization-level resource's ID.
-type githubContext struct{ owner string }
+type githubContext struct {
+	owner string
+	// From the rest of the state, folded into git-hubby's objects
+	// (githubby.go): each repository's default branch, and the
+	// organization's Actions permissions when its settings are here too.
+	defaultBranch           map[string]string
+	orgActions, orgWorkflow map[string]any
+	hasOrg, hasRepo         map[string]bool
+	// From Options: what git-hubby's Organization needs that no state holds.
+	plan         string
+	installation int64
+}
 
-func newGitHubContext(rs []*TFResource) *githubContext {
-	c := &githubContext{}
+func newGitHubContext(rs []*TFResource, opt Options) *githubContext {
+	c := &githubContext{defaultBranch: map[string]string{}, hasOrg: map[string]bool{}, hasRepo: map[string]bool{},
+		plan: opt.GitHubPlan, installation: opt.GitHubAppInstallation}
 	for _, r := range rs {
+		switch r.Type {
+		case "github_organization_settings":
+			c.hasOrg["settings"] = true
+		case "github_branch_default":
+			c.defaultBranch[str(r.Attrs["repository"])] = str(r.Attrs["branch"])
+		}
+		if r.Type == "github_repository" {
+			c.hasRepo[str(r.Attrs["name"])] = true
+		}
 		switch r.Type {
 		case "github_repository":
 			if o, _, ok := strings.Cut(str(r.Attrs["full_name"]), "/"); ok && c.owner == "" {
@@ -46,6 +67,11 @@ func newGitHubContext(rs []*TFResource) *githubContext {
 		case "github_actions_organization_permissions", "github_actions_organization_workflow_permissions":
 			if c.owner == "" {
 				c.owner = str(r.Attrs["id"])
+			}
+			if r.Type == "github_actions_organization_permissions" {
+				c.orgActions = r.Attrs
+			} else {
+				c.orgWorkflow = r.Attrs
 			}
 		}
 	}
@@ -63,11 +89,30 @@ var githubConverters = map[string]githubConverter{
 	"github_branch_default":                            convertGHBranchDefault,
 	"github_branch_protection":                         convertGHBranchProtection,
 	"github_repository_file":                           convertGHRepositoryFile,
-	"github_repository":                                githubOperatorOnly("Repository"),
-	"github_organization_settings":                     githubOperatorOnly("Organization"),
+	"github_repository":                                convertGHRepository,
+	"github_organization_settings":                     convertGHOrganization,
+}
+
+// githubbyFolds: our kinds whose fields git-hubby's objects carry when the
+// object they fold into is in the same state.
+func githubbyFolds(r *TFResource, c *githubContext) githubConverter {
+	switch r.Type {
+	case "github_branch_default":
+		if c.hasRepo[str(r.Attrs["repository"])] {
+			return githubbyFolded("Repository (defaultBranch)")
+		}
+	case "github_actions_organization_permissions", "github_actions_organization_workflow_permissions":
+		if c.hasOrg["settings"] {
+			return githubbyFolded("Organization (actionsSettings)")
+		}
+	}
+	return nil
 }
 
 func convertGitHub(r *TFResource, c *githubContext) ([]*Object, []Finding) {
+	if fold := githubbyFolds(r, c); fold != nil {
+		return fold(r, c)
+	}
 	f, ok := githubConverters[r.Type]
 	if !ok {
 		return nil, []Finding{{r.Address, r.Type, "gap", "no GitHub mapping in the converter yet (github-krm-extensions' README names the kind): keep it in Terraform, or add it to github.go"}}
@@ -81,17 +126,7 @@ func convertGitHub(r *TFResource, c *githubContext) ([]*Object, []Finding) {
 var needsOwner = map[string]bool{
 	"github_actions_repository_permissions": true, "github_workflow_repository_permissions": true,
 	"github_actions_variable": true, "github_branch_default": true, "github_repository_file": true,
-}
-
-// githubOperatorOnly: the repository and the organization's settings are
-// what github-krm-extensions leaves to GitHub's operators (git-hubby's
-// Repository and Organization). Not converted: git-hubby's kinds also own
-// the default branch and Actions settings (two controllers on one field),
-// and archive a repository when its object is deleted, with no abandon.
-func githubOperatorOnly(kind string) githubConverter {
-	return func(r *TFResource, _ *githubContext) ([]*Object, []Finding) {
-		return nil, []Finding{{r.Address, r.Type, "gap", "github-krm-extensions leaves this to git-hubby's " + kind + ", which also owns fields our kinds write and archives a repository on delete with no abandon: not converted until that is decided; keep it in Terraform"}}
-	}
+	"github_repository": true, "github_organization_settings": true,
 }
 
 // restObject is one github-krm-extensions object; adoptID is set for a CRUD
