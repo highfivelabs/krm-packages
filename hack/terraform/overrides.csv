@@ -1,5 +1,49 @@
 cloud,tf_resource,api_resource,why
 gcp,google_kms_key_ring,-,KeyRing has no writable attribute in the denominator
+gcp,google_compute_region_autoscaler,compute.googleapis.com/RegionAutoscaler,regional: Magic Modules base_url is projects/{{project}}/regions/{{region}}/...; Discovery collection region...; not the global one
+gcp,google_compute_region_backend_bucket,compute.googleapis.com/RegionBackendBucket,regional: Magic Modules base_url is projects/{{project}}/regions/{{region}}/...; Discovery collection region...; not the global one
+gcp,google_compute_region_backend_service,compute.googleapis.com/RegionBackendService,regional: Magic Modules base_url is projects/{{project}}/regions/{{region}}/...; Discovery collection region...; not the global one
+gcp,google_compute_region_disk,compute.googleapis.com/RegionDisk,regional: Magic Modules base_url is projects/{{project}}/regions/{{region}}/...; Discovery collection region...; not the global one
+gcp,google_compute_region_health_check,compute.googleapis.com/RegionHealthCheck,regional: Magic Modules base_url is projects/{{project}}/regions/{{region}}/...; Discovery collection region...; not the global one
+gcp,google_compute_region_instance_group_manager,compute.googleapis.com/RegionInstanceGroupManager,regional: Magic Modules base_url is projects/{{project}}/regions/{{region}}/...; Discovery collection region...; not the global one
+gcp,google_compute_region_instance_template,compute.googleapis.com/RegionInstanceTemplate,regional: Magic Modules base_url is projects/{{project}}/regions/{{region}}/...; Discovery collection region...; not the global one
+gcp,google_compute_region_instant_snapshot,compute.googleapis.com/RegionInstantSnapshot,regional: Magic Modules base_url is projects/{{project}}/regions/{{region}}/...; Discovery collection region...; not the global one
+gcp,google_compute_region_network_endpoint_group,compute.googleapis.com/RegionNetworkEndpointGroup,regional: Magic Modules base_url is projects/{{project}}/regions/{{region}}/...; Discovery collection region...; not the global one
+gcp,google_compute_region_network_firewall_policy,compute.googleapis.com/RegionNetworkFirewallPolicy,regional: Magic Modules base_url is projects/{{project}}/regions/{{region}}/...; Discovery collection region...; not the global one
+gcp,google_compute_region_network_firewall_policy_rule,compute.googleapis.com/RegionNetworkFirewallPolicy,regional: Magic Modules base_url is projects/{{project}}/regions/{{region}}/...; Discovery collection region...; not the global one
+gcp,google_compute_region_network_firewall_policy_with_rules,compute.googleapis.com/RegionNetworkFirewallPolicy,regional: Magic Modules base_url is projects/{{project}}/regions/{{region}}/...; Discovery collection region...; not the global one
+gcp,google_compute_region_security_policy,compute.googleapis.com/RegionSecurityPolicy,regional: Magic Modules base_url is projects/{{project}}/regions/{{region}}/...; Discovery collection region...; not the global one
+gcp,google_compute_region_security_policy_rule,compute.googleapis.com/RegionSecurityPolicy,regional: Magic Modules base_url is projects/{{project}}/regions/{{region}}/...; Discovery collection region...; not the global one
+gcp,google_compute_region_ssl_certificate,compute.googleapis.com/RegionSslCertificate,regional: Magic Modules base_url is projects/{{project}}/regions/{{region}}/...; Discovery collection region...; not the global one
+gcp,google_compute_region_ssl_policy,compute.googleapis.com/RegionSslPolicy,regional: Magic Modules base_url is projects/{{project}}/regions/{{region}}/...; Discovery collection region...; not the global one
+gcp,google_compute_region_target_http_proxy,compute.googleapis.com/RegionTargetHttpProxy,regional: Magic Modules base_url is projects/{{project}}/regions/{{region}}/...; Discovery collection region...; not the global one
+gcp,google_compute_region_target_https_proxy,compute.googleapis.com/RegionTargetHttpsProxy,regional: Magic Modules base_url is projects/{{project}}/regions/{{region}}/...; Discovery collection region...; not the global one
+gcp,google_compute_region_target_tcp_proxy,compute.googleapis.com/RegionTargetTcpProxy,regional: Magic Modules base_url is projects/{{project}}/regions/{{region}}/...; Discovery collection region...; not the global one
+gcp,google_compute_region_url_map,compute.googleapis.com/RegionUrlMap,regional: Magic Modules base_url is projects/{{project}}/regions/{{region}}/...; Discovery collection region...; not the global one
+gcp,google_compute_firewall_policy,compute.googleapis.com/FirewallPolicy,hierarchical (organization/folder) policy: Discovery firewallPolicies; network policies are other resources
+gcp,google_compute_firewall_policy_with_rules,compute.googleapis.com/FirewallPolicy,hierarchical (organization/folder) policy: Discovery firewallPolicies; network policies are other resources
+gcp,google_compute_network_firewall_policy,compute.googleapis.com/NetworkFirewallPolicy,global network policy: Discovery networkFirewallPolicies (REST path projects/{project}/global/firewallPolicies)
+gcp,google_compute_network_firewall_policy_rule,compute.googleapis.com/NetworkFirewallPolicy,a rule of a global network policy: Discovery networkFirewallPolicies.addRule (REST path .../global/firewallPolicies)
+gcp,google_compute_network_firewall_policy_with_rules,compute.googleapis.com/NetworkFirewallPolicy,global network policy: Discovery networkFirewallPolicies (REST path projects/{project}/global/firewallPolicies)
+gcp,google_compute_instance_group_manager,compute.googleapis.com/InstanceGroupManager,zonal: Upjet's ID template is projects/.../zones/.../instanceGroupManagers
+gcp,google_compute_security_policy,compute.googleapis.com/SecurityPolicy,global: Upjet's ID template is projects/.../global/securityPolicies
+gcp,google_compute_organization_security_policy,compute.googleapis.com/OrganizationSecurityPolicy,Discovery organizationSecurityPolicies; not the project-level ones
+gcp,google_compute_instance_from_template,compute.googleapis.com/Instance,creates a VM instance (from a template); not an instance template
+gcp,google_project_iam_custom_role,iam.googleapis.com/projects.roles,project-level custom role: Upjet's ID template is projects/.../roles
+gcp,google_organization_iam_custom_role,iam.googleapis.com/Role,organization-level custom role: Discovery organizations.roles
+gcp,google_eventarc_google_channel_config,-,the GoogleChannelConfig singleton (projects.locations.googleChannelConfig) is not in the denominator; not a Channel
+gcp,google_logging_project_sink,logging.googleapis.com/Sink;logging.googleapis.com/sinks,Upjet's ID template is projects/.../sinks; the generic sinks path kept; not other levels' sinks
+gcp,google_logging_folder_sink,logging.googleapis.com/FolderSink;logging.googleapis.com/sinks,Upjet's ID template is folders/.../sinks; the generic sinks path kept; not other levels' sinks
+gcp,google_logging_organization_sink,logging.googleapis.com/OrganizationSink;logging.googleapis.com/sinks,the provider's ID is organizations/.../sinks; the generic sinks path kept; not other levels' sinks
+gcp,google_logging_billing_account_sink,logging.googleapis.com/BillingAccountSink;logging.googleapis.com/sinks,the provider's ID is billingAccounts/.../sinks; the generic sinks path kept; not other levels' sinks
+gcp,google_logging_project_exclusion,logging.googleapis.com/projects.exclusions;logging.googleapis.com/Exclusion,Upjet's ID template is projects/.../exclusions; the generic exclusions path kept; not other levels' exclusions
+gcp,google_logging_folder_exclusion,logging.googleapis.com/FolderExclusion;logging.googleapis.com/Exclusion,Upjet's ID template is folders/.../exclusions; the generic exclusions path kept; not other levels' exclusions
+gcp,google_logging_organization_exclusion,logging.googleapis.com/OrganizationExclusion;logging.googleapis.com/Exclusion,Upjet's ID template is organizations/.../exclusions; the generic exclusions path kept; not other levels' exclusions
+gcp,google_logging_billing_account_exclusion,logging.googleapis.com/BillingAccountExclusion;logging.googleapis.com/Exclusion,Upjet's ID template is billingAccounts/.../exclusions; the generic exclusions path kept; not other levels' exclusions
+gcp,google_logging_project_bucket_config,logging.googleapis.com/LocationBucket;logging.googleapis.com/Bucket,Upjet's ID template is projects/.../locations/.../buckets; the generic buckets path kept; not other levels' buckets or bucket links
+gcp,google_logging_folder_bucket_config,logging.googleapis.com/FolderLocationBucket;logging.googleapis.com/Bucket,Upjet's ID template is folders/.../locations/.../buckets; the generic buckets path kept; not other levels' buckets or bucket links
+gcp,google_logging_organization_bucket_config,logging.googleapis.com/OrganizationLocationBucket;logging.googleapis.com/Bucket,Upjet's ID template is organizations/.../locations/.../buckets; the generic buckets path kept; not other levels' buckets or bucket links
+gcp,google_logging_billing_account_bucket_config,logging.googleapis.com/BillingAccountLocationBucket;logging.googleapis.com/Bucket,Upjet's ID template is billingAccounts/.../locations/.../buckets; the generic buckets path kept; not other levels' buckets or bucket links
 aws,aws_iam_policy,ManagedPolicy,CloudFormation names a managed policy ManagedPolicy
 aws,aws_iam_policy_attachment,-,a property of Role/User/Group in CloudFormation
 aws,aws_iam_role_policy_attachment,-,a property of Role (ManagedPolicyArns)

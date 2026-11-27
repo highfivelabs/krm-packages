@@ -92,7 +92,7 @@ types to dotted paths with `[]` and `{}` as the dashboards write them).
 
 1. **Resource mapping.** A Terraform resource is mapped to the API resources
    of the dashboard's denominator by (in order): a hand list
-   (`hack/terraform/overrides.csv`, 312 rows: an API resource as the
+   (`hack/terraform/overrides.csv`, 356 rows: an API resource as the
    dashboard names it, `service:resource` where that name is in several
    services, `-` for none, several joined by `;`); for Google, Magic Modules' own
    statement of the API host and collection of each generated resource
