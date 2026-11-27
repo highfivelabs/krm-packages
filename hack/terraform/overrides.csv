@@ -88,3 +88,226 @@ azure,azurerm_log_analytics_query_pack_query,Microsoft.OperationalInsights/query
 azure,azurerm_log_analytics_saved_search,Microsoft.OperationalInsights/workspaces/savedSearches,sdk import missing
 azure,azurerm_log_analytics_storage_insights,Microsoft.OperationalInsights/workspaces/storageInsightConfigs,sdk import missing
 azure,azurerm_log_analytics_solution,Microsoft.OperationsManagement/solutions,sdk import missing
+azure,azurerm_ai_foundry,Microsoft.MachineLearningServices/workspaces,azurerm's documented ID names Microsoft.MachineLearningServices/workspaces; so does Upjet's ID template
+azure,azurerm_ai_foundry_project,Microsoft.MachineLearningServices/workspaces,azurerm's documented ID names Microsoft.MachineLearningServices/workspaces
+azure,azurerm_api_management_api,Microsoft.ApiManagement/service/apis,azurerm's documented ID names Microsoft.ApiManagement/service/apis; so does Upjet's ID template
+azure,azurerm_api_management_api_diagnostic,Microsoft.ApiManagement/service/apis/diagnostics,azurerm's documented ID names Microsoft.ApiManagement/service/apis/diagnostics; so does Upjet's ID template
+azure,azurerm_api_management_api_operation,Microsoft.ApiManagement/service/apis/operations,azurerm's documented ID names Microsoft.ApiManagement/service/apis/operations; so does Upjet's ID template
+azure,azurerm_api_management_api_operation_tag,Microsoft.ApiManagement/service/apis/operations/tags,azurerm's documented ID names Microsoft.ApiManagement/service/apis/operations/tags
+azure,azurerm_api_management_api_schema,Microsoft.ApiManagement/service/apis/schemas,azurerm's documented ID names Microsoft.ApiManagement/service/apis/schemas; so does Upjet's ID template
+azure,azurerm_api_management_api_tag,Microsoft.ApiManagement/service/apis/tags,azurerm's documented ID names Microsoft.ApiManagement/service/apis/tags
+azure,azurerm_api_management_api_version_set,Microsoft.ApiManagement/service/apiVersionSets,azurerm's documented ID names Microsoft.ApiManagement/service/apiVersionSets; so does Upjet's ID template
+azure,azurerm_api_management_backend,Microsoft.ApiManagement/service/backends,azurerm's documented ID names Microsoft.ApiManagement/service/backends; so does Upjet's ID template
+azure,azurerm_api_management_certificate,Microsoft.ApiManagement/service/certificates,azurerm's documented ID names Microsoft.ApiManagement/service/certificates; so does Upjet's ID template
+azure,azurerm_api_management_diagnostic,Microsoft.ApiManagement/service/diagnostics,azurerm's documented ID names Microsoft.ApiManagement/service/diagnostics; so does Upjet's ID template
+azure,azurerm_api_management_gateway,Microsoft.ApiManagement/service/gateways,azurerm's documented ID names Microsoft.ApiManagement/service/gateways
+azure,azurerm_api_management_gateway_api,Microsoft.ApiManagement/service/gateways/apis,azurerm's documented ID names Microsoft.ApiManagement/service/gateways/apis
+azure,azurerm_api_management_global_schema,Microsoft.ApiManagement/service/schemas,azurerm's documented ID names Microsoft.ApiManagement/service/schemas; so does Upjet's ID template
+azure,azurerm_api_management_group,Microsoft.ApiManagement/service/groups,azurerm's documented ID names Microsoft.ApiManagement/service/groups; so does Upjet's ID template
+azure,azurerm_api_management_logger,Microsoft.ApiManagement/service/loggers,azurerm's documented ID names Microsoft.ApiManagement/service/loggers; so does Upjet's ID template
+azure,azurerm_api_management_named_value,Microsoft.ApiManagement/service/namedValues,azurerm's documented ID names Microsoft.ApiManagement/service/namedValues; so does Upjet's ID template
+azure,azurerm_api_management_policy_fragment,Microsoft.ApiManagement/service/policyFragments,azurerm's documented ID names Microsoft.ApiManagement/service/policyFragments
+azure,azurerm_api_management_product,Microsoft.ApiManagement/service/products,azurerm's documented ID names Microsoft.ApiManagement/service/products; so does Upjet's ID template
+azure,azurerm_api_management_subscription,Microsoft.ApiManagement/service/subscriptions,azurerm's documented ID names Microsoft.ApiManagement/service/subscriptions
+azure,azurerm_api_management_tag,Microsoft.ApiManagement/service/tags,azurerm's documented ID names Microsoft.ApiManagement/service/tags
+azure,azurerm_api_management_workspace_api_version_set,Microsoft.ApiManagement/service/workspaces/apiVersionSets,azurerm's documented ID names Microsoft.ApiManagement/service/workspaces/apiVersionSets
+azure,azurerm_api_management_workspace_certificate,Microsoft.ApiManagement/service/workspaces/certificates,azurerm's documented ID names Microsoft.ApiManagement/service/workspaces/certificates
+azure,azurerm_api_management_workspace_named_value,Microsoft.ApiManagement/service/workspaces/namedValues,azurerm's documented ID names Microsoft.ApiManagement/service/workspaces/namedValues
+azure,azurerm_api_management_workspace_policy_fragment,Microsoft.ApiManagement/service/workspaces/policyFragments,azurerm's documented ID names Microsoft.ApiManagement/service/workspaces/policyFragments
+azure,azurerm_app_configuration,Microsoft.AppConfiguration/configurationStores,azurerm's documented ID names Microsoft.AppConfiguration/configurationStores; so does Upjet's ID template; not its child replicas
+azure,azurerm_app_service_certificate,Microsoft.Web/certificates,azurerm's documented ID names Microsoft.Web/certificates; so does Upjet's ID template
+azure,azurerm_app_service_environment_v3,Microsoft.Web/hostingEnvironments,azurerm's documented ID names Microsoft.Web/hostingEnvironments; so does Upjet's ID template
+azure,azurerm_app_service_managed_certificate,Microsoft.Web/certificates,azurerm's documented ID names Microsoft.Web/certificates
+azure,azurerm_application_insights_analytics_item,Microsoft.Insights/components/analyticsItems,azurerm's documented ID names Microsoft.Insights/components/analyticsItems
+azure,azurerm_arc_machine_extension,Microsoft.HybridCompute/machines/extensions,azurerm's documented ID names Microsoft.HybridCompute/machines/extensions
+azure,azurerm_automanage_configuration,Microsoft.Automanage/configurationProfiles,azurerm's documented ID names Microsoft.Automanage/configurationProfiles
+azure,azurerm_automation_connection_certificate,Microsoft.Automation/automationAccounts/connections,azurerm's documented ID names Microsoft.Automation/automationAccounts/connections
+azure,azurerm_automation_python3_package,Microsoft.Automation/automationAccounts/python3Packages,azurerm's documented ID names Microsoft.Automation/automationAccounts/python3Packages
+azure,azurerm_backup_protected_file_share,Microsoft.RecoveryServices/vaults/backupFabrics/protectionContainers/protectedItems,azurerm's documented ID names Microsoft.RecoveryServices/vaults/backupFabrics/protectionContainers/protectedItems
+azure,azurerm_backup_protected_vm,Microsoft.RecoveryServices/vaults/backupFabrics/protectionContainers/protectedItems,azurerm's documented ID names Microsoft.RecoveryServices/vaults/backupFabrics/protectionContainers/protectedItems
+azure,azurerm_bot_channels_registration,Microsoft.BotService/botServices,azurerm's documented ID names Microsoft.BotService/botServices; not its child channels
+azure,azurerm_cdn_frontdoor_custom_domain,Microsoft.Cdn/profiles/customDomains,azurerm's documented ID names Microsoft.Cdn/profiles/customDomains
+azure,azurerm_cdn_frontdoor_firewall_policy,Microsoft.Network/FrontDoorWebApplicationFirewallPolicies,azurerm's documented ID names Microsoft.Network/FrontDoorWebApplicationFirewallPolicies; so does Upjet's ID template
+azure,azurerm_cognitive_account_connection_account_key,Microsoft.CognitiveServices/accounts/connections,azurerm's documented ID names Microsoft.CognitiveServices/accounts/connections
+azure,azurerm_cognitive_account_connection_account_managed_identity,Microsoft.CognitiveServices/accounts/connections,azurerm's documented ID names Microsoft.CognitiveServices/accounts/connections
+azure,azurerm_cognitive_account_connection_api_key,Microsoft.CognitiveServices/accounts/connections,azurerm's documented ID names Microsoft.CognitiveServices/accounts/connections
+azure,azurerm_cognitive_account_connection_custom_keys,Microsoft.CognitiveServices/accounts/connections,azurerm's documented ID names Microsoft.CognitiveServices/accounts/connections
+azure,azurerm_cognitive_account_connection_entra_id,Microsoft.CognitiveServices/accounts/connections,azurerm's documented ID names Microsoft.CognitiveServices/accounts/connections
+azure,azurerm_cognitive_account_rai_policy,Microsoft.CognitiveServices/accounts/raiPolicies,azurerm's documented ID names Microsoft.CognitiveServices/accounts/raiPolicies
+azure,azurerm_consumption_budget_management_group,Microsoft.Consumption/budgets,azurerm's documented ID names Microsoft.Consumption/budgets
+azure,azurerm_container_app_environment_certificate,Microsoft.App/managedEnvironments/certificates,azurerm's documented ID names Microsoft.App/managedEnvironments/certificates
+azure,azurerm_container_app_environment_dapr_component,Microsoft.App/managedEnvironments/daprComponents,azurerm's documented ID names Microsoft.App/managedEnvironments/daprComponents
+azure,azurerm_cosmosdb_postgresql_firewall_rule,Microsoft.DBforPostgreSQL/serverGroupsv2/firewallRules,azurerm's documented ID names Microsoft.DBforPostgreSQL/serverGroupsv2/firewallRules
+azure,azurerm_database_migration_service,Microsoft.DataMigration/services,azurerm's documented ID names Microsoft.DataMigration/services; so does Upjet's ID template
+azure,azurerm_dev_test_schedule,Microsoft.DevTestLab/labs/schedules,azurerm's documented ID names Microsoft.DevTestLab/labs/schedules; so does Upjet's ID template
+azure,azurerm_eventgrid_system_topic_event_subscription,Microsoft.EventGrid/systemTopics/eventSubscriptions,azurerm's documented ID names Microsoft.EventGrid/systemTopics/eventSubscriptions; so does Upjet's ID template
+azure,azurerm_eventhub_namespace,Microsoft.EventHub/namespaces,azurerm's documented ID names Microsoft.EventHub/namespaces; so does Upjet's ID template; not its child eventhubs
+azure,azurerm_eventhub_namespace_authorization_rule,Microsoft.EventHub/namespaces/AuthorizationRules,azurerm's documented ID names Microsoft.EventHub/namespaces/AuthorizationRules; so does Upjet's ID template
+azure,azurerm_express_route_gateway,Microsoft.Network/expressRouteGateways,azurerm's documented ID names Microsoft.Network/expressRouteGateways; so does Upjet's ID template
+azure,azurerm_firewall_network_rule_collection,-,a property of Microsoft.Network/azureFirewalls (networkRuleCollections); not a firewall policy rule collection group
+azure,azurerm_firewall_policy_rule_collection_group,Microsoft.Network/firewallPolicies/ruleCollectionGroups,azurerm's documented ID names Microsoft.Network/firewallPolicies/ruleCollectionGroups
+azure,azurerm_function_app_hybrid_connection,Microsoft.Web/sites/hybridConnectionNamespaces/relays,azurerm's documented ID names Microsoft.Web/sites/hybridConnectionNamespaces/relays
+azure,azurerm_hdinsight_hadoop_cluster,Microsoft.HDInsight/clusters,azurerm's documented ID names Microsoft.HDInsight/clusters; so does Upjet's ID template; not its child applications
+azure,azurerm_healthcare_dicom_service,Microsoft.HealthcareApis/workspaces/dicomservices,azurerm's documented ID names Microsoft.HealthcareApis/workspaces/dicomservices
+azure,azurerm_healthcare_fhir_service,Microsoft.HealthcareApis/workspaces/fhirservices,azurerm's documented ID names Microsoft.HealthcareApis/workspaces/fhirservices
+azure,azurerm_healthcare_medtech_service,Microsoft.HealthcareApis/workspaces/iotconnectors,azurerm's documented ID names Microsoft.HealthcareApis/workspaces/iotconnectors
+azure,azurerm_healthcare_medtech_service_fhir_destination,Microsoft.HealthcareApis/workspaces/iotconnectors/fhirdestinations,azurerm's documented ID names Microsoft.HealthcareApis/workspaces/iotconnectors/fhirdestinations
+azure,azurerm_iot_security_solution,Microsoft.Security/iotSecuritySolutions,azurerm's documented ID names Microsoft.Security/iotSecuritySolutions; so does Upjet's ID template
+azure,azurerm_iothub_device_update_account,Microsoft.DeviceUpdate/accounts,azurerm's documented ID names Microsoft.DeviceUpdate/accounts; so does Upjet's ID template
+azure,azurerm_iothub_device_update_instance,Microsoft.DeviceUpdate/accounts/instances,azurerm's documented ID names Microsoft.DeviceUpdate/accounts/instances
+azure,azurerm_kusto_cluster_principal_assignment,Microsoft.Kusto/clusters/principalAssignments,azurerm's documented ID names Microsoft.Kusto/clusters/principalAssignments; so does Upjet's ID template
+azure,azurerm_kusto_database_principal_assignment,Microsoft.Kusto/clusters/databases/principalAssignments,azurerm's documented ID names Microsoft.Kusto/clusters/databases/principalAssignments; so does Upjet's ID template
+azure,azurerm_machine_learning_compute_cluster,Microsoft.MachineLearningServices/workspaces/computes,azurerm's documented ID names Microsoft.MachineLearningServices/workspaces/computes
+azure,azurerm_machine_learning_compute_instance,Microsoft.MachineLearningServices/workspaces/computes,azurerm's documented ID names Microsoft.MachineLearningServices/workspaces/computes
+azure,azurerm_machine_learning_datastore_blobstorage,Microsoft.MachineLearningServices/workspaces/datastores,azurerm's documented ID names Microsoft.MachineLearningServices/workspaces/datastores
+azure,azurerm_machine_learning_datastore_datalake_gen2,Microsoft.MachineLearningServices/workspaces/datastores,azurerm's documented ID names Microsoft.MachineLearningServices/workspaces/datastores
+azure,azurerm_machine_learning_datastore_fileshare,Microsoft.MachineLearningServices/workspaces/datastores,azurerm's documented ID names Microsoft.MachineLearningServices/workspaces/datastores
+azure,azurerm_machine_learning_inference_cluster,Microsoft.MachineLearningServices/workspaces/computes,azurerm's documented ID names Microsoft.MachineLearningServices/workspaces/computes
+azure,azurerm_machine_learning_synapse_spark,Microsoft.MachineLearningServices/workspaces/computes,azurerm's documented ID names Microsoft.MachineLearningServices/workspaces/computes
+azure,azurerm_machine_learning_workspace,Microsoft.MachineLearningServices/workspaces,azurerm's documented ID names Microsoft.MachineLearningServices/workspaces; so does Upjet's ID template
+azure,azurerm_machine_learning_workspace_network_outbound_rule_fqdn,Microsoft.MachineLearningServices/workspaces/outboundRules,azurerm's documented ID names Microsoft.MachineLearningServices/workspaces/outboundRules
+azure,azurerm_managed_devops_pool,Microsoft.DevOpsInfrastructure/pools,azurerm's documented ID names Microsoft.DevOpsInfrastructure/pools; so does Upjet's ID template
+azure,azurerm_managed_redis_access_policy_assignment,Microsoft.Cache/redisEnterprise/databases/accessPolicyAssignments,azurerm's documented ID names Microsoft.Cache/redisEnterprise/databases/accessPolicyAssignments
+azure,azurerm_management_group_policy_exemption,Microsoft.Authorization/policyExemptions,azurerm's documented ID names Microsoft.Authorization/policyExemptions; so does Upjet's ID template
+azure,azurerm_management_group_policy_set_definition,Microsoft.Authorization/policySetDefinitions,azurerm's documented ID names Microsoft.Authorization/policySetDefinitions; so does Upjet's ID template
+azure,azurerm_monitor_aad_diagnostic_setting,microsoft.aadiam/diagnosticSettings,azurerm's documented ID names microsoft.aadiam/diagnosticSettings; so does Upjet's ID template
+azure,azurerm_monitor_data_collection_rule,Microsoft.Insights/dataCollectionRules,azurerm's documented ID names Microsoft.Insights/dataCollectionRules; so does Upjet's ID template
+azure,azurerm_monitor_private_link_scoped_service,Microsoft.Insights/privateLinkScopes/scopedResources,azurerm's documented ID names Microsoft.Insights/privateLinkScopes/scopedResources; so does Upjet's ID template
+azure,azurerm_mssql_database,Microsoft.Sql/servers/databases,azurerm's documented ID names Microsoft.Sql/servers/databases
+azure,azurerm_mssql_firewall_rule,Microsoft.Sql/servers/firewallRules,azurerm's documented ID names Microsoft.Sql/servers/firewallRules
+azure,azurerm_mssql_job_credential,Microsoft.Sql/servers/jobAgents/credentials,azurerm's documented ID names Microsoft.Sql/servers/jobAgents/credentials
+azure,azurerm_mssql_job_target_group,Microsoft.Sql/servers/jobAgents/targetGroups,azurerm's documented ID names Microsoft.Sql/servers/jobAgents/targetGroups
+azure,azurerm_mssql_managed_database,Microsoft.Sql/managedInstances/databases,azurerm's documented ID names Microsoft.Sql/managedInstances/databases
+azure,azurerm_mssql_managed_instance_security_alert_policy,Microsoft.Sql/managedInstances/securityAlertPolicies,azurerm's documented ID names Microsoft.Sql/managedInstances/securityAlertPolicies; so does Upjet's ID template
+azure,azurerm_mssql_managed_instance_vulnerability_assessment,Microsoft.Sql/managedInstances/vulnerabilityAssessments,azurerm's documented ID names Microsoft.Sql/managedInstances/vulnerabilityAssessments
+azure,azurerm_mssql_server_security_alert_policy,Microsoft.Sql/servers/securityAlertPolicies,azurerm's documented ID names Microsoft.Sql/servers/securityAlertPolicies; so does Upjet's ID template
+azure,azurerm_mssql_server_vulnerability_assessment,Microsoft.Sql/servers/vulnerabilityAssessments,azurerm's documented ID names Microsoft.Sql/servers/vulnerabilityAssessments
+azure,azurerm_mssql_virtual_machine,Microsoft.SqlVirtualMachine/sqlVirtualMachines,azurerm's documented ID names Microsoft.SqlVirtualMachine/sqlVirtualMachines; so does Upjet's ID template
+azure,azurerm_mssql_virtual_network_rule,Microsoft.Sql/servers/virtualNetworkRules,azurerm's documented ID names Microsoft.Sql/servers/virtualNetworkRules
+azure,azurerm_mysql_flexible_database,Microsoft.DBforMySQL/flexibleServers/databases,azurerm's documented ID names Microsoft.DBforMySQL/flexibleServers/databases; so does Upjet's ID template
+azure,azurerm_mysql_flexible_server,Microsoft.DBforMySQL/flexibleServers,azurerm's documented ID names Microsoft.DBforMySQL/flexibleServers; so does Upjet's ID template
+azure,azurerm_mysql_flexible_server_configuration,Microsoft.DBforMySQL/flexibleServers/configurations,azurerm's documented ID names Microsoft.DBforMySQL/flexibleServers/configurations; so does Upjet's ID template
+azure,azurerm_mysql_flexible_server_firewall_rule,Microsoft.DBforMySQL/flexibleServers/firewallRules,azurerm's documented ID names Microsoft.DBforMySQL/flexibleServers/firewallRules; so does Upjet's ID template
+azure,azurerm_netapp_volume,Microsoft.NetApp/netAppAccounts/capacityPools/volumes,azurerm's documented ID names Microsoft.NetApp/netAppAccounts/capacityPools/volumes; so does Upjet's ID template; not its child snapshots
+azure,azurerm_network_connection_monitor,Microsoft.Network/networkWatchers/connectionMonitors,azurerm's documented ID names Microsoft.Network/networkWatchers/connectionMonitors
+azure,azurerm_network_function_collector_policy,Microsoft.NetworkFunction/azureTrafficCollectors/collectorPolicies,azurerm's documented ID names Microsoft.NetworkFunction/azureTrafficCollectors/collectorPolicies
+azure,azurerm_network_interface,Microsoft.Network/networkInterfaces,azurerm's documented ID names Microsoft.Network/networkInterfaces; so does Upjet's ID template
+azure,azurerm_network_interface_application_gateway_backend_address_pool_association,Microsoft.Network/networkInterfaces,an association of the resources its documented ID names; Microsoft.ManagedNetworkFabric/networkDevices/networkInterfaces is another provider
+azure,azurerm_network_interface_application_security_group_association,Microsoft.Network/applicationSecurityGroups;Microsoft.Network/networkInterfaces,an association of the resources its documented ID names; Microsoft.ManagedNetworkFabric/networkDevices/networkInterfaces is another provider
+azure,azurerm_network_interface_backend_address_pool_association,Microsoft.Network/loadBalancers;Microsoft.Network/networkInterfaces,an association of the resources its documented ID names; Microsoft.ManagedNetworkFabric/networkDevices/networkInterfaces is another provider
+azure,azurerm_network_interface_nat_rule_association,Microsoft.Network/loadBalancers;Microsoft.Network/networkInterfaces,an association of the resources its documented ID names; Microsoft.ManagedNetworkFabric/networkDevices/networkInterfaces is another provider
+azure,azurerm_network_interface_security_group_association,Microsoft.Network/networkInterfaces;Microsoft.Network/networkSecurityGroups,an association of the resources its documented ID names; Microsoft.ManagedNetworkFabric/networkDevices/networkInterfaces is another provider
+azure,azurerm_network_manager_admin_rule_collection,Microsoft.Network/networkManagers/securityAdminConfigurations/ruleCollections,azurerm's documented ID names Microsoft.Network/networkManagers/securityAdminConfigurations/ruleCollections
+azure,azurerm_network_manager_routing_rule,Microsoft.Network/networkManagers/routingConfigurations/ruleCollections/rules,azurerm's documented ID names Microsoft.Network/networkManagers/routingConfigurations/ruleCollections/rules
+azure,azurerm_network_manager_routing_rule_collection,Microsoft.Network/networkManagers/routingConfigurations/ruleCollections,azurerm's documented ID names Microsoft.Network/networkManagers/routingConfigurations/ruleCollections
+azure,azurerm_network_security_perimeter_profile,Microsoft.Network/networkSecurityPerimeters/profiles,azurerm's documented ID names Microsoft.Network/networkSecurityPerimeters/profiles
+azure,azurerm_new_relic_tag_rule,NewRelic.Observability/monitors/tagRules,azurerm's documented ID names NewRelic.Observability/monitors/tagRules
+azure,azurerm_palo_alto_local_rulestack_certificate,PaloAltoNetworks.Cloudngfw/localRulestacks/certificates,azurerm's documented ID names PaloAltoNetworks.Cloudngfw/localRulestacks/certificates
+azure,azurerm_palo_alto_local_rulestack_fqdn_list,PaloAltoNetworks.Cloudngfw/localRulestacks/fqdnlists,azurerm's documented ID names PaloAltoNetworks.Cloudngfw/localRulestacks/fqdnlists
+azure,azurerm_palo_alto_local_rulestack_prefix_list,PaloAltoNetworks.Cloudngfw/localRulestacks/prefixlists,azurerm's documented ID names PaloAltoNetworks.Cloudngfw/localRulestacks/prefixlists
+azure,azurerm_palo_alto_local_rulestack_rule,PaloAltoNetworks.Cloudngfw/localRulestacks/localRules,azurerm's documented ID names PaloAltoNetworks.Cloudngfw/localRulestacks/localRules
+azure,azurerm_point_to_site_vpn_gateway,Microsoft.Network/p2svpnGateways,azurerm's documented ID names Microsoft.Network/p2svpnGateways; so does Upjet's ID template
+azure,azurerm_policy_set_definition,Microsoft.Authorization/policySetDefinitions,azurerm's documented ID names Microsoft.Authorization/policySetDefinitions
+azure,azurerm_postgresql_flexible_server,Microsoft.DBforPostgreSQL/flexibleServers,azurerm's documented ID names Microsoft.DBforPostgreSQL/flexibleServers; so does Upjet's ID template
+azure,azurerm_postgresql_flexible_server_firewall_rule,Microsoft.DBforPostgreSQL/flexibleServers/firewallRules,azurerm's documented ID names Microsoft.DBforPostgreSQL/flexibleServers/firewallRules
+azure,azurerm_postgresql_flexible_server_virtual_endpoint,Microsoft.DBforPostgreSQL/flexibleServers/virtualendpoints,azurerm's documented ID names Microsoft.DBforPostgreSQL/flexibleServers/virtualendpoints
+azure,azurerm_private_dns_resolver,Microsoft.Network/dnsResolvers,azurerm's documented ID names Microsoft.Network/dnsResolvers; so does Upjet's ID template
+azure,azurerm_private_endpoint,Microsoft.Network/privateEndpoints,azurerm's documented ID names Microsoft.Network/privateEndpoints; so does Upjet's ID template
+azure,azurerm_recovery_services_vault_resource_guard_association,Microsoft.RecoveryServices/vaults/backupResourceGuardProxies,azurerm's documented ID names Microsoft.RecoveryServices/vaults/backupResourceGuardProxies
+azure,azurerm_relay_hybrid_connection_authorization_rule,Microsoft.Relay/namespaces/hybridConnections/authorizationRules,azurerm's documented ID names Microsoft.Relay/namespaces/hybridConnections/authorizationRules; so does Upjet's ID template
+azure,azurerm_relay_namespace_authorization_rule,Microsoft.Relay/namespaces/authorizationRules,azurerm's documented ID names Microsoft.Relay/namespaces/authorizationRules; so does Upjet's ID template
+azure,azurerm_route_map,Microsoft.Network/virtualHubs/routeMaps,azurerm's documented ID names Microsoft.Network/virtualHubs/routeMaps
+azure,azurerm_route_server,Microsoft.Network/virtualHubs,azurerm's documented ID names Microsoft.Network/virtualHubs; so does Upjet's ID template
+azure,azurerm_route_server_bgp_connection,Microsoft.Network/virtualHubs/bgpConnections,azurerm's documented ID names Microsoft.Network/virtualHubs/bgpConnections
+azure,azurerm_security_center_storage_defender,Microsoft.Security/defenderForStorageSettings,Defender for Storage settings of the account (API provider Microsoft.Security); not an Event Grid topic
+azure,azurerm_security_center_workspace,Microsoft.Security/workspaceSettings,azurerm's documented ID names Microsoft.Security/workspaceSettings; so does Upjet's ID template
+azure,azurerm_sentinel_data_connector_aws_cloud_trail,Microsoft.SecurityInsights/dataConnectors,azurerm's documented ID names Microsoft.SecurityInsights/dataConnectors; so does Upjet's ID template
+azure,azurerm_sentinel_data_connector_aws_s3,Microsoft.SecurityInsights/dataConnectors,azurerm's documented ID names Microsoft.SecurityInsights/dataConnectors; so does Upjet's ID template
+azure,azurerm_sentinel_data_connector_azure_security_center,Microsoft.SecurityInsights/dataConnectors,azurerm's documented ID names Microsoft.SecurityInsights/dataConnectors; so does Upjet's ID template
+azure,azurerm_sentinel_data_connector_iot,Microsoft.SecurityInsights/dataConnectors,azurerm's documented ID names Microsoft.SecurityInsights/dataConnectors; so does Upjet's ID template
+azure,azurerm_sentinel_log_analytics_workspace_onboarding,Microsoft.SecurityInsights/onboardingStates,azurerm's documented ID names Microsoft.SecurityInsights/onboardingStates
+azure,azurerm_sentinel_threat_intelligence_indicator,Microsoft.SecurityInsights/threatIntelligence/indicators,azurerm's documented ID names Microsoft.SecurityInsights/threatIntelligence/indicators
+azure,azurerm_sentinel_watchlist_item,Microsoft.SecurityInsights/watchlists/watchlistItems,azurerm's documented ID names Microsoft.SecurityInsights/watchlists/watchlistItems
+azure,azurerm_servicebus_namespace_authorization_rule,Microsoft.ServiceBus/namespaces/AuthorizationRules,azurerm's documented ID names Microsoft.ServiceBus/namespaces/AuthorizationRules
+azure,azurerm_servicebus_namespace_disaster_recovery_config,Microsoft.ServiceBus/namespaces/disasterRecoveryConfigs,azurerm's documented ID names Microsoft.ServiceBus/namespaces/disasterRecoveryConfigs
+azure,azurerm_servicebus_queue_authorization_rule,Microsoft.ServiceBus/namespaces/queues/authorizationRules,azurerm's documented ID names Microsoft.ServiceBus/namespaces/queues/authorizationRules
+azure,azurerm_servicebus_topic_authorization_rule,Microsoft.ServiceBus/namespaces/topics/authorizationRules,azurerm's documented ID names Microsoft.ServiceBus/namespaces/topics/authorizationRules
+azure,azurerm_signalr_service_custom_certificate,Microsoft.SignalRService/signalR/customCertificates,azurerm's documented ID names Microsoft.SignalRService/signalR/customCertificates
+azure,azurerm_signalr_service_custom_domain,Microsoft.SignalRService/signalR/customDomains,azurerm's documented ID names Microsoft.SignalRService/signalR/customDomains
+azure,azurerm_signalr_service_network_acl,Microsoft.SignalRService/signalR,azurerm's documented ID names Microsoft.SignalRService/signalR
+azure,azurerm_signalr_shared_private_link_resource,Microsoft.SignalRService/signalR/sharedPrivateLinkResources,azurerm's documented ID names Microsoft.SignalRService/signalR/sharedPrivateLinkResources
+azure,azurerm_site_recovery_hyperv_network_mapping,Microsoft.RecoveryServices/vaults/replicationFabrics/replicationNetworks/replicationNetworkMappings,azurerm's documented ID names Microsoft.RecoveryServices/vaults/replicationFabrics/replicationNetworks/replicationNetworkMappings
+azure,azurerm_site_recovery_hyperv_replication_policy,Microsoft.RecoveryServices/vaults/replicationPolicies,azurerm's documented ID names Microsoft.RecoveryServices/vaults/replicationPolicies
+azure,azurerm_site_recovery_network_mapping,Microsoft.RecoveryServices/vaults/replicationFabrics/replicationNetworks/replicationNetworkMappings,azurerm's documented ID names Microsoft.RecoveryServices/vaults/replicationFabrics/replicationNetworks/replicationNetworkMappings
+azure,azurerm_site_recovery_replicated_vm,Microsoft.RecoveryServices/vaults/replicationFabrics/replicationProtectionContainers/replicationProtectedItems,azurerm's documented ID names Microsoft.RecoveryServices/vaults/replicationFabrics/replicationProtectionContainers/replicationProtectedItems
+azure,azurerm_site_recovery_replication_recovery_plan,Microsoft.RecoveryServices/vaults/replicationRecoveryPlans,azurerm's documented ID names Microsoft.RecoveryServices/vaults/replicationRecoveryPlans
+azure,azurerm_site_recovery_vmware_replicated_vm,Microsoft.RecoveryServices/vaults/replicationFabrics/replicationProtectionContainers/replicationProtectedItems,azurerm's documented ID names Microsoft.RecoveryServices/vaults/replicationFabrics/replicationProtectionContainers/replicationProtectedItems
+azure,azurerm_site_recovery_vmware_replication_policy,Microsoft.RecoveryServices/vaults/replicationPolicies,azurerm's documented ID names Microsoft.RecoveryServices/vaults/replicationPolicies
+azure,azurerm_snapshot,Microsoft.Compute/snapshots,azurerm's documented ID names Microsoft.Compute/snapshots; so does Upjet's ID template
+azure,azurerm_spring_cloud_api_portal_custom_domain,Microsoft.AppPlatform/Spring/apiPortals/domains,azurerm's documented ID names Microsoft.AppPlatform/Spring/apiPortals/domains
+azure,azurerm_spring_cloud_app_mysql_association,Microsoft.AppPlatform/Spring/apps/bindings,azurerm's documented ID names Microsoft.AppPlatform/Spring/apps/bindings
+azure,azurerm_spring_cloud_gateway_custom_domain,Microsoft.AppPlatform/Spring/gateways/domains,azurerm's documented ID names Microsoft.AppPlatform/Spring/gateways/domains
+azure,azurerm_spring_cloud_service,Microsoft.AppPlatform/Spring,azurerm's documented ID names Microsoft.AppPlatform/Spring; so does Upjet's ID template
+azure,azurerm_stack_hci_extension,Microsoft.AzureStackHCI/clusters/arcSettings/extensions,azurerm's documented ID names Microsoft.AzureStackHCI/clusters/arcSettings/extensions
+azure,azurerm_static_web_app_custom_domain,Microsoft.Web/staticSites/customDomains,azurerm's documented ID names Microsoft.Web/staticSites/customDomains
+azure,azurerm_static_web_app_function_app_registration,Microsoft.Web/staticSites/userProvidedFunctionApps,azurerm's documented ID names Microsoft.Web/staticSites/userProvidedFunctionApps
+azure,azurerm_storage_account,Microsoft.Storage/storageAccounts,azurerm's documented ID names Microsoft.Storage/storageAccounts; so does Upjet's ID template; not its child fileServices
+azure,azurerm_storage_mover_agent,Microsoft.StorageMover/storageMovers/agents,azurerm's documented ID names Microsoft.StorageMover/storageMovers/agents
+azure,azurerm_storage_mover_job_definition,Microsoft.StorageMover/storageMovers/projects/jobDefinitions,azurerm's documented ID names Microsoft.StorageMover/storageMovers/projects/jobDefinitions
+azure,azurerm_storage_mover_source_endpoint,Microsoft.StorageMover/storageMovers/endpoints,azurerm's documented ID names Microsoft.StorageMover/storageMovers/endpoints
+azure,azurerm_storage_mover_target_endpoint,Microsoft.StorageMover/storageMovers/endpoints,azurerm's documented ID names Microsoft.StorageMover/storageMovers/endpoints
+azure,azurerm_stream_analytics_function_javascript_uda,Microsoft.StreamAnalytics/streamingjobs/functions,azurerm's documented ID names Microsoft.StreamAnalytics/streamingjobs/functions; so does Upjet's ID template
+azure,azurerm_stream_analytics_job,Microsoft.StreamAnalytics/streamingjobs,azurerm's documented ID names Microsoft.StreamAnalytics/streamingjobs; so does Upjet's ID template
+azure,azurerm_stream_analytics_output_cosmosdb,Microsoft.StreamAnalytics/streamingjobs/outputs,azurerm's documented ID names Microsoft.StreamAnalytics/streamingjobs/outputs
+azure,azurerm_stream_analytics_output_powerbi,Microsoft.StreamAnalytics/streamingjobs/outputs,azurerm's documented ID names Microsoft.StreamAnalytics/streamingjobs/outputs; so does Upjet's ID template
+azure,azurerm_subnet,Microsoft.Network/virtualNetworks/subnets,azurerm's documented ID names Microsoft.Network/virtualNetworks/subnets; so does Upjet's ID template
+azure,azurerm_subnet_nat_gateway_association,Microsoft.Network/virtualNetworks/subnets,azurerm's documented ID names Microsoft.Network/virtualNetworks/subnets
+azure,azurerm_subnet_network_security_group_association,Microsoft.Network/virtualNetworks/subnets,azurerm's documented ID names Microsoft.Network/virtualNetworks/subnets
+azure,azurerm_subnet_route_table_association,Microsoft.Network/virtualNetworks/subnets,azurerm's documented ID names Microsoft.Network/virtualNetworks/subnets
+azure,azurerm_synapse_firewall_rule,Microsoft.Synapse/workspaces/firewallRules,azurerm's documented ID names Microsoft.Synapse/workspaces/firewallRules
+azure,azurerm_synapse_integration_runtime_azure,Microsoft.Synapse/workspaces/integrationRuntimes,azurerm's documented ID names Microsoft.Synapse/workspaces/integrationRuntimes
+azure,azurerm_synapse_integration_runtime_self_hosted,Microsoft.Synapse/workspaces/integrationRuntimes,azurerm's documented ID names Microsoft.Synapse/workspaces/integrationRuntimes
+azure,azurerm_synapse_linked_service,-,a Synapse workspace data-plane object (linkedServices); not an ARM resource of the denominator
+azure,azurerm_synapse_managed_private_endpoint,-,a Synapse workspace data-plane object (managedVirtualNetworks/managedPrivateEndpoints); not an ARM resource of the denominator
+azure,azurerm_synapse_sql_pool,Microsoft.Synapse/workspaces/sqlPools,azurerm's documented ID names Microsoft.Synapse/workspaces/sqlPools
+azure,azurerm_synapse_sql_pool_security_alert_policy,Microsoft.Synapse/workspaces/sqlPools/securityAlertPolicies,azurerm's documented ID names Microsoft.Synapse/workspaces/sqlPools/securityAlertPolicies
+azure,azurerm_synapse_sql_pool_vulnerability_assessment,Microsoft.Synapse/workspaces/sqlPools/vulnerabilityAssessments,azurerm's documented ID names Microsoft.Synapse/workspaces/sqlPools/vulnerabilityAssessments
+azure,azurerm_synapse_workspace_aad_admin,Microsoft.Synapse/workspaces/administrators,azurerm's documented ID names Microsoft.Synapse/workspaces/administrators
+azure,azurerm_synapse_workspace_extended_auditing_policy,Microsoft.Synapse/workspaces/extendedAuditingSettings,azurerm's documented ID names Microsoft.Synapse/workspaces/extendedAuditingSettings
+azure,azurerm_synapse_workspace_key,Microsoft.Synapse/workspaces/keys,azurerm's documented ID names Microsoft.Synapse/workspaces/keys
+azure,azurerm_synapse_workspace_security_alert_policy,Microsoft.Synapse/workspaces/securityAlertPolicies,azurerm's documented ID names Microsoft.Synapse/workspaces/securityAlertPolicies
+azure,azurerm_synapse_workspace_sql_aad_admin,Microsoft.Synapse/workspaces/sqlAdministrators,azurerm's documented ID names Microsoft.Synapse/workspaces/sqlAdministrators
+azure,azurerm_synapse_workspace_vulnerability_assessment,Microsoft.Synapse/workspaces/vulnerabilityAssessments,azurerm's documented ID names Microsoft.Synapse/workspaces/vulnerabilityAssessments
+azure,azurerm_system_center_virtual_machine_manager_availability_set,Microsoft.ScVmm/availabilitySets,azurerm's documented ID names Microsoft.ScVmm/availabilitySets
+azure,azurerm_system_center_virtual_machine_manager_cloud,Microsoft.ScVmm/clouds,azurerm's documented ID names Microsoft.ScVmm/clouds
+azure,azurerm_system_center_virtual_machine_manager_server,Microsoft.ScVmm/vmmServers,azurerm's documented ID names Microsoft.ScVmm/vmmServers
+azure,azurerm_system_center_virtual_machine_manager_virtual_machine_instance,Microsoft.ScVmm/virtualMachineInstances,azurerm's documented ID names Microsoft.ScVmm/virtualMachineInstances; so does Upjet's ID template
+azure,azurerm_system_center_virtual_machine_manager_virtual_machine_instance_guest_agent,Microsoft.ScVmm/virtualMachineInstances/guestAgents,azurerm's documented ID names Microsoft.ScVmm/virtualMachineInstances/guestAgents; so does Upjet's ID template
+azure,azurerm_system_center_virtual_machine_manager_virtual_machine_template,Microsoft.ScVmm/virtualMachineTemplates,azurerm's documented ID names Microsoft.ScVmm/virtualMachineTemplates
+azure,azurerm_system_center_virtual_machine_manager_virtual_network,Microsoft.ScVmm/virtualNetworks,azurerm's documented ID names Microsoft.ScVmm/virtualNetworks
+azure,azurerm_virtual_desktop_application_group,Microsoft.DesktopVirtualization/applicationGroups,azurerm's documented ID names Microsoft.DesktopVirtualization/applicationGroups; so does Upjet's ID template
+azure,azurerm_virtual_hub,Microsoft.Network/virtualHubs,azurerm's documented ID names Microsoft.Network/virtualHubs; so does Upjet's ID template
+azure,azurerm_virtual_hub_bgp_connection,Microsoft.Network/virtualHubs/bgpConnections,azurerm's documented ID names Microsoft.Network/virtualHubs/bgpConnections
+azure,azurerm_virtual_hub_connection,Microsoft.Network/virtualHubs/hubVirtualNetworkConnections,azurerm's documented ID names Microsoft.Network/virtualHubs/hubVirtualNetworkConnections
+azure,azurerm_virtual_hub_ip,Microsoft.Network/virtualHubs/ipConfigurations,azurerm's documented ID names Microsoft.Network/virtualHubs/ipConfigurations
+azure,azurerm_virtual_hub_route_table,Microsoft.Network/virtualHubs/hubRouteTables,azurerm's documented ID names Microsoft.Network/virtualHubs/hubRouteTables
+azure,azurerm_virtual_hub_route_table_route,-,a property of Microsoft.Network/virtualHubs/hubRouteTables (routes); not a virtual WAN
+azure,azurerm_virtual_hub_routing_intent,Microsoft.Network/virtualHubs/routingIntent,azurerm's documented ID names Microsoft.Network/virtualHubs/routingIntent
+azure,azurerm_virtual_machine,Microsoft.Compute/virtualMachines,azurerm's documented ID names Microsoft.Compute/virtualMachines
+azure,azurerm_virtual_machine_extension,Microsoft.Compute/virtualMachines/extensions,azurerm's documented ID names Microsoft.Compute/virtualMachines/extensions
+azure,azurerm_virtual_machine_run_command,Microsoft.Compute/virtualMachines/runCommands,azurerm's documented ID names Microsoft.Compute/virtualMachines/runCommands
+azure,azurerm_virtual_network,Microsoft.Network/virtualNetworks,azurerm's documented ID names Microsoft.Network/virtualNetworks; so does Upjet's ID template
+azure,azurerm_virtual_network_gateway,Microsoft.Network/virtualNetworkGateways,azurerm's documented ID names Microsoft.Network/virtualNetworkGateways; so does Upjet's ID template
+azure,azurerm_virtual_network_gateway_connection,Microsoft.Network/connections,azurerm's documented ID names Microsoft.Network/connections; so does Upjet's ID template
+azure,azurerm_virtual_network_gateway_nat_rule,Microsoft.Network/virtualNetworkGateways/natRules,azurerm's documented ID names Microsoft.Network/virtualNetworkGateways/natRules
+azure,azurerm_vmware_cluster,Microsoft.AVS/privateClouds/clusters,azurerm's documented ID names Microsoft.AVS/privateClouds/clusters
+azure,azurerm_vmware_netapp_volume_attachment,Microsoft.AVS/privateClouds/clusters/datastores,azurerm's documented ID names Microsoft.AVS/privateClouds/clusters/datastores
+azure,azurerm_vpn_gateway,Microsoft.Network/vpnGateways,azurerm's documented ID names Microsoft.Network/vpnGateways; so does Upjet's ID template
+azure,azurerm_vpn_gateway_connection,Microsoft.Network/vpnGateways/vpnConnections,azurerm's documented ID names Microsoft.Network/vpnGateways/vpnConnections
+azure,azurerm_vpn_gateway_nat_rule,Microsoft.Network/vpnGateways/natRules,azurerm's documented ID names Microsoft.Network/vpnGateways/natRules
+azure,azurerm_vpn_server_configuration,Microsoft.Network/vpnServerConfigurations,azurerm's documented ID names Microsoft.Network/vpnServerConfigurations; so does Upjet's ID template
+azure,azurerm_vpn_server_configuration_policy_group,Microsoft.Network/vpnServerConfigurations/configurationPolicyGroups,azurerm's documented ID names Microsoft.Network/vpnServerConfigurations/configurationPolicyGroups
+azure,azurerm_vpn_site,Microsoft.Network/vpnSites,azurerm's documented ID names Microsoft.Network/vpnSites; so does Upjet's ID template
+azure,azurerm_web_app_hybrid_connection,Microsoft.Web/sites/hybridConnectionNamespaces/relays,azurerm's documented ID names Microsoft.Web/sites/hybridConnectionNamespaces/relays
+azure,azurerm_web_pubsub_network_acl,Microsoft.SignalRService/webPubSub,azurerm's documented ID names Microsoft.SignalRService/webPubSub
+azure,azurerm_web_pubsub_shared_private_link_resource,Microsoft.SignalRService/webPubSub/sharedPrivateLinkResources,azurerm's documented ID names Microsoft.SignalRService/webPubSub/sharedPrivateLinkResources
