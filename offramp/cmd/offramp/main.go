@@ -82,6 +82,10 @@ type bundtFlags struct {
 	providers multiFlag
 	// azurePolicy is --azure-reconcile-policy.
 	azurePolicy string
+	// githubPlan and githubApp are --github-plan and
+	// --github-app-installation, for git-hubby's Organization.
+	githubPlan string
+	githubApp  int64
 }
 
 func (b *bundtFlags) register(fs *flag.FlagSet) {
@@ -96,6 +100,8 @@ func (b *bundtFlags) register(fs *flag.FlagSet) {
 	fs.Var(&b.providers, "provider", "NAME=VERSION: another provider the Environment pins, by Bundt's name (hfl.kcc-extensions, aws.ack-organizations, hfl.ack-extensions; repeatable)")
 	fs.BoolVar(&b.abandon, "abandon", true, "write deletion-policy abandon on every object")
 	fs.StringVar(&b.azurePolicy, "azure-reconcile-policy", "", "ASO's reconcile policy on every Azure object: skip (read only: no write, no delete), detach-on-delete (the default with --abandon) or manage (the default without)")
+	fs.StringVar(&b.githubPlan, "github-plan", "", "the GitHub organization's plan (free, team or enterprise), which git-hubby's Organization needs and no state holds")
+	fs.Int64Var(&b.githubApp, "github-app-installation", 0, "the git-hubby GitHub App's installation ID on the organization, which git-hubby's Organization needs")
 }
 
 func (b *bundtFlags) finish(defaultName string) error {
@@ -114,6 +120,11 @@ func (b *bundtFlags) finish(defaultName string) error {
 	default:
 		return fmt.Errorf("--azure-reconcile-policy %q: want skip, detach-on-delete or manage", b.azurePolicy)
 	}
+	switch b.githubPlan {
+	case "", "free", "team", "enterprise":
+	default:
+		return fmt.Errorf("--github-plan %q: want free, team or enterprise", b.githubPlan)
+	}
 	b.opt.Providers = map[string]string{}
 	for _, p := range b.providers {
 		n, v, ok := strings.Cut(p, "=")
@@ -126,10 +137,12 @@ func (b *bundtFlags) finish(defaultName string) error {
 }
 
 func (b *bundtFlags) convOpt() offramp.Options {
+	o := offramp.Options{DeletionPolicy: "delete", AzureReconcilePolicy: b.azurePolicy,
+		GitHubPlan: b.githubPlan, GitHubAppInstallation: b.githubApp}
 	if b.abandon {
-		return offramp.Options{DeletionPolicy: "abandon", AzureReconcilePolicy: b.azurePolicy}
+		o.DeletionPolicy = "abandon"
 	}
-	return offramp.Options{DeletionPolicy: "delete", AzureReconcilePolicy: b.azurePolicy}
+	return o
 }
 
 func cmdState(args []string) error {

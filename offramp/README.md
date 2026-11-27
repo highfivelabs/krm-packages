@@ -248,11 +248,44 @@ The Environment pins the providers the objects need, by Bundt's names
 versions with `--provider NAME=VERSION` (repeatable); one left unpinned is
 a note in the report, not a guess.
 
-## GitHub: github-krm-extensions
+## GitHub: git-hubby and github-krm-extensions
 
 A state's `github` resources (the `integrations/github` provider) convert to
-github-krm-extensions' kinds (`internal/offramp/github.go`), whose spec
-fields keep GitHub's own names. Each object carries krm-rest-runtime's
+[git-hubby](https://github.com/Interhyp/git-hubby)'s kinds where it has the
+field, and to github-krm-extensions' kinds for the rest. git-hubby is
+treated as GitHub's provider; github-krm-extensions fills its gaps.
+
+**git-hubby** (`internal/offramp/githubby.go`, Bundt provider
+`interhyp.git-hubby`):
+
+- `github_repository` becomes a `Repository`, which adopts an existing
+  repository of the same name. `github_branch_default` folds into its
+  `defaultBranch` when the repository is in the same state.
+- `github_organization_settings` becomes an `Organization`. The
+  organization's Actions and workflow permissions fold into its
+  `actionsSettings` when they are in the same state. The state does not
+  hold two required inputs: `--github-plan` (free, team or enterprise;
+  git-hubby's default is enterprise) and `--github-app-installation` (the
+  App installation git-hubby authenticates as; its credentials are the
+  Secret `git-hubby-app`). Without both, the Organization is a gap.
+- git-hubby resets whatever its spec leaves out to its own defaults. Every
+  setting is therefore written from the state, including the false ones.
+  Its lists (topics, webhooks, deploy keys, autolinks, rulesets, runner
+  groups) are the whole set, and anything on GitHub that is not listed is
+  removed. The artifact and log retention and the runner groups are
+  settings Terraform did not manage. They are written as GitHub's defaults
+  (90 days; the Default group), with a note to compare them with GitHub
+  before applying.
+- Settings git-hubby has no field for (for example `vulnerability_alerts`,
+  `allow_auto_merge`, an organization's `billing_email`) get a note: GitHub
+  keeps their current values, and nothing manages them after the offramp.
+- git-hubby has no deletion policy per object. What deleting a `Repository`
+  does is set once for the whole operator by `REPOSITORY_FINALIZER_MODE`:
+  `ignore` (the default: the repository stays), `archive` or `delete`. The
+  report says which one the deletion policy needs.
+
+**github-krm-extensions** (`internal/offramp/github.go`): these kinds keep
+GitHub's own field names. Each object carries krm-rest-runtime's
 annotations (its README, "Conventions"):
 
 - `krm.hfl.dev/deletion-policy: abandon` (with `--abandon`, the default):
@@ -262,23 +295,21 @@ annotations (its README, "Conventions"):
   reconcile reads the resource instead of making a second one. Settings and
   upsert kinds are read before they are written and need none.
 
-The owner is the provider's, which no resource holds: it comes from a
-`github_repository`'s `full_name` in the same state (or an organization
-resource's ID); without one, a repository-level resource is a gap. A
-file's text is written base64-encoded, as the contents API takes it.
-`BranchProtection` takes node IDs for actors; one Terraform names by name
-(`/octocat`, `org/team`) is a note.
+The owner is the provider's, and no resource holds it. It comes from a
+`github_repository`'s `full_name` in the same state, or from an
+organization resource's ID. Without one, a repository-level resource is a
+gap. A file's text is written base64-encoded, as the contents API takes
+it. `BranchProtection` takes node IDs for actors; an actor Terraform
+gives by name (`/octocat`, `org/team`) gets a note.
 
-Mapped: Actions permissions (organization and repository), workflow
-permissions (both), `github_actions_variable`, `github_branch_default`,
-`github_branch_protection`, `github_repository_file`. Not converted:
-`github_repository` and `github_organization_settings`, which
-github-krm-extensions leaves to git-hubby, whose `Repository` and
-`Organization` also own the default branch and the Actions settings (two
-controllers on one field). What git-hubby does when a `Repository` is
-deleted is one setting for the whole operator, `REPOSITORY_FINALIZER_MODE`:
-`ignore` (the default: the repository stays), `archive` or `delete`. They
-are gaps until the converter maps them to git-hubby's kinds.
+Mapped here:
+- Actions permissions for a repository, and for an organization whose
+  settings are in another state.
+- Workflow permissions.
+- `github_actions_variable`.
+- `github_branch_default` when its repository is in another state.
+- `github_branch_protection`.
+- `github_repository_file`.
 
 ## Azure: ASO and aso-extensions
 

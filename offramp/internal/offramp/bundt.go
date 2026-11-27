@@ -416,6 +416,8 @@ func providerOf(apiVersion string) string {
 		return "hfl.ack-extensions"
 	case strings.HasSuffix(g, ".github.hfl.dev"):
 		return "hfl.github-krm-extensions"
+	case g == "github.interhyp.de":
+		return "interhyp.git-hubby"
 	case strings.HasSuffix(g, ".azure.com"):
 		return "azure.aso"
 	case strings.HasSuffix(g, ".azure.hfl.dev"):

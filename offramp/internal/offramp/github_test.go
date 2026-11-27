@@ -40,6 +40,14 @@ func TestGitHubRepositoryConfiguration(t *testing.T) {
 	got := map[string]map[string]any{}
 	for _, o := range res.Objects {
 		got[o.Kind] = o.Obj
+		if isGitHubby(str(o.Obj["apiVersion"])) {
+			for _, a := range []string{AnnRESTDeletionPolicy, AnnDeletionPolicy, AnnStateIntoSpec} {
+				if dig(o.Obj, "metadata", "annotations", a) != nil {
+					t.Errorf("%s: %s on a git-hubby object, which has no per-object deletion policy", o.Kind, a)
+				}
+			}
+			continue
+		}
 		if dig(o.Obj, "metadata", "annotations", AnnRESTDeletionPolicy) != "abandon" {
 			t.Errorf("%s: not abandoned on delete", o.Kind)
 		}
@@ -56,20 +64,30 @@ func TestGitHubRepositoryConfiguration(t *testing.T) {
 			notes = append(notes, f.Reason)
 		}
 	}
-	if !reflect.DeepEqual(gaps, []string{"github_repository"}) {
-		t.Errorf("gaps %v, want github_repository only (left to git-hubby, undecided)", gaps)
+	if len(gaps) != 0 {
+		t.Errorf("gaps %v, want none", gaps)
 	}
-	if len(notes) != 1 || !strings.Contains(notes[0], "/octocat") {
-		t.Errorf("want one note on the push allowance given by name, got %v", notes)
+	want := []string{"carried by git-hubby's Repository (defaultBranch)", "/octocat", "REPOSITORY_FINALIZER_MODE=ignore"}
+	if len(notes) != len(want) {
+		t.Errorf("notes %v, want %d", notes, len(want))
+	}
+	for i, w := range want {
+		if i < len(notes) && !strings.Contains(notes[i], w) {
+			t.Errorf("note %d = %q, want it to say %q", i, notes[i], w)
+		}
+	}
+	if _, ok := got["BranchDefault"]; ok {
+		t.Error("BranchDefault converted beside git-hubby's Repository: two controllers on the default branch")
 	}
 	for _, c := range []struct {
 		kind string
 		path []string
 		want any
 	}{
-		{"BranchDefault", []string{"spec", "owner"}, "acme"},
-		{"BranchDefault", []string{"spec", "default_branch"}, "main"},
-		{"BranchDefault", []string{"metadata", "annotations", AnnRESTAdoptID}, nil},
+		{"Repository", []string{"apiVersion"}, "github.interhyp.de/v1alpha1"},
+		{"Repository", []string{"spec", "name"}, "app"},
+		{"Repository", []string{"spec", "defaultBranch"}, "main"},
+		{"Repository", []string{"spec", "organizationRef", "name"}, "acme"},
 		{"ActionsVariable", []string{"metadata", "annotations", AnnRESTAdoptID}, "REGION"},
 		{"BranchProtection", []string{"metadata", "annotations", AnnRESTAdoptID}, "BPR_1"},
 		{"BranchProtection", []string{"spec", "isAdminEnforced"}, true},
