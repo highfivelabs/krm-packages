@@ -72,6 +72,11 @@ type Options struct {
 	// object: skip, detach-on-delete or manage (azure.go). Empty follows
 	// DeletionPolicy: detach-on-delete for abandon, manage for delete.
 	AzureReconcilePolicy string
+	// GitHubOperator is what github_repository and
+	// github_organization_settings convert to: "" or "extensions" for
+	// github-krm-extensions' kinds (github.go, the default), "git-hubby"
+	// for git-hubby's (githubby.go).
+	GitHubOperator string
 	// GitHubPlan (free, team or enterprise) and GitHubAppInstallation are
 	// what git-hubby's Organization needs and no state holds (githubby.go).
 	GitHubPlan            string

@@ -5,6 +5,7 @@ package offramp
 
 import (
 	"encoding/base64"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -67,7 +68,7 @@ func TestGitHubRepositoryConfiguration(t *testing.T) {
 	if len(gaps) != 0 {
 		t.Errorf("gaps %v, want none", gaps)
 	}
-	want := []string{"carried by git-hubby's Repository (defaultBranch)", "/octocat", "REPOSITORY_FINALIZER_MODE=ignore"}
+	want := []string{"/octocat"}
 	if len(notes) != len(want) {
 		t.Errorf("notes %v, want %d", notes, len(want))
 	}
@@ -76,18 +77,19 @@ func TestGitHubRepositoryConfiguration(t *testing.T) {
 			t.Errorf("note %d = %q, want it to say %q", i, notes[i], w)
 		}
 	}
-	if _, ok := got["BranchDefault"]; ok {
-		t.Error("BranchDefault converted beside git-hubby's Repository: two controllers on the default branch")
+	if _, ok := got["BranchDefault"]; !ok {
+		t.Error("no BranchDefault: the default branch is its own kind, as github_branch_default is its own resource")
 	}
 	for _, c := range []struct {
 		kind string
 		path []string
 		want any
 	}{
-		{"Repository", []string{"apiVersion"}, "github.interhyp.de/v1alpha1"},
+		{"Repository", []string{"apiVersion"}, "repository.github.hfl.dev/v1alpha1"},
+		{"Repository", []string{"spec", "owner"}, "acme"},
 		{"Repository", []string{"spec", "name"}, "app"},
-		{"Repository", []string{"spec", "defaultBranch"}, "main"},
-		{"Repository", []string{"spec", "organizationRef", "name"}, "acme"},
+		{"Repository", []string{"metadata", "annotations", AnnRESTAdoptID}, "app"},
+		{"BranchDefault", []string{"spec", "default_branch"}, "main"},
 		{"ActionsVariable", []string{"metadata", "annotations", AnnRESTAdoptID}, "REGION"},
 		{"BranchProtection", []string{"metadata", "annotations", AnnRESTAdoptID}, "BPR_1"},
 		{"BranchProtection", []string{"spec", "isAdminEnforced"}, true},
@@ -114,5 +116,60 @@ func TestGitHubNeedsAnOwner(t *testing.T) {
 	res := ConvertState(st, &KCC{}, Options{})
 	if len(res.Objects) != 0 || len(res.Findings) != 1 || !strings.Contains(res.Findings[0].Reason, "owner") {
 		t.Errorf("objects %d, findings %+v", len(res.Objects), res.Findings)
+	}
+}
+
+// TestGitHubObjectsMatchTheCRDs: by default every GitHub object is
+// github-krm-extensions', and each field it writes is in that kind's CRD
+// (crds/github-krm-extensions, copied from the repository), with every
+// required one there.
+func TestGitHubObjectsMatchTheCRDs(t *testing.T) {
+	crds := map[string]*CRD{}
+	files, _ := filepath.Glob("../../../crds/github-krm-extensions/*.yaml")
+	if len(files) == 0 {
+		t.Fatal("no CRDs in crds/github-krm-extensions")
+	}
+	for _, f := range files {
+		c, err := loadCRD(f)
+		if err != nil || c == nil {
+			t.Fatalf("%s: %v", f, err)
+		}
+		crds[c.APIVersion()+"/"+c.Kind] = c
+	}
+	res := ConvertState(githubbyState(), &KCC{}, Options{})
+	if g := findingsOf(res, "gap"); len(g) != 0 {
+		t.Errorf("gaps: %v", g)
+	}
+	want := []string{"ActionsOrganizationPermissions", "ActionsOrganizationWorkflowPermissions", "BranchDefault", "OrganizationSettings", "Repository", "Repository", "RepositoryTopics", "RepositoryVulnerabilityAlerts"}
+	if got := kindsOf(res); !reflect.DeepEqual(got, want) {
+		t.Errorf("kinds %v, want %v", got, want)
+	}
+	for _, o := range res.Objects {
+		av := str(o.Obj["apiVersion"])
+		c, ok := crds[av+"/"+o.Kind]
+		if !ok {
+			t.Errorf("%s %s: no CRD", av, o.Kind)
+			continue
+		}
+		for _, e := range schemaErrors(o.Obj["spec"], c.Spec, "spec") {
+			t.Errorf("%s %s: %s", o.Kind, o.Name(), e)
+		}
+	}
+	site := objectNamed(res, "Repository", "site")
+	for _, c := range []struct {
+		path []string
+		want any
+	}{
+		{[]string{"spec", "homepage"}, "https://acme.example"},
+		{[]string{"spec", "has_issues"}, false},
+		{[]string{"spec", "allow_rebase_merge"}, false},
+		{[]string{"metadata", "annotations", AnnRESTAdoptID}, "site"},
+	} {
+		if v := dig(site, c.path...); !reflect.DeepEqual(v, c.want) {
+			t.Errorf("site %s = %#v, want %#v", strings.Join(c.path, "."), v, c.want)
+		}
+	}
+	if v := dig(objectNamed(res, "OrganizationSettings", "acme"), "spec", "billing_email"); v != "billing@acme.example" {
+		t.Errorf("OrganizationSettings billing_email = %#v", v)
 	}
 }

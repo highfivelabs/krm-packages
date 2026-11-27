@@ -65,13 +65,13 @@ func githubbyCRDs(t *testing.T) map[string]*CRD {
 	return out
 }
 
-var githubbyOpt = Options{GitHubPlan: "free", GitHubAppInstallation: 42}
+var githubbyOpt = Options{GitHubOperator: "git-hubby", GitHubPlan: "free", GitHubAppInstallation: 42}
 
 // TestGitHubbyObjectsMatchTheCRDs: every field the converter writes is in
 // git-hubby's schema, and every required one is there.
 func TestGitHubbyObjectsMatchTheCRDs(t *testing.T) {
 	crds := githubbyCRDs(t)
-	for _, opt := range []Options{githubbyOpt, {GitHubPlan: "enterprise", GitHubAppInstallation: 42}} {
+	for _, opt := range []Options{githubbyOpt, {GitHubOperator: "git-hubby", GitHubPlan: "enterprise", GitHubAppInstallation: 42}} {
 		res := ConvertState(githubbyState(), &KCC{}, opt)
 		n := 0
 		for _, o := range res.Objects {
@@ -172,7 +172,7 @@ func TestGitHubbyOrganization(t *testing.T) {
 			t.Errorf("no note saying %q in %v", w, notes)
 		}
 	}
-	ent := ConvertState(githubbyState(), &KCC{}, Options{GitHubPlan: "enterprise", GitHubAppInstallation: 42})
+	ent := ConvertState(githubbyState(), &KCC{}, Options{GitHubOperator: "git-hubby", GitHubPlan: "enterprise", GitHubAppInstallation: 42})
 	if v := dig(objectNamed(ent, "Organization", "acme"), "spec", "memberPrivileges", "membersCanCreateInternalRepositories"); v != false {
 		t.Errorf("enterprise: membersCanCreateInternalRepositories = %#v, want false", v)
 	}
@@ -182,7 +182,7 @@ func TestGitHubbyOrganization(t *testing.T) {
 // installation the Organization is a gap naming both flags, and the
 // repositories still convert.
 func TestGitHubbyOrganizationNeedsInputs(t *testing.T) {
-	res := ConvertState(githubbyState(), &KCC{}, Options{})
+	res := ConvertState(githubbyState(), &KCC{}, Options{GitHubOperator: "git-hubby"})
 	g := findingsOf(res, "gap")
 	if len(g) != 1 || !strings.Contains(g[0], "--github-plan") || !strings.Contains(g[0], "--github-app-installation") {
 		t.Errorf("gaps %v, want one naming both flags", g)
@@ -201,7 +201,7 @@ func TestGitHubbyFoldNeedsItsObject(t *testing.T) {
 		ghResource("github_branch_default", "b", map[string]any{"repository": "elsewhere", "branch": "main"}),
 		ghResource("github_actions_organization_permissions", "p", map[string]any{"id": "acme", "enabled_repositories": "all"}),
 	}}
-	res := ConvertState(st, &KCC{}, Options{})
+	res := ConvertState(st, &KCC{}, Options{GitHubOperator: "git-hubby"})
 	if got, want := kindsOf(res), []string{"ActionsOrganizationPermissions", "BranchDefault", "Repository"}; !reflect.DeepEqual(got, want) {
 		t.Errorf("kinds %v, want %v", got, want)
 	}
