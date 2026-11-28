@@ -58,9 +58,9 @@ cloudsupport.googleapis.com,google,other,3,1,0,17,1,1,5.9,5.9,1,0,0,1,11.8,50.0
 cloudtasks.googleapis.com,google,application,2,1,0,50,25,25,50.0,50.0,12,0,13,0,50.0,100.0
 commerceproducer.googleapis.com,google,other,2,0,0,85,0,0,0.0,0.0,0,0,0,81,95.3,0.0
 composer.googleapis.com,google,application,3,3,0,86,76,76,88.4,88.4,76,0,0,6,95.3,88.4
-compute.googleapis.com,google,application,66,39,9,2560,1197,1265,46.8,49.4,787,0,478,580,72.1,76.1
-compute.googleapis.com,google,platform-foundation,26,24,6,678,372,422,54.9,62.2,203,2,217,71,72.7,65.1
-compute.googleapis.com,google,security-adjacent,6,5,0,199,140,140,70.4,70.4,92,0,48,5,72.9,72.5
+compute.googleapis.com,google,application,66,50,10,2560,1586,1644,62.0,64.2,1153,0,491,214,72.6,70.6
+compute.googleapis.com,google,platform-foundation,26,24,6,678,322,384,47.5,56.6,198,2,184,76,67.8,59.3
+compute.googleapis.com,google,security-adjacent,6,6,0,199,120,120,60.3,60.3,88,0,32,9,64.8,60.3
 confidentialcomputing.googleapis.com,google,other,1,0,0,0,0,0,0.0,0.0,0,0,0,0,0.0,0.0
 config.googleapis.com,google,other,3,1,0,40,14,14,35.0,35.0,12,0,2,9,57.5,82.4
 configdelivery.googleapis.com,google,other,4,0,0,26,0,0,0.0,0.0,0,0,0,21,80.8,0.0
@@ -131,7 +131,7 @@ jobs.googleapis.com,google,other,4,0,0,63,0,0,0.0,0.0,0,0,0,13,20.6,0.0
 library-example.googleapis.com,google,other,2,0,0,6,0,0,0.0,0.0,0,0,0,0,0.0,0.0
 licensemanager.googleapis.com,google,other,1,1,0,7,2,2,28.6,28.6,2,0,0,5,100.0,28.6
 livestream.googleapis.com,google,other,6,0,0,141,0,0,0.0,0.0,0,0,0,93,66.0,0.0
-logging.googleapis.com,google,platform-foundation,34,32,9,484,182,182,37.6,37.6,111,0,71,5,38.6,37.8
+logging.googleapis.com,google,platform-foundation,34,31,8,484,174,174,36.0,36.0,107,0,67,9,37.8,36.2
 looker.googleapis.com,google,application,2,1,1,57,44,44,77.2,77.2,0,0,44,0,77.2,78.6
 lustre.googleapis.com,google,other,3,1,1,32,18,18,56.2,56.2,0,0,18,0,56.2,78.3
 managedidentities.googleapis.com,google,other,3,1,1,11,5,5,45.5,45.5,0,0,5,0,45.5,71.4
@@ -269,9 +269,9 @@ cloudsupport.googleapis.com,google-beta,other,3,1,0,17,1,1,5.9,5.9,1,0,0,1,11.8,
 cloudtasks.googleapis.com,google-beta,application,2,1,0,50,25,25,50.0,50.0,12,0,13,0,50.0,100.0
 commerceproducer.googleapis.com,google-beta,other,2,0,0,85,0,0,0.0,0.0,0,0,0,81,95.3,0.0
 composer.googleapis.com,google-beta,application,3,3,0,86,76,76,88.4,88.4,76,0,0,6,95.3,88.4
-compute.googleapis.com,google-beta,application,66,41,9,2560,1282,1350,50.1,52.7,833,0,517,534,73.6,78.1
-compute.googleapis.com,google-beta,platform-foundation,26,24,6,678,384,435,56.6,64.2,203,2,230,71,74.6,67.1
-compute.googleapis.com,google-beta,security-adjacent,6,5,0,199,140,140,70.4,70.4,92,0,48,5,72.9,72.5
+compute.googleapis.com,google-beta,application,66,53,11,2560,1685,1743,65.8,68.1,1200,0,543,167,74.6,72.2
+compute.googleapis.com,google-beta,platform-foundation,26,24,6,678,334,393,49.3,58.0,198,2,193,76,69.2,60.6
+compute.googleapis.com,google-beta,security-adjacent,6,6,0,199,121,121,60.8,60.8,88,0,33,9,65.3,60.8
 confidentialcomputing.googleapis.com,google-beta,other,1,0,0,0,0,0,0.0,0.0,0,0,0,0,0.0,0.0
 config.googleapis.com,google-beta,other,3,1,0,40,14,14,35.0,35.0,12,0,2,9,57.5,82.4
 configdelivery.googleapis.com,google-beta,other,4,0,0,26,0,0,0.0,0.0,0,0,0,21,80.8,0.0
@@ -342,7 +342,7 @@ jobs.googleapis.com,google-beta,other,4,0,0,63,0,0,0.0,0.0,0,0,0,13,20.6,0.0
 library-example.googleapis.com,google-beta,other,2,0,0,6,0,0,0.0,0.0,0,0,0,0,0.0,0.0
 licensemanager.googleapis.com,google-beta,other,1,1,0,7,2,2,28.6,28.6,2,0,0,5,100.0,28.6
 livestream.googleapis.com,google-beta,other,6,0,0,141,0,0,0.0,0.0,0,0,0,93,66.0,0.0
-logging.googleapis.com,google-beta,platform-foundation,34,32,9,484,182,182,37.6,37.6,111,0,71,5,38.6,37.8
+logging.googleapis.com,google-beta,platform-foundation,34,31,8,484,174,174,36.0,36.0,107,0,67,9,37.8,36.2
 looker.googleapis.com,google-beta,application,2,1,1,57,44,44,77.2,77.2,0,0,44,0,77.2,78.6
 lustre.googleapis.com,google-beta,other,3,1,1,32,18,18,56.2,56.2,0,0,18,0,56.2,78.3
 managedidentities.googleapis.com,google-beta,other,3,2,2,11,8,8,72.7,72.7,0,0,8,0,72.7,80.0

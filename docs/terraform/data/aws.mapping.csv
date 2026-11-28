@@ -229,10 +229,6 @@ aws_codeartifact_repository,codeartifact,Repository,0.75,0.29,exact-name
 aws_codebuild_fleet,codebuild,Fleet,0.75,0.71,exact-name
 aws_codebuild_project,codebuild,Project,0.75,0.85,exact-name
 aws_codebuild_report_group,codebuild,ReportGroup,0.83,0.82,exact-name
-aws_codebuild_resource_policy,bedrockagentcore,ResourcePolicy,0.67,1.0,name+attrs
-aws_codebuild_resource_policy,lex,ResourcePolicy,0.67,1.0,name+attrs
-aws_codebuild_resource_policy,ssm,ResourcePolicy,0.67,1.0,name+attrs
-aws_codebuild_resource_policy,vpclattice,ResourcePolicy,0.67,1.0,name+attrs
 aws_codebuild_source_credential,codebuild,SourceCredential,0.83,1.0,exact-name
 aws_codecommit_repository,codecommit,Repository,0.75,0.23,exact-name
 aws_codeconnections_connection,codeconnections,Connection,0.75,0.75,exact-name
@@ -323,19 +319,13 @@ aws_dax_cluster,dax,Cluster,0.75,0.8,exact-name
 aws_dax_parameter_group,dax,ParameterGroup,0.83,0.33,exact-name
 aws_dax_subnet_group,dax,SubnetGroup,0.83,0.67,exact-name
 aws_db_cluster_snapshot,rds,ClusterSnapshot,0.67,1.0,name+attrs
-aws_db_event_subscription,dms,EventSubscription,0.67,0.71,name+attrs
-aws_db_event_subscription,docdb,EventSubscription,0.67,0.67,name+attrs
-aws_db_event_subscription,neptune,EventSubscription,0.67,0.71,name+attrs
-aws_db_event_subscription,rds,EventSubscription,0.67,0.71,name+attrs
-aws_db_event_subscription,redshift,EventSubscription,0.67,0.62,name+attrs
+aws_db_event_subscription,rds,EventSubscription,1.0,1.0,override
 aws_db_option_group,rds,OptionGroup,0.67,0.4,name+attrs
-aws_db_parameter_group,elasticache,ParameterGroup,0.67,0.67,name+attrs
-aws_db_parameter_group,memorydb,ParameterGroup,0.67,0.6,name+attrs
-aws_db_subnet_group,elasticache,SubnetGroup,0.67,0.75,name+attrs
-aws_db_subnet_group,memorydb,SubnetGroup,0.67,0.75,name+attrs
+aws_db_parameter_group,rds,DBParameterGroup,1.0,1.0,override
+aws_db_subnet_group,rds,DBSubnetGroup,1.0,1.0,override
 aws_default_network_acl,ec2,NetworkAcl,0.67,0.5,name+attrs
 aws_default_route_table,ec2,RouteTable,0.67,0.5,name+attrs
-aws_default_security_group,elasticache,SecurityGroup,0.67,0.5,name+attrs
+aws_default_security_group,ec2,SecurityGroup,1.0,1.0,override
 aws_detective_graph,detective,Graph,0.75,0.5,exact-name
 aws_detective_member,detective,MemberInvitation,0.5,0.6,name+attrs
 aws_detective_organization_admin_account,detective,OrganizationAdmin,0.62,1.0,name+attrs
@@ -360,8 +350,7 @@ aws_docdb_cluster_parameter_group,docdb,DBClusterParameterGroup,0.5,0.8,name+att
 aws_docdb_cluster_snapshot,rds,ClusterSnapshot,0.67,0.67,name+attrs
 aws_docdb_event_subscription,docdb,EventSubscription,0.83,0.83,exact-name
 aws_docdb_global_cluster,docdb,GlobalCluster,0.83,0.86,exact-name
-aws_docdb_subnet_group,elasticache,SubnetGroup,0.67,0.75,name+attrs
-aws_docdb_subnet_group,memorydb,SubnetGroup,0.67,0.75,name+attrs
+aws_docdb_subnet_group,docdb,DBSubnetGroup,1.0,1.0,override
 aws_docdbelastic_cluster,docdbelastic,Cluster,0.75,0.93,exact-name
 aws_drs_replication_configuration_template,drs,ReplicationConfigurationTemplate,0.88,0.95,exact-name
 aws_dsql_cluster,dsql,Cluster,0.75,0.83,exact-name
@@ -371,10 +360,6 @@ aws_dx_private_virtual_interface,directconnect,PrivateVirtualInterface,0.75,0.33
 aws_dx_public_virtual_interface,directconnect,PublicVirtualInterface,0.75,0.42,name+attrs
 aws_dx_transit_virtual_interface,directconnect,TransitVirtualInterface,0.75,0.36,name+attrs
 aws_dynamodb_global_table,dynamodb,GlobalTable,0.83,0.0,exact-name
-aws_dynamodb_resource_policy,bedrockagentcore,ResourcePolicy,0.67,1.0,name+attrs
-aws_dynamodb_resource_policy,lex,ResourcePolicy,0.67,1.0,name+attrs
-aws_dynamodb_resource_policy,ssm,ResourcePolicy,0.67,1.0,name+attrs
-aws_dynamodb_resource_policy,vpclattice,ResourcePolicy,0.67,1.0,name+attrs
 aws_dynamodb_table,dynamodb,Table,0.75,0.2,exact-name
 aws_ebs_snapshot_block_public_access,ec2,SnapshotBlockPublicAccess,0.8,1.0,name+attrs
 aws_ec2_capacity_reservation,ec2,CapacityReservation,0.83,0.75,exact-name
@@ -455,7 +440,6 @@ aws_ecs_task_definition,ecs,TaskDefinition,0.83,0.3,exact-name
 aws_ecs_task_set,ecs,TaskSet,0.83,0.86,exact-name
 aws_efs_access_point,efs,AccessPoint,0.83,0.73,exact-name
 aws_efs_file_system,efs,FileSystem,0.83,0.45,exact-name
-aws_efs_file_system_policy,s3files,FileSystemPolicy,0.75,1.0,name+attrs
 aws_efs_mount_target,efs,MountTarget,0.83,1.0,exact-name
 aws_egress_only_internet_gateway,ec2,CarrierGateway,0.2,1.0,name+attrs
 aws_egress_only_internet_gateway,ec2,EgressOnlyInternetGateway,1.0,1.0,exact-name
@@ -532,10 +516,6 @@ aws_glue_dev_endpoint,glue,DevEndpoint,0.83,0.93,exact-name
 aws_glue_job,glue,Job,0.75,0.85,exact-name
 aws_glue_partition,glue,Partition,0.75,0.61,exact-name
 aws_glue_registry,glue,Registry,0.75,0.67,exact-name
-aws_glue_resource_policy,bedrockagentcore,ResourcePolicy,0.67,0.5,name+attrs
-aws_glue_resource_policy,lex,ResourcePolicy,0.67,0.5,name+attrs
-aws_glue_resource_policy,ssm,ResourcePolicy,0.67,0.5,name+attrs
-aws_glue_resource_policy,vpclattice,ResourcePolicy,0.67,0.5,name+attrs
 aws_glue_schema,glue,Schema,0.75,0.6,exact-name
 aws_glue_security_configuration,glue,SecurityConfiguration,0.83,1.0,exact-name
 aws_glue_trigger,glue,Trigger,0.75,1.0,exact-name
@@ -553,7 +533,6 @@ aws_guardduty_member,guardduty,Member,0.75,0.5,exact-name
 aws_guardduty_publishing_destination,guardduty,PublishingDestination,0.83,0.6,exact-name
 aws_iam_access_key,iam,AccessKey,0.83,0.33,exact-name
 aws_iam_account_alias,iam,AccountAlias,1.0,1.0,override
-aws_iam_account_alias,supportapp,AccountAlias,1.0,1.0,override
 aws_iam_account_password_policy,iam,AccountPasswordPolicy,1.0,1.0,override
 aws_iam_group,iam,Group,0.75,0.2,exact-name
 aws_iam_group_policies_exclusive,iam,GroupPolicy,0.62,0.67,name+attrs
@@ -591,8 +570,7 @@ aws_inspector2_filter,inspectorv2,Filter,0.5,0.99,name+attrs
 aws_inspector_assessment_target,inspector,AssessmentTarget,0.83,0.5,exact-name
 aws_inspector_assessment_template,inspector,AssessmentTemplate,0.83,0.17,exact-name
 aws_inspector_resource_group,inspector,ResourceGroup,0.83,0.0,exact-name
-aws_instance,ec2,Instance,1.0,0.42,exact-name
-aws_instance,sso,Instance,1.0,0.5,exact-name
+aws_instance,ec2,Instance,1.0,1.0,override
 aws_internet_gateway,ec2,InternetGateway,1.0,1.0,exact-name
 aws_internetmonitor_monitor,internetmonitor,Monitor,0.75,0.52,exact-name
 aws_invoicing_invoice_unit,invoicing,InvoiceUnit,0.83,0.71,exact-name
@@ -624,8 +602,7 @@ aws_kendra_query_suggestions_block_list,kendra,QuerySuggestionsBlockList,0.9,1.0
 aws_kendra_query_suggestions_block_list,kendra,Thesaurus,0.08,1.0,name+attrs
 aws_kendra_thesaurus,kendra,QuerySuggestionsBlockList,0.08,1.0,name+attrs
 aws_kendra_thesaurus,kendra,Thesaurus,0.75,1.0,exact-name
-aws_key_pair,ec2,KeyPair,1.0,0.4,exact-name
-aws_key_pair,lightsail,KeyPair,1.0,0.5,exact-name
+aws_key_pair,ec2,KeyPair,1.0,1.0,override
 aws_keyspaces_keyspace,cassandra,Keyspace,1.0,0.6,exact-name
 aws_kinesis_resource_policy,kinesis,ResourcePolicy,0.83,0.5,exact-name
 aws_kinesis_stream,kinesis,Stream,0.75,0.55,exact-name
@@ -654,10 +631,6 @@ aws_lambda_layer_version_permission,lambda,LayerVersionPermission,0.88,0.75,exac
 aws_lambda_permission,lambda,Permission,0.75,1.0,exact-name
 aws_lambda_resource_policy,lambda,ResourcePolicy,0.83,0.5,exact-name
 aws_lambdacore_network_connector,lambda,NetworkConnector,0.67,0.86,name+attrs
-aws_lambdaweb_resource_policy,bedrockagentcore,ResourcePolicy,0.67,1.0,name+attrs
-aws_lambdaweb_resource_policy,lex,ResourcePolicy,0.67,1.0,name+attrs
-aws_lambdaweb_resource_policy,ssm,ResourcePolicy,0.67,1.0,name+attrs
-aws_lambdaweb_resource_policy,vpclattice,ResourcePolicy,0.67,1.0,name+attrs
 aws_launch_configuration,autoscaling,LaunchConfiguration,1.0,0.43,exact-name
 aws_launch_template,ec2,LaunchTemplate,1.0,0.66,exact-name
 aws_lb_listener_certificate,elasticloadbalancingv2,ListenerCertificate,0.67,0.5,name+attrs
@@ -731,8 +704,7 @@ aws_neptune_event_subscription,neptune,EventSubscription,0.83,0.86,exact-name
 aws_neptune_global_cluster,neptune,GlobalCluster,0.83,0.86,exact-name
 aws_neptune_parameter_group,neptune,DBClusterParameterGroup,0.62,0.8,name+attrs
 aws_neptune_parameter_group,neptune,DBParameterGroup,0.38,0.8,name+attrs
-aws_neptune_subnet_group,elasticache,SubnetGroup,0.67,0.75,name+attrs
-aws_neptune_subnet_group,memorydb,SubnetGroup,0.67,0.75,name+attrs
+aws_neptune_subnet_group,neptune,DBSubnetGroup,1.0,1.0,override
 aws_neptunegraph_graph,neptunegraph,Graph,0.75,0.4,exact-name
 aws_neptunegraph_private_graph_endpoint,neptunegraph,PrivateGraphEndpoint,0.88,0.75,exact-name
 aws_network_acl,ec2,NetworkAcl,1.0,1.0,exact-name
@@ -744,10 +716,6 @@ aws_networkfirewall_container_association,networkfirewall,ContainerAssociation,0
 aws_networkfirewall_firewall,networkfirewall,Firewall,0.75,0.57,exact-name
 aws_networkfirewall_firewall_policy,networkfirewall,FirewallPolicy,0.83,0.9,exact-name
 aws_networkfirewall_logging_configuration,networkfirewall,LoggingConfiguration,0.83,0.83,exact-name
-aws_networkfirewall_resource_policy,bedrockagentcore,ResourcePolicy,0.67,1.0,name+attrs
-aws_networkfirewall_resource_policy,lex,ResourcePolicy,0.67,1.0,name+attrs
-aws_networkfirewall_resource_policy,ssm,ResourcePolicy,0.67,1.0,name+attrs
-aws_networkfirewall_resource_policy,vpclattice,ResourcePolicy,0.67,1.0,name+attrs
 aws_networkfirewall_rule_group,networkfirewall,RuleGroup,0.83,0.86,exact-name
 aws_networkfirewall_vpc_endpoint_association,networkfirewall,VpcEndpointAssociation,0.88,1.0,exact-name
 aws_networkflowmonitor_monitor,networkflowmonitor,Monitor,0.75,1.0,exact-name
@@ -818,10 +786,6 @@ aws_organizations_policy,organizations,Policy,0.75,0.83,exact-name
 aws_organizations_resource_policy,organizations,ResourcePolicy,0.83,1.0,exact-name
 aws_osis_pipeline,osis,Pipeline,0.75,0.81,exact-name
 aws_osis_pipeline_endpoint,osis,PipelineEndpoint,0.83,1.0,exact-name
-aws_osis_resource_policy,bedrockagentcore,ResourcePolicy,0.67,1.0,name+attrs
-aws_osis_resource_policy,lex,ResourcePolicy,0.67,1.0,name+attrs
-aws_osis_resource_policy,ssm,ResourcePolicy,0.67,1.0,name+attrs
-aws_osis_resource_policy,vpclattice,ResourcePolicy,0.67,1.0,name+attrs
 aws_paymentcryptography_key,paymentcryptography,Key,0.75,0.84,exact-name
 aws_paymentcryptography_key_alias,paymentcryptography,Alias,0.5,1.0,name+attrs
 aws_pinpoint_adm_channel,pinpoint,VoiceChannel,0.38,1.0,name+attrs
@@ -847,21 +811,13 @@ aws_pinpoint_sms_channel,pinpoint,VoiceChannel,0.38,1.0,name+attrs
 aws_pinpointsmsvoicev2_configuration_set,pinpointemail,ConfigurationSet,0.67,0.33,name+attrs
 aws_pinpointsmsvoicev2_opt_out_list,smsvoice,OptOutList,0.75,0.5,name+attrs
 aws_pinpointsmsvoicev2_phone_number,smsvoice,PhoneNumber,0.67,0.6,name+attrs
-aws_pinpointsmsvoicev2_resource_policy,bedrockagentcore,ResourcePolicy,0.67,1.0,name+attrs
-aws_pinpointsmsvoicev2_resource_policy,lex,ResourcePolicy,0.67,1.0,name+attrs
-aws_pinpointsmsvoicev2_resource_policy,ssm,ResourcePolicy,0.67,1.0,name+attrs
-aws_pinpointsmsvoicev2_resource_policy,vpclattice,ResourcePolicy,0.67,1.0,name+attrs
+aws_pinpointsmsvoicev2_resource_policy,smsvoice,ResourcePolicy,1.0,1.0,override
 aws_pinpointsmsvoicev2_sender_id,smsvoice,SenderId,0.67,1.0,name+attrs
 aws_pipes_pipe,pipes,Pipe,1.0,0.89,exact-name
 aws_placement_group,ec2,PlacementGroup,1.0,0.8,exact-name
 aws_pricingplanmanager_subscription,pricingplanmanager,Subscription,0.75,1.0,exact-name
 aws_prometheus_anomaly_detector,aps,AnomalyDetector,0.67,0.8,name+attrs
-aws_prometheus_resource_policy,aps,ResourcePolicy,0.67,0.5,name+attrs
-aws_prometheus_resource_policy,bedrock,ResourcePolicy,0.67,0.5,name+attrs
-aws_prometheus_resource_policy,eventsv2,ResourcePolicy,0.67,0.5,name+attrs
-aws_prometheus_resource_policy,lambda,ResourcePolicy,0.67,0.5,name+attrs
-aws_prometheus_resource_policy,logs,ResourcePolicy,0.67,0.5,name+attrs
-aws_prometheus_resource_policy,smsvoice,ResourcePolicy,0.67,0.5,name+attrs
+aws_prometheus_resource_policy,aps,ResourcePolicy,1.0,1.0,override
 aws_prometheus_rule_group_namespace,aps,RuleGroupsNamespace,0.75,0.75,name+attrs
 aws_qbusiness_application,qbusiness,Application,0.75,0.4,exact-name
 aws_qldb_ledger,qldb,Ledger,0.75,1.0,exact-name
@@ -902,10 +858,6 @@ aws_redshift_idc_application,redshift,RedshiftIdcApplication,1.0,0.77,exact-name
 aws_redshift_integration,redshift,Integration,0.75,1.0,exact-name
 aws_redshift_parameter_group,redshift,ClusterParameterGroup,0.62,0.33,name+attrs
 aws_redshift_parameter_group,redshift,ClusterSecurityGroup,0.3,1.0,name+attrs
-aws_redshift_resource_policy,bedrockagentcore,ResourcePolicy,0.67,1.0,name+attrs
-aws_redshift_resource_policy,lex,ResourcePolicy,0.67,1.0,name+attrs
-aws_redshift_resource_policy,ssm,ResourcePolicy,0.67,1.0,name+attrs
-aws_redshift_resource_policy,vpclattice,ResourcePolicy,0.67,1.0,name+attrs
 aws_redshift_scheduled_action,redshift,ScheduledAction,0.83,0.86,exact-name
 aws_redshift_snapshot_copy,redshift,Snapshot,0.5,0.5,name+attrs
 aws_redshift_snapshot_copy,redshift,SnapshotCopyGrant,0.62,0.33,name+attrs
@@ -914,14 +866,8 @@ aws_redshift_snapshot_schedule,redshift,SnapshotSchedule,0.83,0.25,exact-name
 aws_redshift_snapshot_schedule_association,redshift,SnapshotSchedule,0.62,0.25,name+attrs
 aws_redshift_subnet_group,redshift,ClusterSubnetGroup,0.62,1.0,name+attrs
 aws_redshift_usage_limit,redshift,UsageLimit,0.83,1.0,exact-name
-aws_redshiftserverless_endpoint_access,redshift,EndpointAccess,0.67,0.4,name+attrs
 aws_redshiftserverless_namespace,redshiftserverless,Namespace,0.75,0.61,exact-name
-aws_redshiftserverless_resource_policy,bedrockagentcore,ResourcePolicy,0.67,1.0,name+attrs
-aws_redshiftserverless_resource_policy,lex,ResourcePolicy,0.67,1.0,name+attrs
-aws_redshiftserverless_resource_policy,ssm,ResourcePolicy,0.67,1.0,name+attrs
-aws_redshiftserverless_resource_policy,vpclattice,ResourcePolicy,0.67,1.0,name+attrs
 aws_redshiftserverless_snapshot,redshiftserverless,Snapshot,0.75,0.75,exact-name
-aws_redshiftserverless_usage_limit,redshift,UsageLimit,0.67,0.43,name+attrs
 aws_redshiftserverless_workgroup,redshiftserverless,Workgroup,0.75,0.67,exact-name
 aws_rekognition_collection,rekognition,Collection,0.75,1.0,exact-name
 aws_rekognition_project,rekognition,Project,0.75,0.5,exact-name
@@ -985,9 +931,7 @@ aws_s3_directory_bucket,s3,BucketPolicy,0.38,0.5,name+attrs
 aws_s3control_access_grant,s3,AccessGrant,0.67,0.88,name+attrs
 aws_s3control_access_grants_instance,s3,AccessGrantsInstance,0.75,1.0,name+attrs
 aws_s3control_access_grants_location,s3,AccessGrantsLocation,0.75,1.0,name+attrs
-aws_s3control_bucket_policy,s3,BucketPolicy,0.67,0.5,name+attrs
-aws_s3control_bucket_policy,s3express,BucketPolicy,0.67,0.5,name+attrs
-aws_s3control_bucket_policy,s3outposts,BucketPolicy,0.67,0.5,name+attrs
+aws_s3control_bucket_policy,s3outposts,BucketPolicy,1.0,1.0,override
 aws_s3files_access_point,s3files,AccessPoint,0.83,0.9,exact-name
 aws_s3files_file_system,s3files,FileSystem,0.83,0.55,exact-name
 aws_s3files_file_system_policy,s3files,FileSystemPolicy,0.88,1.0,exact-name
@@ -1040,8 +984,9 @@ aws_scheduler_schedule_group,scheduler,ScheduleGroup,0.83,1.0,exact-name
 aws_schemas_registry_policy,eventschemas,RegistryPolicy,0.67,0.67,name+attrs
 aws_schemas_schema,eventschemas,Schema,1.0,0.83,exact-name
 aws_secretsmanager_secret,secretsmanager,Secret,0.75,0.28,exact-name
-aws_security_group,elasticache,SecurityGroup,1.0,1.0,exact-name
-aws_security_group_rule,elasticache,SecurityGroup,0.67,0.5,name+attrs
+aws_security_group,ec2,SecurityGroup,1.0,1.0,override
+aws_security_group_rule,ec2,SecurityGroupEgress,1.0,1.0,override
+aws_security_group_rule,ec2,SecurityGroupIngress,1.0,1.0,override
 aws_securityhub_account_v2,securityhub,HubV2,0.38,0.5,name+attrs
 aws_securityhub_action_target,securityhub,ActionTarget,0.83,1.0,exact-name
 aws_securityhub_aggregator_v2,securityhub,AggregatorV2,0.83,1.0,exact-name
@@ -1125,7 +1070,6 @@ aws_ssmcontacts_rotation,ssmcontacts,Rotation,0.75,0.6,exact-name
 aws_ssmincidents_replication_set,ssmincidents,ReplicationSet,0.83,0.25,exact-name
 aws_ssmincidents_response_plan,ssmincidents,ResponsePlan,0.83,0.61,exact-name
 aws_ssmquicksetup_configuration_manager,ssmquicksetup,ConfigurationManager,0.83,1.0,exact-name
-aws_ssoadmin_account_assignment,quicksight,Assignment,1.0,1.0,override
 aws_ssoadmin_account_assignment,sso,Assignment,1.0,1.0,override
 aws_ssoadmin_application,sso,Application,0.5,1.0,name+attrs
 aws_ssoadmin_application_assignment,sso,ApplicationAssignment,0.67,1.0,name+attrs
@@ -1158,17 +1102,16 @@ aws_verifiedpermissions_policy_store,verifiedpermissions,PolicyStore,0.83,0.38,e
 aws_verifiedpermissions_policy_template,verifiedpermissions,PolicyTemplate,0.83,0.75,exact-name
 aws_volume_attachment,ec2,VolumeAttachment,1.0,0.5,exact-name
 aws_vpc,ec2,VPC,1.0,0.44,exact-name
-aws_vpc_endpoint,opensearchserverless,VpcEndpoint,1.0,0.75,exact-name
+aws_vpc_endpoint,ec2,VPCEndpoint,1.0,1.0,override
 aws_vpc_network_performance_metric_subscription,ec2,NetworkPerformanceMetricSubscription,0.8,1.0,name+attrs
-aws_vpc_peering_connection,msk,VpcConnection,0.67,0.33,name+attrs
+aws_vpc_peering_connection,ec2,VPCPeeringConnection,1.0,1.0,override
 aws_vpc_route_server,ec2,RouteServer,0.67,1.0,name+attrs
 aws_vpc_route_server_endpoint,ec2,RouteServerEndpoint,0.75,1.0,name+attrs
 aws_vpc_route_server_peer,ec2,RouteServerPeer,0.75,1.0,name+attrs
 aws_vpc_route_server_propagation,ec2,RouteServerPropagation,0.75,1.0,name+attrs
 aws_vpc_route_server_vpc_association,ec2,RouteServerAssociation,0.75,1.0,name+attrs
 aws_vpc_security_group_egress_rule,ec2,SecurityGroupEgress,0.6,0.56,name+attrs
-aws_vpc_security_group_ingress_rule,ec2,SecurityGroupIngress,0.6,0.42,name+attrs
-aws_vpc_security_group_ingress_rule,elasticache,SecurityGroup,0.4,1.0,name+attrs
+aws_vpc_security_group_ingress_rule,ec2,SecurityGroupIngress,1.0,1.0,override
 aws_vpc_security_group_vpc_association,ec2,SecurityGroupVpcAssociation,1.0,0.5,exact-name
 aws_vpclattice_access_log_subscription,vpclattice,AccessLogSubscription,0.88,1.0,exact-name
 aws_vpclattice_auth_policy,vpclattice,AuthPolicy,0.83,1.0,exact-name
@@ -1185,11 +1128,9 @@ aws_vpclattice_service_network_service_association,vpclattice,ServiceNetworkServ
 aws_vpclattice_service_network_vpc_association,vpclattice,ServiceNetworkVpcAssociation,0.9,1.0,exact-name
 aws_vpclattice_target_group,vpclattice,TargetGroup,0.83,0.86,exact-name
 aws_waf_byte_match_set,waf,ByteMatchSet,0.88,0.86,exact-name
-aws_waf_geo_match_set,wafregional,GeoMatchSet,0.75,1.0,name+attrs
 aws_waf_ipset,waf,IPSet,0.75,1.0,exact-name
 aws_waf_rate_based_rule,waf,Rule,0.38,1.0,name+attrs
 aws_waf_regex_match_set,waf,XssMatchSet,0.5,0.6,name+attrs
-aws_waf_regex_pattern_set,wafregional,RegexPatternSet,0.75,1.0,name+attrs
 aws_waf_rule,waf,Rule,0.75,1.0,exact-name
 aws_waf_rule_group,waf,Rule,0.5,0.4,name+attrs
 aws_waf_size_constraint_set,waf,SizeConstraintSet,0.88,1.0,exact-name
@@ -1330,6 +1271,7 @@ aws_cloudwatchomni_space,,,,,"best candidate Space too weak (name 0.50, attrs 0.
 aws_cloudwatchomni_view,,,,,"best candidate View too weak (name 0.50, attrs 1.00)"
 aws_codeartifact_domain_permissions_policy,,,,,"best candidate Domain too weak (name 0.38, attrs 0.00)"
 aws_codeartifact_repository_permissions_policy,,,,,"best candidate Repository too weak (name 0.38, attrs 0.00)"
+aws_codebuild_resource_policy,,,,,override: no API resource
 aws_codebuild_webhook,,,,,"best candidate Project too weak (name 0.17, attrs 0.04)"
 aws_codecatalyst_dev_environment,,,,,"best candidate Environment too weak (name 0.33, attrs 0.06)"
 aws_codecatalyst_project,,,,,"best candidate Project too weak (name 0.50, attrs 0.12)"
@@ -1411,6 +1353,7 @@ aws_dx_macsec_key_association,,,,,"best candidate Association too weak (name 0.2
 aws_dynamodb_contributor_insights,,,,,"best candidate Table too weak (name 0.12, attrs 0.02)"
 aws_dynamodb_global_secondary_index,,,,,"best candidate GlobalTable too weak (name 0.30, attrs 0.10)"
 aws_dynamodb_kinesis_streaming_destination,,,,,"best candidate StreamConsumer too weak (name 0.08, attrs 0.33)"
+aws_dynamodb_resource_policy,,,,,override: no API resource
 aws_dynamodb_table_export,,,,,"best candidate Table too weak (name 0.50, attrs 0.00)"
 aws_dynamodb_table_item,,,,,"best candidate Table too weak (name 0.50, attrs 0.02)"
 aws_dynamodb_table_replica,,,,,"best candidate Table too weak (name 0.50, attrs 0.03)"
@@ -1442,6 +1385,7 @@ aws_ecrpublic_repository_policy,,,,,"best candidate ResourcePolicy too weak (nam
 aws_ecs_account_setting_default,,,,,"best candidate CapacityProvider too weak (name 0.08, attrs 0.02)"
 aws_ecs_tag,,,,,"best candidate TagOption too weak (name 0.33, attrs 0.67)"
 aws_efs_backup_policy,,,,,"best candidate Backup too weak (name 0.33, attrs 0.50)"
+aws_efs_file_system_policy,,,,,override: no API resource
 aws_efs_replication_configuration,,,,,"best candidate ReplicationConfiguration too weak (name 0.67, attrs 0.20)"
 aws_eip_association,,,,,"best candidate EIP too weak (name 0.50, attrs 0.12)"
 aws_eip_domain_name,,,,,"best candidate DomainName too weak (name 0.67, attrs 0.25)"
@@ -1475,6 +1419,7 @@ aws_glacier_vault,,,,,"best candidate BackupVault too weak (name 0.33, attrs 0.1
 aws_glacier_vault_lock,,,,,"best candidate BackupVault too weak (name 0.25, attrs 0.00)"
 aws_glue_ml_transform,,,,,"best candidate Registry too weak (name 0.12, attrs 1.00)"
 aws_glue_partition_index,,,,,"best candidate Partition too weak (name 0.50, attrs 0.10)"
+aws_glue_resource_policy,,,,,override: no API resource
 aws_grafana_license_association,,,,,"best candidate Workspace too weak (name 0.12, attrs 0.00)"
 aws_grafana_role_association,,,,,"best candidate SecurityGroupVpcAssociation too weak (name 0.17, attrs 0.50)"
 aws_grafana_workspace_api_key,,,,,"best candidate Workspace too weak (name 0.38, attrs 0.00)"
@@ -1534,6 +1479,7 @@ aws_lambdamicrovms_microvm,,,,,"best candidate MicrovmImage too weak (name 0.33,
 aws_lambdaweb_function,,,,,"best candidate WebFunction too weak (name 0.33, attrs 1.00)"
 aws_lambdaweb_function_endpoint,,,,,"best candidate WebFunctionEndpoint too weak (name 0.50, attrs 1.00)"
 aws_lambdaweb_function_revision,,,,,"best candidate WebFunctionRevision too weak (name 0.50, attrs 1.00)"
+aws_lambdaweb_resource_policy,,,,,override: no API resource
 aws_lb,,,,,no API resource with a similar name
 aws_lb_cookie_stickiness_policy,,,,,"best candidate TrafficPolicy too weak (name 0.20, attrs 0.33)"
 aws_lb_listener,,,,,"best candidate Listener too weak (name 0.50, attrs 0.62)"
@@ -1586,6 +1532,7 @@ aws_neptune_cluster_instance,,,,,"best candidate GlobalCluster too weak (name 0.
 aws_network_acl_rule,,,,,"best candidate NetworkAclEntry too weak (name 0.50, attrs 0.82)"
 aws_network_interface_sg_attachment,,,,,"best candidate NetworkInterfaceAttachment too weak (name 0.75, attrs 0.14)"
 aws_networkfirewall_firewall_transit_gateway_attachment_accepter,,,,,"best candidate TransitGatewayAttachmentNatConfiguration too weak (name 0.38, attrs 0.17)"
+aws_networkfirewall_resource_policy,,,,,override: no API resource
 aws_networkfirewall_tls_inspection_configuration,,,,,"best candidate TLSInspectionConfiguration too weak (name 0.30, attrs 0.93)"
 aws_networkmanager_attachment_accepter,,,,,"best candidate ConnectAttachment too weak (name 0.38, attrs 0.00)"
 aws_networkmanager_attachment_routing_policy_label,,,,,"best candidate ConnectAttachment too weak (name 0.25, attrs 0.29)"
@@ -1610,6 +1557,7 @@ aws_organizations_aws_service_access,,,,,"best candidate Organization too weak (
 aws_organizations_delegated_administrator,,,,,"best candidate OrganizationAdmin too weak (name 0.25, attrs 1.00)"
 aws_organizations_policy_attachment,,,,,"best candidate Policy too weak (name 0.50, attrs 0.17)"
 aws_organizations_tag,,,,,"best candidate Organization too weak (name 0.50, attrs 0.00)"
+aws_osis_resource_policy,,,,,override: no API resource
 aws_outposts_capacity_task,,,,,"best candidate Outpost too weak (name 0.33, attrs 0.00)"
 aws_pinpoint_apns_voip_channel,,,,,"best candidate APNSSandboxChannel too weak (name 0.30, attrs 1.00)"
 aws_pinpointsmsvoicev2_event_destination,,,,,"best candidate ConfigurationSetEventDestination too weak (name 0.40, attrs 0.36)"
@@ -1654,8 +1602,12 @@ aws_redshift_hsm_configuration,,,,,"best candidate ClusterSecurityGroup too weak
 aws_redshift_logging,,,,,"best candidate Snapshot too weak (name 0.17, attrs 0.25)"
 aws_redshift_namespace_registration,,,,,"best candidate RedshiftIdcApplication too weak (name 0.20, attrs 0.00)"
 aws_redshift_partner,,,,,"best candidate Snapshot too weak (name 0.17, attrs 0.25)"
+aws_redshift_resource_policy,,,,,override: no API resource
 aws_redshiftdata_statement,,,,,"best candidate PreparedStatement too weak (name 0.33, attrs 0.25)"
 aws_redshiftserverless_custom_domain_association,,,,,"best candidate Workgroup too weak (name 0.10, attrs 0.05)"
+aws_redshiftserverless_endpoint_access,,,,,override: no API resource
+aws_redshiftserverless_resource_policy,,,,,override: no API resource
+aws_redshiftserverless_usage_limit,,,,,override: no API resource
 aws_resiliencehubv2_assertion,,,,,"best candidate ServiceFunction too weak (name 0.12, attrs 0.25)"
 aws_resiliencehubv2_input_source,,,,,"best candidate Service too weak (name 0.12, attrs 0.36)"
 aws_resourcegroups_resource,,,,,"best candidate Resource too weak (name 0.50, attrs 0.20)"
@@ -1832,6 +1784,8 @@ aws_vpn_connection_route,,,,,"best candidate VPNConnectionRoute too weak (name 0
 aws_vpn_gateway,,,,,"best candidate CarrierGateway too weak (name 0.33, attrs 1.00)"
 aws_vpn_gateway_attachment,,,,,"best candidate VPCGatewayAttachment too weak (name 0.25, attrs 0.67)"
 aws_vpn_gateway_route_propagation,,,,,"best candidate VPNGatewayRoutePropagation too weak (name 0.40, attrs 1.00)"
+aws_waf_geo_match_set,,,,,override: no API resource
+aws_waf_regex_pattern_set,,,,,override: no API resource
 aws_wafregional_web_acl_association,,,,,"best candidate WebACLAssociation too weak (name 0.30, attrs 1.00)"
 aws_wafv2_api_key,,,,,"best candidate ApiKey too weak (name 0.67, attrs 0.00)"
 aws_wafv2_ip_set,,,,,"best candidate RegexPatternSet too weak (name 0.30, attrs 0.80)"
