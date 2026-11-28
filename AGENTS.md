@@ -5,9 +5,10 @@ Bundt's seed catalog: Helm charts that port open-source Terraform modules
 Config Connector, ACK and Azure Service Operator objects, each with its
 Bundt Package (`charts/<cloud>/<module>/`). Run `task check` before every
 commit (gofmt and vet of `tools/`, the Go tests, the chart and example
-tests, coverage current, shell and workflow lint); `task ci` runs the same
-at CI's tool pins and posts the `offload/ci` status, and the pre-push hook
-(`task hooks`) runs it on every push.
+tests, coverage current, shell and workflow lint). GitHub's `ci.yml` runs
+the same on every pull request and is the merge gate; `task ci` runs it at
+CI's tool pins before a push, and the pre-push hook runs it only with
+`HFL_PREPUSH_GATE=1` (HFL-818).
 
 <!-- HFL-WORKSPACE: BEGIN (generated from highfivelabs/workspace sync/blocks/public-krm.md by bin/sync-agents; edit it there) -->
 ## High Five Labs team members
@@ -25,13 +26,17 @@ otherwise
 
 The essentials, in case you can't read it:
 
-* Claim the Linear issue in coord before you edit (`coord claim HFL-n`), and
+- Claim the Linear issue in coord before you edit (`coord claim HFL-n`), and
   put its key in the branch name and PR title.
-* Open pull requests as drafts. Mark one ready only when it's finished and
-  green, and put it back in draft before pushing to it again.
-* This repository is public. Issue keys are fine. Internal URLs, customer
+- Open pull requests as drafts. Mark one ready only when it's finished and
+  green, and put it back in draft before pushing to it again. Ready is how
+  you ask a person to look; never leave a PR in draft for someone's review.
+- Get a draft to ready within about 3 hours, and don't abandon it. If it has
+  to stay in draft longer, post a PR comment saying what it waits on and
+  when it should be ready.
+- This repository is public. Issue keys are fine. Internal URLs, customer
   names, credentials and personal details never go in commits, pull
   requests or files.
-* The Spectacle method doesn't apply here. The kinds are generated and held
+- The Spectacle method doesn't apply here. The kinds are generated and held
   in place by this repository's own checks.
 <!-- HFL-WORKSPACE: END -->
