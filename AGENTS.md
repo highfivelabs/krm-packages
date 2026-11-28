@@ -5,9 +5,10 @@ Bundt's seed catalog: Helm charts that port open-source Terraform modules
 Config Connector, ACK and Azure Service Operator objects, each with its
 Bundt Package (`charts/<cloud>/<module>/`). Run `task check` before every
 commit (gofmt and vet of `tools/`, the Go tests, the chart and example
-tests, coverage current, shell and workflow lint); `task ci` runs the same
-at CI's tool pins and posts the `offload/ci` status, and the pre-push hook
-(`task hooks`) runs it on every push.
+tests, coverage current, shell and workflow lint). GitHub's `ci.yml` runs
+the same on every pull request and is the merge gate; `task ci` runs it at
+CI's tool pins before a push, and the pre-push hook runs it only with
+`HFL_PREPUSH_GATE=1` (HFL-818).
 
 <!-- HFL-WORKSPACE: BEGIN (generated from highfivelabs/workspace sync/blocks/public-krm.md by bin/sync-agents; edit it there) -->
 ## High Five Labs team members
